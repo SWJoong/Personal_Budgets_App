@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #3b82f6; /* 차분한 파랑 */
+  --color-primary-hover: #2563eb;
+  --color-positive: #10b981; /* 긍정/여유: 초록 */
+  --color-warning: #f59e0b; /* 주의: 주황 */
+  --color-danger: #ef4444; /* 부족 위험: 빨강 */
+  --color-card: #f9fafb; /* 카드 배경: 연한 회색 */
+  --color-background: #ffffff;
+  --color-foreground: #111827; /* 본문텍스트 */
+
+  --font-sans: var(--font-pretendard), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-background: #0a0a0a;
+    --color-foreground: #ededed;
+    --color-card: #1f2937;
+  }
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 유틸리티 클래스 */
+@utility text-balance {
+  text-wrap: balance;
+}
