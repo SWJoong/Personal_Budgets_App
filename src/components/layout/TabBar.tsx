@@ -2,14 +2,38 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { useEffect, useState } from 'react'
+import type { UserRole } from '@/types/database'
 
 export function TabBar() {
   const pathname = usePathname()
+  const { user, supabase } = useAuth()
+  const [role, setRole] = useState<UserRole>('participant')
+
+  useEffect(() => {
+    if (!user) return
+
+    async function fetchRole() {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user!.id)
+        .single()
+
+      if (profile?.role) {
+        setRole(profile.role as UserRole)
+      }
+    }
+
+    fetchRole()
+  }, [user, supabase])
 
   // 로그인 페이지에서는 탭바를 숨김
   if (pathname === '/login') return null
 
-  const tabs = [
+  // 역할별 탭 구성
+  const participantTabs = [
     { name: '홈', href: '/', icon: '🏠' },
     { name: '오늘 계획', href: '/plan', icon: '📝' },
     { name: '영수증', href: '/receipt', icon: '🧾' },
@@ -17,21 +41,42 @@ export function TabBar() {
     { name: '더보기', href: '/more', icon: '⋯' },
   ]
 
+  const supporterTabs = [
+    { name: '당사자', href: '/supporter', icon: '👥' },
+    { name: '내역 관리', href: '/supporter/transactions', icon: '📊' },
+    { name: '영수증 확인', href: '/receipt', icon: '🧾' },
+    { name: '달력', href: '/calendar', icon: '📅' },
+    { name: '더보기', href: '/more', icon: '⋯' },
+  ]
+
+  const adminTabs = [
+    { name: '당사자 관리', href: '/admin/participants', icon: '👥' },
+    { name: '내역 관리', href: '/supporter/transactions', icon: '📊' },
+    { name: '영수증 확인', href: '/receipt', icon: '🧾' },
+    { name: '달력', href: '/calendar', icon: '📅' },
+    { name: '더보기', href: '/more', icon: '⋯' },
+  ]
+
+  const tabs = role === 'admin' ? adminTabs 
+    : role === 'supporter' ? supporterTabs 
+    : participantTabs
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-200 bg-white pb-safe dark:border-zinc-800 dark:bg-black">
       <div className="flex h-16 items-center justify-around px-2 pb-2 pt-2 sm:h-20 sm:pb-4">
         {tabs.map((tab) => {
-          const isActive = pathname === tab.href
+          const isActive = pathname === tab.href || 
+            (tab.href !== '/' && pathname.startsWith(tab.href))
           return (
              <Link
               key={tab.name}
               href={tab.href}
-              className={`flex flex-col items-center justify-center gap-1 min-w-[64px] ${
-                isActive ? 'text-primary' : 'text-zinc-500'
+              className={`flex flex-col items-center justify-center gap-1 min-w-[64px] transition-colors ${
+                isActive ? 'text-primary' : 'text-zinc-500 hover:text-zinc-700'
               }`}
             >
-              <span className="text-xl sm:text-2xl">{tab.icon}</span>
-              <span className="text-[10px] font-medium sm:text-xs">{tab.name}</span>
+              <span className={`text-xl sm:text-2xl transition-transform ${isActive ? 'scale-110' : ''}`}>{tab.icon}</span>
+              <span className={`text-[10px] font-medium sm:text-xs ${isActive ? 'font-bold' : ''}`}>{tab.name}</span>
             </Link>
           )
         })}
