@@ -29,8 +29,10 @@ export function TabBar() {
     fetchRole()
   }, [user, supabase])
 
-  // 로그인 페이지에서는 탭바를 숨김
-  if (pathname === '/login') return null
+  // 로그인, 지원자, 관리자 페이지에서는 모바일 탭바를 숨김 (레이아웃 분리)
+  if (pathname === '/login' || pathname.startsWith('/supporter') || pathname.startsWith('/admin')) {
+    return null
+  }
 
   // 역할별 탭 구성
   const participantTabs = [

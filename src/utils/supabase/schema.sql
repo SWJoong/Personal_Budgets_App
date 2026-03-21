@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS public.participants (
   funding_source_count INTEGER NOT NULL DEFAULT 1,
   alert_threshold NUMERIC NOT NULL DEFAULT 15000,
   assigned_supporter_id UUID REFERENCES public.profiles(id),
+  bank_book_copy_url TEXT,
+  bank_cover_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
@@ -51,11 +53,21 @@ CREATE TABLE IF NOT EXISTS public.transactions (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
+-- 5. File Links Table
+CREATE TABLE IF NOT EXISTS public.file_links (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id UUID REFERENCES public.participants(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  file_type TEXT NOT NULL CHECK (file_type IN ('계획서', '평가서', '참고자료', '증빙자료', '기타')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
 -- Enable RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.funding_sources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.file_links ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
 
@@ -98,6 +110,14 @@ CREATE POLICY "Supporters/Admins can manage transactions" ON public.transactions
 -- Profiles INSERT policy (needed for trigger and manual insert)
 DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- File Links Policies
+DROP POLICY IF EXISTS "Participants see own file links" ON public.file_links;
+CREATE POLICY "Participants see own file links" ON public.file_links FOR SELECT USING (participant_id = auth.uid());
+DROP POLICY IF EXISTS "Supporters/Admins can manage file links" ON public.file_links;
+CREATE POLICY "Supporters/Admins can manage file links" ON public.file_links FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
+);
 
 -- ============================================================
 -- Profile Auto-Creation Trigger
