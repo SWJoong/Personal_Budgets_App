@@ -26,7 +26,8 @@
 -- INSERT INTO public.participants (
 --   id, monthly_budget_default, yearly_budget_default,
 --   budget_start_date, budget_end_date,
---   funding_source_count, alert_threshold, assigned_supporter_id
+--   funding_source_count, alert_threshold, assigned_supporter_id,
+--   bank_book_copy_url, bank_cover_url
 -- ) VALUES (
 --   'PARTICIPANT_UUID',
 --   150000,            -- 월 예산 15만원
@@ -35,7 +36,9 @@
 --   '2026-12-31',      -- 운영 종료일
 --   2,                 -- 재원 수: 2개
 --   15000,             -- 경고 기준액: 15,000원
---   'SUPPORTER_UUID'   -- 담당 지원자
+--   'SUPPORTER_UUID',  -- 담당 지원자
+--   'https://example.com/bank_book_copy.jpg', -- 통장사본 예시
+--   'https://example.com/bank_cover.jpg'      -- 통장표지 예시
 -- );
 
 -- ============================================================

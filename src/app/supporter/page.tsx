@@ -48,15 +48,15 @@ export default async function SupporterPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-        <h1 className="text-xl font-bold tracking-tight">담당 당사자</h1>
-        <div className="px-3 py-1 bg-blue-50 rounded-full text-[10px] font-bold text-blue-500">
-          {profile.name || '지원자'}
+    <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground p-4 sm:p-8">
+      <header className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">통합 대시보드</h1>
+        <div className="px-4 py-2 bg-zinc-200 rounded-lg text-sm font-bold text-zinc-700">
+          {profile.name || '지원자'} 담당
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+      <main className="w-full max-w-6xl flex flex-col gap-6">
         {/* 요약 카드 */}
         <div className="grid grid-cols-2 gap-4">
           <div className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm">
