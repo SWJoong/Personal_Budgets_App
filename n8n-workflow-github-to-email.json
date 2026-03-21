@@ -1,0 +1,55 @@
+{
+  "name": "GitHub Push to Email",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "owner": "",
+        "repository": "",
+        "events": [
+          "push"
+        ]
+      },
+      "id": "e1f13da3-f54e-4f10-ae49-16e6f1f44d93",
+      "name": "GitHub Trigger",
+      "type": "n8n-nodes-base.githubTrigger",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "",
+        "subject": "=[GitHub] New push to {{$json.repository.full_name}}",
+        "message": "=Repository: {{$json.repository.full_name}}\\nPusher: {{$json.pusher.name}}\\n\\nCommits pushed:\\n{{ $json.commits.map(c => `- ${c.message} by ${c.author.name} (ID: ${c.id.substring(0, 7)})`).join('\\n') }}\\n\\nCompare Link: {{$json.compare}}",
+        "appendAttribution": false
+      },
+      "id": "d1e261f9-86c2-48bd-bb5f-9e63c0a8764b",
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        500,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GitHub Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}
