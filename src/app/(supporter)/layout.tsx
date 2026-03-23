@@ -33,7 +33,7 @@ export default async function SupporterLayout({
     .eq('id', user.id)
     .single()
 
-  if ((userData as any)?.role === 2) { // 2 is participant
+  if ((userData as any)?.role === 'participant') { // 'participant' is the string role
     redirect('/')
   }
 

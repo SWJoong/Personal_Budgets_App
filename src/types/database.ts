@@ -6,25 +6,27 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export type UserRole = 'admin' | 'supporter' | 'participant'
+
 export interface Database {
   public: {
     Tables: {
       profiles: {
         Row: {
           id: string
-          role: 0 | 1 | 2
+          role: UserRole
           name: string | null
           created_at: string
         }
         Insert: {
           id: string
-          role?: 0 | 1 | 2
+          role?: UserRole
           name?: string | null
           created_at?: string
         }
         Update: {
           id?: string
-          role?: 0 | 1 | 2
+          role?: UserRole
           name?: string | null
           created_at?: string
         }

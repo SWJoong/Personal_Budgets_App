@@ -1,13 +1,18 @@
 -- ============================================================
 -- 아름드리꿈터 개인예산 관리 앱 - 테스트 데이터 시드
--- ⚠️ 주의: SQL Editor 에서 전체 복사 후 실행 (Run) 하세요.
+-- 주의: SQL Editor 에서 전체 복사 후 실행 (Run) 하세요.
 -- 이미 기존 데이터가 있다면 TRUNCATE 또는 앱 초기화 후 실행을 권장합니다.
 -- ============================================================
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- 1. 기존 테스트 데이터 초기화 (주의: 상용 DB에서는 절대 사용 금지)
--- 연결된 제약조건(Cascade)으로 인해 관련 테이블 데이터도 모두 지워집니다.
+-- 외래키(Foreign Key) 제약 조건을 준수하기 위해 자식 테이블부터 순차적으로 삭제합니다.
+DELETE FROM public.transactions;
+DELETE FROM public.file_links;
+DELETE FROM public.funding_sources;
+DELETE FROM public.participants;
+
 DELETE FROM auth.users 
 WHERE email = 'cheese0318@nowondaycare.org' 
    OR email = 'supporter1@nowondaycare.org'
@@ -41,10 +46,10 @@ INSERT INTO auth.users (
 ('00000000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333310', 'authenticated', 'authenticated', 'participant10@nowondaycare.org', crypt('password123', gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}', '{"full_name":"당사자J"}', NOW(), NOW());
 
 -- ============================================================
--- 3. 프로필 역할(Role) 올바르게 승격 (Numeric: 0=admin, 1=supporter, 2=participant)
+-- 3. 프로필 역할(Role) 올바르게 승격 (admin, supporter, participant)
 -- ============================================================
-UPDATE public.profiles SET role = 0 WHERE id = '11111111-1111-1111-1111-111111111111';
-UPDATE public.profiles SET role = 1 WHERE id = '22222222-2222-2222-2222-222222222222';
+UPDATE public.profiles SET role = 'admin' WHERE id = '11111111-1111-1111-1111-111111111111';
+UPDATE public.profiles SET role = 'supporter' WHERE id = '22222222-2222-2222-2222-222222222222';
 
 -- ============================================================
 -- 4. 당사자 설정 (Participants)

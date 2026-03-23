@@ -3,7 +3,7 @@
 -- 1. Profiles Table
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL PRIMARY KEY,
-  role INTEGER NOT NULL DEFAULT 2 CHECK (role IN (0, 1, 2)), -- 0: admin, 1: supporter, 2: participant
+  role TEXT NOT NULL DEFAULT 'participant' CHECK (role IN ('admin', 'supporter', 'participant')),
   name TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS public.participants (
   budget_end_date DATE DEFAULT '2026-12-31',
   funding_source_count INTEGER NOT NULL DEFAULT 1,
   alert_threshold NUMERIC NOT NULL DEFAULT 15000,
-  assigned_supporter_id UUID REFERENCES public.profiles(id),
+  assigned_supporter_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   bank_book_copy_url TEXT,
   bank_cover_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS public.transactions (
   payment_method TEXT,
   receipt_image_url TEXT,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed')),
-  creator_id UUID REFERENCES public.profiles(id),
+  creator_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
@@ -62,12 +62,38 @@ CREATE TABLE IF NOT EXISTS public.file_links (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
+-- 6. Plans Table (Epic 4: Today's Plan)
+CREATE TABLE IF NOT EXISTS public.plans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id UUID REFERENCES public.participants(id) ON DELETE CASCADE,
+  activity_name TEXT NOT NULL,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  options JSONB NOT NULL, -- Array of {name, cost, time, icon}
+  selected_option_index INTEGER,
+  creator_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
 -- Enable RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.funding_sources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.file_links ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.plans ENABLE ROW LEVEL SECURITY;
+
+-- ... (existing policies) ...
+
+-- Plans: Participant sees own, Supporter/Admin see all
+DROP POLICY IF EXISTS "Participants see own plans" ON public.plans;
+CREATE POLICY "Participants see own plans" ON public.plans FOR SELECT USING (participant_id = auth.uid());
+DROP POLICY IF EXISTS "Supporters/Admins can manage plans" ON public.plans;
+CREATE POLICY "Supporters/Admins can manage plans" ON public.plans FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
+);
+DROP POLICY IF EXISTS "Participants can update own plans" ON public.plans;
+CREATE POLICY "Participants can update own plans" ON public.plans FOR UPDATE USING (participant_id = auth.uid());
 
 -- Profiles: Anyone authenticated can view, only owner can update
 DROP POLICY IF EXISTS "Profiles viewable by all authenticated users" ON public.profiles;
@@ -75,12 +101,12 @@ CREATE POLICY "Profiles viewable by all authenticated users" ON public.profiles 
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
--- Participants: Participant sees own, Supporter/Admin see all (Numeric roles: 0, 1)
+-- Participants: Participant sees own, Supporter/Admin see all
 DROP POLICY IF EXISTS "Participants see own" ON public.participants;
 CREATE POLICY "Participants see own" ON public.participants FOR SELECT USING (auth.uid() = id);
 DROP POLICY IF EXISTS "Supporters/Admins see all participants" ON public.participants;
 CREATE POLICY "Supporters/Admins see all participants" ON public.participants FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN (0, 1))
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
 );
 
 -- Funding Sources: Link to participant visibility
@@ -88,7 +114,7 @@ DROP POLICY IF EXISTS "Participants see own funding sources" ON public.funding_s
 CREATE POLICY "Participants see own funding sources" ON public.funding_sources FOR SELECT USING (participant_id = auth.uid());
 DROP POLICY IF EXISTS "Supporters/Admins see all funding sources" ON public.funding_sources;
 CREATE POLICY "Supporters/Admins see all funding sources" ON public.funding_sources FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN (0, 1))
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
 );
 
 -- Transactions: Link to participant visibility
@@ -96,13 +122,13 @@ DROP POLICY IF EXISTS "Participants see own transactions" ON public.transactions
 CREATE POLICY "Participants see own transactions" ON public.transactions FOR SELECT USING (participant_id = auth.uid());
 DROP POLICY IF EXISTS "Supporters/Admins see all transactions" ON public.transactions;
 CREATE POLICY "Supporters/Admins see all transactions" ON public.transactions FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN (0, 1))
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
 );
 DROP POLICY IF EXISTS "Participants can insert own transactions" ON public.transactions;
 CREATE POLICY "Participants can insert own transactions" ON public.transactions FOR INSERT WITH CHECK (participant_id = auth.uid());
 DROP POLICY IF EXISTS "Supporters/Admins can manage transactions" ON public.transactions;
 CREATE POLICY "Supporters/Admins can manage transactions" ON public.transactions FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN (0, 1))
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
 );
 
 -- File Links Policies
@@ -110,7 +136,7 @@ DROP POLICY IF EXISTS "Participants see own file links" ON public.file_links;
 CREATE POLICY "Participants see own file links" ON public.file_links FOR SELECT USING (participant_id = auth.uid());
 DROP POLICY IF EXISTS "Supporters/Admins can manage file links" ON public.file_links;
 CREATE POLICY "Supporters/Admins can manage file links" ON public.file_links FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN (0, 1))
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
 );
 
 -- Profiles INSERT policy
@@ -124,7 +150,7 @@ BEGIN
   INSERT INTO public.profiles (id, role, name, created_at)
   VALUES (
     NEW.id,
-    2,  -- Default: participant
+    'participant',  -- Default: participant
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
     NOW()
   )
