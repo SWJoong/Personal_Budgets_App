@@ -1,9 +1,9 @@
 -- Phase 2: Budget Management & Visualization Schema
 
--- 1. Profiles Table (Ensure it exists and has the role column)
+-- 1. Profiles Table
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL PRIMARY KEY,
-  role TEXT NOT NULL DEFAULT 'participant' CHECK (role IN ('admin', 'supporter', 'participant')),
+  role INTEGER NOT NULL DEFAULT 2 CHECK (role IN (0, 1, 2)), -- 0: admin, 1: supporter, 2: participant
   name TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
@@ -69,20 +69,18 @@ ALTER TABLE public.funding_sources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.file_links ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies
-
 -- Profiles: Anyone authenticated can view, only owner can update
 DROP POLICY IF EXISTS "Profiles viewable by all authenticated users" ON public.profiles;
 CREATE POLICY "Profiles viewable by all authenticated users" ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
--- Participants: Participant sees own, Supporter/Admin see all
+-- Participants: Participant sees own, Supporter/Admin see all (Numeric roles: 0, 1)
 DROP POLICY IF EXISTS "Participants see own" ON public.participants;
 CREATE POLICY "Participants see own" ON public.participants FOR SELECT USING (auth.uid() = id);
 DROP POLICY IF EXISTS "Supporters/Admins see all participants" ON public.participants;
 CREATE POLICY "Supporters/Admins see all participants" ON public.participants FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN (0, 1))
 );
 
 -- Funding Sources: Link to participant visibility
@@ -90,7 +88,7 @@ DROP POLICY IF EXISTS "Participants see own funding sources" ON public.funding_s
 CREATE POLICY "Participants see own funding sources" ON public.funding_sources FOR SELECT USING (participant_id = auth.uid());
 DROP POLICY IF EXISTS "Supporters/Admins see all funding sources" ON public.funding_sources;
 CREATE POLICY "Supporters/Admins see all funding sources" ON public.funding_sources FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN (0, 1))
 );
 
 -- Transactions: Link to participant visibility
@@ -98,39 +96,35 @@ DROP POLICY IF EXISTS "Participants see own transactions" ON public.transactions
 CREATE POLICY "Participants see own transactions" ON public.transactions FOR SELECT USING (participant_id = auth.uid());
 DROP POLICY IF EXISTS "Supporters/Admins see all transactions" ON public.transactions;
 CREATE POLICY "Supporters/Admins see all transactions" ON public.transactions FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN (0, 1))
 );
 DROP POLICY IF EXISTS "Participants can insert own transactions" ON public.transactions;
 CREATE POLICY "Participants can insert own transactions" ON public.transactions FOR INSERT WITH CHECK (participant_id = auth.uid());
 DROP POLICY IF EXISTS "Supporters/Admins can manage transactions" ON public.transactions;
 CREATE POLICY "Supporters/Admins can manage transactions" ON public.transactions FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN (0, 1))
 );
-
--- Profiles INSERT policy (needed for trigger and manual insert)
-DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
-CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- File Links Policies
 DROP POLICY IF EXISTS "Participants see own file links" ON public.file_links;
 CREATE POLICY "Participants see own file links" ON public.file_links FOR SELECT USING (participant_id = auth.uid());
 DROP POLICY IF EXISTS "Supporters/Admins can manage file links" ON public.file_links;
 CREATE POLICY "Supporters/Admins can manage file links" ON public.file_links FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN (0, 1))
 );
 
--- ============================================================
--- Profile Auto-Creation Trigger
--- Google 로그인 시 profiles 테이블에 자동으로 row를 생성합니다.
--- ============================================================
+-- Profiles INSERT policy
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
+-- Profile Auto-Creation Trigger
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.profiles (id, role, name, created_at)
   VALUES (
     NEW.id,
-    'participant',  -- 기본 역할: 당사자 (관리자가 수동으로 변경)
+    2,  -- Default: participant
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
     NOW()
   )
@@ -139,10 +133,55 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Drop existing trigger if any
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-
--- Create trigger
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Balance Calculation Trigger
+CREATE OR REPLACE FUNCTION public.calculate_funding_source_balance()
+RETURNS TRIGGER AS $$
+DECLARE
+  target_funding_source_id UUID;
+  total_spent_month NUMERIC;
+  total_spent_year NUMERIC;
+  default_monthly_budget NUMERIC;
+  default_yearly_budget NUMERIC;
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    target_funding_source_id := OLD.funding_source_id;
+  ELSE
+    target_funding_source_id := NEW.funding_source_id;
+  END IF;
+
+  SELECT monthly_budget, yearly_budget INTO default_monthly_budget, default_yearly_budget
+  FROM public.funding_sources
+  WHERE id = target_funding_source_id;
+
+  SELECT COALESCE(SUM(amount), 0) INTO total_spent_month
+  FROM public.transactions
+  WHERE funding_source_id = target_funding_source_id
+    AND status = 'confirmed'
+    AND date_trunc('month', date) = date_trunc('month', CURRENT_DATE);
+
+  SELECT COALESCE(SUM(amount), 0) INTO total_spent_year
+  FROM public.transactions
+  WHERE funding_source_id = target_funding_source_id
+    AND status = 'confirmed'
+    AND date_trunc('year', date) = date_trunc('year', CURRENT_DATE);
+
+  UPDATE public.funding_sources
+  SET 
+    current_month_balance = default_monthly_budget - total_spent_month,
+    current_year_balance = default_yearly_budget - total_spent_year
+  WHERE id = target_funding_source_id;
+
+  IF TG_OP = 'DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_calculate_balance ON public.transactions;
+CREATE TRIGGER trigger_calculate_balance
+AFTER INSERT OR UPDATE OR DELETE ON public.transactions
+FOR EACH ROW
+EXECUTE FUNCTION public.calculate_funding_source_balance();

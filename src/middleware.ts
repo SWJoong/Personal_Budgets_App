@@ -31,6 +31,20 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Verify email domain constraint (MVP requirement: @nowondaycare.org)
+  const isAllowedDomain = user?.email?.endsWith('@nowondaycare.org')
+  
+  if (user && !isAllowedDomain) {
+    // Force sign out the unauthorized session
+    await supabase.auth.signOut()
+    
+    // Redirect to login with error
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('error', 'domain_unauthorized')
+    return NextResponse.redirect(url)
+  }
+
   // Protect all routes except /login and /auth/*
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 
                       request.nextUrl.pathname.startsWith('/auth')
@@ -43,7 +57,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user is logged in and tries to access login page, redirect to home
-  if (user && request.nextUrl.pathname === '/login') {
+  if (user && request.nextUrl.pathname.startsWith('/login')) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
     return NextResponse.redirect(url)
