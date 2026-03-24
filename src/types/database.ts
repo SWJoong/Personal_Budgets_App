@@ -158,6 +158,7 @@ export interface Database {
         Row: {
           id: string
           participant_id: string
+          title: string
           url: string
           file_type: '계획서' | '평가서' | '참고자료' | '증빙자료' | '기타'
           created_at: string
@@ -165,6 +166,7 @@ export interface Database {
         Insert: {
           id?: string
           participant_id: string
+          title: string
           url: string
           file_type: '계획서' | '평가서' | '참고자료' | '증빙자료' | '기타'
           created_at?: string
@@ -172,11 +174,103 @@ export interface Database {
         Update: {
           id?: string
           participant_id?: string
+          title?: string
           url?: string
           file_type?: '계획서' | '평가서' | '참고자료' | '증빙자료' | '기타'
           created_at?: string
         }
       }
+      plans: {
+        Row: {
+          id: string
+          participant_id: string
+          activity_name: string
+          date: string
+          options: Json
+          selected_option_index: number | null
+          creator_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          participant_id: string
+          activity_name: string
+          date?: string
+          options: Json
+          selected_option_index?: number | null
+          creator_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          participant_id?: string
+          activity_name?: string
+          date?: string
+          options?: Json
+          selected_option_index?: number | null
+          creator_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      evaluations: {
+        Row: {
+          id: string
+          participant_id: string
+          month: string
+          tried: string | null
+          learned: string | null
+          pleased: string | null
+          concerned: string | null
+          next_step: string | null
+          ai_analysis: Json | null
+          easy_summary: string | null
+          creator_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          participant_id: string
+          month: string
+          tried?: string | null
+          learned?: string | null
+          pleased?: string | null
+          concerned?: string | null
+          next_step?: string | null
+          ai_analysis?: Json | null
+          easy_summary?: string | null
+          creator_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          participant_id?: string
+          month?: string
+          tried?: string | null
+          learned?: string | null
+          pleased?: string | null
+          concerned?: string | null
+          next_step?: string | null
+          ai_analysis?: Json | null
+          easy_summary?: string | null
+          creator_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }
+
+// Convenience type aliases
+export type Profile = Database['public']['Tables']['profiles']['Row']
+export type Participant = Database['public']['Tables']['participants']['Row']
+export type FundingSource = Database['public']['Tables']['funding_sources']['Row']
+export type Transaction = Database['public']['Tables']['transactions']['Row']
+export type FileLink = Database['public']['Tables']['file_links']['Row']
+export type Plan = Database['public']['Tables']['plans']['Row']
+export type Evaluation = Database['public']['Tables']['evaluations']['Row']

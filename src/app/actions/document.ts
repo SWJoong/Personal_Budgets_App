@@ -2,12 +2,12 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { Database } from '@/types/database'
+
 import { revalidatePath } from 'next/cache'
 
 export async function uploadDocument(formData: FormData) {
   const cookieStore = await cookies()
-  const supabase = createServerClient<Database>(
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -25,7 +25,7 @@ export async function uploadDocument(formData: FormData) {
 
   const participantId = formData.get('participant_id') as string
   const title = formData.get('title') as string
-  const fileType = formData.get('file_type') as any
+  const fileType = formData.get('file_type') as string
   const file = formData.get('file') as File | null
   const externalUrl = formData.get('url') as string // 구글 드라이브 등 외부 링크용
 
@@ -67,7 +67,7 @@ export async function uploadDocument(formData: FormData) {
 
 export async function deleteDocument(id: string) {
   const cookieStore = await cookies()
-  const supabase = createServerClient<Database>(
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {

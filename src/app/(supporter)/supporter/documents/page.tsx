@@ -46,8 +46,8 @@ export default async function SupporterDocumentsPage() {
 
       <main className="max-w-6xl flex flex-col gap-8">
         <DocumentManagerClient 
-          participants={participants || []} 
-          initialDocuments={documents || []} 
+          participants={(participants || []) as any} 
+          initialDocuments={(documents || []) as any} 
         />
       </main>
     </div>

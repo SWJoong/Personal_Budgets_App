@@ -208,7 +208,7 @@ export default function HomeDashboard({
               
               return (
                 <div key={fs.id} className={`p-6 rounded-3xl ring-1 shadow-sm transition-all ${
-                  fsVisual.status === 'danger' ? 'bg-red-50 ring-red-200' :
+                  fsVisual.status === 'critical' ? 'bg-red-50 ring-red-200' :
                   fsVisual.status === 'warning' ? 'bg-orange-50 ring-orange-200' :
                   'bg-white ring-zinc-200'
                 }`}>
@@ -216,7 +216,7 @@ export default function HomeDashboard({
                     <div>
                       <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{fs.name}</p>
                       <p className={`text-3xl font-black mt-1 ${
-                        fsVisual.status === 'danger' ? 'text-red-600' :
+                        fsVisual.status === 'critical' ? 'text-red-600' :
                         fsVisual.status === 'warning' ? 'text-orange-600' :
                         'text-zinc-900'
                       }`}>{formatCurrency(Number(fs.current_month_balance))}원</p>
@@ -234,7 +234,7 @@ export default function HomeDashboard({
                   <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
                     <div 
                       className={`h-full rounded-full transition-all ${
-                        fsVisual.status === 'danger' ? 'bg-red-500' :
+                        fsVisual.status === 'critical' ? 'bg-red-500' :
                         fsVisual.status === 'warning' ? 'bg-orange-500' :
                         'bg-zinc-900'
                       }`}
@@ -243,7 +243,7 @@ export default function HomeDashboard({
                   </div>
 
                   <p className={`mt-3 text-sm font-medium ${
-                    fsVisual.status === 'danger' ? 'text-red-500' :
+                    fsVisual.status === 'critical' ? 'text-red-500' :
                     fsVisual.status === 'warning' ? 'text-orange-500' :
                     'text-zinc-500'
                   }`}>{fsVisual.message}</p>

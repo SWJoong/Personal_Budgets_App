@@ -34,7 +34,7 @@ export default async function EvaluationsPage() {
 
   // 현재 월 기준 3개월치 리스트 생성
   const now = new Date()
-  const months = []
+  const months: { value: string; display: string }[] = []
   for (let i = 0; i < 3; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
     const monthStr = d.toISOString().split('T')[0] // YYYY-MM-01
