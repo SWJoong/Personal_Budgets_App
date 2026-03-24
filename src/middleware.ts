@@ -31,8 +31,8 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Verify email domain constraint (MVP requirement: @nowondaycare.org)
-  const isAllowedDomain = user?.email?.endsWith('@nowondaycare.org')
+  // Verify email domain constraint (Disabled: Allow all domains)
+  const isAllowedDomain = true
   
   if (user && !isAllowedDomain) {
     // Force sign out the unauthorized session

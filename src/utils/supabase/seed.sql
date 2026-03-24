@@ -10,13 +10,16 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- 외래키(Foreign Key) 제약 조건을 준수하기 위해 자식 테이블부터 순차적으로 삭제합니다.
 DELETE FROM public.transactions;
 DELETE FROM public.file_links;
+DELETE FROM public.evaluations;
+DELETE FROM public.plans;
 DELETE FROM public.funding_sources;
 DELETE FROM public.participants;
+DELETE FROM public.profiles;
 
+-- Auth 사용자는 관리자가 필요에 따라 직접 관리하는 것을 권장합니다.
+-- 여기서는 기존 테스트 계정들만 선택적으로 삭제합니다.
 DELETE FROM auth.users 
-WHERE email = 'cheese0318@nowondaycare.org' 
-   OR email = 'supporter1@nowondaycare.org'
-   OR email LIKE 'participant%@nowondaycare.org';
+WHERE email LIKE '%@nowondaycare.org';
 
 -- ============================================================
 -- 2. Auth Users (로그인 계정) 대량 생성

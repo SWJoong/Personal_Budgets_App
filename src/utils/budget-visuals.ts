@@ -2,13 +2,15 @@
  * 예산 상태에 따른 시각적 정보를 처리하는 유틸리티
  */
 
-export type BudgetStatus = 'positive' | 'warning' | 'danger' | 'stable';
+export type BudgetStatus = 'luxury' | 'stable' | 'observing' | 'shrinking' | 'critical' | 'empty' | 'warning';
 
 export interface VisualInfo {
   status: BudgetStatus;
   message: string;
   icon: string;
   percentage: number;
+  themeColor: string;
+  bgClass: string;
 }
 
 /**
@@ -28,36 +30,58 @@ export function getBudgetVisualInfo(
   let status: BudgetStatus = 'stable';
   let message = '';
   let icon = '💰';
+  let themeColor = 'zinc';
+  let bgClass = 'bg-white';
 
-  // 1% 단위 시각화 로직 기반 상태 결정
-  if (percentage <= 10) {
-    status = 'danger';
-    message = '모든 예산을 사용했습니다. 다음 달 계획을 기다려주세요.';
-    icon = '🪹'; // 텅 빈 그릇/주머니 느낌
-  } else if (percentage <= 20) {
-    status = 'danger';
-    message = '남은 돈이 아주 적습니다. 꼭 필요한 곳에만 사용하세요.';
-    icon = '👛'; // 작은 지갑
-  } else if (percentage < daysPercentage - 10) {
-    // 날짜가 많이 남았는데 예산은 그보다 훨씬 빨리 줄어들고 있는 경우
-    status = 'warning';
-    message = '예산을 조금 빠르게 쓰고 있습니다. 조금만 천천히 써볼까요?';
-    icon = '💸';
-  } else if (percentage >= 81) {
-    status = 'positive';
+  // 1% 단위 시각화 로직 (구현 계획서 7.1 기준)
+  if (percentage >= 81) {
+    status = 'luxury';
     message = '예산이 넉넉합니다. 계획하신 대로 즐겁게 사용하세요!';
-    icon = '💰';
+    icon = '💰'; // 꽉 찬 돈주머니
+    themeColor = 'green';
+    bgClass = 'bg-green-50';
   } else if (percentage >= 61) {
     status = 'stable';
-    message = '안정적으로 예산을 사용하고 있습니다. 좋아요!';
-    icon = '👛';
+    message = '예산이 안정적입니다. 잘하고 있어요!';
+    icon = '👛'; // 지갑
+    themeColor = 'blue';
+    bgClass = 'bg-blue-50';
+  } else if (percentage >= 41) {
+    status = 'observing';
+    message = '예산을 살펴보며 쓰고 있습니다. 지금처럼만 해주세요.';
+    icon = '🪙'; // 동전
+    themeColor = 'indigo';
+    bgClass = 'bg-zinc-50';
+  } else if (percentage >= 21) {
+    status = 'shrinking';
+    message = '남은 돈이 줄고 있습니다. 다음 활동을 신중히 골라볼까요?';
+    icon = '💸'; // 날아가는 돈
+    themeColor = 'orange';
+    bgClass = 'bg-orange-50';
+  } else if (percentage >= 11) {
+    status = 'critical';
+    message = '남은 돈이 적습니다. 꼭 필요한 곳에만 사용하는 것이 좋아요.';
+    icon = '⚠️'; // 경고
+    themeColor = 'red';
+    bgClass = 'bg-red-50';
   } else {
-    status = 'stable';
-    message = '지금 속도로 쓰면 계획에 맞게 사용할 수 있습니다.';
-    icon = '👛';
+    status = 'empty';
+    message = '이번 달 예산을 모두 사용했습니다. 다음 달을 기다려주세요.';
+    icon = '🪹'; // 빈 그릇
+    themeColor = 'red';
+    bgClass = 'bg-red-100';
   }
 
-  return { status, message, icon, percentage };
+  // 특수 상태: 잔액 비율이 남은 날짜 비율보다 15% 이상 낮을 때 (너무 빨리 쓰고 있을 때)
+  if (percentage > 10 && percentage < daysPercentage - 15) {
+    message = '예산을 조금 빠르게 쓰고 있습니다. 조금만 천천히 써볼까요?';
+    icon = '🏃';
+    status = 'warning';
+    themeColor = 'orange';
+    bgClass = 'bg-orange-50';
+  }
+
+  return { status, message, icon, percentage, themeColor, bgClass };
 }
 
 /**

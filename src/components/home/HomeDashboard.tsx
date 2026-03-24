@@ -94,57 +94,75 @@ export default function HomeDashboard({
 
         {viewMode === 'total' ? (
           <>
-            {/* 통합 잔액 카드 */}
-            <section className={`flex flex-col gap-4 rounded-[2.5rem] p-8 shadow-sm ring-1 relative overflow-hidden transition-all
-              ${visual.status === 'danger' ? 'bg-red-50 ring-red-200' : 
-                visual.status === 'warning' ? 'bg-orange-50 ring-orange-200' : 
-                'bg-white ring-zinc-200'}
+            {/* 통합 잔액 카드 - 시각화 강화 */}
+            <section className={`flex flex-col gap-4 rounded-[3rem] p-10 shadow-xl ring-1 relative overflow-hidden transition-all duration-500
+              ${visual.bgClass} ${visual.status === 'luxury' ? 'ring-green-200' : 
+                visual.status === 'stable' ? 'ring-blue-200' : 
+                visual.status === 'warning' ? 'ring-orange-200' : 
+                visual.status === 'critical' || visual.status === 'empty' ? 'ring-red-200' : 
+                'ring-zinc-200'}
             `}>
               <div className="flex justify-between items-start z-10 relative">
-                <h2 className="text-base font-bold text-zinc-400">이번 달 남은 돈</h2>
-                <span className="px-2 py-1 rounded-lg bg-zinc-100 text-[9px] font-black text-zinc-400 tracking-wider">TOTAL</span>
+                <h2 className={`text-sm font-black uppercase tracking-[0.2em] ${
+                  visual.themeColor === 'green' ? 'text-green-600' :
+                  visual.themeColor === 'blue' ? 'text-blue-600' :
+                  visual.themeColor === 'orange' ? 'text-orange-600' :
+                  visual.themeColor === 'red' ? 'text-red-600' :
+                  'text-zinc-400'
+                }`}>이번 달 남은 돈</h2>
+                <span className="px-2 py-1 rounded-lg bg-black/5 text-[9px] font-black text-zinc-500 tracking-wider">통합 예산</span>
               </div>
               
-              <div className="flex items-end gap-2 z-10 relative">
-                <span className={`text-5xl sm:text-6xl font-black tracking-tighter ${
-                  visual.status === 'danger' ? 'text-red-600' : 
-                  visual.status === 'warning' ? 'text-orange-600' : 
+              <div className="flex items-end gap-2 z-10 relative my-2">
+                <span className={`text-6xl sm:text-7xl font-black tracking-tighter transition-colors duration-500 ${
+                  visual.themeColor === 'green' ? 'text-green-700' :
+                  visual.themeColor === 'blue' ? 'text-blue-700' :
+                  visual.themeColor === 'orange' ? 'text-orange-700' :
+                  visual.themeColor === 'red' ? 'text-red-700' :
                   'text-zinc-900'
                 }`}>
                   {formatCurrency(totalMonthBalance)}
                 </span>
-                <span className="text-2xl text-zinc-400 font-black mb-1">원</span>
+                <span className="text-2xl text-zinc-400 font-black mb-2">원</span>
               </div>
               
-              {/* 상태 메시지 */}
-              <div className={`mt-1 px-5 py-4 rounded-2xl z-10 relative border ${
-                visual.status === 'danger' ? 'bg-red-100/50 border-red-200 text-red-700' : 
-                visual.status === 'warning' ? 'bg-orange-100/50 border-orange-200 text-orange-700' : 
+              {/* 상태 메시지 및 돈주머니 이미지 대용 아이콘 */}
+              <div className={`mt-2 px-6 py-5 rounded-[2rem] z-10 relative border-2 shadow-inner transition-all duration-500 ${
+                visual.themeColor === 'green' ? 'bg-white/80 border-green-100 text-green-800' : 
+                visual.themeColor === 'blue' ? 'bg-white/80 border-blue-100 text-blue-800' : 
+                visual.themeColor === 'orange' ? 'bg-white/80 border-orange-100 text-orange-800' : 
+                visual.themeColor === 'red' ? 'bg-white/80 border-red-100 text-red-800' : 
                 'bg-zinc-50 border-zinc-200 text-zinc-600'
               }`}>
-                <p className="text-base font-bold leading-snug break-keep">{visual.message}</p>
+                <div className="flex items-center gap-4">
+                  <span className="text-4xl animate-bounce-slow">{visual.icon}</span>
+                  <p className="text-lg font-black leading-tight break-keep">{visual.message}</p>
+                </div>
               </div>
 
-              {/* 속도 안내 */}
-              <div className={`px-4 py-3 rounded-xl z-10 relative text-sm font-medium ${
-                visual.status === 'danger' ? 'text-red-500' :
-                visual.status === 'warning' ? 'text-orange-500' :
-                'text-zinc-500'
-              }`}>
-                🕐 {speedMessage}
+              {/* 속도 안내 - 디자인 슬림화 */}
+              <div className="px-4 py-1 z-10 relative text-xs font-bold text-zinc-400 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 animate-pulse"></span>
+                {speedMessage}
               </div>
               
-              {/* 게이지 */}
-              <div className="flex flex-col gap-2 z-10 relative">
-                <div className="flex justify-between text-[11px] font-black text-zinc-300 uppercase tracking-widest">
+              {/* 게이지 - 디자인 강화 */}
+              <div className="flex flex-col gap-3 z-10 relative mt-4">
+                <div className="flex justify-between text-[11px] font-black text-zinc-400 uppercase tracking-widest px-1">
                   <span>{remainingDays}일 남음</span>
-                  <span>{visual.percentage}%</span>
+                  <span className={
+                    visual.themeColor === 'green' ? 'text-green-600' :
+                    visual.themeColor === 'red' ? 'text-red-600' :
+                    'text-zinc-500'
+                  }>{visual.percentage}%</span>
                 </div>
-                <div className="h-5 w-full bg-zinc-100 rounded-full overflow-hidden p-1">
+                <div className="h-6 w-full bg-black/5 rounded-full overflow-hidden p-1.5 shadow-inner">
                   <div 
-                    className={`h-full rounded-full transition-all duration-1000 ${
-                      visual.status === 'danger' ? 'bg-red-500' : 
-                      visual.status === 'warning' ? 'bg-orange-500' : 
+                    className={`h-full rounded-full transition-all duration-1000 shadow-sm ${
+                      visual.themeColor === 'green' ? 'bg-green-500' : 
+                      visual.themeColor === 'blue' ? 'bg-blue-500' : 
+                      visual.themeColor === 'orange' ? 'bg-orange-500' : 
+                      visual.themeColor === 'red' ? 'bg-red-500' : 
                       'bg-zinc-900'
                     }`}
                     style={{ width: `${visual.percentage}%` }}
@@ -152,22 +170,28 @@ export default function HomeDashboard({
                 </div>
               </div>
               
-              <div className="absolute -right-6 -bottom-6 text-9xl opacity-10 rotate-12">
+              {/* 배경 장식 큰 아이콘 */}
+              <div className="absolute -right-10 -bottom-10 text-[12rem] opacity-[0.03] rotate-12 pointer-events-none select-none">
                 {visual.icon}
               </div>
             </section>
 
-            {/* 올해 예산 */}
-            <section className="p-5 rounded-2xl bg-zinc-50 border border-zinc-200 flex justify-between items-center">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">올해 전체 잔액</span>
-                <span className="text-xl font-black text-zinc-800">{formatCurrency(totalYearBalance)}원</span>
+            {/* 올해 예산 - 카드 스타일 조화 */}
+            <section className="p-6 rounded-[2rem] bg-white ring-1 ring-zinc-100 flex justify-between items-center shadow-sm">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.2em]">올해 전체 잔액</span>
+                <span className="text-2xl font-black text-zinc-800">{formatCurrency(totalYearBalance)}원</span>
               </div>
-              <div className="flex flex-col items-end gap-0.5">
-                <span className="text-[10px] text-zinc-400 font-medium">전체 {formatCurrency(totalYearlyBudget)}원</span>
-                <span className="text-xs font-bold text-zinc-500">
-                  {totalYearlyBudget > 0 ? Math.round((totalYearBalance / totalYearlyBudget) * 100) : 0}% 남음
-                </span>
+              <div className="flex flex-col items-end gap-1 text-right">
+                <span className="text-[10px] text-zinc-400 font-bold uppercase">YEARLY TOTAL</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-16 h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-zinc-400 rounded-full" style={{ width: `${totalYearlyBudget > 0 ? (totalYearBalance / totalYearlyBudget) * 100 : 0}%` }} />
+                  </div>
+                  <span className="text-xs font-black text-zinc-500">
+                    {totalYearlyBudget > 0 ? Math.round((totalYearBalance / totalYearlyBudget) * 100) : 0}%
+                  </span>
+                </div>
               </div>
             </section>
           </>

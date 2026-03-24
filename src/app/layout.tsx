@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AccessibilityProvider } from "@/hooks/useAccessibility";
 
 export const metadata: Metadata = {
   title: "아름드리꿈터 개인예산 관리",
@@ -22,7 +23,9 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased text-gray-900 bg-gray-50">
-        {children}
+        <AccessibilityProvider>
+          {children}
+        </AccessibilityProvider>
       </body>
     </html>
   );

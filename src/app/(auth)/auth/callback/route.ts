@@ -13,14 +13,7 @@ export async function GET(request: Request) {
     const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error && user) {
-      // 도메인 제한 로직: @nowondaycare.org 만 허용 (MVP)
-      const email = user.email || '';
-      if (!email.endsWith('@nowondaycare.org')) {
-        // 도메인이 다르면 강제 로그아웃 처리 후 리다이렉트
-        await supabase.auth.signOut();
-        return NextResponse.redirect(`${origin}/login?error=InvalidDomain`)
-      }
-
+      // 도메인 제한 로직 제거
       const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
       const isLocalEnv = process.env.NODE_ENV === 'development'
       if (isLocalEnv) {

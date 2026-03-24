@@ -13,7 +13,7 @@ function LoginForm() {
   const error = searchParams.get("error");
   let errorMessage = "";
   if (error === "InvalidDomain") {
-    errorMessage = "@nowondaycare.org 계정으로만 로그인할 수 있습니다.";
+    errorMessage = "허용되지 않은 계정입니다. 관리자에게 문의하세요.";
   } else if (error) {
     errorMessage = "로그인에 실패했습니다. 다시 시도해 주세요.";
   }

@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS public.transactions (
 CREATE TABLE IF NOT EXISTS public.file_links (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   participant_id UUID REFERENCES public.participants(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
   url TEXT NOT NULL,
   file_type TEXT NOT NULL CHECK (file_type IN ('계획서', '평가서', '참고자료', '증빙자료', '기타')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
@@ -94,6 +95,35 @@ CREATE POLICY "Supporters/Admins can manage plans" ON public.plans FOR ALL USING
 );
 DROP POLICY IF EXISTS "Participants can update own plans" ON public.plans;
 CREATE POLICY "Participants can update own plans" ON public.plans FOR UPDATE USING (participant_id = auth.uid());
+
+-- 7. Evaluations Table (Epic 7: PCP 4+1 Evaluation)
+CREATE TABLE IF NOT EXISTS public.evaluations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id UUID REFERENCES public.participants(id) ON DELETE CASCADE,
+  month DATE NOT NULL, -- The month being evaluated (e.g., 2026-03-01)
+  tried TEXT,          -- What have we tried?
+  learned TEXT,        -- What have we learned?
+  pleased TEXT,        -- What are we pleased about?
+  concerned TEXT,      -- What are we concerned about?
+  next_step TEXT,      -- +1: What are we going to do next?
+  ai_analysis JSONB,   -- AI analysis results
+  easy_summary TEXT,   -- Easy summary for the participant
+  creator_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  UNIQUE(participant_id, month)
+);
+
+-- Enable RLS
+ALTER TABLE public.evaluations ENABLE ROW LEVEL SECURITY;
+
+-- Evaluations: Participant sees own, Supporter/Admin see all
+DROP POLICY IF EXISTS "Participants see own evaluations" ON public.evaluations;
+CREATE POLICY "Participants see own evaluations" ON public.evaluations FOR SELECT USING (participant_id = auth.uid());
+DROP POLICY IF EXISTS "Supporters/Admins can manage evaluations" ON public.evaluations;
+CREATE POLICY "Supporters/Admins can manage evaluations" ON public.evaluations FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'supporter'))
+);
 
 -- Profiles: Anyone authenticated can view, only owner can update
 DROP POLICY IF EXISTS "Profiles viewable by all authenticated users" ON public.profiles;

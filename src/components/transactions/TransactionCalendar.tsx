@@ -9,6 +9,7 @@ interface Transaction {
   amount: number
   activity_name: string
   status: 'pending' | 'confirmed'
+  receipt_image_url?: string | null
 }
 
 interface Props {
@@ -83,26 +84,47 @@ export default function TransactionCalendar({ transactions }: Props) {
             
             const hasConfirmed = dayTxs.some(t => t.status === 'confirmed')
             const hasPending = dayTxs.some(t => t.status === 'pending')
+            
+            // 첫 번째 썸네일 이미지 찾기
+            const thumbnailTx = dayTxs.find(t => t.receipt_image_url)
+            const thumbnailUrl = thumbnailTx?.receipt_image_url
 
             return (
               <button
                 key={d}
                 onClick={() => setSelectedDate(dateStr)}
                 className={`
-                  relative aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl transition-all
-                  ${isSelected ? 'bg-zinc-900 text-white shadow-md scale-105 z-10' : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-700 active:scale-95'}
+                  relative aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl transition-all overflow-hidden
+                  ${isSelected ? 'bg-zinc-900 text-white shadow-md scale-105 z-10 ring-2 ring-zinc-900' : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-700 active:scale-95'}
                   ${isToday && !isSelected ? 'ring-2 ring-primary ring-inset text-primary bg-blue-50/50' : ''}
                 `}
               >
-                <span className={`text-sm ${isToday || isSelected ? 'font-black' : 'font-bold'}`}>{d}</span>
+                {/* 썸네일 배경 처리 */}
+                {thumbnailUrl && !isSelected && (
+                  <div 
+                    className="absolute inset-0 opacity-20 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${thumbnailUrl})` }}
+                  />
+                )}
+
+                <span className={`text-sm z-10 ${isToday || isSelected ? 'font-black' : 'font-bold'}`}>{d}</span>
                 
-                {/* 지출 표시 마커 */}
-                <div className="mt-auto mb-2 flex gap-1 h-2">
-                  {hasConfirmed && (
-                    <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-green-500'}`} />
+                {/* 지출 표시 마커 및 썸네일 아이콘 */}
+                <div className="mt-auto mb-2 flex flex-col items-center gap-1 z-10">
+                  {thumbnailUrl && (
+                    <div className="w-5 h-5 rounded-md overflow-hidden ring-1 ring-white/50 shadow-sm mt-1">
+                      <img src={thumbnailUrl} alt="영수증" className="w-full h-full object-cover" />
+                    </div>
                   )}
-                  {hasPending && (
-                    <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-orange-300' : 'bg-orange-500'}`} />
+                  {!thumbnailUrl && (hasConfirmed || hasPending) && (
+                    <div className="flex gap-1 h-2 mt-2">
+                      {hasConfirmed && (
+                        <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-green-500'}`} />
+                      )}
+                      {hasPending && (
+                        <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-orange-300' : 'bg-orange-500'}`} />
+                      )}
+                    </div>
                   )}
                 </div>
               </button>
@@ -132,13 +154,19 @@ export default function TransactionCalendar({ transactions }: Props) {
 
             {/* 개별 내역 리스트 */}
             {selectedTransactions.map(tx => (
-              <div key={tx.id} className="bg-white rounded-3xl p-5 ring-1 ring-zinc-200 shadow-sm flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black ${
-                    tx.status === 'confirmed' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-500'
-                  }`}>
-                    {tx.status === 'confirmed' ? '✓' : '⏳'}
-                  </div>
+              <div key={tx.id} className="bg-white rounded-3xl p-5 ring-1 ring-zinc-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-4">
+                  {tx.receipt_image_url ? (
+                    <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-sm shrink-0">
+                      <img src={tx.receipt_image_url} alt="영수증" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black shrink-0 ${
+                      tx.status === 'confirmed' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-500'
+                    }`}>
+                      {tx.status === 'confirmed' ? '✓' : '⏳'}
+                    </div>
+                  )}
                   <div className="flex flex-col">
                     <p className="font-bold text-zinc-900 text-lg">{tx.activity_name}</p>
                     <p className={`text-xs font-bold ${tx.status === 'confirmed' ? 'text-green-600' : 'text-orange-500'}`}>
@@ -146,7 +174,7 @@ export default function TransactionCalendar({ transactions }: Props) {
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-left sm:text-right mt-2 sm:mt-0 sm:ml-auto">
                   <p className="font-black text-zinc-900 text-lg">-{formatCurrency(tx.amount)}원</p>
                 </div>
               </div>

@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import type { Profile } from '@/types/database'
 
 export default async function AdminParticipantsPage() {
   const supabase = await createClient()
@@ -31,12 +30,14 @@ export default async function AdminParticipantsPage() {
     `)
     .order('created_at', { ascending: false })
 
-  // 전체 프로필 중 아직 당사자 등록이 안 된 사용자 수
-  const { count: unregisteredCount } = await supabase
+  // 전체 프로필 중 아직 당사자 등록이 안 된 사용자 조회
+  const { data: allParticipantProfiles } = await supabase
     .from('profiles')
-    .select('*', { count: 'exact', head: true })
+    .select('id')
     .eq('role', 'participant')
-    .not('id', 'in', `(${(participants || []).map(p => p.id).join(',') || '00000000-0000-0000-0000-000000000000'})`)
+
+  const existingIds = (participants || []).map(p => p.id)
+  const unregisteredCount = (allParticipantProfiles || []).filter(p => !existingIds.includes(p.id)).length
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
@@ -57,7 +58,7 @@ export default async function AdminParticipantsPage() {
           </div>
           <div className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm">
             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">미등록 사용자</span>
-            <p className="text-3xl font-black text-zinc-900 mt-1">{unregisteredCount || 0}명</p>
+            <p className="text-3xl font-black text-zinc-900 mt-1">{unregisteredCount}</p>
           </div>
         </div>
 
@@ -91,10 +92,9 @@ export default async function AdminParticipantsPage() {
               const percentage = totalBudget > 0 ? Math.round((totalBalance / totalBudget) * 100) : 0
 
               return (
-                <Link 
+                <div 
                   key={p.id} 
-                  href={`/admin/participants/${p.id}`}
-                  className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-400 transition-all shadow-sm group active:scale-[0.98]"
+                  className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -118,8 +118,8 @@ export default async function AdminParticipantsPage() {
                     </div>
                   </div>
                   
-                  {/* 미니 진행 바 */}
-                  <div className="mt-3 h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
+                  {/* 게이지 바 */}
+                  <div className="mt-4 h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
                     <div 
                       className={`h-full rounded-full transition-all ${
                         percentage <= 20 ? 'bg-red-500' : 
@@ -128,7 +128,23 @@ export default async function AdminParticipantsPage() {
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
-                </Link>
+
+                  {/* 액션 버튼 */}
+                  <div className="mt-5 pt-4 border-t border-zinc-50 flex gap-2">
+                    <Link 
+                      href={`/admin/participants/${p.id}`}
+                      className="flex-1 px-3 py-2 rounded-xl bg-zinc-50 text-zinc-600 text-xs font-black text-center hover:bg-zinc-100 transition-all"
+                    >
+                      상세 설정 보기
+                    </Link>
+                    <Link 
+                      href={`/?simulate=${p.id}`}
+                      className="flex-1 px-3 py-2 rounded-xl bg-blue-50 text-blue-600 text-xs font-black text-center hover:bg-blue-100 transition-all"
+                    >
+                      당사자 화면 보기
+                    </Link>
+                  </div>
+                </div>
               )
             })
           )}
