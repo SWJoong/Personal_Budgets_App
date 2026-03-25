@@ -20,6 +20,7 @@ export default function ReceiptUploadForm({
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
+  const [toast, setToast] = useState<{type: 'success' | 'error', message: string} | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   
   // 폼 필드 상태 관리 (자동 입력을 위해)
@@ -59,13 +60,15 @@ export default function ReceiptUploadForm({
     try {
       const result = await createTransaction(formData)
       if (result.success) {
-        alert('영수증이 성공적으로 등록되었습니다! 지원자 선생님이 곧 확인해주실 거예요.')
-        router.push('/')
-        router.refresh()
+        setToast({type: 'success', message: '영수증이 성공적으로 등록되었습니다!'})
+        setTimeout(() => {
+          router.push('/')
+          router.refresh()
+        }, 1500)
       }
     } catch (error) {
       console.error(error)
-      alert('등록 중 오류가 발생했습니다. 다시 시도해 주세요.')
+      setToast({type: 'error', message: '등록 중 오류가 발생했습니다. 다시 시도해 주세요.'})
     } finally {
       setLoading(false)
     }
@@ -73,6 +76,16 @@ export default function ReceiptUploadForm({
 
   return (
     <form action={handleSubmit} className="flex flex-col gap-6">
+      {toast && (
+        <div className={`p-4 rounded-2xl text-sm font-bold animate-fade-in-up ${
+          toast.type === 'success' ? 'bg-green-50 text-green-700 ring-1 ring-green-200' : 'bg-red-50 text-red-700 ring-1 ring-red-200'
+        }`}>
+          <div className="flex justify-between items-center">
+            <span>{toast.message}</span>
+            <button onClick={() => setToast(null)} className="text-lg ml-2" aria-label="알림 닫기">✕</button>
+          </div>
+        </div>
+      )}
       <input type="hidden" name="participant_id" value={participantId} />
       <input type="hidden" name="date" value={date} />
       

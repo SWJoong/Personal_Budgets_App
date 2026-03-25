@@ -39,10 +39,10 @@ function LoginForm() {
   };
 
   return (
-    <div className="flex w-full max-w-sm flex-col gap-6 rounded-3xl bg-card p-8 shadow-xl ring-1 ring-border backdrop-blur-sm animate-fade-in-up">
+    <div className="flex w-full max-w-sm flex-col gap-6 rounded-3xl bg-white p-8 shadow-xl ring-1 ring-zinc-200 animate-fade-in-up">
       {/* Logo / Title area */}
       <div className="flex flex-col items-center gap-3 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-3xl shadow-sm animate-celebrate">
+        <div className="w-20 h-20 rounded-3xl bg-sky-100 flex items-center justify-center text-4xl shadow-sm animate-celebrate">
           💰
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -62,7 +62,7 @@ function LoginForm() {
       <button
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="flex w-full items-center justify-center gap-3 rounded-xl bg-foreground px-4 py-3.5 text-sm font-semibold text-background transition-all hover:bg-foreground/90 hover:shadow-lg disabled:opacity-50 active:scale-[0.98]"
+        className="flex w-full items-center justify-center gap-3 rounded-xl bg-white px-4 py-4 text-sm font-bold text-zinc-800 ring-2 ring-zinc-200 transition-all hover:ring-zinc-400 hover:shadow-lg disabled:opacity-100 active:scale-[0.98]"
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
           <path
@@ -88,18 +88,25 @@ function LoginForm() {
       <div className="text-center text-xs text-muted-foreground">
         @nowondaycare.org 계정만 사용 가능합니다.
       </div>
+
+      <div className="flex flex-col gap-2 mt-2 p-4 rounded-2xl bg-sky-50 text-sm text-sky-700">
+        <p className="font-bold text-sky-800">로그인 방법</p>
+        <p>1. 위 버튼을 누르세요</p>
+        <p>2. Google 계정을 선택하세요</p>
+        <p>3. 자동으로 앱에 들어갑니다</p>
+      </div>
     </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-br from-background via-accent/30 to-background">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50">
       {/* Decorative elements */}
-      <div className="absolute top-20 right-20 text-8xl opacity-5 rotate-12 pointer-events-none select-none animate-float hidden md:block">
+      <div className="absolute top-20 right-20 text-8xl opacity-10 rotate-12 pointer-events-none select-none animate-float hidden md:block">
         💰
       </div>
-      <div className="absolute bottom-20 left-20 text-6xl opacity-5 -rotate-12 pointer-events-none select-none animate-bounce-slow hidden md:block">
+      <div className="absolute bottom-20 left-20 text-6xl opacity-10 -rotate-12 pointer-events-none select-none animate-bounce-slow hidden md:block">
         📊
       </div>
       

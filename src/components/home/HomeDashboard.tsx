@@ -110,7 +110,7 @@ export default function HomeDashboard({
                   visual.themeColor === 'red' ? 'text-red-600' :
                   'text-zinc-400'
                 }`}>이번 달 남은 돈</h2>
-                <span className="px-2 py-1 rounded-lg bg-black/5 text-[9px] font-black text-zinc-500 tracking-wider">통합 예산</span>
+                <span className="px-2 py-1 rounded-lg bg-black/5 text-[11px] font-black text-zinc-500 tracking-wider">통합 예산</span>
               </div>
               
               <div className="flex items-end gap-2 z-10 relative my-2">
@@ -141,14 +141,14 @@ export default function HomeDashboard({
               </div>
 
               {/* 속도 안내 - 디자인 슬림화 */}
-              <div className="px-4 py-1 z-10 relative text-xs font-bold text-zinc-400 flex items-center gap-2">
+              <div className="px-4 py-1 z-10 relative text-sm font-bold text-zinc-500 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 animate-pulse"></span>
                 {speedMessage}
               </div>
               
               {/* 게이지 - 디자인 강화 */}
               <div className="flex flex-col gap-3 z-10 relative mt-4">
-                <div className="flex justify-between text-[11px] font-black text-zinc-400 uppercase tracking-widest px-1">
+                <div className="flex justify-between text-xs font-black text-zinc-400 uppercase tracking-widest px-1">
                   <span>{remainingDays}일 남음</span>
                   <span className={
                     visual.themeColor === 'green' ? 'text-green-600' :
@@ -156,13 +156,13 @@ export default function HomeDashboard({
                     'text-zinc-500'
                   }>{visual.percentage}%</span>
                 </div>
-                <div className="h-6 w-full bg-black/5 rounded-full overflow-hidden p-1.5 shadow-inner">
-                  <div 
+                <div className="h-6 w-full bg-black/5 rounded-full overflow-hidden p-1.5 shadow-inner" role="progressbar" aria-valuenow={visual.percentage} aria-valuemin={0} aria-valuemax={100} aria-label={`예산 잔액 ${visual.percentage}%`}>
+                  <div
                     className={`h-full rounded-full transition-all duration-1000 shadow-sm ${
-                      visual.themeColor === 'green' ? 'bg-green-500' : 
-                      visual.themeColor === 'blue' ? 'bg-blue-500' : 
-                      visual.themeColor === 'orange' ? 'bg-orange-500' : 
-                      visual.themeColor === 'red' ? 'bg-red-500' : 
+                      visual.themeColor === 'green' ? 'bg-green-500' :
+                      visual.themeColor === 'blue' ? 'bg-blue-500' :
+                      visual.themeColor === 'orange' ? 'bg-orange-500' :
+                      visual.themeColor === 'red' ? 'bg-red-500' :
                       'bg-zinc-900'
                     }`}
                     style={{ width: `${visual.percentage}%` }}
@@ -179,13 +179,13 @@ export default function HomeDashboard({
             {/* 올해 예산 - 카드 스타일 조화 */}
             <section className="p-6 rounded-[2rem] bg-white ring-1 ring-zinc-100 flex justify-between items-center shadow-sm">
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.2em]">올해 전체 잔액</span>
+                <span className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em]">올해 전체 잔액</span>
                 <span className="text-2xl font-black text-zinc-800">{formatCurrency(totalYearBalance)}원</span>
               </div>
               <div className="flex flex-col items-end gap-1 text-right">
-                <span className="text-[10px] text-zinc-400 font-bold uppercase">YEARLY TOTAL</span>
+                <span className="text-xs text-zinc-400 font-bold uppercase">YEARLY TOTAL</span>
                 <div className="flex items-center gap-2">
-                  <div className="w-16 h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+                  <div className="w-16 h-1.5 bg-zinc-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow={totalYearlyBudget > 0 ? Math.round((totalYearBalance / totalYearlyBudget) * 100) : 0} aria-valuemin={0} aria-valuemax={100} aria-label={`연간 예산 잔액 ${totalYearlyBudget > 0 ? Math.round((totalYearBalance / totalYearlyBudget) * 100) : 0}%`}>
                     <div className="h-full bg-zinc-400 rounded-full" style={{ width: `${totalYearlyBudget > 0 ? (totalYearBalance / totalYearlyBudget) * 100 : 0}%` }} />
                   </div>
                   <span className="text-xs font-black text-zinc-500">
@@ -222,7 +222,7 @@ export default function HomeDashboard({
                       }`}>{formatCurrency(Number(fs.current_month_balance))}원</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] text-zinc-400 font-medium">월 {formatCurrency(Number(fs.monthly_budget))}원</p>
+                      <p className="text-xs text-zinc-400 font-medium">월 {formatCurrency(Number(fs.monthly_budget))}원</p>
                       <p className={`text-lg font-black ${
                         fsPercentage <= 20 ? 'text-red-600' :
                         fsPercentage <= 40 ? 'text-orange-600' :
@@ -265,12 +265,12 @@ export default function HomeDashboard({
             <Link href="/receipt" className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-900 hover:bg-zinc-50 transition-all shadow-sm active:scale-95">
               <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">📸</span>
               <span className="text-base font-black text-zinc-800">영수증</span>
-              <span className="text-[10px] text-zinc-400 mt-0.5 font-bold">사진 찍기</span>
+              <span className="text-xs text-zinc-400 mt-0.5 font-bold">사진 찍기</span>
             </Link>
             <Link href="/plan" className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-900 hover:bg-zinc-50 transition-all shadow-sm active:scale-95">
               <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">🤔</span>
               <span className="text-base font-black text-zinc-800">계획</span>
-              <span className="text-[10px] text-zinc-400 mt-0.5 font-bold">미리보기</span>
+              <span className="text-xs text-zinc-400 mt-0.5 font-bold">미리보기</span>
             </Link>
           </div>
         </section>
@@ -292,15 +292,15 @@ export default function HomeDashboard({
             recentTransactions.map((tx: any) => (
               <div key={tx.id} className="p-4 rounded-xl bg-white ring-1 ring-zinc-200 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${tx.status === 'confirmed' ? 'bg-green-500' : 'bg-orange-400'}`} />
+                  <div className={`flex items-center gap-1.5`}><div className={`w-2 h-2 rounded-full ${tx.status === 'confirmed' ? 'bg-green-500' : 'bg-orange-400'}`} /><span className="text-xs font-bold text-zinc-500">{tx.status === 'confirmed' ? '✓' : '⏳'}</span></div>
                   <div>
                     <p className="font-bold text-zinc-800 text-sm">{tx.activity_name}</p>
-                    <p className="text-[11px] text-zinc-400">{tx.date} · {tx.category || '미분류'}</p>
+                    <p className="text-xs text-zinc-400">{tx.date} · {tx.category || '미분류'}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-zinc-900 text-sm">-{formatCurrency(tx.amount)}원</p>
-                  <span className={`text-[10px] font-bold ${
+                  <span className={`text-xs font-bold ${
                     tx.status === 'confirmed' ? 'text-green-600' : 'text-orange-500'
                   }`}>
                     {tx.status === 'confirmed' ? '확정' : '임시'}

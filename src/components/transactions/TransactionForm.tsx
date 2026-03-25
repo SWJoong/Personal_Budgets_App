@@ -39,32 +39,32 @@ export default function TransactionForm({
   ]
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 max-w-2xl mx-auto space-y-6">
+    <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm ring-1 ring-zinc-200 max-w-2xl mx-auto space-y-6">
       
-      {error && <div className="p-4 bg-red-50 text-red-600 rounded-md text-sm">{error}</div>}
+      {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-medium ring-1 ring-red-100">{error}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Date */}
         <div className="space-y-2">
-          <label htmlFor="date" className="block text-sm font-medium text-gray-700">활동/결제 일자 *</label>
+          <label htmlFor="date" className="text-sm font-bold text-zinc-500 ml-1">활동/결제 일자 *</label>
           <input 
             type="date" 
             id="date" 
             name="date" 
             required 
             defaultValue={new Date().toISOString().split('T')[0]}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all" 
           />
         </div>
 
         {/* Funding Source */}
         <div className="space-y-2">
-          <label htmlFor="funding_source_id" className="block text-sm font-medium text-gray-700">결제 수단 (재원) *</label>
+          <label htmlFor="funding_source_id" className="text-sm font-bold text-zinc-500 ml-1">결제 수단 (재원) *</label>
           <select 
             id="funding_source_id" 
             name="funding_source_id" 
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all"
           >
             <option value="">선택해주세요</option>
             {fundingSources.map(fs => (
@@ -75,7 +75,7 @@ export default function TransactionForm({
 
         {/* Amount */}
         <div className="space-y-2">
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700">결제 금액 *</label>
+          <label htmlFor="amount" className="text-sm font-bold text-zinc-500 ml-1">결제 금액 *</label>
           <input 
             type="number" 
             id="amount" 
@@ -83,19 +83,19 @@ export default function TransactionForm({
             min="0"
             required 
             placeholder="예: 15000"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all" 
           />
         </div>
 
         {/* Type (Expense/Income) */}
         <div className="space-y-2">
-          <label htmlFor="is_expense" className="block text-sm font-medium text-gray-700">구분 *</label>
+          <label htmlFor="is_expense" className="text-sm font-bold text-zinc-500 ml-1">구분 *</label>
           <select 
             id="is_expense" 
             name="is_expense" 
             required
             defaultValue="true"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all"
           >
             <option value="true">지출 (잔액 차감)</option>
             <option value="false">수입 (잔액 증가)</option>
@@ -104,25 +104,25 @@ export default function TransactionForm({
 
         {/* Description */}
         <div className="space-y-2 md:col-span-2">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">활동명 (품목명) *</label>
+          <label htmlFor="description" className="text-sm font-bold text-zinc-500 ml-1">활동명 (품목명) *</label>
           <input 
             type="text" 
             id="description" 
             name="description" 
             required 
             placeholder="예: 이마트 간식 구매"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all" 
           />
         </div>
 
         {/* Category */}
         <div className="space-y-2">
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">분류 (카테고리) *</label>
+          <label htmlFor="category" className="text-sm font-bold text-zinc-500 ml-1">분류 (카테고리) *</label>
           <select 
             id="category" 
             name="category" 
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all"
           >
             <option value="">선택해주세요</option>
             {categories.map(cat => (
@@ -133,13 +133,13 @@ export default function TransactionForm({
 
         {/* Status */}
         <div className="space-y-2">
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700">등록 상태 *</label>
+          <label htmlFor="status" className="text-sm font-bold text-zinc-500 ml-1">등록 상태 *</label>
           <select 
             id="status" 
             name="status" 
             required
             defaultValue="pending"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all"
           >
             <option value="pending">임시저장 (잔액 미변경)</option>
             <option value="confirmed">최종 확정 (잔액 즉시 차감)</option>
@@ -148,13 +148,13 @@ export default function TransactionForm({
 
         {/* Memo */}
         <div className="space-y-2 md:col-span-2">
-          <label htmlFor="memo" className="block text-sm font-medium text-gray-700">추가 메모 (선택)</label>
+          <label htmlFor="memo" className="text-sm font-bold text-zinc-500 ml-1">추가 메모 (선택)</label>
           <textarea 
             id="memo" 
             name="memo" 
             rows={3}
             placeholder="영수증 번호나 특이사항을 적어주세요"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all" 
           />
         </div>
       </div>
@@ -163,14 +163,14 @@ export default function TransactionForm({
         <button 
           type="button" 
           onClick={() => router.back()}
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none"
+          className="px-6 py-3 border-2 border-zinc-200 text-zinc-600 rounded-xl font-bold hover:bg-zinc-50 transition-all"
           disabled={loading}
         >
           취소
         </button>
         <button 
           type="submit" 
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none disabled:bg-blue-400"
+          className="px-6 py-3 bg-zinc-900 text-white rounded-xl font-bold hover:bg-zinc-800 transition-all active:scale-95 disabled:bg-zinc-300"
           disabled={loading}
         >
           {loading ? '저장 중...' : '기록 저장'}
