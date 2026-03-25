@@ -188,7 +188,7 @@ export default function InteractivePouchSection({
                       background: day.total > 0
                         ? isToday ? colors.fill : `${colors.fill}88`
                         : '#f4f4f5',
-                      '--tw-ring-color': colors.fill,
+                      
                     }}
                   />
                   <span className={`text-[10px] font-bold ${
