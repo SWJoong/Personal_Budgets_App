@@ -64,7 +64,7 @@ export function TabBar() {
     : participantTabs
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-200 bg-white pb-safe dark:border-zinc-800 dark:bg-black">
+    <nav aria-label="메인 네비게이션" className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-200 bg-white pb-safe dark:border-zinc-800 dark:bg-black">
       <div className="flex h-16 items-center justify-around px-2 pb-2 pt-2 sm:h-20 sm:pb-4">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href || 
@@ -73,12 +73,13 @@ export function TabBar() {
              <Link
               key={tab.name}
               href={tab.href}
-              className={`flex flex-col items-center justify-center gap-1 min-w-[64px] transition-colors ${
+              aria-current={isActive ? "page" : undefined}
+              className={`flex flex-col items-center justify-center gap-1 min-w-[64px] min-h-[44px] min-w-[44px] transition-colors ${
                 isActive ? 'text-primary' : 'text-zinc-500 hover:text-zinc-700'
               }`}
             >
               <span className={`text-xl sm:text-2xl transition-transform ${isActive ? 'scale-110' : ''}`}>{tab.icon}</span>
-              <span className={`text-[10px] font-medium sm:text-xs ${isActive ? 'font-bold' : ''}`}>{tab.name}</span>
+              <span className={`text-xs font-medium ${isActive ? 'font-bold' : ''}`}>{tab.name}</span>
             </Link>
           )
         })}

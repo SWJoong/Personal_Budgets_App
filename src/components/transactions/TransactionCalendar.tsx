@@ -48,20 +48,20 @@ export default function TransactionCalendar({ transactions }: Props) {
     <div className="flex flex-col gap-6">
       {/* 달력 컨트롤 */}
       <div className="flex items-center justify-between bg-white rounded-3xl p-4 ring-1 ring-zinc-200 shadow-sm">
-        <button onClick={prevMonth} className="p-3 rounded-2xl bg-zinc-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors">
+        <button onClick={prevMonth} className="p-3 rounded-2xl bg-zinc-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors" aria-label="이전 달">
           <span className="text-xl">◀</span>
         </button>
         <h2 className="text-xl font-black text-zinc-900">
           {year}년 {month + 1}월
         </h2>
-        <button onClick={nextMonth} className="p-3 rounded-2xl bg-zinc-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors">
+        <button onClick={nextMonth} className="p-3 rounded-2xl bg-zinc-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors" aria-label="다음 달">
           <span className="text-xl">▶</span>
         </button>
       </div>
 
       {/* 달력 그리드 */}
       <div className="bg-white rounded-[2rem] p-5 sm:p-6 ring-1 ring-zinc-200 shadow-sm">
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="grid grid-cols-7 gap-1 mb-2" role="grid">
           {['일', '월', '화', '수', '목', '금', '토'].map((day, i) => (
             <div key={day} className={`text-center text-xs font-black p-2 ${
               i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-zinc-400'
@@ -92,9 +92,10 @@ export default function TransactionCalendar({ transactions }: Props) {
             return (
               <button
                 key={d}
+                role="gridcell"
                 onClick={() => setSelectedDate(dateStr)}
                 className={`
-                  relative aspect-square flex flex-col items-center justify-start pt-2 rounded-2xl transition-all overflow-hidden
+                  relative aspect-square min-w-[44px] min-h-[44px] flex flex-col items-center justify-start pt-2 rounded-2xl transition-all overflow-hidden
                   ${isSelected ? 'bg-zinc-900 text-white shadow-md scale-105 z-10 ring-2 ring-zinc-900' : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-700 active:scale-95'}
                   ${isToday && !isSelected ? 'ring-2 ring-primary ring-inset text-primary bg-blue-50/50' : ''}
                 `}
