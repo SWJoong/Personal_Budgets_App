@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { formatCurrency } from '@/utils/budget-visuals'
+import PouchPreviewBar from './PouchPreviewBar'
 
 interface PlanOption {
   name: string
@@ -15,10 +16,11 @@ interface Props {
   activityName: string
   initialOptions: PlanOption[]
   currentBalance: number
+  totalBudget?: number
   onSelect?: (index: number) => void
 }
 
-export default function PlanComparison({ activityName, initialOptions, currentBalance, onSelect }: Props) {
+export default function PlanComparison({ activityName, initialOptions, currentBalance, totalBudget, onSelect }: Props) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
   const handleSelect = (index: number) => {
@@ -26,12 +28,22 @@ export default function PlanComparison({ activityName, initialOptions, currentBa
     if (onSelect) onSelect(index)
   }
 
+  const budget = totalBudget || currentBalance
+
   return (
     <div className="flex flex-col gap-8">
       <div className="text-center">
         <h2 className="text-2xl font-black text-zinc-900 mb-2">"{activityName}"</h2>
         <p className="text-zinc-500 font-bold">어떤 방법이 더 좋을까요?</p>
       </div>
+
+      {/* P5: 선택지별 색깔 점선 오버레이 바 */}
+      <PouchPreviewBar
+        currentBalance={currentBalance}
+        totalBudget={budget}
+        options={initialOptions.map(o => ({ name: o.name, cost: o.cost }))}
+        selectedIndex={selectedIndex}
+      />
 
       <div className="grid grid-cols-1 gap-4">
         {initialOptions.map((option, index) => {

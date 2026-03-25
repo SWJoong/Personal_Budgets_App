@@ -11,17 +11,24 @@ interface Props {
 
 export default function EvaluationForm({ participantId, month, initialData }: Props) {
   const [loading, setLoading] = useState(false)
+  const [aiProcessing, setAiProcessing] = useState(false)
   const [message, setMessage] = useState('')
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
     setMessage('')
     try {
+      // 1단계: 저장 시작 (AI 분석 포함)
+      setAiProcessing(true)
+      setMessage('📝 평가를 저장하고 AI가 분석하고 있어요...')
+      
       const result = await upsertEvaluation(formData)
       if (result.success) {
+        setAiProcessing(false)
         setMessage('✅ 평가가 성공적으로 저장되었습니다.')
       }
     } catch (e: any) {
+      setAiProcessing(false)
       setMessage('❌ 저장에 실패했습니다: ' + e.message)
     } finally {
       setLoading(false)
@@ -42,8 +49,15 @@ export default function EvaluationForm({ participantId, month, initialData }: Pr
       <input type="hidden" name="month" value={month} />
 
       {message && (
-        <div className={`p-4 rounded-xl font-bold text-sm ${message.startsWith('✅') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-          {message}
+        <div className={`p-4 rounded-xl font-bold text-sm flex items-center gap-3 ${
+          message.startsWith('✅') ? 'bg-green-50 text-green-700 border border-green-200' : 
+          message.startsWith('❌') ? 'bg-red-50 text-red-700 border border-red-200' :
+          'bg-blue-50 text-blue-700 border border-blue-200'
+        }`}>
+          {aiProcessing && (
+            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin shrink-0" />
+          )}
+          <span>{message}</span>
         </div>
       )}
 
@@ -66,9 +80,14 @@ export default function EvaluationForm({ participantId, month, initialData }: Pr
       <button
         type="submit"
         disabled={loading}
-        className="mt-4 w-full py-5 rounded-3xl bg-zinc-900 text-white text-xl font-black shadow-xl active:scale-95 disabled:bg-zinc-300 transition-all"
+        className="mt-4 w-full py-5 rounded-3xl bg-zinc-900 text-white text-xl font-black shadow-xl active:scale-95 disabled:bg-zinc-300 transition-all relative overflow-hidden"
       >
-        {loading ? '저장 중...' : '📝 평가 저장하기'}
+        {loading ? (
+          <span className="flex items-center justify-center gap-3">
+            <span className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
+            AI 분석 중...
+          </span>
+        ) : '📝 평가 저장하기'}
       </button>
     </form>
   )

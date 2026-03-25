@@ -71,6 +71,45 @@ export default async function Home() {
     .order('date', { ascending: false })
     .limit(3);
 
+  // 이번 달 일별 거래 내역 (SVG 돈주머니 차트용)
+  const firstDayOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`
+  const lastDayOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-${String(totalDaysInMonth).padStart(2, '0')}`
+  
+  const { data: dailyTransactions } = await supabase
+    .from('transactions')
+    .select('date, amount, activity_name, status, receipt_image_url')
+    .eq('participant_id', user.id)
+    .gte('date', firstDayOfMonth)
+    .lte('date', lastDayOfMonth)
+    .order('date', { ascending: true })
+
+  // 최근 6개월 월별 지출 집계 (월별 추이 차트용)
+  const monthlyTrend = []
+  const totalMonthlyBudget = (participant.funding_sources || []).reduce(
+    (acc: number, fs: any) => acc + Number(fs.monthly_budget), 0
+  ) || participant.monthly_budget_default || 0
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(year, month - i, 1)
+    const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const mFirst = `${m}-01`
+    const mLast = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()).padStart(2, '0')}`
+
+    const { data: monthTxs } = await supabase
+      .from('transactions')
+      .select('amount')
+      .eq('participant_id', user.id)
+      .gte('date', mFirst)
+      .lte('date', mLast)
+
+    const totalSpent = (monthTxs || []).reduce((sum: number, t: any) => sum + Number(t.amount), 0)
+    monthlyTrend.push({
+      month: m,
+      totalSpent,
+      budget: totalMonthlyBudget,
+    })
+  }
+
   return (
     <HomeDashboard
       profile={profile}
@@ -81,6 +120,8 @@ export default async function Home() {
       totalDaysInMonth={totalDaysInMonth}
       elapsedDays={elapsedDays}
       userName={profile?.name || user.email?.split('@')[0] || ''}
+      dailyTransactions={dailyTransactions || []}
+      monthlyTrend={monthlyTrend}
     />
   );
 }

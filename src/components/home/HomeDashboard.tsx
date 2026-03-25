@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { formatCurrency, getBudgetVisualInfo } from '@/utils/budget-visuals'
 import Link from 'next/link'
+import InteractivePouchSection from './InteractivePouchSection'
+import BudgetTrendChart from './BudgetTrendChart'
 
 interface FundingSource {
   id: string
@@ -11,6 +13,20 @@ interface FundingSource {
   yearly_budget: number
   current_month_balance: number
   current_year_balance: number
+}
+
+interface DailyTransaction {
+  date: string
+  amount: number
+  activity_name: string
+  status: 'pending' | 'confirmed'
+  receipt_image_url?: string | null
+}
+
+interface MonthlyData {
+  month: string
+  totalSpent: number
+  budget: number
 }
 
 interface HomeDashboardProps {
@@ -22,13 +38,16 @@ interface HomeDashboardProps {
   totalDaysInMonth: number
   elapsedDays: number
   userName: string
+  dailyTransactions?: DailyTransaction[]
+  monthlyTrend?: MonthlyData[]
 }
 
 type ViewMode = 'total' | 'source'
 
 export default function HomeDashboard({
   profile, participant, fundingSources, recentTransactions,
-  remainingDays, totalDaysInMonth, elapsedDays, userName
+  remainingDays, totalDaysInMonth, elapsedDays, userName,
+  dailyTransactions = [], monthlyTrend = []
 }: HomeDashboardProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('total')
 
@@ -94,40 +113,26 @@ export default function HomeDashboard({
 
         {viewMode === 'total' ? (
           <>
-            {/* 통합 잔액 카드 - 시각화 강화 */}
-            <section className={`flex flex-col gap-4 rounded-[3rem] p-10 shadow-xl ring-1 relative overflow-hidden transition-all duration-500
+            {/* P1: 인터랙티브 SVG 돈주머니 */}
+            <InteractivePouchSection
+              currentBalance={totalMonthBalance}
+              totalBudget={totalMonthlyBudget}
+              percentage={visual.percentage}
+              themeColor={visual.themeColor}
+              icon={visual.icon}
+              dailyTransactions={dailyTransactions}
+              remainingDays={remainingDays}
+            />
+
+            {/* 상태 메시지 카드 */}
+            <section className={`flex flex-col gap-4 rounded-[2rem] p-8 shadow-md ring-1 relative overflow-hidden transition-all duration-500
               ${visual.bgClass} ${visual.status === 'luxury' ? 'ring-green-200' : 
                 visual.status === 'stable' ? 'ring-blue-200' : 
                 visual.status === 'warning' ? 'ring-orange-200' : 
                 visual.status === 'critical' || visual.status === 'empty' ? 'ring-red-200' : 
                 'ring-zinc-200'}
             `}>
-              <div className="flex justify-between items-start z-10 relative">
-                <h2 className={`text-sm font-black uppercase tracking-[0.2em] ${
-                  visual.themeColor === 'green' ? 'text-green-600' :
-                  visual.themeColor === 'blue' ? 'text-blue-600' :
-                  visual.themeColor === 'orange' ? 'text-orange-600' :
-                  visual.themeColor === 'red' ? 'text-red-600' :
-                  'text-zinc-400'
-                }`}>이번 달 남은 돈</h2>
-                <span className="px-2 py-1 rounded-lg bg-black/5 text-[11px] font-black text-zinc-500 tracking-wider">통합 예산</span>
-              </div>
-              
-              <div className="flex items-end gap-2 z-10 relative my-2">
-                <span className={`text-6xl sm:text-7xl font-black tracking-tighter transition-colors duration-500 ${
-                  visual.themeColor === 'green' ? 'text-green-700' :
-                  visual.themeColor === 'blue' ? 'text-blue-700' :
-                  visual.themeColor === 'orange' ? 'text-orange-700' :
-                  visual.themeColor === 'red' ? 'text-red-700' :
-                  'text-zinc-900'
-                }`}>
-                  {formatCurrency(totalMonthBalance)}
-                </span>
-                <span className="text-2xl text-zinc-400 font-black mb-2">원</span>
-              </div>
-              
-              {/* 상태 메시지 및 돈주머니 이미지 대용 아이콘 */}
-              <div className={`mt-2 px-6 py-5 rounded-[2rem] z-10 relative border-2 shadow-inner transition-all duration-500 ${
+              <div className={`px-5 py-4 rounded-[1.5rem] z-10 relative border-2 shadow-inner transition-all duration-500 ${
                 visual.themeColor === 'green' ? 'bg-white/80 border-green-100 text-green-800' : 
                 visual.themeColor === 'blue' ? 'bg-white/80 border-blue-100 text-blue-800' : 
                 visual.themeColor === 'orange' ? 'bg-white/80 border-orange-100 text-orange-800' : 
@@ -135,19 +140,19 @@ export default function HomeDashboard({
                 'bg-zinc-50 border-zinc-200 text-zinc-600'
               }`}>
                 <div className="flex items-center gap-4">
-                  <span className="text-4xl animate-bounce-slow">{visual.icon}</span>
-                  <p className="text-lg font-black leading-tight break-keep">{visual.message}</p>
+                  <span className="text-3xl animate-bounce-slow">{visual.icon}</span>
+                  <p className="text-base font-black leading-tight break-keep">{visual.message}</p>
                 </div>
               </div>
 
-              {/* 속도 안내 - 디자인 슬림화 */}
+              {/* 속도 안내 */}
               <div className="px-4 py-1 z-10 relative text-sm font-bold text-zinc-500 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 animate-pulse"></span>
                 {speedMessage}
               </div>
               
-              {/* 게이지 - 디자인 강화 */}
-              <div className="flex flex-col gap-3 z-10 relative mt-4">
+              {/* 게이지 */}
+              <div className="flex flex-col gap-3 z-10 relative">
                 <div className="flex justify-between text-xs font-black text-zinc-400 uppercase tracking-widest px-1">
                   <span>{remainingDays}일 남음</span>
                   <span className={
@@ -156,7 +161,7 @@ export default function HomeDashboard({
                     'text-zinc-500'
                   }>{visual.percentage}%</span>
                 </div>
-                <div className="h-6 w-full bg-black/5 rounded-full overflow-hidden p-1.5 shadow-inner" role="progressbar" aria-valuenow={visual.percentage} aria-valuemin={0} aria-valuemax={100} aria-label={`예산 잔액 ${visual.percentage}%`}>
+                <div className="h-5 w-full bg-black/5 rounded-full overflow-hidden p-1 shadow-inner" role="progressbar" aria-valuenow={visual.percentage} aria-valuemin={0} aria-valuemax={100} aria-label={`예산 잔액 ${visual.percentage}%`}>
                   <div
                     className={`h-full rounded-full transition-all duration-1000 shadow-sm ${
                       visual.themeColor === 'green' ? 'bg-green-500' :
@@ -169,14 +174,14 @@ export default function HomeDashboard({
                   />
                 </div>
               </div>
-              
-              {/* 배경 장식 큰 아이콘 */}
-              <div className="absolute -right-10 -bottom-10 text-[12rem] opacity-[0.03] rotate-12 pointer-events-none select-none">
+
+              {/* 배경 장식 */}
+              <div className="absolute -right-10 -bottom-10 text-[10rem] opacity-[0.03] rotate-12 pointer-events-none select-none">
                 {visual.icon}
               </div>
             </section>
 
-            {/* 올해 예산 - 카드 스타일 조화 */}
+            {/* 올해 예산 카드 */}
             <section className="p-6 rounded-[2rem] bg-white ring-1 ring-zinc-100 flex justify-between items-center shadow-sm">
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em]">올해 전체 잔액</span>
@@ -194,6 +199,11 @@ export default function HomeDashboard({
                 </div>
               </div>
             </section>
+
+            {/* P3: 월별 예산 추이 차트 */}
+            {monthlyTrend.length > 0 && (
+              <BudgetTrendChart monthlyData={monthlyTrend} />
+            )}
           </>
         ) : (
           /* 재원별 보기 */
@@ -292,7 +302,17 @@ export default function HomeDashboard({
             recentTransactions.map((tx: any) => (
               <div key={tx.id} className="p-4 rounded-xl bg-white ring-1 ring-zinc-200 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className={`flex items-center gap-1.5`}><div className={`w-2 h-2 rounded-full ${tx.status === 'confirmed' ? 'bg-green-500' : 'bg-orange-400'}`} /><span className="text-xs font-bold text-zinc-500">{tx.status === 'confirmed' ? '✓' : '⏳'}</span></div>
+                  {/* 영수증 썸네일 또는 상태 도트 */}
+                  {tx.receipt_image_url ? (
+                    <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 ring-1 ring-zinc-200">
+                      <img src={tx.receipt_image_url} alt="영수증" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className={`flex items-center gap-1.5`}>
+                      <div className={`w-2 h-2 rounded-full ${tx.status === 'confirmed' ? 'bg-green-500' : 'bg-orange-400'}`} />
+                      <span className="text-xs font-bold text-zinc-500">{tx.status === 'confirmed' ? '✓' : '⏳'}</span>
+                    </div>
+                  )}
                   <div>
                     <p className="font-bold text-zinc-800 text-sm">{tx.activity_name}</p>
                     <p className="text-xs text-zinc-400">{tx.date} · {tx.category || '미분류'}</p>

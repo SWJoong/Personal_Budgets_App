@@ -13,7 +13,7 @@ interface FileLink {
 }
 
 export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] }) {
-  const { fontSize, setFontSize } = useAccessibility()
+  const { fontSize, setFontSize, highContrast, setHighContrast } = useAccessibility()
   const supabase = createClient()
   const router = useRouter()
 
@@ -64,29 +64,52 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
       {/* 1. 글자 크기 설정 (Epic 9) */}
       <section className="flex flex-col gap-4">
         <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2">화면 설정</h3>
-        <div className="bg-white rounded-[2rem] p-6 ring-1 ring-zinc-200 shadow-sm flex flex-col gap-4">
-          <p className="text-sm font-bold text-zinc-600 mb-1">글자 크기를 조절할 수 있습니다.</p>
-          <div className="flex gap-2">
-            {[
-              { id: 'normal', label: '가', size: '기본' },
-              { id: 'large', label: '가', size: '크게' },
-              { id: 'huge', label: '가', size: '매우 크게' },
-            ].map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setFontSize(s.id as any)}
-                className={`flex-1 flex flex-col items-center justify-center py-4 rounded-2xl transition-all border-2
-                  ${fontSize === s.id
-                    ? 'bg-zinc-900 border-zinc-900 text-white shadow-lg scale-105'
-                    : 'bg-zinc-50 border-transparent text-zinc-400 hover:bg-zinc-100'}
-                `}
-              >
-                <span className={`font-black ${s.id === 'normal' ? 'text-sm' : s.id === 'large' ? 'text-xl' : 'text-3xl'}`}>
-                  {s.label}
-                </span>
-                <span className="text-[10px] font-bold mt-1">{s.size}</span>
-              </button>
-            ))}
+        <div className="bg-white rounded-[2rem] p-6 ring-1 ring-zinc-200 shadow-sm flex flex-col gap-6">
+          <div className="flex flex-col gap-4">
+            <p className="text-sm font-bold text-zinc-600 mb-1">글자 크기를 조절할 수 있습니다.</p>
+            <div className="flex gap-2">
+              {[
+                { id: 'normal', label: '가', size: '기본' },
+                { id: 'large', label: '가', size: '크게' },
+                { id: 'huge', label: '가', size: '매우 크게' },
+              ].map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setFontSize(s.id as any)}
+                  className={`flex-1 flex flex-col items-center justify-center py-4 rounded-2xl transition-all border-2
+                    ${fontSize === s.id
+                      ? 'bg-zinc-900 border-zinc-900 text-white shadow-lg scale-105'
+                      : 'bg-zinc-50 border-transparent text-zinc-400 hover:bg-zinc-100'}
+                  `}
+                >
+                  <span className={`font-black ${s.id === 'normal' ? 'text-sm' : s.id === 'large' ? 'text-xl' : 'text-3xl'}`}>
+                    {s.label}
+                  </span>
+                  <span className="text-[10px] font-bold mt-1">{s.size}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* 고대비 모드 토글 */}
+          <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-zinc-700">고대비 모드</span>
+              <span className="text-xs text-zinc-400 font-medium">글씨와 배경의 대비를 높입니다</span>
+            </div>
+            <button
+              onClick={() => setHighContrast(!highContrast)}
+              className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
+                highContrast ? 'bg-zinc-900' : 'bg-zinc-200'
+              }`}
+              role="switch"
+              aria-checked={highContrast}
+              aria-label="고대비 모드 전환"
+            >
+              <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
+                highContrast ? 'left-7' : 'left-1'
+              }`} />
+            </button>
           </div>
         </div>
       </section>
