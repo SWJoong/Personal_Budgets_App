@@ -1,32 +1,35 @@
 import { NextResponse } from 'next/server'
-// The client you created from the Server-Side Auth instructions
 import { createClient } from '@/utils/supabase/server'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
-  // if "next" is in param, use it as the redirect URL
   const next = searchParams.get('next') ?? '/'
+
+  // Vercel 등 로드밸런서 환경에서 실제 호스트 추출
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const forwardedProto = request.headers.get('x-forwarded-proto') ?? 'https'
+
+  const baseUrl = forwardedHost
+    ? `${forwardedProto}://${forwardedHost}`
+    : process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin
 
   if (code) {
     const supabase = await createClient()
     const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code)
-    
+
     if (!error && user) {
-      // 도메인 제한 로직 제거
-      const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
-      const isLocalEnv = process.env.NODE_ENV === 'development'
-      if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-        return NextResponse.redirect(`${origin}${next}`)
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
-      } else {
-        return NextResponse.redirect(`${origin}${next}`)
+      // 도메인 제한 로직
+      const email = user.email ?? ''
+      const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN ?? 'nowondaycare.org'
+      if (!email.endsWith(`@${allowedDomain}`)) {
+        await supabase.auth.signOut()
+        return NextResponse.redirect(`${baseUrl}/login?error=InvalidDomain`)
       }
+
+      return NextResponse.redirect(`${baseUrl}${next}`)
     }
   }
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/login?error=AuthFailed`)
+  return NextResponse.redirect(`${baseUrl}/login?error=AuthFailed`)
 }
