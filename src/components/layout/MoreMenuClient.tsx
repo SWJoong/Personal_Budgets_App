@@ -28,7 +28,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
       {/* 0. 활동 평가 보기 (신규 추가) */}
       <section className="flex flex-col gap-4">
         <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2">나의 기록</h3>
-        <Link 
+        <Link
           href="/evaluations"
           className="flex items-center justify-between p-6 rounded-[2rem] bg-zinc-900 text-white shadow-xl hover:bg-zinc-800 transition-all active:scale-[0.98] group"
         >
@@ -40,6 +40,24 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
             </div>
           </div>
           <span className="text-2xl">→</span>
+        </Link>
+      </section>
+
+      {/* Account Management */}
+      <section className="flex flex-col gap-4">
+        <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2">계정 관리</h3>
+        <Link
+          href="/settings/profile"
+          className="flex items-center justify-between p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-300 transition-all active:scale-[0.98] group"
+        >
+          <div className="flex items-center gap-4">
+            <span className="text-2xl group-hover:scale-110 transition-transform">👤</span>
+            <div className="flex flex-col">
+              <span className="text-base font-black text-zinc-800">프로필 수정</span>
+              <span className="text-xs font-bold text-zinc-400">이름, 역할, 한 마디 변경</span>
+            </div>
+          </div>
+          <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors">→</span>
         </Link>
       </section>
 
@@ -58,8 +76,8 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
                 key={s.id}
                 onClick={() => setFontSize(s.id as any)}
                 className={`flex-1 flex flex-col items-center justify-center py-4 rounded-2xl transition-all border-2
-                  ${fontSize === s.id 
-                    ? 'bg-zinc-900 border-zinc-900 text-white shadow-lg scale-105' 
+                  ${fontSize === s.id
+                    ? 'bg-zinc-900 border-zinc-900 text-white shadow-lg scale-105'
                     : 'bg-zinc-50 border-transparent text-zinc-400 hover:bg-zinc-100'}
                 `}
               >
@@ -107,9 +125,8 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
         </div>
       </section>
 
-      {/* 3. 계정 관리 */}
+      {/* 3. 로그아웃 */}
       <section className="flex flex-col gap-4">
-        <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2">계정 관리</h3>
         <button
           onClick={handleLogout}
           className="w-full p-5 rounded-[2rem] bg-red-50 text-red-600 font-black text-center ring-1 ring-red-100 hover:bg-red-100 transition-all active:scale-95"

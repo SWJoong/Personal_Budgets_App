@@ -86,7 +86,7 @@ function LoginForm() {
       </button>
 
       <div className="text-center text-xs text-muted-foreground">
-        @nowondaycare.org 계정만 사용 가능합니다.
+        Google 계정으로 누구나 시작할 수 있습니다.
       </div>
 
       <div className="flex flex-col gap-2 mt-2 p-4 rounded-2xl bg-sky-50 text-sm text-sky-700">
@@ -109,7 +109,7 @@ export default function LoginPage() {
       <div className="absolute bottom-20 left-20 text-6xl opacity-10 -rotate-12 pointer-events-none select-none animate-bounce-slow hidden md:block">
         📊
       </div>
-      
+
       <Suspense fallback={<div className="text-sm text-muted-foreground animate-pulse-gentle">로딩 중...</div>}>
         <LoginForm />
       </Suspense>
