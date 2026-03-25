@@ -120,3 +120,76 @@ export async function updateTransactionStatus(transactionId: string, newStatus: 
 
   return { success: true }
 }
+
+export async function deleteTransaction(transactionId: string) {
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll() },
+        setAll(cookiesToSet) {
+          try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } catch {}
+        },
+      },
+    }
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Unauthorized')
+  }
+  const { error } = await supabase
+    .from('transactions')
+    .delete()
+    .eq('id', transactionId)
+  if (error) {
+    console.error('Delete Error:', error)
+    throw new Error('Failed to delete transaction')
+  }
+  revalidatePath('/')
+  revalidatePath('/calendar')
+  return { success: true }
+}
+
+export async function updateTransaction(
+  transactionId: string,
+  updates: {
+    amount?: number
+    date?: string
+    activity_name?: string
+    category?: string
+    memo?: string | null
+    status?: 'pending' | 'confirmed'
+    funding_source_id?: string
+  }
+) {
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll() },
+        setAll(cookiesToSet) {
+          try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } catch {}
+        },
+      },
+    }
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Unauthorized')
+  }
+  const { error } = await supabase
+    .from('transactions')
+    .update(updates)
+    .eq('id', transactionId)
+  if (error) {
+    console.error('Update Error:', error)
+    throw new Error('Failed to update transaction')
+  }
+  revalidatePath('/')
+  revalidatePath('/calendar')
+  return { success: true }
+}
