@@ -16,18 +16,27 @@ export interface Database {
           id: string
           role: UserRole
           name: string | null
+          avatar_url: string | null
+          bio: string | null
+          onboarding_completed: boolean
           created_at: string
         }
         Insert: {
           id: string
           role?: UserRole
           name?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          onboarding_completed?: boolean
           created_at?: string
         }
         Update: {
           id?: string
           role?: UserRole
           name?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          onboarding_completed?: boolean
           created_at?: string
         }
       }
