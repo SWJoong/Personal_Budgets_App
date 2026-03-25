@@ -57,15 +57,15 @@ export default function HomeDashboard({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
-        <h1 className="text-xl font-bold tracking-tight text-zinc-900">아름드리꿈터</h1>
-        <div className="text-xs font-bold px-3 py-1 bg-zinc-100 rounded-full text-zinc-500">
+    <div className="flex flex-col min-h-screen easy-read-bg text-foreground pb-20 participant-view">
+      <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
+        <h1 className="text-xl font-bold tracking-tight text-foreground">아름드리꿈터</h1>
+        <div className="text-xs font-bold px-3 py-1.5 bg-primary/10 rounded-full text-primary">
           {userName} 님
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-6">
+      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-6 animate-fade-in-up">
         {/* 보기 모드 전환 */}
         {fundingSources.length > 1 && (
           <div className="flex bg-zinc-100 rounded-xl p-1 gap-1">

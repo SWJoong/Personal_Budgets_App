@@ -39,18 +39,22 @@ function LoginForm() {
   };
 
   return (
-    <div className="flex w-full max-w-sm flex-col gap-6 rounded-2xl bg-card p-8 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800">
-      <div className="flex flex-col items-center gap-2 text-center">
+    <div className="flex w-full max-w-sm flex-col gap-6 rounded-3xl bg-card p-8 shadow-xl ring-1 ring-border backdrop-blur-sm animate-fade-in-up">
+      {/* Logo / Title area */}
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-3xl shadow-sm animate-celebrate">
+          💰
+        </div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          로그인
+          아름드리꿈터
         </h1>
-        <p className="text-balance text-sm text-zinc-500">
-          아름드리꿈터 개인예산 관리 앱에 오신 것을 환영합니다.
+        <p className="text-balance text-sm text-muted-foreground leading-relaxed">
+          자기주도 개인예산 관리 앱에<br />오신 것을 환영합니다.
         </p>
       </div>
 
       {errorMessage && (
-        <div className="rounded-lg bg-danger/10 p-3 text-sm text-danger text-center font-medium">
+        <div className="rounded-xl bg-danger/10 p-3 text-sm text-danger text-center font-medium ring-1 ring-danger/20 animate-fade-in-up">
           {errorMessage}
         </div>
       )}
@@ -58,7 +62,7 @@ function LoginForm() {
       <button
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="flex w-full items-center justify-center gap-3 rounded-lg bg-foreground px-4 py-3 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-3 rounded-xl bg-foreground px-4 py-3.5 text-sm font-semibold text-background transition-all hover:bg-foreground/90 hover:shadow-lg disabled:opacity-50 active:scale-[0.98]"
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
           <path
@@ -81,7 +85,7 @@ function LoginForm() {
         {loading ? "연결 중..." : "Google 계정으로 로그인"}
       </button>
 
-      <div className="text-center text-xs text-zinc-500">
+      <div className="text-center text-xs text-muted-foreground">
         @nowondaycare.org 계정만 사용 가능합니다.
       </div>
     </div>
@@ -90,8 +94,16 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-[80vh] flex-col items-center justify-center p-4">
-      <Suspense fallback={<div className="text-sm text-zinc-500">로딩 중...</div>}>
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-br from-background via-accent/30 to-background">
+      {/* Decorative elements */}
+      <div className="absolute top-20 right-20 text-8xl opacity-5 rotate-12 pointer-events-none select-none animate-float hidden md:block">
+        💰
+      </div>
+      <div className="absolute bottom-20 left-20 text-6xl opacity-5 -rotate-12 pointer-events-none select-none animate-bounce-slow hidden md:block">
+        📊
+      </div>
+      
+      <Suspense fallback={<div className="text-sm text-muted-foreground animate-pulse-gentle">로딩 중...</div>}>
         <LoginForm />
       </Suspense>
     </div>

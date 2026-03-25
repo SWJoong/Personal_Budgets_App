@@ -1,40 +1,129 @@
 @import "tailwindcss";
 
+/* ─── Design System: Mockup-aligned HSL tokens ─── */
 @theme {
-  --color-primary: #3b82f6; /* 차분한 파랑 */
-  --color-primary-hover: #2563eb;
-  --color-positive: #10b981; /* 긍정/여유: 초록 */
-  --color-warning: #f59e0b; /* 주의: 주황 */
-  --color-danger: #ef4444; /* 부족 위험: 빨강 */
-  --color-card: #f9fafb; /* 카드 배경: 연한 회색 */
-  --color-background: #ffffff;
-  --color-foreground: #111827; /* 본문텍스트 */
+  /* Core palette */
+  --color-primary: hsl(207 73% 40%);
+  --color-primary-hover: hsl(207 73% 32%);
+  --color-primary-foreground: hsl(0 0% 100%);
 
-  --font-sans: var(--font-pretendard), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Semantic */
+  --color-positive: hsl(130 55% 35%);
+  --color-warning: hsl(32 90% 48%);
+  --color-danger: hsl(0 72% 50%);
+
+  /* Surfaces */
+  --color-background: hsl(220 30% 98%);
+  --color-foreground: hsl(220 25% 15%);
+  --color-card: hsl(220 25% 97%);
+  --color-card-foreground: hsl(220 25% 15%);
+  --color-muted: hsl(220 20% 93%);
+  --color-muted-foreground: hsl(220 10% 45%);
+  --color-border: hsl(220 15% 88%);
+  --color-input: hsl(220 15% 82%);
+  --color-accent: hsl(207 40% 90%);
+  --color-accent-foreground: hsl(207 50% 20%);
+
+  /* Fonts */
+  --font-sans: var(--font-pretendard), "Noto Sans KR", "Apple SD Gothic Neo", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Nunito", "Noto Sans KR", sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   @theme {
-    --color-background: #0a0a0a;
-    --color-foreground: #ededed;
-    --color-card: #1f2937;
+    --color-background: hsl(220 25% 10%);
+    --color-foreground: hsl(220 15% 90%);
+    --color-card: hsl(220 22% 13%);
+    --color-card-foreground: hsl(220 15% 90%);
+    --color-muted: hsl(220 20% 18%);
+    --color-muted-foreground: hsl(220 10% 55%);
+    --color-border: hsl(220 15% 22%);
+    --color-input: hsl(220 15% 25%);
+    --color-accent: hsl(207 30% 22%);
+    --color-accent-foreground: hsl(207 50% 75%);
+    --color-primary: hsl(207 65% 55%);
+    --color-primary-hover: hsl(207 65% 48%);
+    --color-positive: hsl(130 50% 45%);
+    --color-warning: hsl(32 85% 55%);
+    --color-danger: hsl(0 65% 55%);
   }
 }
 
+/* ─── Base Typography ─── */
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  line-height: 1.85;
+  min-height: 100dvh;
 }
 
-/* 유틸리티 클래스 */
+p {
+  line-height: 1.85;
+  margin-bottom: 0.25rem;
+}
+
+h1, h2, h3 {
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+/* Touch-friendly minimum target */
+button, [role="button"], a {
+  cursor: pointer;
+}
+
+/* ─── Utility Classes ─── */
 @utility text-balance {
   text-wrap: balance;
 }
 
+/* ─── Component Styles (from mockup) ─── */
+.easy-read-bg {
+  background: hsl(210 30% 97%);
+}
+
+.warm-banner {
+  background: linear-gradient(135deg, hsl(207 60% 94%), hsl(207 40% 92%));
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+}
+
+.budget-bar {
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.budget-pouch {
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Tab bar safe area */
+.tab-bar {
+  height: 72px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Status indicators */
+.status-safe {
+  color: var(--color-positive);
+  background: hsl(130 55% 35% / 0.12);
+}
+
+.status-caution {
+  color: var(--color-warning);
+  background: hsl(32 90% 48% / 0.12);
+}
+
+.status-danger {
+  color: var(--color-danger);
+  background: hsl(0 72% 50% / 0.12);
+}
+
+/* ─── Animations ─── */
 @layer utilities {
   @keyframes bounce-slow {
     0%, 100% {
@@ -56,6 +145,40 @@ body {
     }
   }
 
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes celebrate {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    60% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes pulse-gentle {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
   .animate-bounce-slow {
     animation: bounce-slow 3s infinite;
   }
@@ -63,4 +186,153 @@ body {
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .animate-celebrate {
+    animation: celebrate 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .animate-pulse-gentle {
+    animation: pulse-gentle 1.5s ease-in-out infinite;
+  }
+}
+
+/* ─── Quick action buttons ─── */
+.quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 1.25rem 0.75rem;
+  background: var(--color-card);
+  border-radius: 1.25rem;
+  border: 2px solid var(--color-border);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.quick-action-btn:hover,
+.quick-action-btn:focus-visible {
+  border-color: hsl(207 73% 40% / 0.5);
+  box-shadow: 0 6px 16px hsl(207 73% 40% / 0.12), 0 2px 6px hsl(207 73% 40% / 0.06);
+  transform: translateY(-2px);
+}
+
+.quick-action-btn .icon-wrap {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+}
+
+.quick-action-btn .btn-label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ─── Interactive elements ─── */
+.option-card {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.option-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px hsl(207 73% 40% / 0.12);
+}
+
+.option-card.selected {
+  border-color: var(--color-primary);
+  background: hsl(207 73% 40% / 0.06);
+}
+
+.drop-zone {
+  border: 2px dashed var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.drop-zone:hover,
+.drop-zone.active {
+  border-color: var(--color-primary);
+  background: hsl(207 73% 40% / 0.04);
+}
+
+/* ─── Calendar ─── */
+.calendar-day {
+  min-width: 42px;
+  min-height: 42px;
+  transition: all 0.15s ease;
+}
+
+.calendar-day:hover {
+  background: var(--color-accent);
+  border-radius: 0.75rem;
+}
+
+.calendar-day.has-transaction::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  display: block;
+  margin: 2px auto 0;
+}
+
+/* ─── Pictogram box ─── */
+.pictogram-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  flex-shrink: 0;
+}
+
+/* ─── Accessibility ─── */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: calc(0.75rem - 2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Font sizing via class */
+html.font-large {
+  font-size: 1.15rem;
+}
+
+html.font-xlarge {
+  font-size: 1.3rem;
+}
+
+/* High-contrast mode */
+html.high-contrast {
+  --color-primary: hsl(207 100% 30%);
+  --color-foreground: hsl(0 0% 0%);
+  --color-background: hsl(0 0% 100%);
+  --color-border: hsl(0 0% 0%);
+}
+
+/* Easy-read mode for participants */
+.participant-view .easy-text {
+  font-size: 1.1rem;
+  line-height: 1.9;
+  font-weight: 500;
 }
