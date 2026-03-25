@@ -21,8 +21,8 @@ export async function GET(request: Request) {
     if (!error && user) {
       // 도메인 제한 로직
       const email = user.email ?? ''
-      const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN ?? 'nowondaycare.org'
-      if (!email.endsWith(`@${allowedDomain}`)) {
+              const allowedDomains = (process.env.ALLOWED_EMAIL_DOMAINS ?? process.env.ALLOWED_EMAIL_DOMAIN ?? 'nowondaycare.org').split(',')
+              if (!allowedDomains.some(d => email.endsWith('@' + d.trim()))) {
         await supabase.auth.signOut()
         return NextResponse.redirect(`${baseUrl}/login?error=InvalidDomain`)
       }
