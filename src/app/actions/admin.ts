@@ -100,24 +100,38 @@ export async function getAllUsers() {
 
 /**
  * 최초 로그인 시 admin이 없으면 자동 admin 부여 (§2)
+ * PostgreSQL RPC를 사용한 원자적(atomic) 처리로 Race Condition 방지
  */
 export async function assignRoleForFirstUser() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
 
-  // admin 계정이 하나도 없으면 최초 로그인 유저에게 admin 부여
-  const { count } = await supabase
-    .from('profiles')
-    .select('id', { count: 'exact', head: true })
-    .eq('role', 'admin')
+  try {
+    // PostgreSQL 함수로 원자적 처리
+    // (만약 RPC 함수가 없으면 데이터베이스 트리거 사용)
+    const { error } = await supabase.rpc('assign_first_admin', { 
+      user_id: user.id 
+    })
 
-  if (count === 0) {
-    await supabase
+    if (!error) {
+      revalidatePath('/')
+    }
+  } catch (e) {
+    // RPC 함수가 없으면 폴백: 관리자가 없으면 업데이트
+    // (이 방식도 경합 조건이 있지만, DB 트리거가 최종 보호)
+    const { count } = await supabase
       .from('profiles')
-      .update({ role: 'admin' })
-      .eq('id', user.id)
-    revalidatePath('/')
+      .select('id', { count: 'exact', head: true })
+      .eq('role', 'admin')
+
+    if (count === 0) {
+      await supabase
+        .from('profiles')
+        .update({ role: 'admin' })
+        .eq('id', user.id)
+      revalidatePath('/')
+    }
   }
 }
 
