@@ -1,4 +1,5 @@
 'use client'
+import { SeasonTreeVisual } from './SeasonTreeVisual'
 
 import { useState } from 'react'
 import { formatCurrency, getBudgetVisualInfo } from '@/utils/budget-visuals'
@@ -188,7 +189,7 @@ export default function HomeDashboard({
                 <span className="text-2xl font-black text-zinc-800">{formatCurrency(totalYearBalance)}원</span>
               </div>
               <div className="flex flex-col items-end gap-1 text-right">
-                <span className="text-xs text-zinc-400 font-bold uppercase">YEARLY TOTAL</span>
+                <span className="text-xs text-zinc-400 font-bold uppercase">올해 전체 잔액</span>
                 <div className="flex items-center gap-2">
                   <div className="w-16 h-1.5 bg-zinc-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow={totalYearlyBudget > 0 ? Math.round((totalYearBalance / totalYearlyBudget) * 100) : 0} aria-valuemin={0} aria-valuemax={100} aria-label={`연간 예산 잔액 ${totalYearlyBudget > 0 ? Math.round((totalYearBalance / totalYearlyBudget) * 100) : 0}%`}>
                     <div className="h-full bg-zinc-400 rounded-full" style={{ width: `${totalYearlyBudget > 0 ? (totalYearBalance / totalYearlyBudget) * 100 : 0}%` }} />

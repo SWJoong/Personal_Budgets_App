@@ -46,19 +46,6 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
       {/* Account Management */}
       <section className="flex flex-col gap-4">
         <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2">계정 관리</h3>
-        <Link
-          href="/settings/profile"
-          className="flex items-center justify-between p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-300 transition-all active:scale-[0.98] group"
-        >
-          <div className="flex items-center gap-4">
-            <span className="text-2xl group-hover:scale-110 transition-transform">👤</span>
-            <div className="flex flex-col">
-              <span className="text-base font-black text-zinc-800">프로필 수정</span>
-              <span className="text-xs font-bold text-zinc-400">이름, 역할, 한 마디 변경</span>
-            </div>
-          </div>
-          <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors">→</span>
-        </Link>
       </section>
 
       {/* 1. 글자 크기 설정 (Epic 9) */}

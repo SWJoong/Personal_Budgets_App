@@ -30,24 +30,6 @@
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  @theme {
-    --color-background: hsl(220 25% 10%);
-    --color-foreground: hsl(220 15% 90%);
-    --color-card: hsl(220 22% 13%);
-    --color-card-foreground: hsl(220 15% 90%);
-    --color-muted: hsl(220 20% 18%);
-    --color-muted-foreground: hsl(220 10% 55%);
-    --color-border: hsl(220 15% 22%);
-    --color-input: hsl(220 15% 25%);
-    --color-accent: hsl(207 30% 22%);
-    --color-accent-foreground: hsl(207 50% 75%);
-    --color-primary: hsl(207 65% 55%);
-    --color-primary-hover: hsl(207 65% 48%);
-    --color-positive: hsl(130 50% 45%);
-    --color-warning: hsl(32 85% 55%);
-    --color-danger: hsl(0 65% 55%);
-  }
 }
 
 /* ─── Base Typography ─── */

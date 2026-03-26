@@ -40,7 +40,7 @@ export function TabBar() {
     { name: '오늘 계획', href: '/plan', icon: '📝' },
     { name: '영수증', href: '/receipt', icon: '🧾' },
     { name: '달력', href: '/calendar', icon: '📅' },
-    { name: '더보기', href: '/more', icon: '⋯' },
+    { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
   const supporterTabs = [
@@ -48,7 +48,7 @@ export function TabBar() {
     { name: '내역 관리', href: '/supporter/transactions', icon: '📊' },
     { name: '영수증 확인', href: '/receipt', icon: '🧾' },
     { name: '달력', href: '/calendar', icon: '📅' },
-    { name: '더보기', href: '/more', icon: '⋯' },
+    { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
   const adminTabs = [
@@ -56,7 +56,7 @@ export function TabBar() {
     { name: '내역 관리', href: '/supporter/transactions', icon: '📊' },
     { name: '영수증 확인', href: '/receipt', icon: '🧾' },
     { name: '달력', href: '/calendar', icon: '📅' },
-    { name: '더보기', href: '/more', icon: '⋯' },
+    { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
   const tabs = role === 'admin' ? adminTabs 

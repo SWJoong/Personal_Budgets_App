@@ -49,6 +49,7 @@ export async function updateUserRole(userId: string, newRole: UserRole) {
   }
 
   revalidatePath('/admin/settings')
+  revalidatePath('/admin')
   return { success: true }
 }
 
@@ -95,4 +96,27 @@ export async function getAllUsers() {
   }
 
   return { profiles: profiles || [] }
+}
+
+/**
+ * 최초 로그인 시 admin이 없으면 자동 admin 부여 (§2)
+ */
+export async function assignRoleForFirstUser() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  // admin 계정이 하나도 없으면 최초 로그인 유저에게 admin 부여
+  const { count } = await supabase
+    .from('profiles')
+    .select('id', { count: 'exact', head: true })
+    .eq('role', 'admin')
+
+  if (count === 0) {
+    await supabase
+      .from('profiles')
+      .update({ role: 'admin' })
+      .eq('id', user.id)
+    revalidatePath('/')
+  }
 }

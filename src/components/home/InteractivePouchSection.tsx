@@ -34,7 +34,7 @@ export default function InteractivePouchSection({
   currentBalance, totalBudget, percentage, themeColor, icon,
   dailyTransactions, remainingDays
 }: Props) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(true)
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
 
   const colors = THEME_COLORS[themeColor] || THEME_COLORS.zinc
