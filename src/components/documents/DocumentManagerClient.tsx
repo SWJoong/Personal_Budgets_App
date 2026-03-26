@@ -5,7 +5,7 @@ import { uploadDocument, deleteDocument } from '@/app/actions/document'
 
 interface Participant {
   id: string
-  profiles: { name: string } | null
+  name?: string
 }
 
 interface Document {
@@ -15,7 +15,7 @@ interface Document {
   file_type: string
   participant_id: string
   created_at: string
-  participant?: { profiles: { name: string } | null } | null
+  participant?: { name?: string } | null
 }
 
 export default function DocumentManagerClient({ 
@@ -70,7 +70,7 @@ export default function DocumentManagerClient({
               <select name="participant_id" className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-zinc-900 focus:outline-none font-medium" required>
                 <option value="">당사자를 선택하세요</option>
                 {participants.map(p => (
-                  <option key={p.id} value={p.id}>{p.profiles?.name}</option>
+                  <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
             </div>
@@ -139,7 +139,7 @@ export default function DocumentManagerClient({
                       </a>
                     </td>
                     <td className="px-6 py-4 text-sm text-zinc-600">
-                      {doc.participant?.profiles?.name || '알 수 없음'}
+                      {doc.participant?.name || '알 수 없음'}
                     </td>
                     <td className="px-6 py-4">
                       <span className="px-2 py-1 rounded-md bg-zinc-100 text-zinc-500 text-[10px] font-black uppercase tracking-wider">

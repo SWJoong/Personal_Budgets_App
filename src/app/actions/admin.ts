@@ -4,7 +4,15 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { UserRole } from '@/types/database'
 
-const ADMIN_EMAIL = 'cheese0318@nowondaycare.org'
+const ADMIN_EMAILS = [
+  'cheese0318@nowondaycare.org',
+  'ahreum217@nowondaycare.org',
+  'valuesh@nowondaycare.org',
+  'tpdnr9870@nowondaycare.org',
+  '0305ysy@nowondaycare.org',
+  'soujin1020@nowondaycare.org',
+  'green4869@nowondaycare.org',
+]
 
 /**
  * 관리자 권한 검증
@@ -63,8 +71,8 @@ export async function ensureAdminAccount() {
   
   if (!user) return
 
-  // 현재 로그인 유저의 이메일이 관리자 이메일인 경우 자동 승격
-  if (user.email === ADMIN_EMAIL) {
+  // 현재 로그인 유저의 이메일이 관리자 이메일 목록에 있는 경우 자동 승격
+  if (user.email && ADMIN_EMAILS.includes(user.email)) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -136,8 +144,8 @@ export async function assignRoleForFirstUser() {
 }
 
 /**
- * 새 당사자 등록 (UUID 기반)
- * 구글 계정 연동 없이 독립적으로 생성
+ * 새 당사자 등록 (participants 테이블에 직접 생성)
+ * participants는 profiles와 독립 — 자체 name, email 컬럼 보유
  */
 export async function createParticipant(formData: {
   name: string
@@ -155,17 +163,14 @@ export async function createParticipant(formData: {
   }>
 }) {
   const { supabase } = await verifyAdmin()
-  
-  // UUID 생성 (Node.js crypto)
-  const crypto = await import('crypto')
-  const newParticipantId = crypto.randomUUID()
 
   try {
-    // 1. 당사자 등록
-    const { error: participantError } = await supabase
+    // 1. 당사자 등록 (profiles 불필요 — participants 자체 인적사항 보유)
+    const { data: participant, error: participantError } = await supabase
       .from('participants')
       .insert({
-        id: newParticipantId,
+        name: formData.name,
+        email: formData.email,
         monthly_budget_default: formData.monthlyBudget,
         yearly_budget_default: formData.yearlyBudget,
         budget_start_date: formData.startDate,
@@ -174,10 +179,14 @@ export async function createParticipant(formData: {
         alert_threshold: formData.alertThreshold,
         assigned_supporter_id: formData.supporterId || null,
       })
+      .select('id')
+      .single()
 
-    if (participantError) {
-      return { error: `당사자 등록 실패: ${participantError.message}` }
+    if (participantError || !participant) {
+      return { error: `당사자 등록 실패: ${participantError?.message}` }
     }
+
+    const newParticipantId = participant.id
 
     // 2. 재원 등록
     for (const fs of formData.fundingSources) {

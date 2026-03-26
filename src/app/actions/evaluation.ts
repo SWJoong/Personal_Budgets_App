@@ -103,3 +103,49 @@ export async function upsertEvaluation(formData: FormData) {
   revalidatePath('/evaluations') // 당사자 화면 갱신
   return { success: true }
 }
+
+/**
+ * 평가 삭제 (관리자/지원자 전용)
+ */
+export async function deleteEvaluation(evaluationId: string, participantId: string, month: string) {
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll() },
+        setAll(cookiesToSet) {
+          try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } catch {}
+        },
+      },
+    }
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  // 역할 확인
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'supporter')) {
+    throw new Error('권한이 없습니다.')
+  }
+
+  const { error } = await supabase
+    .from('evaluations')
+    .delete()
+    .eq('id', evaluationId)
+
+  if (error) {
+    throw new Error('평가 삭제에 실패했습니다.')
+  }
+
+  revalidatePath(`/supporter/evaluations/${participantId}/${month}`)
+  revalidatePath('/supporter/evaluations')
+  return { success: true }
+}

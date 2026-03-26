@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from 'react'
-import { upsertEvaluation } from '@/app/actions/evaluation'
+import { useRouter } from 'next/navigation'
+import { upsertEvaluation, deleteEvaluation } from '@/app/actions/evaluation'
 
 interface Props {
   participantId: string
@@ -10,7 +11,9 @@ interface Props {
 }
 
 export default function EvaluationForm({ participantId, month, initialData }: Props) {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [aiProcessing, setAiProcessing] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -18,7 +21,6 @@ export default function EvaluationForm({ participantId, month, initialData }: Pr
     setLoading(true)
     setMessage('')
     try {
-      // 1단계: 저장 시작 (AI 분석 포함)
       setAiProcessing(true)
       setMessage('📝 평가를 저장하고 AI가 분석하고 있어요...')
       
@@ -32,6 +34,23 @@ export default function EvaluationForm({ participantId, month, initialData }: Pr
       setMessage('❌ 저장에 실패했습니다: ' + e.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!initialData?.id) return
+    if (!confirm('정말로 이 평가를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return
+
+    setDeleting(true)
+    setMessage('')
+    try {
+      await deleteEvaluation(initialData.id, participantId, month)
+      setMessage('✅ 평가가 삭제되었습니다.')
+      router.push('/supporter/evaluations')
+    } catch (e: any) {
+      setMessage('❌ 삭제에 실패했습니다: ' + e.message)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -77,18 +96,31 @@ export default function EvaluationForm({ participantId, month, initialData }: Pr
         </div>
       ))}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="mt-4 w-full py-5 rounded-3xl bg-zinc-900 text-white text-xl font-black shadow-xl active:scale-95 disabled:bg-zinc-300 transition-all relative overflow-hidden"
-      >
-        {loading ? (
-          <span className="flex items-center justify-center gap-3">
-            <span className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
-            AI 분석 중...
-          </span>
-        ) : '📝 평가 저장하기'}
-      </button>
+      <div className="flex gap-3 mt-4">
+        <button
+          type="submit"
+          disabled={loading || deleting}
+          className="flex-1 py-5 rounded-3xl bg-zinc-900 text-white text-xl font-black shadow-xl active:scale-95 disabled:bg-zinc-300 transition-all relative overflow-hidden"
+        >
+          {loading ? (
+            <span className="flex items-center justify-center gap-3">
+              <span className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
+              AI 분석 중...
+            </span>
+          ) : '📝 평가 저장하기'}
+        </button>
+
+        {initialData?.id && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={loading || deleting}
+            className="px-6 py-5 rounded-3xl bg-red-500 text-white text-lg font-black shadow-xl active:scale-95 disabled:bg-zinc-300 transition-all hover:bg-red-600"
+          >
+            {deleting ? '삭제 중...' : '🗑️ 삭제'}
+          </button>
+        )}
+      </div>
     </form>
   )
 }

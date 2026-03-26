@@ -30,7 +30,6 @@ export default async function ParticipantDetailPage({ params }: PageProps) {
     .from('participants')
     .select(`
       *,
-      profiles!participants_id_fkey ( id, name, role ),
       supporter:profiles!participants_assigned_supporter_id_fkey ( id, name ),
       funding_sources ( * )
     `)
@@ -72,7 +71,7 @@ export default async function ParticipantDetailPage({ params }: PageProps) {
       <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
         <div className="flex items-center gap-3">
           <Link href={backUrl} className="text-zinc-400 hover:text-zinc-600 transition-colors">←</Link>
-          <h1 className="text-xl font-bold tracking-tight">{participant.profiles?.name || '당사자'}</h1>
+          <h1 className="text-xl font-bold tracking-tight">{participant.name || '당사자'}</h1>
         </div>
         <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${
           monthPercentage <= 20 ? 'bg-red-50 text-red-500' :

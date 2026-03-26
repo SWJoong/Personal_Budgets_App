@@ -23,7 +23,7 @@ export default async function SupporterDocumentsPage() {
   // 담당 당사자 목록 조회
   let participantsQuery = supabase
     .from('participants')
-    .select('id, profiles!participants_id_fkey ( name )')
+    .select('id, name')
 
   if (profile.role === 'supporter') {
     participantsQuery = participantsQuery.eq('assigned_supporter_id', user.id)
@@ -34,7 +34,7 @@ export default async function SupporterDocumentsPage() {
   // 기존 등록된 모든 서류 조회
   const { data: documents } = await supabase
     .from('file_links')
-    .select('*, participant:participants!file_links_participant_id_fkey ( profiles!participants_id_fkey ( name ) )')
+    .select('*, participant:participants!file_links_participant_id_fkey ( name )')
     .order('created_at', { ascending: false })
 
   return (

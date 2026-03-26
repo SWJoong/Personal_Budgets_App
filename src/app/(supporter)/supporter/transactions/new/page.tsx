@@ -52,7 +52,7 @@ export default function NewTransactionPage() {
 
       let query = supabase
         .from('participants')
-        .select('id, profiles!participants_id_fkey ( name ), funding_sources ( id, name )')
+        .select('id, name, funding_sources ( id, name )')
 
       if (profile?.role === 'supporter') {
         query = query.eq('assigned_supporter_id', user.id)
@@ -62,7 +62,7 @@ export default function NewTransactionPage() {
 
       const mapped = (data || []).map((p: any) => ({
         id: p.id,
-        name: p.profiles?.name || p.id.slice(0, 8),
+        name: p.name || p.id.slice(0, 8),
         funding_sources: p.funding_sources || []
       }))
 

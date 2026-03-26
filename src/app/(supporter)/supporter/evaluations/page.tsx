@@ -23,7 +23,7 @@ export default async function EvaluationsPage() {
     .from('participants')
     .select(`
       id,
-      profiles!participants_id_fkey ( name )
+      id, name
     `)
 
   if (profile.role === 'supporter') {
@@ -72,9 +72,9 @@ export default async function EvaluationsPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-zinc-600 text-sm">
-                          {p.profiles?.name?.[0] || '?'}
+                          {p.name?.[0] || '?'}
                         </div>
-                        <span className="font-bold text-zinc-900">{p.profiles?.name || '알 수 없음'}</span>
+                        <span className="font-bold text-zinc-900">{p.name || '알 수 없음'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-zinc-500">

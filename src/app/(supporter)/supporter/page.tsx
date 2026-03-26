@@ -25,7 +25,6 @@ export default async function SupporterPage() {
     .from('participants')
     .select(`
       *,
-      profiles!participants_id_fkey ( id, name, role ),
       funding_sources ( id, name, monthly_budget, current_month_balance, current_year_balance )
     `)
 
@@ -101,10 +100,10 @@ export default async function SupporterPage() {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-zinc-100 flex items-center justify-center text-xl font-bold text-zinc-600">
-                        {(p.profiles?.name || '?')[0]}
+                        {(p.name || '?')[0]}
                       </div>
                       <div>
-                        <p className="font-bold text-zinc-800 text-lg">{p.profiles?.name || '이름 없음'}</p>
+                        <p className="font-bold text-zinc-800 text-lg">{p.name || '이름 없음'}</p>
                         <p className="text-xs text-zinc-400">재원 {fsList.length}개</p>
                       </div>
                     </div>

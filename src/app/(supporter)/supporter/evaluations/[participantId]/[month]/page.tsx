@@ -17,7 +17,7 @@ export default async function EvaluationDetailPage({ params }: Props) {
   // 당사자 정보 조회
   const { data: participant } = await supabase
     .from('participants')
-    .select('*, profiles!participants_id_fkey ( name )')
+    .select('*')
     .eq('id', participantId)
     .single()
 
@@ -54,7 +54,7 @@ export default async function EvaluationDetailPage({ params }: Props) {
       <header className="mb-8 flex items-center gap-4">
         <Link href="/supporter/evaluations" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl font-bold">←</Link>
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">{participant.profiles?.name} 님 PCP 평가</h1>
+          <h1 className="text-2xl font-bold text-zinc-900">{participant.name} 님 PCP 평가</h1>
           <p className="text-zinc-500 mt-1">{displayMonth} 활동 기록 및 분석</p>
         </div>
       </header>

@@ -45,7 +45,7 @@ export default function TransactionDetailPage({ params }: PageProps) {
     try {
       const { data } = await supabase
         .from('transactions')
-        .select('*, participant:participants!transactions_participant_id_fkey ( profiles!participants_id_fkey ( name ) ), funding_source:funding_sources!transactions_funding_source_id_fkey ( name )')
+        .select('*, participant:participants!transactions_participant_id_fkey ( name ), funding_source:funding_sources!transactions_funding_source_id_fkey ( name )')
         .eq('id', id)
         .single()
 
@@ -244,7 +244,7 @@ export default function TransactionDetailPage({ params }: PageProps) {
             <div className="mb-6 flex justify-between items-center bg-zinc-50 p-4 rounded-lg">
               <div>
                 <p className="text-xs text-zinc-500 font-bold mb-1">당사자</p>
-                <p className="font-black text-zinc-900 text-lg">{tx.participant?.profiles?.name || '알 수 없음'}</p>
+                <p className="font-black text-zinc-900 text-lg">{tx.participant?.name || '알 수 없음'}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs text-zinc-500 font-bold mb-1">재원</p>
