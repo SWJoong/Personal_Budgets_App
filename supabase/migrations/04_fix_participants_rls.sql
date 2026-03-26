@@ -36,5 +36,5 @@ CREATE POLICY "participant_select_own" ON participants
   FOR SELECT
   TO authenticated
   USING (
-    google_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    id = auth.uid()
   );

@@ -120,3 +120,72 @@ export async function assignRoleForFirstUser() {
     revalidatePath('/')
   }
 }
+
+/**
+ * 새 당사자 등록 (UUID 기반)
+ * 구글 계정 연동 없이 독립적으로 생성
+ */
+export async function createParticipant(formData: {
+  name: string
+  email: string
+  monthlyBudget: number
+  yearlyBudget: number
+  startDate: string
+  endDate: string
+  alertThreshold: number
+  supporterId: string | null
+  fundingSources: Array<{
+    name: string
+    monthlyBudget: number
+    yearlyBudget: number
+  }>
+}) {
+  const { supabase } = await verifyAdmin()
+  
+  // UUID 생성 (Node.js crypto)
+  const crypto = await import('crypto')
+  const newParticipantId = crypto.randomUUID()
+
+  try {
+    // 1. 당사자 등록
+    const { error: participantError } = await supabase
+      .from('participants')
+      .insert({
+        id: newParticipantId,
+        monthly_budget_default: formData.monthlyBudget,
+        yearly_budget_default: formData.yearlyBudget,
+        budget_start_date: formData.startDate,
+        budget_end_date: formData.endDate,
+        funding_source_count: formData.fundingSources.length,
+        alert_threshold: formData.alertThreshold,
+        assigned_supporter_id: formData.supporterId || null,
+      })
+
+    if (participantError) {
+      return { error: `당사자 등록 실패: ${participantError.message}` }
+    }
+
+    // 2. 재원 등록
+    for (const fs of formData.fundingSources) {
+      const { error: fsError } = await supabase
+        .from('funding_sources')
+        .insert({
+          participant_id: newParticipantId,
+          name: fs.name,
+          monthly_budget: fs.monthlyBudget,
+          yearly_budget: fs.yearlyBudget,
+          current_month_balance: fs.monthlyBudget,
+          current_year_balance: fs.yearlyBudget,
+        })
+
+      if (fsError) {
+        return { error: `재원 등록 실패: ${fsError.message}` }
+      }
+    }
+
+    revalidatePath('/admin/participants')
+    return { success: true, participantId: newParticipantId }
+  } catch (e: any) {
+    return { error: `오류: ${e.message}` }
+  }
+}

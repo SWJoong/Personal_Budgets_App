@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { createParticipant } from '@/app/actions/admin'
 import type { Profile } from '@/types/database'
 
 interface FundingSourceInput {
@@ -20,12 +21,12 @@ export default function NewParticipantPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  // 프로필 목록 (당사자 역할이지만 아직 participants에 등록되지 않은 사용자)
-  const [availableProfiles, setAvailableProfiles] = useState<Profile[]>([])
+  // 지원자 목록만 로드 (당사자는 UUID로 직접 생성)
   const [supporters, setSupporters] = useState<Profile[]>([])
 
   // 폼 데이터
-  const [selectedProfileId, setSelectedProfileId] = useState('')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [monthlyBudget, setMonthlyBudget] = useState('150000')
   const [yearlyBudget, setYearlyBudget] = useState('1500000')
   const [startDate, setStartDate] = useState('2026-03-01')
@@ -44,23 +45,7 @@ export default function NewParticipantPage() {
   async function loadData() {
     setLoading(true)
     try {
-      // 이미 등록된 당사자 ID 목록
-      const { data: existingParticipants } = await supabase
-        .from('participants')
-        .select('id')
-
-      const existingIds = (existingParticipants || []).map(p => p.id)
-
-      // 당사자 역할이지만 아직 등록되지 않은 프로필
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'participant')
-
-      const filtered = (profiles || []).filter(p => !existingIds.includes(p.id))
-      setAvailableProfiles(filtered)
-
-      // 지원자 목록
+      // 지원자 목록만 로드
       const { data: supporterProfiles } = await supabase
         .from('profiles')
         .select('*')
@@ -94,8 +79,12 @@ export default function NewParticipantPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!selectedProfileId) {
-      setError('당사자를 선택해주세요.')
+    if (!name.trim()) {
+      setError('이름을 입력해주세요.')
+      return
+    }
+    if (!email.trim()) {
+      setError('이메일을 입력해주세요.')
       return
     }
 
@@ -103,40 +92,28 @@ export default function NewParticipantPage() {
     setError('')
 
     try {
-      // 1. 당사자 등록
-      const { error: participantError } = await supabase
-        .from('participants')
-        .insert({
-          id: selectedProfileId,
-          monthly_budget_default: Number(monthlyBudget),
-          yearly_budget_default: Number(yearlyBudget),
-          budget_start_date: startDate,
-          budget_end_date: endDate,
-          funding_source_count: fundingSourceCount,
-          alert_threshold: Number(alertThreshold),
-          assigned_supporter_id: supporterId || null,
-        })
+      const result = await createParticipant({
+        name: name.trim(),
+        email: email.trim(),
+        monthlyBudget: Number(monthlyBudget),
+        yearlyBudget: Number(yearlyBudget),
+        startDate,
+        endDate,
+        alertThreshold: Number(alertThreshold),
+        supporterId: supporterId || null,
+        fundingSources: fundingSources.map(fs => ({
+          name: fs.name,
+          monthlyBudget: Number(fs.monthly_budget),
+          yearlyBudget: Number(fs.yearly_budget),
+        })),
+      })
 
-      if (participantError) throw participantError
-
-      // 2. 재원 등록
-      for (const fs of fundingSources) {
-        const { error: fsError } = await supabase
-          .from('funding_sources')
-          .insert({
-            participant_id: selectedProfileId,
-            name: fs.name,
-            monthly_budget: Number(fs.monthly_budget),
-            yearly_budget: Number(fs.yearly_budget),
-            current_month_balance: Number(fs.monthly_budget),  // 초기값 = 월 예산
-            current_year_balance: Number(fs.yearly_budget),     // 초기값 = 연 예산
-          })
-
-        if (fsError) throw fsError
+      if (result.error) {
+        setError(result.error)
+      } else {
+        router.push('/admin/participants')
+        router.refresh()
       }
-
-      router.push('/admin/participants')
-      router.refresh()
     } catch (e: any) {
       setError(e.message || '저장에 실패했습니다.')
     } finally {
@@ -173,26 +150,33 @@ export default function NewParticipantPage() {
             </div>
           )}
 
-          {/* 사용자 선택 */}
-          <fieldset className="flex flex-col gap-2">
-            <label className="text-xs font-black text-zinc-400 uppercase tracking-widest">당사자 선택</label>
-            {availableProfiles.length === 0 ? (
-              <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-500 text-sm">
-                등록 가능한 사용자가 없습니다. 먼저 Google 로그인 후 프로필이 생성되어야 합니다.
-              </div>
-            ) : (
-              <select
-                value={selectedProfileId}
-                onChange={(e) => setSelectedProfileId(e.target.value)}
-                className="p-4 rounded-xl bg-white ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+          {/* 당사자 정보 */}
+          <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200">
+            <legend className="text-xs font-black text-zinc-400 uppercase tracking-widest px-1">당사자 정보</legend>
+            
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-zinc-500 font-medium">이름 *</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="당사자 이름"
+                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
                 required
-              >
-                <option value="">선택해주세요</option>
-                {availableProfiles.map(p => (
-                  <option key={p.id} value={p.id}>{p.name || p.id.slice(0, 8)}</option>
-                ))}
-              </select>
-            )}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-zinc-500 font-medium">이메일 *</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="participant@example.com"
+                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                required
+              />
+            </div>
           </fieldset>
 
           {/* 예산 설정 */}
@@ -331,7 +315,7 @@ export default function NewParticipantPage() {
           {/* 제출 버튼 */}
           <button
             type="submit"
-            disabled={saving || !selectedProfileId}
+            disabled={saving || !name.trim() || !email.trim()}
             className="p-4 rounded-2xl bg-zinc-900 text-white font-bold text-base hover:bg-zinc-800 transition-colors active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-lg"
           >
             {saving ? '저장하고 있습니다...' : '당사자 등록하기'}
