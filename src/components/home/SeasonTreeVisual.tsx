@@ -34,7 +34,7 @@ export function SeasonTreeVisual() {
     <div className="mt-4 p-3 bg-white rounded-2xl border border-gray-100 shadow-sm">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-semibold text-gray-700">
-          {SEASON_EMOJIS[season]} \uc62c\ud574 \ud750\ub984
+                  {SEASON_EMOJIS[season]} 올해 흐름
         </span>
         <span className="text-xs text-gray-400">{SEASON_LABELS[season]}</span>
       </div>
@@ -58,7 +58,7 @@ export function SeasonTreeVisual() {
             style={{ width: `${progress}%`, transition: 'width 0.5s' }}
           />
         </div>
-        <p className="text-right text-xs text-gray-400 mt-0.5">{progress}% \uc9c0\ub09c\ub2e4</p>
+                  <p className="text-right text-xs text-gray-400 mt-0.5">{progress}% 지난다</p>
       </div>
     </div>
   )
