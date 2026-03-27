@@ -127,7 +127,111 @@ INSERT INTO public.evaluations (
 -- ============================================================
 INSERT INTO public.file_links (
   participant_id, title, url, file_type
-) VALUES 
+) VALUES
 ('33333333-3333-3333-3333-333333333301', '3월 자립생활 계획서', 'https://docs.google.com/document/d/demo1', '계획서'),
 ('33333333-3333-3333-3333-333333333301', '활동 사진 모음', 'https://photos.google.com/album/demo1', '참고자료'),
 ('33333333-3333-3333-3333-333333333302', '상반기 개별지원 계획', 'https://docs.google.com/document/d/demo2', '계획서');
+
+-- ============================================================
+-- 9. 영수증/활동사진 더미 데이터 (김민준 transactions)
+-- 기존 거래에 영수증 이미지 추가 + 활동사진 포함 거래 추가
+-- ============================================================
+
+-- 기존 거래에 영수증 이미지 URL 추가
+UPDATE public.transactions
+SET receipt_image_url = 'https://picsum.photos/seed/starbucks-receipt/400/560'
+WHERE participant_id = '33333333-3333-3333-3333-333333333301'
+  AND activity_name = '스타벅스 노원점';
+
+-- 활동사진 포함 거래 추가 (볼링, 공원 산책)
+INSERT INTO public.transactions (
+  participant_id, creator_id, funding_source_id, date, activity_name,
+  amount, category, memo, payment_method, status,
+  receipt_image_url, activity_image_url
+) VALUES
+(
+  '33333333-3333-3333-3333-333333333301',
+  '22222222-2222-2222-2222-222222222222',
+  'fs-minjun-01',
+  CURRENT_DATE - INTERVAL '4 days',
+  '노원 롤링볼 볼링장',
+  8000, '여가활동', '지원자 선생님과 볼링 1게임', '현금', 'confirmed',
+  'https://picsum.photos/seed/bowling-receipt/400/560',
+  'https://picsum.photos/seed/bowling-activity/600/400'
+),
+(
+  '33333333-3333-3333-3333-333333333301',
+  '33333333-3333-3333-3333-333333333301',
+  'fs-minjun-01',
+  CURRENT_DATE - INTERVAL '6 days',
+  '노원 중앙공원 산책',
+  0, '여가활동', '혼자 공원 산책, 무료 활동', '현금', 'confirmed',
+  NULL,
+  'https://picsum.photos/seed/park-walk/600/400'
+),
+(
+  '33333333-3333-3333-3333-333333333301',
+  '33333333-3333-3333-3333-333333333301',
+  'fs-minjun-02',
+  CURRENT_DATE - INTERVAL '3 days',
+  '다이소 생활용품',
+  4500, '생활용품', '샴푸, 치약 등 생필품 구매', '체크카드', 'confirmed',
+  'https://picsum.photos/seed/daiso-receipt/400/560',
+  NULL
+);
+
+-- ============================================================
+-- 10. 예산 계획 더미 데이터 (Plans) - 김민준
+-- ============================================================
+INSERT INTO public.plans (
+  participant_id, creator_id, activity_name, date,
+  options, selected_option_index, details
+) VALUES
+(
+  '33333333-3333-3333-3333-333333333301',
+  '33333333-3333-3333-3333-333333333301',
+  '카페 가기',
+  CURRENT_DATE - INTERVAL '1 day',
+  '[
+    {"name": "스타벅스 아이스 아메리카노", "cost": 5500, "time": "30분", "icon": "☕", "description": "노원점 방문, 키오스크 주문 연습"},
+    {"name": "편의점 캔커피", "cost": 1500, "time": "10분", "icon": "🥤", "description": "집 근처 편의점에서 빠르게 해결"}
+  ]'::jsonb,
+  0,
+  '{"activity": "카페 가기", "when": "오늘 오후", "where": "집 근처", "who": "혼자", "why": "즐거움을 위해"}'::jsonb
+),
+(
+  '33333333-3333-3333-3333-333333333301',
+  '22222222-2222-2222-2222-222222222222',
+  '볼링장 체험',
+  CURRENT_DATE - INTERVAL '4 days',
+  '[
+    {"name": "노원 롤링볼 볼링장", "cost": 8000, "time": "1시간", "icon": "🎳", "description": "신발 대여 포함, 1게임 기준"},
+    {"name": "집 근처 소규모 볼링장", "cost": 5000, "time": "1시간", "icon": "🎳", "description": "저렴하지만 시설이 조금 낡음"}
+  ]'::jsonb,
+  0,
+  '{"activity": "볼링장 체험", "when": "오늘 오후", "where": "시내", "who": "지원자 선생님과", "why": "운동하고 싶어서"}'::jsonb
+),
+(
+  '33333333-3333-3333-3333-333333333301',
+  '33333333-3333-3333-3333-333333333301',
+  '마트 장보기',
+  CURRENT_DATE - INTERVAL '5 days',
+  '[
+    {"name": "이마트 노원점", "cost": 25000, "time": "1시간", "icon": "🛒", "description": "생필품 + 간식 대량 구매"},
+    {"name": "동네 슈퍼마켓", "cost": 12000, "time": "30분", "icon": "🏪", "description": "꼭 필요한 것만 구매"}
+  ]'::jsonb,
+  1,
+  '{"activity": "마트 장보기", "when": "오늘 오전", "where": "집 근처", "who": "혼자", "why": "기분 전환하고 싶어서"}'::jsonb
+),
+(
+  '33333333-3333-3333-3333-333333333301',
+  '33333333-3333-3333-3333-333333333301',
+  '공원 산책',
+  CURRENT_DATE - INTERVAL '6 days',
+  '[
+    {"name": "노원 중앙공원 산책", "cost": 0, "time": "1시간", "icon": "🌳", "description": "무료, 혼자 여유롭게"},
+    {"name": "당고개 근린공원", "cost": 0, "time": "40분", "icon": "🌿", "description": "집에서 조금 더 가까움"}
+  ]'::jsonb,
+  0,
+  '{"activity": "공원 산책", "when": "오늘 오전", "where": "공원", "who": "혼자", "why": "기분 전환하고 싶어서"}'::jsonb
+);
