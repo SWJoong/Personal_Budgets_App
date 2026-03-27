@@ -23,13 +23,13 @@ export default function BudgetTrendChart({ monthlyData }: Props) {
       <h3 className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] ml-1">월별 지출 추이</h3>
       <div className="bg-white rounded-[2rem] p-6 ring-1 ring-zinc-200 shadow-sm">
         {/* 범례 */}
-        <div className="flex items-center gap-4 mb-5 text-[10px] font-bold text-zinc-400">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
+        <div className="flex items-center gap-4 mb-5 text-[11px] font-bold text-zinc-500">
+          <span className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-sm bg-blue-500" />
             지출
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-zinc-200 border border-dashed border-zinc-400" />
+          <span className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-sm bg-zinc-300 border-2 border-dashed border-zinc-500" />
             예산 기준선
           </span>
         </div>
@@ -46,9 +46,9 @@ export default function BudgetTrendChart({ monthlyData }: Props) {
                 x2={i * 60 + 50}
                 y1={130 - budgetH}
                 y2={130 - budgetH}
-                stroke="#d4d4d8"
-                strokeWidth="1.5"
-                strokeDasharray="4 3"
+                stroke="#71717a"
+                strokeWidth="2.5"
+                strokeDasharray="5 3"
               />
             )
           })}
@@ -58,7 +58,7 @@ export default function BudgetTrendChart({ monthlyData }: Props) {
             const barH = Math.max((d.totalSpent / maxAmount) * 110, 4)
             const isCurrentMonth = d.month === currentMonth
             const isOverBudget = d.totalSpent > d.budget && d.budget > 0
-            
+
             let barFill = isCurrentMonth ? '#3b82f6' : '#93c5fd'
             if (isOverBudget) barFill = '#ef4444'
 
@@ -72,7 +72,7 @@ export default function BudgetTrendChart({ monthlyData }: Props) {
                   rx="8"
                   fill={barFill}
                   className="transition-all duration-700"
-                  opacity={isCurrentMonth ? 1 : 0.7}
+                  opacity={isCurrentMonth ? 1 : 0.85}
                 />
                 {/* 금액 (상단) */}
                 {d.totalSpent > 0 && (
@@ -80,9 +80,9 @@ export default function BudgetTrendChart({ monthlyData }: Props) {
                     x={i * 60 + 30}
                     y={130 - barH - 4}
                     textAnchor="middle"
-                    fontSize="8"
-                    fontWeight="800"
-                    fill={isOverBudget ? '#dc2626' : '#71717a'}
+                    fontSize="10"
+                    fontWeight="900"
+                    fill={isOverBudget ? '#dc2626' : '#52525b'}
                   >
                     {d.totalSpent >= 10000
                       ? `${Math.round(d.totalSpent / 10000)}만`

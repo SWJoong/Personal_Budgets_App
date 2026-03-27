@@ -7,7 +7,6 @@ import Link from 'next/link'
 import InteractivePouchSection from './InteractivePouchSection'
 import BudgetTrendChart from './BudgetTrendChart'
 import WaterCupChart from '../charts/WaterCupChart'
-import WeeklyPhotoGrid from '../dashboard/WeeklyPhotoGrid'
 
 interface FundingSource {
   id: string
@@ -131,18 +130,6 @@ export default function HomeDashboard({
             <div className="p-6 rounded-2xl bg-white ring-1 ring-zinc-100 shadow-sm">
               <SeasonTreeVisual />
             </div>
-
-            {/* P2: 주간 지출 사진 그리드 */}
-            {dailyTransactions.length > 0 && (
-              <div className="p-6 rounded-2xl bg-white ring-1 ring-zinc-100 shadow-sm">
-                <WeeklyPhotoGrid weeklyData={dailyTransactions.slice(0, 7).map((day, idx) => ({
-                  date: day.date,
-                  dayOfWeek: ['일', '월', '화', '수', '목', '금', '토'][new Date(day.date).getDay()] || '',
-                  photoUrl: day.receipt_image_url,
-                  amount: day.amount
-                }))} />
-              </div>
-            )}
 
             {/* P2: 물컵 애니메이션 */}
             <div className="p-6 rounded-2xl bg-white ring-1 ring-zinc-100 shadow-sm flex justify-center">
