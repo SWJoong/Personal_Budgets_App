@@ -42,34 +42,54 @@ export async function createTransaction(formData: FormData) {
   const status = (formData.get('status') as 'pending' | 'confirmed') || 'pending'
   const is_expense = formData.get('is_expense') !== 'false' // Default to true
   const receiptFile = formData.get('receipt') as File | null
+  const activityFile = formData.get('activity_image') as File | null
 
   // If it's an income, save as negative amount so that calculation adds to balance
   const amount = is_expense ? rawAmount : -Math.abs(rawAmount)
 
   let receipt_image_url = null
+  let activity_image_url = null
 
-  // Handle receipt image upload
+  // Handle receipt image upload (optional)
   if (receiptFile && receiptFile.size > 0) {
     const fileExt = receiptFile.name.split('.').pop()
     const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`
-    const filePath = `${fileName}`
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('receipts')
-      .upload(filePath, receiptFile)
+      .upload(fileName, receiptFile)
 
     if (uploadError) {
-      console.error('Upload Error:', uploadError)
-      // Non-critical: continue without image if upload fails? 
-      // Or fail the whole thing? Let's fail for now to be safe.
+      console.error('Receipt Upload Error:', uploadError)
       throw new Error('Failed to upload receipt image')
     }
 
     const { data: { publicUrl } } = supabase.storage
       .from('receipts')
-      .getPublicUrl(filePath)
-    
+      .getPublicUrl(fileName)
+
     receipt_image_url = publicUrl
+  }
+
+  // Handle activity image upload (optional, max 1 photo)
+  if (activityFile && activityFile.size > 0) {
+    const fileExt = activityFile.name.split('.').pop()
+    const fileName = `activity-${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('receipts')
+      .upload(fileName, activityFile)
+
+    if (uploadError) {
+      console.error('Activity Image Upload Error:', uploadError)
+      throw new Error('Failed to upload activity image')
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('receipts')
+      .getPublicUrl(fileName)
+
+    activity_image_url = publicUrl
   }
 
   const { error } = await supabase.from('transactions').insert({
@@ -82,7 +102,8 @@ export async function createTransaction(formData: FormData) {
     category,
     memo: memo || null,
     status: status,
-    receipt_image_url
+    receipt_image_url,
+    activity_image_url,
   })
 
   if (error) {

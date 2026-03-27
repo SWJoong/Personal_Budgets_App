@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { formatCurrency } from '@/utils/budget-visuals'
-import PouchPreviewBar from './PouchPreviewBar'
+import WaterCupPlanPreview from '@/components/charts/WaterCupPlanPreview'
+import { savePlan } from '@/app/actions/plan'
 
 interface PlanOption {
   name: string
@@ -12,40 +13,84 @@ interface PlanOption {
   description?: string
 }
 
+interface PlanContext {
+  activity?: string
+  when?: string
+  where?: string
+  who?: string
+  why?: string
+}
+
 interface Props {
   activityName: string
   initialOptions: PlanOption[]
   currentBalance: number
   totalBudget?: number
+  participantId?: string
+  planContext?: PlanContext
   onSelect?: (index: number) => void
+  onSaved?: () => void
 }
 
-export default function PlanComparison({ activityName, initialOptions, currentBalance, totalBudget, onSelect }: Props) {
+export default function PlanComparison({
+  activityName,
+  initialOptions,
+  currentBalance,
+  totalBudget,
+  participantId,
+  planContext,
+  onSelect,
+  onSaved,
+}: Props) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   const handleSelect = (index: number) => {
     setSelectedIndex(index)
     if (onSelect) onSelect(index)
   }
 
+  const handleSave = async () => {
+    if (selectedIndex === null || !participantId) return
+    setSaving(true)
+    try {
+      await savePlan({
+        participantId,
+        activityName,
+        date: new Date().toISOString().split('T')[0],
+        options: initialOptions,
+        selectedOptionIndex: selectedIndex,
+        details: planContext,
+      })
+      setSaved(true)
+      if (onSaved) onSaved()
+    } catch {
+      alert('저장에 실패했어요. 다시 시도해 주세요.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const budget = totalBudget || currentBalance
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <div className="text-center">
-        <h2 className="text-2xl font-black text-zinc-900 mb-2">"{activityName}"</h2>
-        <p className="text-zinc-500 font-bold">어떤 방법이 더 좋을까요?</p>
+        <h2 className="text-xl font-black text-zinc-900 mb-1">"{activityName}"</h2>
+        <p className="text-zinc-500 font-bold text-sm">어떤 방법이 더 좋을까요?</p>
       </div>
 
-      {/* P5: 선택지별 색깔 점선 오버레이 바 */}
-      <PouchPreviewBar
+      {/* 물컵 예산 미리보기 */}
+      <WaterCupPlanPreview
         currentBalance={currentBalance}
         totalBudget={budget}
-        options={initialOptions.map(o => ({ name: o.name, cost: o.cost }))}
+        options={initialOptions.map(o => ({ name: o.name, cost: o.cost, icon: o.icon }))}
         selectedIndex={selectedIndex}
       />
 
-      <div className="grid grid-cols-1 gap-4">
+      {/* 선택지 카드 */}
+      <div className="grid grid-cols-1 gap-3">
         {initialOptions.map((option, index) => {
           const isSelected = selectedIndex === index
           const remainingAfter = currentBalance - option.cost
@@ -56,58 +101,61 @@ export default function PlanComparison({ activityName, initialOptions, currentBa
               key={index}
               onClick={() => handleSelect(index)}
               className={`
-                relative flex flex-col p-6 rounded-[2.5rem] text-left transition-all duration-300 ring-2
-                ${isSelected 
-                  ? 'bg-zinc-900 ring-zinc-900 shadow-xl scale-[1.02] z-10' 
+                relative flex flex-col p-5 rounded-[2rem] text-left transition-all duration-300 ring-2
+                ${isSelected
+                  ? 'bg-zinc-900 ring-zinc-900 shadow-xl scale-[1.01]'
                   : 'bg-white ring-zinc-100 hover:ring-zinc-300 shadow-sm active:scale-95'}
               `}
             >
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex flex-col gap-1">
-                  <span className={`text-sm font-black uppercase tracking-widest ${isSelected ? 'text-zinc-400' : 'text-zinc-300'}`}>
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex flex-col gap-0.5">
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${isSelected ? 'text-zinc-400' : 'text-zinc-300'}`}>
                     방법 {index + 1}
                   </span>
-                  <h3 className={`text-xl font-black ${isSelected ? 'text-white' : 'text-zinc-800'}`}>
+                  <h3 className={`text-lg font-black ${isSelected ? 'text-white' : 'text-zinc-800'}`}>
                     {option.name}
                   </h3>
+                  {option.description && (
+                    <p className={`text-xs font-medium ${isSelected ? 'text-zinc-400' : 'text-zinc-500'}`}>{option.description}</p>
+                  )}
                 </div>
-                <span className="text-4xl">{option.icon}</span>
+                <span className="text-3xl">{option.icon}</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className={`p-3 rounded-2xl ${isSelected ? 'bg-zinc-800' : 'bg-zinc-50'}`}>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className={`p-3 rounded-xl ${isSelected ? 'bg-zinc-800' : 'bg-zinc-50'}`}>
                   <p className={`text-[10px] font-bold mb-0.5 ${isSelected ? 'text-zinc-500' : 'text-zinc-400'}`}>비용</p>
-                  <p className={`font-black ${isSelected ? 'text-white' : 'text-zinc-900'}`}>
+                  <p className={`font-black text-base ${isSelected ? 'text-white' : 'text-zinc-900'}`}>
                     {formatCurrency(option.cost)}원
                   </p>
                 </div>
-                <div className={`p-3 rounded-2xl ${isSelected ? 'bg-zinc-800' : 'bg-zinc-50'}`}>
+                <div className={`p-3 rounded-xl ${isSelected ? 'bg-zinc-800' : 'bg-zinc-50'}`}>
                   <p className={`text-[10px] font-bold mb-0.5 ${isSelected ? 'text-zinc-500' : 'text-zinc-400'}`}>시간</p>
-                  <p className={`font-black ${isSelected ? 'text-white' : 'text-zinc-900'}`}>
+                  <p className={`font-black text-base ${isSelected ? 'text-white' : 'text-zinc-900'}`}>
                     {option.time}
                   </p>
                 </div>
               </div>
 
-              <div className={`mt-auto pt-4 border-t ${isSelected ? 'border-zinc-800' : 'border-zinc-100'}`}>
-                <p className={`text-xs font-bold mb-1 ${isSelected ? 'text-zinc-400' : 'text-zinc-500'}`}>
+              <div className={`pt-3 border-t ${isSelected ? 'border-zinc-800' : 'border-zinc-100'}`}>
+                <p className={`text-[10px] font-bold mb-1 ${isSelected ? 'text-zinc-400' : 'text-zinc-500'}`}>
                   이걸 선택하면 남는 돈
                 </p>
                 <div className="flex items-center justify-between">
                   <span className={`text-lg font-black ${
                     isOverBudget ? 'text-red-500' : isSelected ? 'text-green-400' : 'text-zinc-900'
                   }`}>
-                    {formatCurrency(remainingAfter)}원
+                    {formatCurrency(Math.max(0, remainingAfter))}원
                   </span>
                   {isOverBudget && (
-                    <span className="px-2 py-1 rounded-lg bg-red-100 text-[10px] font-black text-red-600">예산 부족</span>
+                    <span className="px-2 py-0.5 rounded-lg bg-red-100 text-[10px] font-black text-red-600">예산 부족</span>
                   )}
                 </div>
               </div>
 
               {isSelected && (
-                <div className="absolute -top-3 -right-3 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white shadow-lg animate-bounce">
-                  <span className="text-xl">✓</span>
+                <div className="absolute -top-3 -right-3 w-9 h-9 bg-green-500 rounded-full flex items-center justify-center text-white shadow-lg">
+                  <span className="text-lg">✓</span>
                 </div>
               )}
             </button>
@@ -115,14 +163,22 @@ export default function PlanComparison({ activityName, initialOptions, currentBa
         })}
       </div>
 
-      {selectedIndex !== null && (
-        <div className="mt-4 animate-in fade-in slide-in-from-bottom-4">
-          <button 
-            className="w-full py-5 rounded-3xl bg-primary text-primary-foreground text-xl font-black shadow-xl active:scale-95 transition-all"
-            onClick={() => alert('선택하신 계획이 저장되었습니다!')}
+      {/* 저장 버튼 */}
+      {selectedIndex !== null && !saved && (
+        <div className="animate-in fade-in slide-in-from-bottom-4">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full py-5 rounded-3xl bg-primary text-primary-foreground text-lg font-black shadow-xl active:scale-95 transition-all disabled:bg-zinc-200"
           >
-            이걸로 결정하기 👍
+            {saving ? '저장 중...' : '이걸로 결정하기 👍'}
           </button>
+        </div>
+      )}
+
+      {saved && (
+        <div className="p-4 rounded-2xl bg-green-50 ring-1 ring-green-200 text-center">
+          <p className="text-green-700 font-black">계획이 저장되었어요!</p>
         </div>
       )}
     </div>
