@@ -73,12 +73,21 @@ export default async function ParticipantDetailPage({ params }: PageProps) {
           <Link href={backUrl} className="text-zinc-400 hover:text-zinc-600 transition-colors">←</Link>
           <h1 className="text-xl font-bold tracking-tight">{participant.name || '당사자'}</h1>
         </div>
-        <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${
-          monthPercentage <= 20 ? 'bg-red-50 text-red-500' :
-          monthPercentage <= 40 ? 'bg-orange-50 text-orange-500' :
-          'bg-zinc-100 text-zinc-500'
-        }`}>
-          {monthPercentage}% 남음
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/admin/participants/${id}/preview`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
+          >
+            <span>👁</span>
+            <span>앱 미리보기</span>
+          </Link>
+          <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${
+            monthPercentage <= 20 ? 'bg-red-50 text-red-500' :
+            monthPercentage <= 40 ? 'bg-orange-50 text-orange-500' :
+            'bg-zinc-100 text-zinc-500'
+          }`}>
+            {monthPercentage}% 남음
+          </div>
         </div>
       </header>
 

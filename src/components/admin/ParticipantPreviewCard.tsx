@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { formatCurrency, getBudgetVisualInfo } from '@/utils/budget-visuals'
 
 interface FundingSource {
@@ -144,6 +145,18 @@ export default function ParticipantPreviewCard({ participant, onClick }: Partici
           )}
         </div>
       )}
+
+      {/* 앱 미리보기 버튼 */}
+      <div className="mt-3 pt-3 border-t border-white/50">
+        <Link
+          href={`/admin/participants/${participant.id}/preview`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-white/60 hover:bg-white/90 text-xs font-bold text-zinc-600 hover:text-zinc-900 transition-all border border-white/80"
+        >
+          <span>👁</span>
+          <span>앱 미리보기</span>
+        </Link>
+      </div>
     </div>
   )
 }
