@@ -139,7 +139,6 @@ export default function WaterCupPlanPreview({
                 style={{
                   backgroundColor: isSelected ? color.bg : undefined,
                   borderColor: isSelected ? color.dash : undefined,
-                  ringColor: color.dash,
                 }}
               >
                 {/* 점선 색상 마커 */}
