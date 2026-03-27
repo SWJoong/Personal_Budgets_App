@@ -19,7 +19,7 @@ export default async function Home() {
 
   // 관리자/지원자인 경우 전용 페이지로 리다이렉트
   if (profile?.role === 'admin') {
-    redirect('/admin/participants');
+    redirect('/admin');
   }
   if (profile?.role === 'supporter') {
     redirect('/supporter');
