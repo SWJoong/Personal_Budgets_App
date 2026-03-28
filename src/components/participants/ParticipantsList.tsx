@@ -125,22 +125,23 @@ export default function ParticipantsList({ participants }: ParticipantsListProps
             {/* 액션 버튼 */}
             <div className="mt-5 pt-4 border-t border-zinc-50 flex gap-2">
               <Link
-                href={`/admin/participants/${p.id}`}
-                className="flex-1 px-3 py-2 rounded-xl bg-zinc-50 text-zinc-600 text-xs font-black text-center hover:bg-zinc-100 transition-all"
+                href={`/admin/participants/${p.id}/preview`}
+                className="flex-1 px-4 py-3 rounded-xl bg-amber-100 text-amber-700 text-sm font-black text-center hover:bg-amber-200 transition-all flex items-center justify-center gap-1.5 shadow-sm"
               >
-                상세 설정 보기
+                <span>👁</span>
+                <span>앱 미리보기</span>
               </Link>
               <button
                 onClick={() => handleAssignSupporter(p)}
-                className="flex-1 px-3 py-2 rounded-xl bg-green-50 text-green-600 text-xs font-black text-center hover:bg-green-100 transition-all"
+                className="px-4 py-3 rounded-xl bg-green-50 text-green-600 text-xs font-black text-center hover:bg-green-100 transition-all"
               >
                 지원자 배정
               </button>
               <Link
-                href={`/?simulate=${p.id}`}
-                className="flex-1 px-3 py-2 rounded-xl bg-blue-50 text-blue-600 text-xs font-black text-center hover:bg-blue-100 transition-all"
+                href={`/admin/participants/${p.id}`}
+                className="px-4 py-3 rounded-xl bg-zinc-100 text-zinc-600 text-xs font-black text-center hover:bg-zinc-200 transition-all"
               >
-                당사자 화면
+                상세 설정
               </Link>
             </div>
           </div>
