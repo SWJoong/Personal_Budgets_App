@@ -105,7 +105,7 @@ export default function AdminSettingsClient({
           </div>
         </section>
 
-        {/* 사용자 목록 */}
+        {/* 사용자 목록 - 앱시트 스타일 테이블 */}
         <section className="flex flex-col gap-3">
           <div className="flex justify-between items-center">
             <h2 className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">
@@ -119,85 +119,76 @@ export default function AdminSettingsClient({
               <p className="text-muted-foreground font-medium">등록된 사용자가 없습니다.</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
-              {profiles.map((profile) => {
-                const isCurrentUser = profile.id === currentUserId
-                const isEditing = editingUserId === profile.id
-                const roleColor = ROLE_COLORS[profile.role] || ROLE_COLORS.participant
-                const roleLabel = ROLE_LABELS[profile.role] || profile.role
+            <div className="bg-white rounded-2xl ring-1 ring-zinc-200 shadow-sm overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-zinc-50 border-b border-zinc-200">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-black text-zinc-500 uppercase tracking-wider">사용자</th>
+                    <th className="px-4 py-3 text-left text-xs font-black text-zinc-500 uppercase tracking-wider">가입일</th>
+                    <th className="px-4 py-3 text-left text-xs font-black text-zinc-500 uppercase tracking-wider">역할</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100">
+                  {profiles.map((profile) => {
+                    const isCurrentUser = profile.id === currentUserId
 
-                return (
-                  <div
-                    key={profile.id}
-                    className={`p-5 rounded-2xl bg-card ring-1 ring-border shadow-sm transition-all ${
-                      isCurrentUser ? 'ring-primary/30' : ''
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-lg font-bold text-muted-foreground">
-                          {(profile.name || '?')[0]}
-                        </div>
-                        <div>
-                          <p className="font-bold text-foreground flex items-center gap-2">
-                            {profile.name || '이름 없음'}
-                            {isCurrentUser && (
-                              <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">나</span>
-                            )}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(profile.created_at).toLocaleDateString('ko-KR')} 가입
-                          </p>
-                        </div>
-                      </div>
+                    return (
+                      <tr
+                        key={profile.id}
+                        className={`transition-colors hover:bg-zinc-50 ${
+                          isCurrentUser ? 'bg-blue-50/30' : ''
+                        }`}
+                      >
+                        {/* 사용자 이름 */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center text-sm font-bold text-zinc-600">
+                              {(profile.name || '?')[0]}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-zinc-900 text-sm">
+                                {profile.name || '이름 없음'}
+                              </span>
+                              {isCurrentUser && (
+                                <span className="text-[9px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 font-bold">나</span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
 
-                      <div className="flex items-center gap-2">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold ring-1 ${roleColor}`}>
-                          {roleLabel}
-                        </span>
-                        {!isCurrentUser && (
-                          <button
-                            onClick={() => setEditingUserId(isEditing ? null : profile.id)}
-                            className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                            title="역할 변경"
-                          >
-                            ✏️
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                        {/* 가입일 */}
+                        <td className="px-4 py-3">
+                          <span className="text-sm text-zinc-600">
+                            {new Date(profile.created_at).toLocaleDateString('ko-KR')}
+                          </span>
+                        </td>
 
-                    {/* 역할 변경 UI */}
-                    {isEditing && (
-                      <div className="mt-4 pt-4 border-t border-border animate-fade-in-up">
-                        <p className="text-xs text-muted-foreground font-bold mb-3">역할 선택</p>
-                        <div className="flex gap-2">
-                          {ROLE_OPTIONS.map((role) => (
-                            <button
-                              key={role.value}
-                              onClick={() => handleRoleChange(profile.id, role.value)}
-                              disabled={isPending || profile.role === role.value}
-                              className={`flex-1 p-3 rounded-xl text-center transition-all border-2 ${
-                                profile.role === role.value
-                                  ? 'border-primary bg-primary/5 text-primary font-bold'
-                                  : 'border-border hover:border-primary/50 text-muted-foreground hover:text-foreground'
-                              } disabled:opacity-50`}
+                        {/* 역할 (인라인 셀렉트) */}
+                        <td className="px-4 py-3">
+                          {isCurrentUser ? (
+                            <span className={`inline-flex px-3 py-1 rounded-lg text-xs font-bold ring-1 ${ROLE_COLORS[profile.role]}`}>
+                              {ROLE_LABELS[profile.role] || profile.role}
+                            </span>
+                          ) : (
+                            <select
+                              value={profile.role}
+                              onChange={(e) => handleRoleChange(profile.id, e.target.value as UserRole)}
+                              disabled={isPending}
+                              className="px-3 py-1 rounded-lg text-xs font-bold ring-1 ring-zinc-200 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all disabled:opacity-50 cursor-pointer hover:ring-zinc-300 bg-white"
                             >
-                              <span className="text-lg block">{role.emoji}</span>
-                              <span className="text-[11px] font-bold block mt-1">{role.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                        {isPending && (
-                          <p className="text-xs text-muted-foreground text-center mt-2 animate-pulse-gentle">
-                            변경 중...
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+                              {ROLE_OPTIONS.map((role) => (
+                                <option key={role.value} value={role.value}>
+                                  {role.emoji} {role.label}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </section>
