@@ -85,7 +85,7 @@ export function AdminSidebar() {
   }
 
   const menuItems = [
-    { name: '통합 대시보드', href: '/supporter', icon: '📊' },
+    { name: '관리자 대시보드', href: '/admin', icon: '📊' },
     { name: '당사자 관리', href: '/admin/participants', icon: '👥' },
     { name: '회계/거래장부', href: '/supporter/transactions', icon: '📒' },
     { name: '증빙/서류 보관함', href: '/supporter/documents', icon: '📁' },
@@ -96,15 +96,17 @@ export function AdminSidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-slate-300 flex flex-col pt-6 pb-4 shadow-2xl z-40">
       <div className="px-6 mb-8">
-        <h2 className="text-white font-bold text-lg tracking-tight leading-tight">
-          아름드리꿈터
-        </h2>
-        <span className="text-slate-400 text-sm font-normal">관리자 뷰 (회계장부)</span>
+        <Link href="/supporter" className="block hover:opacity-80 transition-opacity">
+          <h2 className="text-white font-bold text-lg tracking-tight leading-tight">
+            아름드리꿈터
+          </h2>
+          <span className="text-slate-400 text-sm font-normal">관리자 뷰 (회계장부)</span>
+        </Link>
       </div>
 
       <nav className="flex-1 px-3 space-y-1">
         {menuItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/supporter' && pathname.startsWith(item.href))
+          const isActive = pathname === item.href || (item.href !== '/supporter' && item.href !== '/admin' && pathname.startsWith(item.href))
           return (
             <Link
               key={item.name}
