@@ -4,57 +4,109 @@ import Link from 'next/link'
 import ParticipantPreviewCard from '@/components/admin/ParticipantPreviewCard'
 
 export default async function AdminDashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  // Demo mode: Always skip authentication
+  const isDemoMode = true
 
-  if (!user) redirect('/login')
+  let user = null
+  let profile = null
 
-  // 관리자 권한 확인
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  if (!isDemoMode) {
+    const supabase = await createClient()
+    const authData = await supabase.auth.getUser()
+    user = authData.data.user
 
-  if (!profile || profile.role !== 'admin') {
-    redirect('/')
+    if (!user) redirect('/login')
+
+    // 관리자 권한 확인
+    const profileData = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+    profile = profileData.data
+
+    if (!profile || profile.role !== 'admin') {
+      redirect('/')
+    }
+  } else {
+    // Demo mode: Use dummy data
+    user = { id: 'demo-admin', email: 'admin@example.com' }
+    profile = {
+      id: 'demo-admin',
+      name: '관리자',
+      role: 'admin',
+      email: 'admin@example.com'
+    }
   }
 
-  // seed.sql의 첫 4명 참가자 ID
-  const targetParticipantIds = [
-    '33333333-3333-3333-3333-333333333301', // 김철수
-    '33333333-3333-3333-3333-333333333302', // 이영희
-    '33333333-3333-3333-3333-333333333303', // 박민수
-    '33333333-3333-3333-3333-333333333304', // 정수진
-  ]
+  let previewParticipants: any[] = []
+  let totalParticipants = 0
+  let totalMonthlyBudget = 0
+  let totalMonthlySpent = 0
 
-  // 특정 참가자들의 데이터 조회
-  const { data: previewParticipants } = await supabase
-    .from('participants')
-    .select(`
-      *,
-      funding_sources (*)
-    `)
-    .in('id', targetParticipantIds)
-    .order('name', { ascending: true })
+  if (!isDemoMode) {
+    const supabase = await createClient()
 
-  // 전체 통계
-  const { data: allParticipants } = await supabase
-    .from('participants')
-    .select('id, monthly_budget_default, funding_sources(monthly_budget, current_month_balance)')
+    // seed.sql의 첫 4명 참가자 ID
+    const targetParticipantIds = [
+      '33333333-3333-3333-3333-333333333301', // 김철수
+      '33333333-3333-3333-3333-333333333302', // 이영희
+      '33333333-3333-3333-3333-333333333303', // 박민수
+      '33333333-3333-3333-3333-333333333304', // 정수진
+    ]
 
-  const totalParticipants = allParticipants?.length || 0
-  const totalMonthlyBudget = allParticipants?.reduce((sum, p) => {
-    const fsBudget = p.funding_sources?.reduce((acc: number, fs: any) => acc + Number(fs.monthly_budget), 0) || 0
-    return sum + (fsBudget || p.monthly_budget_default || 0)
-  }, 0) || 0
+    // 특정 참가자들의 데이터 조회
+    const previewData = await supabase
+      .from('participants')
+      .select(`
+        *,
+        funding_sources (*)
+      `)
+      .in('id', targetParticipantIds)
+      .order('name', { ascending: true })
+    previewParticipants = previewData.data || []
 
-  const totalMonthlyBalance = allParticipants?.reduce((sum, p) => {
-    const fsBalance = p.funding_sources?.reduce((acc: number, fs: any) => acc + Number(fs.current_month_balance), 0) || 0
-    return sum + fsBalance
-  }, 0) || 0
+    // 전체 통계
+    const { data: allParticipants } = await supabase
+      .from('participants')
+      .select('id, monthly_budget_default, funding_sources(monthly_budget, current_month_balance)')
 
-  const totalMonthlySpent = totalMonthlyBudget - totalMonthlyBalance
+    totalParticipants = allParticipants?.length || 0
+    totalMonthlyBudget = allParticipants?.reduce((sum, p) => {
+      const fsBudget = p.funding_sources?.reduce((acc: number, fs: any) => acc + Number(fs.monthly_budget), 0) || 0
+      return sum + (fsBudget || p.monthly_budget_default || 0)
+    }, 0) || 0
+
+    const totalMonthlyBalance = allParticipants?.reduce((sum, p) => {
+      const fsBalance = p.funding_sources?.reduce((acc: number, fs: any) => acc + Number(fs.current_month_balance), 0) || 0
+      return sum + fsBalance
+    }, 0) || 0
+
+    totalMonthlySpent = totalMonthlyBudget - totalMonthlyBalance
+  } else {
+    // Demo mode: Use dummy data
+    previewParticipants = [
+      {
+        id: 'demo-p1',
+        name: '김철수',
+        monthly_budget_default: 500000,
+        funding_sources: [
+          { id: 'demo-fs1', name: '개인운영비', monthly_budget: 300000, current_month_balance: 250000 }
+        ]
+      },
+      {
+        id: 'demo-p2',
+        name: '이영희',
+        monthly_budget_default: 600000,
+        funding_sources: [
+          { id: 'demo-fs2', name: '활동지원비', monthly_budget: 400000, current_month_balance: 320000 }
+        ]
+      }
+    ]
+    totalParticipants = 12
+    totalMonthlyBudget = 6000000
+    totalMonthlySpent = 3500000
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
