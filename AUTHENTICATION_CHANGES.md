@@ -1,190 +1,323 @@
-# 인증 시스템 변경사항
+# 인증 시스템 변경사항 (데모 모드)
 
-## 개요
-Google OAuth 인증을 제거하고 이메일/비밀번호 기반 인증으로 전환했습니다.
+## 📋 개요
+모든 인증 시스템을 제거하고 **완전한 데모 모드**로 전환했습니다.
 
-## 브랜치
+### 변경 이력
+1. ~~Google OAuth 제거 → 이메일/비밀번호 인증으로 전환~~ (커밋: 91275a3)
+2. **이메일 인증까지 완전 제거 → 역할 선택 데모 모드** (커밋: 2a832c5) ✅
+
+## 🎭 현재 버전: 데모 모드
+
+### 브랜치
 - **브랜치명**: `remove-google-auth`
 - **기본 브랜치**: `main`
+- **최신 커밋**: `2a832c5`
 
-## 변경된 파일
+### 주요 특징
+- ✅ **인증 불필요**: 로그인/회원가입 없이 바로 사용
+- ✅ **역할 선택**: 관리자 또는 당사자 중 선택
+- ✅ **localStorage 기반**: 브라우저 로컬 스토리지에 역할 저장
+- ✅ **즉시 체험**: 클릭 한 번으로 앱 전체 기능 사용 가능
 
-### 1. `/src/app/(auth)/login/page.tsx`
-**변경 내용:**
-- Google OAuth 버튼 제거
-- 이메일/비밀번호 입력 폼 추가
-- 회원가입 페이지로 이동하는 링크 추가
-- 도메인 제한 검증 (클라이언트 사이드)
+---
 
-**주요 기능:**
+## 📱 사용자 플로우
+
+### 1. 첫 화면 (`/login`)
+사용자가 앱에 접속하면 역할 선택 화면이 표시됩니다:
+
+```
+┌─────────────────────────────────────┐
+│     아름드리꿈터                     │
+│  자기주도 개인예산 관리 앱            │
+│                                     │
+│  🎭 역할을 선택해주세요              │
+│                                     │
+│  ┌──────────┐    ┌──────────┐      │
+│  │   🏢     │    │    🙋    │      │
+│  │  관리자   │    │   당사자  │      │
+│  └──────────┘    └──────────┘      │
+└─────────────────────────────────────┘
+```
+
+### 2. 역할 선택 시 동작
+
+#### 관리자 선택
+```javascript
+localStorage.setItem("demo_role", "admin");
+localStorage.setItem("demo_user_id", "demo-admin-{timestamp}");
+localStorage.setItem("demo_user_name", "관리자");
+
+// 리디렉션
+router.push("/admin");
+```
+
+**접근 가능한 화면:**
+- `/admin` - 관리자 대시보드
+- `/admin/participants` - 당사자 관리
+- `/admin/settings` - 시스템 설정
+- `/supporter/transactions` - 거래 내역 관리
+- 기타 모든 관리자 기능
+
+#### 당사자 선택
+```javascript
+localStorage.setItem("demo_role", "participant");
+localStorage.setItem("demo_user_id", "demo-participant-{timestamp}");
+localStorage.setItem("demo_user_name", "김철수");
+
+// 리디렉션
+router.push("/");
+```
+
+**접근 가능한 화면:**
+- `/` - 당사자 홈 (예산 현황)
+- `/calendar` - 캘린더
+- `/plan` - 계획 수립
+- `/receipt` - 영수증 기록
+- 기타 모든 당사자 기능
+
+---
+
+## 🎨 UI/UX 특징
+
+### 역할 선택 카드
+- **인터랙티브 디자인**: 호버 시 확대 및 색상 변화
+- **시각적 피드백**: 선택 시 애니메이션 효과
+- **명확한 설명**: 각 역할의 주요 기능 소개
+- **반응형**: 모바일/데스크톱 모두 지원
+
+### 카드 구성 요소
+1. **아이콘**: 역할을 나타내는 이모지 (🏢/🙋)
+2. **제목**: 역할 이름 (관리자/당사자)
+3. **설명**: 역할별 주요 기능
+4. **기능 목록**: 3가지 핵심 기능 표시
+5. **CTA 버튼**: "관리자로 시작하기" / "당사자로 시작하기"
+
+### 데모 모드 안내 배너
+```
+ℹ️ 데모 버전 안내
+이 앱은 데모 모드로 실행 중입니다.
+로그인 없이 관리자 또는 당사자 화면을 자유롭게 체험하실 수 있습니다.
+데이터는 브라우저에만 저장되며 실제 서버에는 저장되지 않습니다.
+```
+
+---
+
+## 🔧 기술 구현
+
+### 변경된 파일
+
+#### 1. `/src/app/(auth)/login/page.tsx`
+**변경 전 (커밋 91275a3):**
+- 이메일/비밀번호 입력 폼
+- 도메인 검증 로직
+- 회원가입 링크
+
+**변경 후 (커밋 2a832c5):**
 ```typescript
-// 이메일/비밀번호로 로그인
-const { data, error } = await supabase.auth.signInWithPassword({
-  email,
-  password,
-});
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+export default function RoleSelectionPage() {
+  const router = useRouter();
+  const [selectedRole, setSelectedRole] = useState<"admin" | "participant" | null>(null);
+
+  const handleRoleSelect = (role: "admin" | "participant") => {
+    // Store role in localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("demo_role", role);
+      localStorage.setItem("demo_user_id", `demo-${role}-${Date.now()}`);
+      localStorage.setItem("demo_user_name", role === "admin" ? "관리자" : "김철수");
+    }
+
+    // Navigate based on role
+    if (role === "admin") {
+      router.push("/admin");
+    } else {
+      router.push("/");
+    }
+    router.refresh();
+  };
+
+  return (
+    // 역할 선택 UI
+  );
+}
 ```
 
-### 2. `/src/app/(auth)/signup/page.tsx` *(새 파일)*
-**주요 기능:**
-- 이메일/비밀번호 회원가입
-- 이름 입력 (선택사항)
-- 비밀번호 확인 필드
-- 비밀번호 최소 6자 검증
-- 도메인 화이트리스트 검증
-- 회원가입 성공 시 로그인 페이지로 자동 리디렉션
+#### 2. `/src/app/(auth)/signup/page.tsx`
+**상태**: ❌ 삭제됨
+- 회원가입 페이지 완전 제거
+- 더 이상 필요 없음
 
-```typescript
-// 회원가입
-const { data, error } = await supabase.auth.signUp({
-  email,
-  password,
-  options: {
-    data: {
-      name: name || email.split('@')[0],
-    },
-  },
-});
-```
+---
 
-## 도메인 제한 설정
+## 🚀 배포 및 테스트
 
-### 환경 변수
-`.env.local` 파일에 다음 환경 변수를 설정하세요:
+### Vercel 프리뷰 배포
 
+#### 1. 브랜치 푸시
 ```bash
-# 클라이언트 사이드 (브라우저에서 접근 가능)
-NEXT_PUBLIC_ALLOWED_EMAIL_DOMAINS=nowondaycare.org
-
-# 여러 도메인 허용 시 (쉼표로 구분)
-NEXT_PUBLIC_ALLOWED_EMAIL_DOMAINS=nowondaycare.org,example.com
-
-# 특정 이메일 화이트리스트 (관리자 등)
-NEXT_PUBLIC_ADMIN_EMAILS=admin@example.com,manager@test.com
+git push origin remove-google-auth
 ```
 
-### 서버 사이드 환경 변수
-`/auth/callback` route에서도 동일한 검증을 수행합니다:
-```bash
-ALLOWED_EMAIL_DOMAINS=nowondaycare.org
-ADMIN_EMAILS=admin@example.com
-```
+#### 2. Vercel 자동 배포
+- 프리뷰 URL: `https://personal-budgets-app-git-remove-google-auth-<project>.vercel.app`
+- 배포 시간: 약 2-3분
 
-## Supabase 설정
-
-### 1. 이메일 인증 활성화
-Supabase 대시보드에서:
-1. **Authentication** → **Providers** 이동
-2. **Email** provider 활성화
-3. **Confirm email** 옵션 설정 (선택사항)
-
-### 2. Email Templates (선택사항)
-이메일 확인을 원할 경우:
-- **Authentication** → **Email Templates**에서 템플릿 커스터마이징
-
-### 3. Google OAuth 비활성화 (선택사항)
-- **Authentication** → **Providers**에서 Google provider 비활성화
-
-## 사용자 플로우
-
-### 회원가입
-1. `/signup` 페이지 접속
-2. 이름 (선택), 이메일, 비밀번호 입력
-3. 도메인 검증 통과 필요 (예: @nowondaycare.org)
-4. 회원가입 성공 → 자동으로 `/login`으로 이동
-
-### 로그인
-1. `/login` 페이지 접속
-2. 이메일과 비밀번호 입력
-3. 도메인 검증 통과
-4. 로그인 성공 → `/` (홈)으로 리디렉션
-
-## 보안 기능
-
-### 클라이언트 사이드
-- 비밀번호 최소 6자 검증
-- 비밀번호 확인 일치 검증
-- 도메인 화이트리스트 검증
-
-### 서버 사이드
-- auth callback에서 도메인 재검증
-- 허용되지 않은 도메인 시 즉시 로그아웃 및 에러 페이지로 리디렉션
-
-## 테스트
+#### 3. 환경 변수 (필요 없음!)
+데모 모드에서는 Supabase 인증을 사용하지 않으므로 환경 변수 설정 불필요
 
 ### 로컬 테스트
 ```bash
+# 개발 서버 실행
 npm run dev
+
+# 브라우저에서 http://localhost:3000/login 접속
+# 역할 선택 → 즉시 사용 가능
 ```
 
 ### 빌드 테스트
 ```bash
 npm run build
+# ✓ Generating static pages (16/16)
+# ○ /login (정적 페이지로 빌드됨)
 ```
 
-빌드 성공 확인:
-```
-✓ Generating static pages (17/17)
-○ /login
-○ /signup
-```
+---
 
-## 마이그레이션 가이드
+## 📊 장단점 분석
 
-### main 브랜치에 병합하기
+### ✅ 장점
+1. **즉시 사용 가능**: 가입/로그인 과정 없이 바로 체험
+2. **간편한 테스트**: QA, 데모, 프레젠테이션에 최적
+3. **낮은 진입 장벽**: 누구나 쉽게 앱 기능 확인 가능
+4. **빠른 개발**: 인증 관련 버그/이슈 제거
+5. **비용 절감**: 인증 서비스 비용 없음
+
+### ⚠️ 단점 (프로덕션 사용 시)
+1. **보안 없음**: 누구나 모든 기능 접근 가능
+2. **데이터 관리 불가**: 사용자별 데이터 분리 불가
+3. **멀티 유저 불가**: 동시에 여러 사용자 사용 불가
+4. **데이터 휘발성**: localStorage 삭제 시 역할 정보 손실
+
+### 💡 권장 사용 사례
+- ✅ **데모/프로토타입**: 기능 시연용
+- ✅ **개발/테스트**: 빠른 기능 테스트
+- ✅ **교육/트레이닝**: 사용법 학습
+- ❌ **프로덕션**: 실제 서비스 운영 ❌
+
+---
+
+## 🔄 프로덕션 전환 가이드
+
+데모 모드를 실제 서비스로 전환하려면:
+
+### 옵션 1: 이메일/비밀번호 인증 (커밋 91275a3)
 ```bash
-# 현재 브랜치 확인
-git branch  # remove-google-auth에 있어야 함
+git checkout 91275a3
+# 이메일/비밀번호 인증 버전으로 롤백
+```
 
-# main 브랜치로 전환
+### 옵션 2: Google OAuth 인증 (main 브랜치)
+```bash
 git checkout main
+# 원래 Google OAuth 버전으로 복구
+```
 
-# remove-google-auth 브랜치 병합
+### 옵션 3: 하이브리드 모드
+- 데모 모드 + 실제 인증 병행
+- 환경 변수로 모드 전환
+```typescript
+const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+
+if (isDemoMode) {
+  // 역할 선택 UI
+} else {
+  // 실제 로그인 UI
+}
+```
+
+---
+
+## 📝 커밋 히스토리
+
+```
+2a832c5 feat: 완전한 데모 모드 - 인증 없이 역할 선택으로 변경
+e309f06 docs: Add authentication system changes documentation
+91275a3 feat: Google OAuth 제거 및 이메일/비밀번호 인증으로 전환
+```
+
+---
+
+## 🎯 다음 단계
+
+### main 브랜치에 병합
+```bash
+git checkout main
 git merge remove-google-auth
-
-# 원격 저장소에 푸시
 git push origin main
 ```
 
-### 환경 변수 업데이트
-병합 후 프로덕션 환경 (.env.production 또는 Vercel)에 다음 환경 변수 추가:
+### Pull Request 생성 (권장)
 ```bash
-NEXT_PUBLIC_ALLOWED_EMAIL_DOMAINS=nowondaycare.org
-NEXT_PUBLIC_ADMIN_EMAILS=cheese0318@nowondaycare.org
-ALLOWED_EMAIL_DOMAINS=nowondaycare.org
-ADMIN_EMAILS=cheese0318@nowondaycare.org
+git push origin remove-google-auth
+# GitHub에서 PR 생성하여 팀 리뷰 진행
 ```
 
-## 롤백 방법
+---
 
-Google OAuth로 되돌리려면:
-```bash
-git checkout main
-git revert <commit-hash>  # 이 커밋의 해시: 91275a3
+## ❓ FAQ
+
+### Q1: 데이터가 저장되나요?
+**A**: 아니요. localStorage에 역할 정보만 저장되며, 실제 데이터는 서버에 저장되지 않습니다. Supabase와 연동된 경우에만 서버에 저장됩니다.
+
+### Q2: 역할을 변경하려면?
+**A**:
+1. 브라우저 개발자 도구 → Application → Local Storage → 삭제
+2. 다시 `/login` 접속하여 역할 재선택
+
+또는:
+```javascript
+localStorage.clear();
+window.location.href = '/login';
 ```
 
-또는 브랜치 삭제:
+### Q3: 여러 당사자를 테스트하려면?
+**A**: 현재는 한 번에 하나의 역할만 가능. 여러 당사자 테스트를 위해서는:
+- 시크릿 모드 사용
+- 다른 브라우저 사용
+- 또는 실제 인증 시스템 도입 필요
+
+### Q4: Supabase는 여전히 필요한가요?
+**A**: 인증은 불필요하지만, 데이터 저장(거래 내역, 계획 등)을 위해서는 여전히 Supabase 필요
+
+---
+
+## 🐛 문제 해결
+
+### 문제: 역할 선택 후 화면이 비어있음
+**해결**:
 ```bash
-git branch -D remove-google-auth
+# localStorage 확인
+console.log(localStorage.getItem('demo_role'));
+
+# Supabase 데이터 확인 (seed 데이터가 있는지)
 ```
 
-## 주의사항
-
-1. **기존 사용자**: Google OAuth로 가입한 기존 사용자는 비밀번호 재설정이 필요할 수 있습니다.
-2. **이메일 확인**: Supabase에서 "Confirm email"을 활성화한 경우, 사용자는 이메일 인증 링크를 클릭해야 합니다.
-3. **도메인 제한**: 반드시 환경 변수에 허용된 도메인을 설정하세요.
-4. **비밀번호 정책**: 현재 최소 6자만 요구하며, 더 강력한 정책이 필요하면 코드를 수정하세요.
-
-## 문의
-
-문제가 발생하면 다음을 확인하세요:
-1. Supabase 대시보드에서 Email provider 활성화 여부
-2. 환경 변수가 올바르게 설정되었는지 (.env.local)
-3. 브라우저 콘솔에서 에러 메시지 확인
-4. Supabase 로그 확인
+### 문제: 관리자 화면에서 당사자 목록이 비어있음
+**해결**:
+```bash
+# seed 데이터 삽입 필요
+npm run supabase:seed
+```
 
 ---
 
 **작성일**: 2026-03-28
-**버전**: 1.0.0
-**커밋**: 91275a3
+**최종 업데이트**: 2026-03-28
+**버전**: 2.0.0 (데모 모드)
+**최신 커밋**: 2a832c5
