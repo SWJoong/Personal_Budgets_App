@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import type { UserRole } from '@/types/database'
 
 const ADMIN_EMAILS = [
-  'cheese0318@nowondaycare.org',
+  'kim.cs@example.com',
   'ahreum217@nowondaycare.org',
   'valuesh@nowondaycare.org',
   'tpdnr9870@nowondaycare.org',
@@ -62,7 +62,7 @@ export async function updateUserRole(userId: string, newRole: UserRole) {
 }
 
 /**
- * 관리자 계정 초기 설정 (cheese0318@nowondaycare.org)
+ * 관리자 계정 초기 설정 (kim.cs@example.com)
  * 해당 이메일 사용자가 profiles에 존재하면 admin 역할 부여
  */
 export async function ensureAdminAccount() {
