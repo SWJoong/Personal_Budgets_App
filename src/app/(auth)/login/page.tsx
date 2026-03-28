@@ -8,14 +8,20 @@ export default function RoleSelectionPage() {
   const [selectedRole, setSelectedRole] = useState<"admin" | "participant" | null>(null);
 
   const handleRoleSelect = (role: "admin" | "participant") => {
+    console.log("🎭 Role selected:", role);
+
     // Store role in localStorage for demo purposes
     if (typeof window !== "undefined") {
       localStorage.setItem("demo_role", role);
       localStorage.setItem("demo_user_id", `demo-${role}-${Date.now()}`);
       localStorage.setItem("demo_user_name", role === "admin" ? "관리자" : "김철수");
+      console.log("✅ Role saved to localStorage");
     }
 
     // Navigate based on role
+    const targetPath = role === "admin" ? "/admin" : "/";
+    console.log("🚀 Navigating to:", targetPath);
+
     if (role === "admin") {
       router.push("/admin");
     } else {
