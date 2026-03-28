@@ -103,7 +103,7 @@ export async function createTransaction(formData: FormData) {
     memo: memo || null,
     status: status,
     receipt_image_url,
-    activity_image_url,
+    payment_method,
   })
 
   if (error) {

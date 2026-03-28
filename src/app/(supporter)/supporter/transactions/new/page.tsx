@@ -32,9 +32,7 @@ export default function NewTransactionPage() {
   const [status, setStatus] = useState<'pending' | 'confirmed'>('confirmed')
   const [isExpense, setIsExpense] = useState(true) // 지출/수입 토글
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
-  const [activityImages, setActivityImages] = useState<File[]>([])
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
-  const [activityPreviews, setActivityPreviews] = useState<string[]>([])
 
   const categories = ['식비', '교통비', '여가활동', '생활용품', '의료비', '교육', '기타']
 
@@ -99,27 +97,6 @@ export default function NewTransactionPage() {
     }
   }
 
-  const handleActivityImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    if (files.length > 3) {
-      alert('활동사진은 최대 3장까지만 첨부할 수 있습니다.')
-      return
-    }
-    setActivityImages(files)
-
-    const previews: string[] = []
-    files.forEach(file => {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        previews.push(reader.result as string)
-        if (previews.length === files.length) {
-          setActivityPreviews(previews)
-        }
-      }
-      reader.readAsDataURL(file)
-    })
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!selectedParticipant || !activityName || !amount || !selectedFundingSource) {
@@ -145,9 +122,6 @@ export default function NewTransactionPage() {
 
       if (receiptFile) {
         formData.append('receipt', receiptFile)
-      }
-      if (activityImages.length > 0) {
-        formData.append('activity_image', activityImages[0]) // 현재는 1개만 지원
       }
 
       const result = await createTransaction(formData)
@@ -343,13 +317,13 @@ export default function NewTransactionPage() {
               />
             </fieldset>
 
-            {/* 영수증 첨부 */}
+            {/* 영수증/활동사진 첨부 */}
             <fieldset className="flex flex-col gap-3">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">영수증 첨부 (OCR)</label>
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">영수증/활동사진 첨부</label>
               <div className="flex flex-col gap-3">
                 <label className="flex items-center justify-center gap-2 p-4 rounded-2xl border-2 border-dashed border-zinc-300 hover:border-zinc-400 transition-colors cursor-pointer bg-zinc-50">
                   <span className="text-2xl">📸</span>
-                  <span className="text-sm font-bold text-zinc-600">영수증 사진 업로드</span>
+                  <span className="text-sm font-bold text-zinc-600">사진 업로드</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -359,7 +333,7 @@ export default function NewTransactionPage() {
                 </label>
                 {receiptPreview && (
                   <div className="relative">
-                    <img src={receiptPreview} alt="영수증 미리보기" className="w-full h-48 object-cover rounded-2xl" />
+                    <img src={receiptPreview} alt="사진 미리보기" className="w-full h-48 object-cover rounded-2xl" />
                     <button
                       type="button"
                       onClick={() => {
@@ -368,33 +342,6 @@ export default function NewTransactionPage() {
                       }}
                       className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full font-bold hover:bg-red-600 transition-colors"
                     >✕</button>
-                  </div>
-                )}
-              </div>
-            </fieldset>
-
-            {/* 활동사진 첨부 */}
-            <fieldset className="flex flex-col gap-3">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">활동사진 첨부 (최대 3장)</label>
-              <div className="flex flex-col gap-3">
-                <label className="flex items-center justify-center gap-2 p-4 rounded-2xl border-2 border-dashed border-blue-300 hover:border-blue-400 transition-colors cursor-pointer bg-blue-50">
-                  <span className="text-2xl">📷</span>
-                  <span className="text-sm font-bold text-blue-600">활동사진 업로드</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleActivityImagesChange}
-                    className="hidden"
-                  />
-                </label>
-                {activityPreviews.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {activityPreviews.map((preview, idx) => (
-                      <div key={idx} className="relative">
-                        <img src={preview} alt={`활동사진 ${idx + 1}`} className="w-full h-24 object-cover rounded-xl" />
-                      </div>
-                    ))}
                   </div>
                 )}
               </div>
