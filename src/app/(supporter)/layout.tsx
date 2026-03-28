@@ -11,9 +11,9 @@ export default async function SupporterLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Demo mode: Skip authentication
-  // In production, enable authentication by setting NEXT_PUBLIC_DEMO_MODE=false
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE !== 'false'
+  // Demo mode: Always skip authentication
+  // TODO: For production, change this to false
+  const isDemoMode = true
 
   if (!isDemoMode) {
     const cookieStore = await cookies()

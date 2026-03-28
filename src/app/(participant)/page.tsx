@@ -3,8 +3,9 @@ import { redirect } from 'next/navigation'
 import HomeDashboard from '@/components/home/HomeDashboard'
 
 export default async function Home() {
-  // Demo mode: Skip authentication
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE !== 'false'
+  // Demo mode: Always skip authentication
+  // TODO: For production, change this to false
+  const isDemoMode = true
 
   let user = null
   let profile = null
