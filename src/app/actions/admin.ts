@@ -212,3 +212,131 @@ export async function createParticipant(formData: {
     return { error: `오류: ${e.message}` }
   }
 }
+
+/**
+ * 당사자 정보 업데이트
+ */
+export async function updateParticipant(participantId: string, formData: {
+  name?: string
+  email?: string
+  monthlyBudget?: number
+  yearlyBudget?: number
+  startDate?: string
+  endDate?: string
+  alertThreshold?: number
+  supporterId?: string | null
+}) {
+  const { supabase } = await verifyAdmin()
+
+  try {
+    const updateData: any = {}
+    if (formData.name !== undefined) updateData.name = formData.name
+    if (formData.email !== undefined) updateData.email = formData.email
+    if (formData.monthlyBudget !== undefined) updateData.monthly_budget_default = formData.monthlyBudget
+    if (formData.yearlyBudget !== undefined) updateData.yearly_budget_default = formData.yearlyBudget
+    if (formData.startDate !== undefined) updateData.budget_start_date = formData.startDate
+    if (formData.endDate !== undefined) updateData.budget_end_date = formData.endDate
+    if (formData.alertThreshold !== undefined) updateData.alert_threshold = formData.alertThreshold
+    if (formData.supporterId !== undefined) updateData.assigned_supporter_id = formData.supporterId
+
+    const { error } = await supabase
+      .from('participants')
+      .update(updateData)
+      .eq('id', participantId)
+
+    if (error) {
+      return { error: `업데이트 실패: ${error.message}` }
+    }
+
+    revalidatePath('/admin/participants')
+    revalidatePath(`/admin/participants/${participantId}`)
+    revalidatePath(`/admin/participants/${participantId}/preview`)
+    return { success: true }
+  } catch (e: any) {
+    return { error: `오류: ${e.message}` }
+  }
+}
+
+/**
+ * 당사자 삭제 (CASCADE로 관련 데이터도 함께 삭제됨)
+ */
+export async function deleteParticipant(participantId: string) {
+  const { supabase } = await verifyAdmin()
+
+  try {
+    const { error } = await supabase
+      .from('participants')
+      .delete()
+      .eq('id', participantId)
+
+    if (error) {
+      return { error: `삭제 실패: ${error.message}` }
+    }
+
+    revalidatePath('/admin/participants')
+    return { success: true }
+  } catch (e: any) {
+    return { error: `오류: ${e.message}` }
+  }
+}
+
+/**
+ * 재원 정보 업데이트
+ */
+export async function updateFundingSource(fundingSourceId: string, formData: {
+  name?: string
+  monthlyBudget?: number
+  yearlyBudget?: number
+}) {
+  const { supabase } = await verifyAdmin()
+
+  try {
+    const updateData: any = {}
+    if (formData.name !== undefined) updateData.name = formData.name
+    if (formData.monthlyBudget !== undefined) {
+      updateData.monthly_budget = formData.monthlyBudget
+      updateData.current_month_balance = formData.monthlyBudget
+    }
+    if (formData.yearlyBudget !== undefined) {
+      updateData.yearly_budget = formData.yearlyBudget
+      updateData.current_year_balance = formData.yearlyBudget
+    }
+
+    const { error } = await supabase
+      .from('funding_sources')
+      .update(updateData)
+      .eq('id', fundingSourceId)
+
+    if (error) {
+      return { error: `재원 업데이트 실패: ${error.message}` }
+    }
+
+    revalidatePath('/admin/participants')
+    return { success: true }
+  } catch (e: any) {
+    return { error: `오류: ${e.message}` }
+  }
+}
+
+/**
+ * 재원 삭제
+ */
+export async function deleteFundingSource(fundingSourceId: string) {
+  const { supabase } = await verifyAdmin()
+
+  try {
+    const { error } = await supabase
+      .from('funding_sources')
+      .delete()
+      .eq('id', fundingSourceId)
+
+    if (error) {
+      return { error: `재원 삭제 실패: ${error.message}` }
+    }
+
+    revalidatePath('/admin/participants')
+    return { success: true }
+  } catch (e: any) {
+    return { error: `오류: ${e.message}` }
+  }
+}

@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import HomeDashboard from '@/components/home/HomeDashboard'
-import PreviewBanner from '@/components/admin/PreviewBanner'
+import PreviewClient from './PreviewClient'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -92,44 +91,16 @@ export default async function ParticipantPreviewPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-200 flex flex-col">
-      {/* 미리보기 모드 배너 */}
-      <PreviewBanner
-        currentParticipant={{ id: participant.id, name: participant.name }}
-        allParticipants={allParticipants || []}
-      />
-
-      {/* 폰 프레임 컨테이너 */}
-      <div className="flex-1 flex items-start justify-center py-8 px-4">
-        <div className="relative w-full max-w-[390px]">
-          {/* 폰 외형 */}
-          <div className="relative w-full rounded-[3rem] overflow-hidden shadow-2xl ring-4 ring-zinc-800 bg-white" style={{ minHeight: '844px' }}>
-            {/* 노치 */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 bg-zinc-800 rounded-b-2xl z-40 pointer-events-none" />
-
-            {/* 실제 당사자 앱 렌더링 */}
-            <div className="pt-7">
-              <HomeDashboard
-                profile={participant}
-                participant={participant}
-                fundingSources={participant.funding_sources || []}
-                recentTransactions={recentTransactions || []}
-                remainingDays={remainingDays}
-                totalDaysInMonth={totalDaysInMonth}
-                elapsedDays={elapsedDays}
-                userName={participant.name || ''}
-                dailyTransactions={dailyTransactions || []}
-                monthlyTrend={monthlyTrend}
-              />
-            </div>
-          </div>
-
-          {/* 홈버튼 */}
-          <div className="flex justify-center mt-4">
-            <div className="w-32 h-1 bg-zinc-600 rounded-full opacity-60" />
-          </div>
-        </div>
-      </div>
-    </div>
+    <PreviewClient
+      participant={participant}
+      allParticipants={allParticipants || []}
+      fundingSources={participant.funding_sources || []}
+      recentTransactions={recentTransactions || []}
+      remainingDays={remainingDays}
+      totalDaysInMonth={totalDaysInMonth}
+      elapsedDays={elapsedDays}
+      dailyTransactions={dailyTransactions || []}
+      monthlyTrend={monthlyTrend}
+    />
   )
 }
