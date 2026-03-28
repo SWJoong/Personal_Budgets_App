@@ -41,6 +41,7 @@ export async function createTransaction(formData: FormData) {
   const memo = formData.get('memo') as string
   const status = (formData.get('status') as 'pending' | 'confirmed') || 'pending'
   const is_expense = formData.get('is_expense') !== 'false' // Default to true
+  const payment_method = (formData.get('payment_method') as string) || '체크카드'
   const receiptFile = formData.get('receipt') as File | null
   const activityFile = formData.get('activity_image') as File | null
 
