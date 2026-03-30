@@ -2,8 +2,18 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function proxy(request: NextRequest) {
-  // 데모 모드: 인증 없이 모든 요청 통과
+  // 데모 모드: demo_role 쿠키가 없으면 로그인(역할 선택) 화면으로 이동
   if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+    const demoRole = request.cookies.get('demo_role')?.value
+    const isLoginRoute = request.nextUrl.pathname.startsWith('/login') ||
+                         request.nextUrl.pathname.startsWith('/auth')
+
+    if (!demoRole && !isLoginRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+
     return NextResponse.next({ request })
   }
 
