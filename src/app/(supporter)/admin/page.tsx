@@ -5,16 +5,17 @@ import ParticipantPreviewCard from '@/components/admin/ParticipantPreviewCard'
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const authData = await supabase.auth.getUser()
+  const user = authData.data.user
 
   if (!user) redirect('/login')
 
-  // 관리자 권한 확인
-  const { data: profile } = await supabase
+  const profileData = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
+  const profile = profileData.data
 
   if (!profile || profile.role !== 'admin') {
     redirect('/')
@@ -28,8 +29,7 @@ export default async function AdminDashboardPage() {
     '33333333-3333-3333-3333-333333333304', // 정수진
   ]
 
-  // 특정 참가자들의 데이터 조회
-  const { data: previewParticipants } = await supabase
+  const previewData = await supabase
     .from('participants')
     .select(`
       *,
@@ -37,19 +37,19 @@ export default async function AdminDashboardPage() {
     `)
     .in('id', targetParticipantIds)
     .order('name', { ascending: true })
+  const previewParticipants: any[] = previewData.data || []
 
-  // 전체 통계
   const { data: allParticipants } = await supabase
     .from('participants')
     .select('id, monthly_budget_default, funding_sources(monthly_budget, current_month_balance)')
 
   const totalParticipants = allParticipants?.length || 0
-  const totalMonthlyBudget = allParticipants?.reduce((sum, p) => {
+  const totalMonthlyBudget = allParticipants?.reduce((sum: number, p: any) => {
     const fsBudget = p.funding_sources?.reduce((acc: number, fs: any) => acc + Number(fs.monthly_budget), 0) || 0
     return sum + (fsBudget || p.monthly_budget_default || 0)
   }, 0) || 0
 
-  const totalMonthlyBalance = allParticipants?.reduce((sum, p) => {
+  const totalMonthlyBalance = allParticipants?.reduce((sum: number, p: any) => {
     const fsBalance = p.funding_sources?.reduce((acc: number, fs: any) => acc + Number(fs.current_month_balance), 0) || 0
     return sum + fsBalance
   }, 0) || 0
@@ -72,6 +72,12 @@ export default async function AdminDashboardPage() {
       </header>
 
       <main className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+        {/* 안내 배너 */}
+        <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium">
+          <span className="mt-0.5 text-base">ℹ️</span>
+          <span>현재 화면은 관리자 화면입니다. 좌측 하단 로그아웃 시 당사자 화면을 선택해 볼 수 있습니다.</span>
+        </div>
+
         {/* 환영 메시지 */}
         <section className="p-6 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-700 text-white shadow-lg">
           <div className="flex items-center gap-3 mb-2">

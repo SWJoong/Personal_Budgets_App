@@ -18,7 +18,7 @@ export default async function PlanPage() {
     .select('current_month_balance')
     .eq('participant_id', user.id)
 
-  const totalBalance = fundingSources?.reduce((acc, fs) => acc + Number(fs.current_month_balance), 0) || 0
+  const totalBalance = fundingSources?.reduce((acc: number, fs: any) => acc + Number(fs.current_month_balance), 0) || 0
 
   // 저장된 계획 목록 조회 (최근 5개)
   const { data: plans } = await supabase

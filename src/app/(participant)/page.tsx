@@ -3,19 +3,22 @@ import { redirect } from 'next/navigation'
 import HomeDashboard from '@/components/home/HomeDashboard'
 
 export default async function Home() {
+  // createClient()가 DEMO_MODE=true 시 자동으로 데모 유저와 실제 Supabase 데이터를 반환
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const authData = await supabase.auth.getUser();
+  const user = authData.data.user
 
   if (!user) {
     redirect('/login');
   }
 
   // 사용자 프로필 및 역할 조회
-  const { data: profile } = await supabase
+  const profileData = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
+  const profile = profileData.data
 
   // 관리자/지원자인 경우 전용 페이지로 리다이렉트
   if (profile?.role === 'admin') {
@@ -26,11 +29,12 @@ export default async function Home() {
   }
 
   // 당사자 예산 정보 조회
-  const { data: participant } = await supabase
+  const participantData = await supabase
     .from('participants')
     .select('*, funding_sources(*)')
     .eq('id', user.id)
     .single();
+  const participant = participantData.data
 
   // 날짜 계산
   const now = new Date();
@@ -64,50 +68,57 @@ export default async function Home() {
   }
 
   // 최근 사용 내역 조회
-  const { data: recentTransactions } = await supabase
-    .from('transactions')
-    .select('*')
-    .eq('participant_id', user.id)
-    .order('date', { ascending: false })
-    .limit(3);
+  let recentTransactions: any[] = []
+  let dailyTransactions: any[] = []
+  let monthlyTrend: any[] = []
 
-  // 이번 달 일별 거래 내역 (SVG 돈주머니 차트용)
   const firstDayOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`
   const lastDayOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-${String(totalDaysInMonth).padStart(2, '0')}`
-  
-  const { data: dailyTransactions } = await supabase
-    .from('transactions')
-    .select('date, amount, activity_name, status, receipt_image_url')
-    .eq('participant_id', user.id)
-    .gte('date', firstDayOfMonth)
-    .lte('date', lastDayOfMonth)
-    .order('date', { ascending: true })
 
-  // 최근 6개월 월별 지출 집계 (월별 추이 차트용)
-  const monthlyTrend = []
-  const totalMonthlyBudget = (participant.funding_sources || []).reduce(
-    (acc: number, fs: any) => acc + Number(fs.monthly_budget), 0
-  ) || participant.monthly_budget_default || 0
-
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(year, month - i, 1)
-    const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-    const mFirst = `${m}-01`
-    const mLast = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()).padStart(2, '0')}`
-
-    const { data: monthTxs } = await supabase
+  if (true) {
+    const recentTxData = await supabase
       .from('transactions')
-      .select('amount')
+      .select('*')
       .eq('participant_id', user.id)
-      .gte('date', mFirst)
-      .lte('date', mLast)
+      .order('date', { ascending: false })
+      .limit(3);
+    recentTransactions = recentTxData.data || []
 
-    const totalSpent = (monthTxs || []).reduce((sum: number, t: any) => sum + Number(t.amount), 0)
-    monthlyTrend.push({
-      month: m,
-      totalSpent,
-      budget: totalMonthlyBudget,
-    })
+    // 이번 달 일별 거래 내역
+    const dailyTxData = await supabase
+      .from('transactions')
+      .select('date, amount, activity_name, status, receipt_image_url')
+      .eq('participant_id', user.id)
+      .gte('date', firstDayOfMonth)
+      .lte('date', lastDayOfMonth)
+      .order('date', { ascending: true })
+    dailyTransactions = dailyTxData.data || []
+
+    // 최근 6개월 월별 지출 집계
+    const totalMonthlyBudget = (participant.funding_sources || []).reduce(
+      (acc: number, fs: any) => acc + Number(fs.monthly_budget), 0
+    ) || participant.monthly_budget_default || 0
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(year, month - i, 1)
+      const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const mFirst = `${m}-01`
+      const mLast = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()).padStart(2, '0')}`
+
+      const { data: monthTxs } = await supabase
+        .from('transactions')
+        .select('amount')
+        .eq('participant_id', user.id)
+        .gte('date', mFirst)
+        .lte('date', mLast)
+
+      const totalSpent = (monthTxs || []).reduce((sum: number, t: any) => sum + Number(t.amount), 0)
+      monthlyTrend.push({
+        month: m,
+        totalSpent,
+        budget: totalMonthlyBudget,
+      })
+    }
   }
 
   return (

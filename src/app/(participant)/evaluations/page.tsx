@@ -35,7 +35,7 @@ export default async function ParticipantEvaluationsPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-            {evaluations.map((evalItem) => {
+            {evaluations.map((evalItem: any) => {
               const date = new Date(evalItem.month)
               const displayMonth = `${date.getFullYear()}년 ${date.getMonth() + 1}월`
               
