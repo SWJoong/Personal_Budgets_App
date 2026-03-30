@@ -36,8 +36,8 @@ export default async function AdminParticipantsPage() {
     .select('id')
     .eq('role', 'participant')
 
-  const existingIds = (participants || []).map(p => p.id)
-  const unregisteredCount = (allParticipantProfiles || []).filter(p => !existingIds.includes(p.id)).length
+  const existingIds = (participants || []).map((p: any) => p.id)
+  const unregisteredCount = (allParticipantProfiles || []).filter((p: any) => !existingIds.includes(p.id)).length
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">

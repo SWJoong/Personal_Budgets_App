@@ -72,12 +72,12 @@ export default async function AdminDashboardPage() {
       .select('id, monthly_budget_default, funding_sources(monthly_budget, current_month_balance)')
 
     totalParticipants = allParticipants?.length || 0
-    totalMonthlyBudget = allParticipants?.reduce((sum, p) => {
+    totalMonthlyBudget = allParticipants?.reduce((sum: number, p: any) => {
       const fsBudget = p.funding_sources?.reduce((acc: number, fs: any) => acc + Number(fs.monthly_budget), 0) || 0
       return sum + (fsBudget || p.monthly_budget_default || 0)
     }, 0) || 0
 
-    const totalMonthlyBalance = allParticipants?.reduce((sum, p) => {
+    const totalMonthlyBalance = allParticipants?.reduce((sum: number, p: any) => {
       const fsBalance = p.funding_sources?.reduce((acc: number, fs: any) => acc + Number(fs.current_month_balance), 0) || 0
       return sum + fsBalance
     }, 0) || 0

@@ -79,7 +79,7 @@ export default async function EvaluationDetailPage({ params }: Props) {
               <p className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">주요 활동 내역</p>
               {transactions && transactions.length > 0 ? (
                 <ul className="flex flex-col gap-2">
-                  {transactions.slice(0, 5).map(t => (
+                  {transactions.slice(0, 5).map((t: any) => (
                     <li key={t.id} className="text-xs flex justify-between text-zinc-600">
                       <span className="truncate max-w-[120px]">{t.activity_name}</span>
                       <span className="font-bold">{Number(t.amount).toLocaleString()}원</span>

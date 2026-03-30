@@ -35,7 +35,7 @@ export default async function SupporterPage() {
   const { data: participants } = await query.order('created_at', { ascending: false })
 
   // 오늘 날짜 기준 확인할 항목 수 (임시 반영 사용 내역)
-  const participantIds = (participants || []).map(p => p.id)
+  const participantIds = (participants || []).map((p: any) => p.id)
   let pendingCount = 0
   if (participantIds.length > 0) {
     const { count } = await supabase
