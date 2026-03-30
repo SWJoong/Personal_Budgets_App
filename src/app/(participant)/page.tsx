@@ -3,77 +3,38 @@ import { redirect } from 'next/navigation'
 import HomeDashboard from '@/components/home/HomeDashboard'
 
 export default async function Home() {
-  // Demo mode: Always skip authentication
-  // TODO: For production, change this to false
-  const isDemoMode = true
+  // createClient()가 DEMO_MODE=true 시 자동으로 데모 유저와 실제 Supabase 데이터를 반환
+  const supabase = await createClient();
+  const authData = await supabase.auth.getUser();
+  const user = authData.data.user
 
-  let user = null
-  let profile = null
-  let participant = null
-
-  if (!isDemoMode) {
-    const supabase = await createClient();
-    const authData = await supabase.auth.getUser();
-    user = authData.data.user
-
-    if (!user) {
-      redirect('/login');
-    }
-
-    // 사용자 프로필 및 역할 조회
-    const profileData = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-    profile = profileData.data
-
-    // 관리자/지원자인 경우 전용 페이지로 리다이렉트
-    if (profile?.role === 'admin') {
-      redirect('/admin');
-    }
-    if (profile?.role === 'supporter') {
-      redirect('/supporter');
-    }
-
-    // 당사자 예산 정보 조회
-    const participantData = await supabase
-      .from('participants')
-      .select('*, funding_sources(*)')
-      .eq('id', user.id)
-      .single();
-    participant = participantData.data
-  } else {
-    // Demo mode: Use dummy data
-    user = { id: 'demo-participant', email: 'demo@example.com' }
-    profile = {
-      id: 'demo-participant',
-      name: '김철수',
-      role: 'participant',
-      email: 'demo@example.com'
-    }
-    participant = {
-      id: 'demo-participant',
-      name: '김철수',
-      monthly_budget_default: 500000,
-      funding_sources: [
-        {
-          id: 'demo-fs-1',
-          name: '개인운영비',
-          monthly_budget: 300000,
-          balance_current_month: 250000,
-          balance_current_year: 2500000
-        },
-        {
-          id: 'demo-fs-2',
-          name: '활동지원비',
-          monthly_budget: 200000,
-          balance_current_month: 150000,
-          balance_current_year: 1800000
-        }
-      ]
-    }
+  if (!user) {
+    redirect('/login');
   }
+
+  // 사용자 프로필 및 역할 조회
+  const profileData = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+  const profile = profileData.data
+
+  // 관리자/지원자인 경우 전용 페이지로 리다이렉트
+  if (profile?.role === 'admin') {
+    redirect('/admin');
+  }
+  if (profile?.role === 'supporter') {
+    redirect('/supporter');
+  }
+
+  // 당사자 예산 정보 조회
+  const participantData = await supabase
+    .from('participants')
+    .select('*, funding_sources(*)')
+    .eq('id', user.id)
+    .single();
+  const participant = participantData.data
 
   // 날짜 계산
   const now = new Date();
@@ -114,9 +75,7 @@ export default async function Home() {
   const firstDayOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`
   const lastDayOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-${String(totalDaysInMonth).padStart(2, '0')}`
 
-  if (!isDemoMode) {
-    const supabase = await createClient()
-
+  if (true) {
     const recentTxData = await supabase
       .from('transactions')
       .select('*')
@@ -157,49 +116,6 @@ export default async function Home() {
       monthlyTrend.push({
         month: m,
         totalSpent,
-        budget: totalMonthlyBudget,
-      })
-    }
-  } else {
-    // Demo mode: Use dummy data
-    const today = new Date()
-    recentTransactions = [
-      {
-        id: 'demo-tx-1',
-        date: today.toISOString().split('T')[0],
-        amount: 15000,
-        activity_name: '점심 식사',
-        category: '식비',
-        status: 'confirmed'
-      },
-      {
-        id: 'demo-tx-2',
-        date: new Date(today.getTime() - 86400000).toISOString().split('T')[0],
-        amount: 35000,
-        activity_name: '영화 관람',
-        category: '여가활동',
-        status: 'confirmed'
-      },
-      {
-        id: 'demo-tx-3',
-        date: new Date(today.getTime() - 172800000).toISOString().split('T')[0],
-        amount: 8000,
-        activity_name: '교통비',
-        category: '교통비',
-        status: 'pending'
-      }
-    ]
-
-    dailyTransactions = []
-
-    const totalMonthlyBudget = 500000
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(year, month - i, 1)
-      const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      const randomSpent = Math.floor(totalMonthlyBudget * (0.6 + Math.random() * 0.3))
-      monthlyTrend.push({
-        month: m,
-        totalSpent: randomSpent,
         budget: totalMonthlyBudget,
       })
     }
