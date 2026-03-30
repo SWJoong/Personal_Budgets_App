@@ -36,7 +36,7 @@ export default async function EvaluationDetailPage({ params }: Props) {
     .lt('date', endDate)
     .eq('status', 'confirmed')
 
-  const totalSpent = transactions?.reduce((acc, t) => acc + Number(t.amount), 0) || 0
+  const totalSpent = transactions?.reduce((acc: number, t: any) => acc + Number(t.amount), 0) || 0
   const count = transactions?.length || 0
 
   // 기존 평가 데이터 조회
