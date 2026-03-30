@@ -23,13 +23,7 @@ export default function RoleSelectionPage() {
     // Navigate based on role
     const targetPath = role === "admin" ? "/admin" : "/";
     console.log("🚀 Navigating to:", targetPath);
-
-    if (role === "admin") {
-      router.push("/admin");
-    } else {
-      router.push("/");
-    }
-    router.refresh();
+    router.push(targetPath);
   };
 
   return (
