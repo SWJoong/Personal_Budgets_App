@@ -72,6 +72,12 @@ export default async function AdminDashboardPage() {
       </header>
 
       <main className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+        {/* 안내 배너 */}
+        <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium">
+          <span className="mt-0.5 text-base">ℹ️</span>
+          <span>현재 화면은 관리자 화면입니다. 좌측 하단 로그아웃 시 당사자 화면을 선택해 볼 수 있습니다.</span>
+        </div>
+
         {/* 환영 메시지 */}
         <section className="p-6 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-700 text-white shadow-lg">
           <div className="flex items-center gap-3 mb-2">
