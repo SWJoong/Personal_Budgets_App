@@ -15,7 +15,9 @@ export default function RoleSelectionPage() {
       localStorage.setItem("demo_role", role);
       localStorage.setItem("demo_user_id", `demo-${role}-${Date.now()}`);
       localStorage.setItem("demo_user_name", role === "admin" ? "관리자" : "김철수");
-      console.log("✅ Role saved to localStorage");
+      // HTTP 쿠키 설정: 서버 사이드 createClient()에서 demo_role을 읽어 데모 유저 반환에 사용
+      document.cookie = `demo_role=${role}; path=/; max-age=86400; SameSite=Lax`;
+      console.log("✅ Role saved to localStorage and cookie");
     }
 
     // Navigate based on role
