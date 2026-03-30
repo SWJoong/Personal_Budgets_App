@@ -25,14 +25,9 @@ export async function createClient() {
     }
 
     const adminClient = createAdminClient()
-
-    return {
-      ...adminClient,
-      auth: {
-        ...adminClient.auth,
-        getUser: async () => ({ data: { user: demoUser }, error: null }),
-      },
-    } as any
+    // 스프레드 대신 직접 오버라이드: prototype 메서드(from, rpc 등)를 유지
+    adminClient.auth.getUser = async () => ({ data: { user: demoUser as any }, error: null })
+    return adminClient
   }
 
   return createServerClient(
