@@ -106,13 +106,21 @@ export async function savePlan({
 
   if (!user) throw new Error('Unauthorized')
 
+  // 당사자는 profiles 테이블에 행이 없으므로 creator_id FK 위반 방지
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', user.id)
+    .single()
+  const creator_id = profile ? user.id : null
+
   const { error } = await supabase.from('plans').insert({
     participant_id: participantId,
     activity_name: activityName,
     date,
     options,
     selected_option_index: selectedOptionIndex,
-    creator_id: user.id,
+    creator_id,
     details: details || null,
   })
 

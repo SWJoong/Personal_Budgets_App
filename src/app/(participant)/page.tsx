@@ -94,30 +94,26 @@ export default async function Home() {
       .order('date', { ascending: true })
     dailyTransactions = dailyTxData.data || []
 
-    // 최근 6개월 월별 지출 집계
+    // 최근 6개월 월별 지출 집계 — 쿼리 1번으로 처리
     const totalMonthlyBudget = (participant.funding_sources || []).reduce(
       (acc: number, fs: any) => acc + Number(fs.monthly_budget), 0
     ) || participant.monthly_budget_default || 0
 
+    const sixMonthsAgo = new Date(year, month - 5, 1).toISOString().split('T')[0]
+    const { data: allMonthTxs } = await supabase
+      .from('transactions')
+      .select('amount, date')
+      .eq('participant_id', user.id)
+      .gte('date', sixMonthsAgo)
+      .lte('date', lastDayOfMonth)
+
     for (let i = 5; i >= 0; i--) {
       const d = new Date(year, month - i, 1)
       const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      const mFirst = `${m}-01`
-      const mLast = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()).padStart(2, '0')}`
-
-      const { data: monthTxs } = await supabase
-        .from('transactions')
-        .select('amount')
-        .eq('participant_id', user.id)
-        .gte('date', mFirst)
-        .lte('date', mLast)
-
-      const totalSpent = (monthTxs || []).reduce((sum: number, t: any) => sum + Number(t.amount), 0)
-      monthlyTrend.push({
-        month: m,
-        totalSpent,
-        budget: totalMonthlyBudget,
-      })
+      const totalSpent = (allMonthTxs || [])
+        .filter((t: any) => t.date.startsWith(m))
+        .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
+      monthlyTrend.push({ month: m, totalSpent, budget: totalMonthlyBudget })
     }
   }
 

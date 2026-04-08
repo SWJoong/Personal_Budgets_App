@@ -1,12 +1,10 @@
 'use client'
-import { SeasonTreeVisual } from './SeasonTreeVisual'
 
 import { useState } from 'react'
 import { formatCurrency, getBudgetVisualInfo } from '@/utils/budget-visuals'
 import Link from 'next/link'
-import InteractivePouchSection from './InteractivePouchSection'
+import BalanceVisualWidget from './BalanceVisualWidget'
 import BudgetTrendChart from './BudgetTrendChart'
-import WaterCupChart from '../charts/WaterCupChart'
 
 interface FundingSource {
   id: string
@@ -115,83 +113,17 @@ export default function HomeDashboard({
 
         {viewMode === 'total' ? (
           <>
-            {/* P1: 인터랙티브 SVG 돈주머니 */}
-            <InteractivePouchSection
+            {/* 잔액 시각화 위젯 (돈주머니 / 물컵 / 이모지 선택 가능) */}
+            <BalanceVisualWidget
               currentBalance={totalMonthBalance}
               totalBudget={totalMonthlyBudget}
               percentage={visual.percentage}
               themeColor={visual.themeColor}
               icon={visual.icon}
-              dailyTransactions={dailyTransactions}
+              statusMessage={visual.message}
               remainingDays={remainingDays}
+              dailyTransactions={dailyTransactions}
             />
-
-            {/* P2: 계절 나무 시각화 */}
-            <div className="p-6 rounded-2xl bg-white ring-1 ring-zinc-100 shadow-sm">
-              <SeasonTreeVisual />
-            </div>
-
-            {/* P2: 물컵 애니메이션 */}
-            <div className="p-6 rounded-2xl bg-white ring-1 ring-zinc-100 shadow-sm flex justify-center">
-              <WaterCupChart totalBudget={totalMonthlyBudget} currentSpend={spent} />
-            </div>
-
-            {/* 상태 메시지 카드 */}
-            <section className={`flex flex-col gap-4 rounded-[2rem] p-8 shadow-md ring-1 relative overflow-hidden transition-all duration-500
-              ${visual.bgClass} ${visual.status === 'luxury' ? 'ring-green-200' : 
-                visual.status === 'stable' ? 'ring-blue-200' : 
-                visual.status === 'warning' ? 'ring-orange-200' : 
-                visual.status === 'critical' || visual.status === 'empty' ? 'ring-red-200' : 
-                'ring-zinc-200'}
-            `}>
-              <div className={`px-5 py-4 rounded-[1.5rem] z-10 relative border-2 shadow-inner transition-all duration-500 ${
-                visual.themeColor === 'green' ? 'bg-white/80 border-green-100 text-green-800' : 
-                visual.themeColor === 'blue' ? 'bg-white/80 border-blue-100 text-blue-800' : 
-                visual.themeColor === 'orange' ? 'bg-white/80 border-orange-100 text-orange-800' : 
-                visual.themeColor === 'red' ? 'bg-white/80 border-red-100 text-red-800' : 
-                'bg-zinc-50 border-zinc-200 text-zinc-600'
-              }`}>
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl animate-bounce-slow">{visual.icon}</span>
-                  <p className="text-base font-black leading-tight break-keep">{visual.message}</p>
-                </div>
-              </div>
-
-              {/* 속도 안내 */}
-              <div className="px-4 py-1 z-10 relative text-sm font-bold text-zinc-500 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 animate-pulse"></span>
-                {speedMessage}
-              </div>
-              
-              {/* 게이지 */}
-              <div className="flex flex-col gap-3 z-10 relative">
-                <div className="flex justify-between text-xs font-black text-zinc-400 uppercase tracking-widest px-1">
-                  <span>{remainingDays}일 남음</span>
-                  <span className={
-                    visual.themeColor === 'green' ? 'text-green-600' :
-                    visual.themeColor === 'red' ? 'text-red-600' :
-                    'text-zinc-500'
-                  }>{visual.percentage}%</span>
-                </div>
-                <div className="h-5 w-full bg-black/5 rounded-full overflow-hidden p-1 shadow-inner" role="progressbar" aria-valuenow={visual.percentage} aria-valuemin={0} aria-valuemax={100} aria-label={`예산 잔액 ${visual.percentage}%`}>
-                  <div
-                    className={`h-full rounded-full transition-all duration-1000 shadow-sm ${
-                      visual.themeColor === 'green' ? 'bg-green-500' :
-                      visual.themeColor === 'blue' ? 'bg-blue-500' :
-                      visual.themeColor === 'orange' ? 'bg-orange-500' :
-                      visual.themeColor === 'red' ? 'bg-red-500' :
-                      'bg-zinc-900'
-                    }`}
-                    style={{ width: `${visual.percentage}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* 배경 장식 */}
-              <div className="absolute -right-10 -bottom-10 text-[10rem] opacity-[0.03] rotate-12 pointer-events-none select-none">
-                {visual.icon}
-              </div>
-            </section>
 
             {/* 올해 예산 카드 */}
             <section className="p-6 rounded-[2rem] bg-white ring-1 ring-zinc-100 flex justify-between items-center shadow-sm">
