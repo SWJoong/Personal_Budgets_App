@@ -52,6 +52,7 @@ export interface Database {
           assigned_supporter_id: string | null
           bank_book_copy_url: string | null
           bank_cover_url: string | null
+          ui_preferences: Json | null
           created_at: string
         }
         Insert: {
@@ -65,6 +66,7 @@ export interface Database {
           assigned_supporter_id?: string | null
           bank_book_copy_url?: string | null
           bank_cover_url?: string | null
+          ui_preferences?: Json | null
           created_at?: string
         }
         Update: {
@@ -78,6 +80,7 @@ export interface Database {
           assigned_supporter_id?: string | null
           bank_book_copy_url?: string | null
           bank_cover_url?: string | null
+          ui_preferences?: Json | null
           created_at?: string
         }
       }

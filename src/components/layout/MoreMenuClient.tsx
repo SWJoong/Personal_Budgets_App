@@ -13,7 +13,7 @@ interface FileLink {
 }
 
 export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] }) {
-  const { fontSize, setFontSize, highContrast, setHighContrast } = useAccessibility()
+  const { fontSize, setFontSize, highContrast, setHighContrast, easyTerms, setEasyTerms } = useAccessibility()
   const supabase = createClient()
   const router = useRouter()
 
@@ -43,9 +43,25 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
         </Link>
       </section>
 
-      {/* Account Management */}
+      {/* 빠른 이동 */}
       <section className="flex flex-col gap-4">
-        <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2">계정 관리</h3>
+        <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2">빠른 이동</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <Link
+            href="/plan"
+            className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
+          >
+            <span className="text-3xl group-hover:scale-110 transition-transform">🤔</span>
+            <span className="text-sm font-black text-zinc-800">오늘 계획</span>
+          </Link>
+          <Link
+            href="/calendar"
+            className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
+          >
+            <span className="text-3xl group-hover:scale-110 transition-transform">📅</span>
+            <span className="text-sm font-black text-zinc-800">달력</span>
+          </Link>
+        </div>
       </section>
 
       {/* 1. 글자 크기 설정 (Epic 9) */}
@@ -95,6 +111,27 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
             >
               <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
                 highContrast ? 'left-7' : 'left-1'
+              }`} />
+            </button>
+          </div>
+
+          {/* 쉬운 용어 모드 토글 */}
+          <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-zinc-700">쉬운 용어 모드</span>
+              <span className="text-xs text-zinc-400 font-medium">어려운 용어를 쉽게 바꿔줍니다</span>
+            </div>
+            <button
+              onClick={() => setEasyTerms(!easyTerms)}
+              className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
+                easyTerms ? 'bg-blue-600' : 'bg-zinc-200'
+              }`}
+              role="switch"
+              aria-checked={easyTerms}
+              aria-label="쉬운 용어 모드 전환"
+            >
+              <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
+                easyTerms ? 'left-7' : 'left-1'
               }`} />
             </button>
           </div>

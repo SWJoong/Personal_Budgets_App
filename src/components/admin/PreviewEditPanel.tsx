@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { updateParticipant } from '@/app/actions/admin'
 import { formatCurrency } from '@/utils/budget-visuals'
+import { saveUIPreferences } from '@/app/actions/preferences'
+import { UIPreferences, DEFAULT_PREFERENCES, OPTIONAL_BLOCKS, BLOCK_METADATA, BlockId } from '@/types/ui-preferences'
 
 interface Participant {
   id: string
@@ -13,6 +15,7 @@ interface Participant {
   budget_start_date: string
   budget_end_date: string
   alert_threshold: number
+  ui_preferences?: UIPreferences | null
 }
 
 interface PreviewEditPanelProps {
@@ -32,6 +35,10 @@ export default function PreviewEditPanel({ participant, isVisible, onSave }: Pre
     alertThreshold: participant.alert_threshold || 0,
   })
   const [isSaving, setIsSaving] = useState(false)
+  const [blockPrefs, setBlockPrefs] = useState<UIPreferences>(
+    participant.ui_preferences ?? DEFAULT_PREFERENCES
+  )
+  const [isSavingBlocks, setIsSavingBlocks] = useState(false)
 
   if (!isVisible) return null
 
@@ -149,6 +156,63 @@ export default function PreviewEditPanel({ participant, isVisible, onSave }: Pre
           >
             {isSaving ? '저장 중...' : '💾 저장하기'}
           </button>
+
+          {/* 구분선 */}
+          <hr className="my-2 border-zinc-200" />
+
+          {/* 홈 화면 블록 설정 */}
+          <div>
+            <h3 className="text-sm font-bold text-zinc-700 mb-3">🧩 홈 화면 블록 설정</h3>
+            <div className="flex flex-col gap-2">
+              {OPTIONAL_BLOCKS.map((blockId: BlockId) => {
+                const meta = BLOCK_METADATA[blockId]
+                const isEnabled = blockPrefs.enabled_blocks.includes(blockId)
+                return (
+                  <label
+                    key={blockId}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-zinc-200 cursor-pointer hover:bg-zinc-50 transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isEnabled}
+                      onChange={() => {
+                        const current = new Set(blockPrefs.enabled_blocks)
+                        if (current.has(blockId)) {
+                          current.delete(blockId)
+                        } else {
+                          current.add(blockId)
+                        }
+                        setBlockPrefs({ enabled_blocks: OPTIONAL_BLOCKS.filter(b => current.has(b)) })
+                      }}
+                      className="w-4 h-4 accent-blue-600"
+                    />
+                    <span className="text-base">{meta.icon}</span>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-zinc-700">{meta.label}</span>
+                      <span className="text-[10px] text-zinc-400">{meta.description}</span>
+                    </div>
+                  </label>
+                )
+              })}
+            </div>
+            <button
+              onClick={async () => {
+                setIsSavingBlocks(true)
+                try {
+                  await saveUIPreferences(participant.id, blockPrefs)
+                  alert('블록 설정이 저장되었습니다!')
+                } catch {
+                  alert('저장 중 오류가 발생했습니다.')
+                } finally {
+                  setIsSavingBlocks(false)
+                }
+              }}
+              disabled={isSavingBlocks}
+              className="w-full mt-3 px-4 py-2.5 bg-zinc-900 text-white font-bold rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-50 text-sm"
+            >
+              {isSavingBlocks ? '저장 중...' : '블록 설정 저장'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

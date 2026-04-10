@@ -1,9 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/utils/budget-visuals'
+import { createTransaction } from '@/app/actions/transaction'
+import { analyzeReceipt } from '@/app/actions/ocr'
 
-type WidgetStyle = 'pouch' | 'water' | 'emoji'
+type WidgetStyle = 'pie' | 'water' | 'emoji'
 
 const EMOJI_CHOICES = [
   { emoji: '🍎', name: '사과' },
@@ -48,84 +52,112 @@ interface Props {
   statusMessage: string
   remainingDays: number
   dailyTransactions?: DailyTransaction[]
+  participantId?: string
+  fundingSources?: { id: string; name: string }[]
 }
 
-// ── 돈주머니 SVG ──────────────────────────────────────────────
-function PouchViz({ percentage, themeColor, icon }: { percentage: number; themeColor: string; icon: string }) {
-  const c = THEME[(themeColor as ThemeKey)] ?? THEME.zinc
-  const fill = Math.max(2, percentage)
+// ── 피자 그래프 ────────────────────────────────────────────────
+function PizzaChart({ percentage }: { percentage: number }) {
+  const circumference = 2 * Math.PI * 25
+  const offset = circumference - circumference * Math.max(0, Math.min(1, percentage / 100))
 
   return (
     <div className="flex items-center justify-center py-6">
-      <div className="relative" style={{ width: 130, height: 130 }}>
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <ellipse cx="50" cy="60" rx="38" ry="35" fill={c.light} stroke={c.stroke} strokeWidth="2.5" />
-          <clipPath id="pw-clip">
-            <ellipse cx="50" cy="60" rx="36" ry="33" />
-          </clipPath>
-          <rect
-            x="12"
-            y={95 - fill * 0.7}
-            width="76"
-            height={fill * 0.7 + 5}
-            fill={c.fill}
-            opacity="0.45"
-            clipPath="url(#pw-clip)"
-            style={{ transition: 'all 1s ease' }}
-          />
-          <path
-            d="M 25 32 Q 35 10 50 15 Q 65 10 75 32"
-            fill="none"
-            stroke={c.stroke}
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <circle cx="50" cy="15" r="4" fill={c.fill} />
-          <text x="50" y="68" textAnchor="middle" fontSize="26" className="select-none">
-            {icon}
-          </text>
+      <div className="relative" style={{ width: 176, height: 176 }}>
+        <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 drop-shadow-md">
+          {/* 접시 */}
+          <circle cx="50" cy="50" r="48" fill="#e5e7eb" stroke="#d1d5db" strokeWidth="1.5" />
+          <circle cx="50" cy="50" r="42" fill="#f3f4f6" />
+
+          {/* 피자 마스크 */}
+          <mask id="pizza-bvw">
+            <circle
+              cx="50" cy="50" r="25"
+              fill="none" stroke="white" strokeWidth="50"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              style={{ transition: 'stroke-dashoffset 0.7s ease-out' }}
+            />
+          </mask>
+
+          {/* 피자 */}
+          <g mask="url(#pizza-bvw)">
+            <circle cx="50" cy="50" r="44" fill="#d97706" />
+            <circle cx="50" cy="50" r="38" fill="#facc15" />
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#ef4444" strokeWidth="1.5" />
+            {/* 페페로니 */}
+            <circle cx="30" cy="35" r="4.5" fill="#ef4444" />
+            <circle cx="70" cy="30" r="5"   fill="#ef4444" />
+            <circle cx="50" cy="20" r="4.5" fill="#ef4444" />
+            <circle cx="55" cy="70" r="5"   fill="#ef4444" />
+            <circle cx="35" cy="65" r="4"   fill="#ef4444" />
+            <circle cx="75" cy="55" r="4.5" fill="#ef4444" />
+            <circle cx="50" cy="50" r="4"   fill="#ef4444" />
+            {/* 허브 */}
+            <path d="M 40 40 Q 42 38 45 40 Q 42 42 40 40" fill="#22c55e" />
+            <path d="M 60 60 Q 62 58 65 60 Q 62 62 60 60" fill="#22c55e" />
+            <path d="M 30 50 Q 32 48 35 50 Q 32 52 30 50" fill="#22c55e" />
+          </g>
         </svg>
-        <div
-          className="absolute -bottom-1 -right-1 w-11 h-11 rounded-full flex items-center justify-center text-xs font-black text-white shadow-md"
-          style={{ background: c.fill }}
-        >
-          {percentage}%
+
+        {/* 중앙 레이블 */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-2xl shadow-sm border border-white/60 text-center">
+            <span className="text-[10px] text-zinc-500 block leading-tight">남은 피자</span>
+            <span className="text-lg font-black text-zinc-900 leading-tight">{percentage}%</span>
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-// ── 물컵 ─────────────────────────────────────────────────────
-function WaterViz({ percentage }: { percentage: number }) {
+// ── 물컵 그래프 ───────────────────────────────────────────────
+function WaterViz({ percentage, currentBalance }: { percentage: number; currentBalance: number }) {
   const isLow = percentage < 25
+  const waterColor = isLow ? '#f87171' : '#3b82f6'
+  const waveBg   = isLow ? 'bg-red-400'  : 'bg-blue-400'
+  const cupBorder = isLow ? 'border-red-200' : 'border-blue-200'
+  const fillH = Math.max(5, percentage)
 
   return (
-    <div className="flex items-center justify-center py-6">
-      <div className="relative w-28 h-40">
-        <div className="absolute inset-0 border-[5px] border-blue-300 rounded-b-[2rem] rounded-t-xl bg-white overflow-hidden">
+    <div className="flex flex-col items-center justify-center w-full py-4 pb-6 gap-3">
+      <div
+        className={`relative w-32 h-44 rounded-b-[2rem] border-4 border-t-0 ${cupBorder} bg-blue-50/30 overflow-hidden shadow-inner`}
+      >
+        {/* 물 */}
+        <div
+          className="absolute bottom-0 w-full transition-all duration-700 ease-out"
+          style={{ height: `${fillH}%`, backgroundColor: waterColor }}
+        >
+          {/* 물결 */}
           <div
-            className={`absolute bottom-0 w-full transition-all duration-1000 ease-in-out ${isLow ? 'bg-red-400' : 'bg-blue-400'} opacity-70`}
-            style={{ height: `${percentage}%` }}
+            className={`absolute top-0 left-0 right-0 h-4 ${waveBg} opacity-50 -translate-y-1/2 rounded-[50%]`}
           />
-          {/* 물결 효과 */}
-          {percentage > 5 && (
-            <div
-              className={`absolute w-[200%] h-4 -left-1/2 ${isLow ? 'bg-red-400' : 'bg-blue-400'} opacity-30 rounded-full`}
-              style={{
-                bottom: `calc(${percentage}% - 8px)`,
-                animation: 'wave 2s linear infinite',
-              }}
-            />
-          )}
+          <div className="absolute top-0 left-3 right-3 h-2 bg-white/30 -translate-y-1/2 rounded-[50%]" />
         </div>
+
+        {/* 눈금선 */}
+        <div className="absolute bottom-1/4 left-0 w-3 h-px bg-blue-200/80" />
+        <div className="absolute bottom-2/4 left-0 w-5 h-px bg-blue-200/80" />
+        <div className="absolute bottom-3/4 left-0 w-3 h-px bg-blue-200/80" />
+
         {/* 컵 손잡이 */}
-        <div className="absolute -right-3 top-5 h-12 w-4 border-[5px] border-blue-300 rounded-r-full" />
-        {/* 텍스트 */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-          <span className="text-xl font-black text-zinc-800 drop-shadow">{percentage}%</span>
-          <span className="text-xs font-bold text-zinc-500 drop-shadow-sm">남음</span>
+        <div className={`absolute -right-3 top-6 h-12 w-4 border-4 ${cupBorder} rounded-r-full`} />
+
+        {/* 퍼센트 */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-2xl font-black text-white drop-shadow-md select-none">
+            {percentage}%
+          </span>
         </div>
+      </div>
+
+      <div className="text-center">
+        <span className="text-xs font-medium text-zinc-500">남은 물 (예산)</span>
+        <p className={`text-xl font-black mt-0.5 ${isLow ? 'text-red-600' : 'text-blue-600'}`}>
+          {formatCurrency(currentBalance)}원
+        </p>
       </div>
     </div>
   )
@@ -145,12 +177,10 @@ function EmojiViz({
   showPicker: boolean
   onSelectEmoji: (e: string) => void
 }) {
-  // 10개 중 남은 개수: 0~100% → 0~10개
   const remaining = Math.max(0, Math.min(10, Math.round(percentage / 10)))
 
   return (
     <div className="py-4 px-2">
-      {/* 이모지 격자 */}
       <div className="grid grid-cols-5 gap-3 px-4">
         {Array.from({ length: 10 }, (_, i) => {
           const filled = i < remaining
@@ -173,7 +203,6 @@ function EmojiViz({
         })}
       </div>
 
-      {/* 설명 텍스트 */}
       <p className="text-center text-sm font-bold text-zinc-400 mt-4">
         {remaining > 0 ? (
           <>
@@ -184,21 +213,17 @@ function EmojiViz({
         )}
       </p>
 
-      {/* 이모지 바꾸기 버튼 */}
       <div className="flex justify-center mt-3 pb-1">
         <button
           onClick={onPickerToggle}
           className={`text-xs font-bold px-4 py-1.5 rounded-full transition-all ${
-            showPicker
-              ? 'bg-zinc-800 text-white'
-              : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+            showPicker ? 'bg-zinc-800 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
           }`}
         >
           {showPicker ? '닫기 ✕' : '이모지 바꾸기 ✏️'}
         </button>
       </div>
 
-      {/* 이모지 선택기 */}
       {showPicker && (
         <div className="grid grid-cols-6 gap-2 px-2 pt-3 pb-2 mt-1 border-t border-zinc-100 animate-fade-in-up">
           {EMOJI_CHOICES.map(({ emoji: e, name }) => (
@@ -263,7 +288,6 @@ function WeeklyChart({
         이번 주 지출
       </h4>
 
-      {/* 막대 차트 */}
       <div className="flex items-end gap-1.5 h-32 px-6">
         {dailyTotals.map(day => {
           const barH = day.total > 0 ? Math.max((day.total / maxDaily) * 100, 8) : 3
@@ -292,12 +316,9 @@ function WeeklyChart({
                 }`}
                 style={{
                   height: `${barH}%`,
-                  background:
-                    day.total > 0
-                      ? isToday
-                        ? c.fill
-                        : `${c.fill}88`
-                      : '#f4f4f5',
+                  background: day.total > 0
+                    ? isToday ? c.fill : `${c.fill}88`
+                    : '#f4f4f5',
                 }}
               />
               <span
@@ -311,7 +332,6 @@ function WeeklyChart({
         })}
       </div>
 
-      {/* 선택된 날 내역 */}
       {selectedDay && (
         <div className="mt-4 px-6 pb-5 animate-fade-in-up">
           {selectedTxs.length > 0 ? (
@@ -326,19 +346,13 @@ function WeeklyChart({
                       <img src={tx.receipt_image_url} alt="영수증" className="w-full h-full object-cover" />
                     </div>
                   ) : (
-                    <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 ${
-                        tx.status === 'confirmed'
-                          ? 'bg-green-50 text-green-600'
-                          : 'bg-orange-50 text-orange-500'
-                      }`}
-                    >
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 ${
+                      tx.status === 'confirmed' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-500'
+                    }`}>
                       {tx.status === 'confirmed' ? '✓' : '⏳'}
                     </div>
                   )}
-                  <p className="flex-1 font-bold text-zinc-800 text-sm truncate">
-                    {tx.activity_name}
-                  </p>
+                  <p className="flex-1 font-bold text-zinc-800 text-sm truncate">{tx.activity_name}</p>
                   <span className="font-black text-zinc-900 text-sm shrink-0">
                     -{formatCurrency(Number(tx.amount))}원
                   </span>
@@ -357,7 +371,7 @@ function WeeklyChart({
   )
 }
 
-// ── 메인 위젯 ─────────────────────────────────────────────────
+// ── 메인 위젯 ─────────────────────────────────────────────────────
 export default function BalanceVisualWidget({
   currentBalance,
   totalBudget,
@@ -367,16 +381,34 @@ export default function BalanceVisualWidget({
   statusMessage,
   remainingDays,
   dailyTransactions = [],
+  participantId,
+  fundingSources = [],
 }: Props) {
-  const [style, setStyle] = useState<WidgetStyle>('pouch')
+  const router = useRouter()
+  const [style, setStyle] = useState<WidgetStyle>('pie')
   const [selectedEmoji, setSelectedEmoji] = useState('🍎')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showWeekly, setShowWeekly] = useState(false)
 
+  // 인라인 업로드 상태
+  const receiptInputRef = useRef<HTMLInputElement>(null)
+  const activityInputRef = useRef<HTMLInputElement>(null)
+  const [uploadMode, setUploadMode] = useState<'receipt' | 'activity' | null>(null)
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null)
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [uploadAnalyzing, setUploadAnalyzing] = useState(false)
+  const [uploadDescription, setUploadDescription] = useState('')
+  const [uploadAmount, setUploadAmount] = useState('')
+  const [uploadDate, setUploadDate] = useState(new Date().toISOString().split('T')[0])
+  const [uploadSubmitting, setUploadSubmitting] = useState(false)
+  const [uploadToast, setUploadToast] = useState<string | null>(null)
+
   useEffect(() => {
-    const s = localStorage.getItem('balance-widget-style') as WidgetStyle | null
+    const raw = localStorage.getItem('balance-widget-style') as string | null
+    // 구버전 'pouch' → 새 버전 'pie'로 마이그레이션
+    const s = raw === 'pouch' ? 'pie' : (raw as WidgetStyle | null)
     const e = localStorage.getItem('balance-widget-emoji')
-    if (s) setStyle(s)
+    if (s && ['pie', 'water', 'emoji'].includes(s)) setStyle(s)
     if (e) setSelectedEmoji(e)
   }, [])
 
@@ -392,16 +424,104 @@ export default function BalanceVisualWidget({
     setShowEmojiPicker(false)
   }
 
+  // ── 인라인 업로드 핸들러 ──────────────────────────────────────
+  const handleInlineUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    mode: 'receipt' | 'activity'
+  ) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadFile(file)
+    setUploadMode(mode)
+    setUploadDescription('')
+    setUploadAmount('')
+    setUploadDate(new Date().toISOString().split('T')[0])
+    setUploadToast(null)
+
+    const reader = new FileReader()
+    reader.onloadend = async () => {
+      const base64 = (reader.result as string).split(',')[1]
+      setUploadPreview(reader.result as string)
+
+      // 영수증 모드일 때만 OCR 분석
+      if (mode === 'receipt') {
+        setUploadAnalyzing(true)
+        try {
+          const result = await analyzeReceipt(base64)
+          if (result.success && result.data) {
+            setUploadDescription(result.data.store || '')
+            setUploadAmount(String(result.data.amount || ''))
+            if (result.data.date) setUploadDate(result.data.date)
+          }
+        } catch (err) {
+          console.error('OCR 분석 실패:', err)
+        } finally {
+          setUploadAnalyzing(false)
+        }
+      }
+    }
+    reader.readAsDataURL(file)
+    // input 리셋 (같은 파일 재선택 가능)
+    e.target.value = ''
+  }
+
+  const closeUploadSheet = () => {
+    setUploadMode(null)
+    setUploadPreview(null)
+    setUploadFile(null)
+    setUploadDescription('')
+    setUploadAmount('')
+    setUploadAnalyzing(false)
+    setUploadToast(null)
+  }
+
+  const handleInlineSubmit = async () => {
+    if (!participantId || !uploadFile) return
+    setUploadSubmitting(true)
+    try {
+      const formData = new FormData()
+      formData.set('participant_id', participantId)
+      formData.set('date', uploadDate)
+      formData.set('description', uploadDescription)
+      formData.set('amount', uploadAmount)
+      if (fundingSources.length > 0) {
+        formData.set('funding_source_id', fundingSources[0].id)
+      }
+      if (uploadMode === 'receipt') {
+        formData.set('receipt', uploadFile)
+      } else {
+        formData.set('activity_image', uploadFile)
+      }
+      const result = await createTransaction(formData)
+      if (result.success) {
+        setUploadToast('활동이 등록되었습니다! ✅')
+        setTimeout(() => {
+          closeUploadSheet()
+          router.refresh()
+        }, 1200)
+      }
+    } catch (err) {
+      console.error(err)
+      setUploadToast('등록 실패. 다시 시도해 주세요.')
+    } finally {
+      setUploadSubmitting(false)
+    }
+  }
+
   const c = THEME[(themeColor as ThemeKey)] ?? THEME.zinc
+
+  const STYLE_OPTIONS = [
+    { key: 'pie'   as WidgetStyle, label: '🍕', title: '피자 그래프' },
+    { key: 'water' as WidgetStyle, label: '🥤', title: '물컵 그래프' },
+    { key: 'emoji' as WidgetStyle, label: '✨', title: '이모지' },
+  ]
 
   return (
     <section className="rounded-[2.5rem] bg-white ring-1 ring-zinc-100 shadow-lg overflow-hidden">
-      {/* 헤더: 잔액 + 스타일 전환 */}
-      <div className="flex items-start justify-between px-6 pt-6 pb-2">
-        <div>
-          <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em]">
-            나의 돈주머니
-          </p>
+      {/* 헤더: 잔액 + 차트 전환 */}
+      <div className="flex items-start justify-between px-6 pt-6 pb-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em]">잔액 요약</p>
           <p className={`text-4xl font-black mt-1 ${c.text}`}>
             {formatCurrency(currentBalance)}원
           </p>
@@ -410,24 +530,19 @@ export default function BalanceVisualWidget({
           </p>
         </div>
 
-        {/* 스타일 전환 버튼 */}
-        <div className="flex flex-col gap-1.5 pt-1">
-          {(
-            [
-              { key: 'pouch' as WidgetStyle, label: '💰', title: '돈주머니' },
-              { key: 'water' as WidgetStyle, label: '🥤', title: '물컵' },
-              { key: 'emoji' as WidgetStyle, label: '✨', title: '이모지' },
-            ] as const
-          ).map(opt => (
+        {/* 차트 스타일 전환 (가로 배치) */}
+        <div className="flex bg-zinc-100 rounded-xl p-1 gap-1 shrink-0 ml-3 mt-1">
+          {STYLE_OPTIONS.map(opt => (
             <button
               key={opt.key}
               onClick={() => changeStyle(opt.key)}
               aria-label={opt.title}
               aria-pressed={style === opt.key}
-              className={`w-10 h-10 rounded-xl text-lg transition-all duration-200 ${
+              title={opt.title}
+              className={`w-9 h-9 rounded-lg text-base transition-all duration-200 ${
                 style === opt.key
-                  ? 'bg-zinc-900 shadow-md scale-110'
-                  : 'bg-zinc-100 hover:bg-zinc-200 active:scale-95'
+                  ? 'bg-white shadow-sm scale-105'
+                  : 'hover:bg-zinc-200 active:scale-95'
               }`}
             >
               {opt.label}
@@ -437,9 +552,9 @@ export default function BalanceVisualWidget({
       </div>
 
       {/* 게이지 바 */}
-      <div className="px-6 pb-4">
+      <div className="px-6 pb-2">
         <div
-          className="h-3 w-full rounded-full overflow-hidden"
+          className="h-2.5 w-full rounded-full overflow-hidden"
           style={{ background: `${c.fill}22` }}
           role="progressbar"
           aria-valuenow={percentage}
@@ -455,10 +570,8 @@ export default function BalanceVisualWidget({
 
       {/* 시각화 영역 */}
       <div style={{ background: `linear-gradient(to bottom, white, ${c.light}33)` }}>
-        {style === 'pouch' && (
-          <PouchViz percentage={percentage} themeColor={themeColor} icon={icon} />
-        )}
-        {style === 'water' && <WaterViz percentage={percentage} />}
+        {style === 'pie'   && <PizzaChart percentage={percentage} />}
+        {style === 'water' && <WaterViz percentage={percentage} currentBalance={currentBalance} />}
         {style === 'emoji' && (
           <EmojiViz
             percentage={percentage}
@@ -471,32 +584,153 @@ export default function BalanceVisualWidget({
       </div>
 
       {/* 상태 메시지 */}
-      <div className={`px-6 py-4 flex items-center gap-3 ${c.bg} border-t ${c.border}`}>
+      <div className={`px-6 py-3 flex items-center gap-3 ${c.bg} border-t ${c.border}`}>
         <span className="text-2xl shrink-0">{icon}</span>
         <p className="text-sm font-bold text-zinc-700 leading-snug break-keep">{statusMessage}</p>
       </div>
+
+      {/* 영수증 / 활동사진 버튼 — 인라인 파일 업로드 */}
+      <div className="flex gap-3 px-6 py-4 border-t border-zinc-100">
+        <button
+          type="button"
+          onClick={() => receiptInputRef.current?.click()}
+          className="flex-1 py-3 px-4 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center gap-2 hover:bg-blue-100 transition-all active:scale-[0.97] font-bold text-sm"
+        >
+          <span className="text-xl">📷</span>
+          <span>영수증 찍기</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => activityInputRef.current?.click()}
+          className="flex-1 py-3 px-4 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center gap-2 hover:bg-purple-100 transition-all active:scale-[0.97] font-bold text-sm"
+        >
+          <span className="text-xl">🖼️</span>
+          <span>활동사진</span>
+        </button>
+        {/* 숨겨진 파일 입력 */}
+        <input
+          ref={receiptInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => handleInlineUpload(e, 'receipt')}
+        />
+        <input
+          ref={activityInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => handleInlineUpload(e, 'activity')}
+        />
+      </div>
+
+      {/* 인라인 업로드 시트 — 사진 측영 후 바로 정보 입력 */}
+      {uploadMode && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            onClick={closeUploadSheet}
+            aria-hidden="true"
+          />
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl animate-fade-in-up max-h-[85vh] overflow-y-auto">
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-zinc-200" />
+            </div>
+            <div className="px-6 pb-8 pt-2">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-black text-zinc-900">
+                  {uploadMode === 'receipt' ? '🧂 영수증 등록' : '📸 활동 기록'}
+                </h2>
+                <button onClick={closeUploadSheet} className="text-zinc-400 hover:text-zinc-600 text-lg font-bold">✕</button>
+              </div>
+
+              {/* 사진 미리보기 */}
+              {uploadPreview && (
+                <div className="relative aspect-video rounded-2xl overflow-hidden mb-4 ring-1 ring-zinc-200">
+                  <img src={uploadPreview} alt="미리보기" className="w-full h-full object-cover" />
+                  {uploadAnalyzing && (
+                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-sm">
+                      <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin mb-2" />
+                      <p className="font-black text-sm animate-pulse-gentle">영수증 읽는 중...</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 활동 내용 */}
+              <div className="flex flex-col gap-3">
+                <input
+                  type="text"
+                  value={uploadDescription}
+                  onChange={(e) => setUploadDescription(e.target.value)}
+                  placeholder={uploadAnalyzing ? 'AI가 분석 중...' : '무엇을 했나요? (예: 편의점 간식)'}
+                  className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold transition-all"
+                  required
+                />
+
+                <div className="relative">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    value={uploadAmount}
+                    onChange={(e) => setUploadAmount(e.target.value)}
+                    placeholder="0"
+                    className="w-full p-4 pr-12 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-xl font-black text-right transition-all"
+                    required
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-zinc-400">원</span>
+                </div>
+
+                <input
+                  type="date"
+                  value={uploadDate}
+                  onChange={(e) => setUploadDate(e.target.value)}
+                  className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold transition-all"
+                />
+              </div>
+
+              {uploadToast && (
+                <div className="mt-3 p-3 rounded-xl bg-green-50 text-green-700 text-sm font-bold animate-fade-in-up">
+                  {uploadToast}
+                </div>
+              )}
+
+              <button
+                type="button"
+                disabled={uploadSubmitting || uploadAnalyzing || !uploadDescription || !uploadAmount}
+                onClick={handleInlineSubmit}
+                className="w-full mt-4 py-4 rounded-2xl bg-zinc-900 text-white font-black text-base active:scale-[0.98] transition-all disabled:bg-zinc-300"
+              >
+                {uploadSubmitting ? '등록 중...' : uploadAnalyzing ? 'AI 분석 중...' : '활동 기록하기'}
+              </button>
+
+              <p className="text-center text-zinc-400 text-xs font-medium mt-2">
+                지원자 선생님이 확인한 뒤 정식으로 반영됩니다.
+              </p>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* 주간 지출 토글 */}
       {dailyTransactions.length > 0 && (
         <div className="border-t border-zinc-100">
           <button
             onClick={() => setShowWeekly(p => !p)}
-            className="w-full flex items-center justify-between px-6 py-4 text-xs font-black text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 transition-colors"
+            className="w-full flex items-center justify-between px-6 py-3.5 text-xs font-black text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 transition-colors"
             aria-expanded={showWeekly}
           >
             <span>이번 주 지출 보기</span>
-            <span
-              className={`transition-transform duration-300 ${showWeekly ? 'rotate-180' : ''}`}
-            >
+            <span className={`transition-transform duration-300 ${showWeekly ? 'rotate-180' : ''}`}>
               ▾
             </span>
           </button>
 
-          <div
-            className={`transition-all duration-500 overflow-hidden ${
-              showWeekly ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
-            }`}
-          >
+          <div className={`transition-all duration-500 overflow-hidden ${
+            showWeekly ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          }`}>
             <WeeklyChart dailyTransactions={dailyTransactions} themeColor={themeColor} />
           </div>
         </div>

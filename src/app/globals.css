@@ -179,6 +179,12 @@ button, [role="button"], a {
   .animate-pulse-gentle {
     animation: pulse-gentle 1.5s ease-in-out infinite;
   }
+
+  /* 순차 등장 애니메이션 — 각 블록별 animation-delay 적용 */
+  .stagger-item {
+    opacity: 0;
+    animation: fadeInUp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
 }
 
 /* ─── Quick action buttons ─── */
@@ -324,4 +330,21 @@ html.high-contrast {
   font-size: 1.1rem;
   line-height: 1.9;
   font-weight: 500;
+}
+
+/* ─── 쉬운 용어 모드 ─── */
+html.easy-terms .term-formal {
+  display: none;
+}
+
+html.easy-terms .term-easy {
+  display: inline;
+}
+
+html:not(.easy-terms) .term-easy {
+  display: none;
+}
+
+html:not(.easy-terms) .term-formal {
+  display: inline;
 }

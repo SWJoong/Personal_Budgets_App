@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import HomeDashboard from '@/components/home/HomeDashboard'
+import { UIPreferences, DEFAULT_PREFERENCES } from '@/types/ui-preferences'
 
 export default async function Home() {
   // createClient()가 DEMO_MODE=true 시 자동으로 데모 유저와 실제 Supabase 데이터를 반환
@@ -75,52 +76,71 @@ export default async function Home() {
   const firstDayOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`
   const lastDayOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-${String(totalDaysInMonth).padStart(2, '0')}`
 
-  if (true) {
-    const recentTxData = await supabase
-      .from('transactions')
-      .select('*')
+  // ui_preferences 파싱
+  const rawPrefs = participant.ui_preferences as any
+  const uiPreferences: UIPreferences | null = rawPrefs?.enabled_blocks
+    ? { enabled_blocks: rawPrefs.enabled_blocks }
+    : null
+  const effectivePrefs = uiPreferences ?? DEFAULT_PREFERENCES
+
+  const recentTxData = await supabase
+    .from('transactions')
+    .select('*')
+    .eq('participant_id', user.id)
+    .order('date', { ascending: false })
+    .limit(3)
+  recentTransactions = recentTxData.data || []
+
+  // 이번 달 일별 거래 내역
+  const dailyTxData = await supabase
+    .from('transactions')
+    .select('date, amount, activity_name, status, receipt_image_url')
+    .eq('participant_id', user.id)
+    .gte('date', firstDayOfMonth)
+    .lte('date', lastDayOfMonth)
+    .order('date', { ascending: true })
+  dailyTransactions = dailyTxData.data || []
+
+  // 최근 6개월 월별 지출 집계 — 쿼리 1번으로 처리
+  const totalMonthlyBudget = (participant.funding_sources || []).reduce(
+    (acc: number, fs: any) => acc + Number(fs.monthly_budget), 0
+  ) || participant.monthly_budget_default || 0
+
+  const sixMonthsAgo = new Date(year, month - 5, 1).toISOString().split('T')[0]
+  const { data: allMonthTxs } = await supabase
+    .from('transactions')
+    .select('amount, date')
+    .eq('participant_id', user.id)
+    .gte('date', sixMonthsAgo)
+    .lte('date', lastDayOfMonth)
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(year, month - i, 1)
+    const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const totalSpent = (allMonthTxs || [])
+      .filter((t: any) => t.date.startsWith(m))
+      .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
+    monthlyTrend.push({ month: m, totalSpent, budget: totalMonthlyBudget })
+  }
+
+  // 지원자 편지 블록이 활성화된 경우에만 최근 평가 조회
+  let latestEvaluation: { month: string; tried: string | null; learned: string | null } | null = null
+  if (effectivePrefs.enabled_blocks.includes('evaluation_letter')) {
+    const { data: evalData } = await supabase
+      .from('evaluations')
+      .select('month, tried, learned')
       .eq('participant_id', user.id)
-      .order('date', { ascending: false })
-      .limit(3);
-    recentTransactions = recentTxData.data || []
-
-    // 이번 달 일별 거래 내역
-    const dailyTxData = await supabase
-      .from('transactions')
-      .select('date, amount, activity_name, status, receipt_image_url')
-      .eq('participant_id', user.id)
-      .gte('date', firstDayOfMonth)
-      .lte('date', lastDayOfMonth)
-      .order('date', { ascending: true })
-    dailyTransactions = dailyTxData.data || []
-
-    // 최근 6개월 월별 지출 집계 — 쿼리 1번으로 처리
-    const totalMonthlyBudget = (participant.funding_sources || []).reduce(
-      (acc: number, fs: any) => acc + Number(fs.monthly_budget), 0
-    ) || participant.monthly_budget_default || 0
-
-    const sixMonthsAgo = new Date(year, month - 5, 1).toISOString().split('T')[0]
-    const { data: allMonthTxs } = await supabase
-      .from('transactions')
-      .select('amount, date')
-      .eq('participant_id', user.id)
-      .gte('date', sixMonthsAgo)
-      .lte('date', lastDayOfMonth)
-
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(year, month - i, 1)
-      const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      const totalSpent = (allMonthTxs || [])
-        .filter((t: any) => t.date.startsWith(m))
-        .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
-      monthlyTrend.push({ month: m, totalSpent, budget: totalMonthlyBudget })
-    }
+      .order('month', { ascending: false })
+      .limit(1)
+      .single()
+    latestEvaluation = evalData
   }
 
   return (
     <HomeDashboard
       profile={profile}
       participant={participant}
+      participantId={user.id}
       fundingSources={participant.funding_sources || []}
       recentTransactions={recentTransactions || []}
       remainingDays={remainingDays}
@@ -129,6 +149,8 @@ export default async function Home() {
       userName={profile?.name || user.email?.split('@')[0] || ''}
       dailyTransactions={dailyTransactions || []}
       monthlyTrend={monthlyTrend}
+      uiPreferences={uiPreferences}
+      latestEvaluation={latestEvaluation}
     />
   );
 }

@@ -10,8 +10,6 @@ interface FundingSource {
   name: string
 }
 
-type PhotoTab = 'receipt' | 'activity'
-
 export default function ReceiptUploadForm({
   participantId,
   fundingSources
@@ -23,7 +21,6 @@ export default function ReceiptUploadForm({
   const [loading, setLoading] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
   const [toast, setToast] = useState<{type: 'success' | 'error', message: string} | null>(null)
-  const [photoTab, setPhotoTab] = useState<PhotoTab>('receipt')
 
   // 영수증 사진 상태
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
@@ -110,8 +107,6 @@ export default function ReceiptUploadForm({
     }
   }
 
-  const hasAnyPhoto = receiptPreview || activityPreview
-
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       {toast && (
@@ -125,105 +120,67 @@ export default function ReceiptUploadForm({
         </div>
       )}
 
-      {/* 사진 탭 선택 */}
-      <div className="flex bg-zinc-100 rounded-xl p-1 gap-1">
-        <button
-          type="button"
-          onClick={() => setPhotoTab('receipt')}
-          className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
-            photoTab === 'receipt' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
-          }`}
+      {/* 영수증 사진 */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-bold text-zinc-500 ml-1">🧾 영수증 사진 <span className="text-zinc-300 font-medium">(선택)</span></label>
+          {receiptPreview && (
+            <button type="button" onClick={() => { setReceiptPreview(null); setReceiptFile(null) }}
+              className="text-xs text-red-400 font-bold">삭제</button>
+          )}
+        </div>
+        <div
+          className="relative aspect-[3/4] w-full rounded-3xl border-2 border-dashed border-zinc-200 bg-zinc-50 flex items-center justify-center overflow-hidden active:scale-[0.98] transition-all cursor-pointer"
+          onClick={() => document.getElementById('receipt-input')?.click()}
         >
-          <span>🧾</span> 영수증 사진
-        </button>
-        <button
-          type="button"
-          onClick={() => setPhotoTab('activity')}
-          className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${
-            photoTab === 'activity' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
-          }`}
-        >
-          <span>📸</span> 활동 사진
-        </button>
+          {receiptPreview ? (
+            <>
+              <img src={receiptPreview} alt="영수증 미리보기" className="w-full h-full object-cover" />
+              {analyzing && (
+                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-sm">
+                  <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin mb-3" />
+                  <p className="font-black animate-pulse">영수증 읽는 중...</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-zinc-400">
+              <span className="text-5xl">🧾</span>
+              <p className="font-bold">영수증 사진 선택 (선택사항)</p>
+              <p className="text-xs">찍으면 AI가 자동으로 내용을 읽어요</p>
+            </div>
+          )}
+        </div>
+        <input id="receipt-input" type="file" accept="image/*" capture="environment"
+          className="hidden" onChange={handleReceiptChange} />
       </div>
 
-      {/* 영수증 사진 탭 */}
-      {photoTab === 'receipt' && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-bold text-zinc-500 ml-1">🧾 영수증 사진 <span className="text-zinc-300 font-medium">(선택)</span></label>
-            {receiptPreview && (
-              <button type="button" onClick={() => { setReceiptPreview(null); setReceiptFile(null) }}
-                className="text-xs text-red-400 font-bold">삭제</button>
-            )}
-          </div>
-          <div
-            className="relative aspect-[3/4] w-full rounded-3xl border-2 border-dashed border-zinc-200 bg-zinc-50 flex items-center justify-center overflow-hidden active:scale-[0.98] transition-all cursor-pointer"
-            onClick={() => document.getElementById('receipt-input')?.click()}
-          >
-            {receiptPreview ? (
-              <>
-                <img src={receiptPreview} alt="영수증 미리보기" className="w-full h-full object-cover" />
-                {analyzing && (
-                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-sm">
-                    <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin mb-3" />
-                    <p className="font-black animate-pulse">영수증 읽는 중...</p>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-zinc-400">
-                <span className="text-5xl">🧾</span>
-                <p className="font-bold">영수증 사진 선택 (선택사항)</p>
-                <p className="text-xs">찍으면 AI가 자동으로 내용을 읽어요</p>
-              </div>
-            )}
-          </div>
-          <input id="receipt-input" type="file" accept="image/*" capture="environment"
-            className="hidden" onChange={handleReceiptChange} />
-        </div>
-      )}
-
-      {/* 활동 사진 탭 */}
-      {photoTab === 'activity' && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-bold text-zinc-500 ml-1">📸 활동 사진 <span className="text-zinc-300 font-medium">(선택, 1장)</span></label>
-            {activityPreview && (
-              <button type="button" onClick={handleRemoveActivityPhoto}
-                className="text-xs text-red-400 font-bold">삭제</button>
-            )}
-          </div>
-          <div
-            className="relative aspect-square w-full rounded-3xl border-2 border-dashed border-zinc-200 bg-zinc-50 flex items-center justify-center overflow-hidden active:scale-[0.98] transition-all cursor-pointer"
-            onClick={() => !activityPreview && document.getElementById('activity-input')?.click()}
-          >
-            {activityPreview ? (
-              <img src={activityPreview} alt="활동 사진 미리보기" className="w-full h-full object-cover" />
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-zinc-400">
-                <span className="text-5xl">📷</span>
-                <p className="font-bold">활동 사진 선택 (1장)</p>
-                <p className="text-xs">오늘 활동한 사진을 올려요</p>
-              </div>
-            )}
-          </div>
-          <input id="activity-input" type="file" accept="image/*" capture="environment"
-            className="hidden" onChange={handleActivityChange} />
-        </div>
-      )}
-
-      {/* 사진 등록 현황 표시 */}
-      {hasAnyPhoto && (
-        <div className="flex gap-2">
-          {receiptPreview && (
-            <span className="text-xs font-bold px-2 py-1 bg-blue-50 text-blue-600 rounded-lg">🧾 영수증 1장</span>
-          )}
+      {/* 활동 사진 */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-bold text-zinc-500 ml-1">📸 활동 사진 <span className="text-zinc-300 font-medium">(선택, 1장)</span></label>
           {activityPreview && (
-            <span className="text-xs font-bold px-2 py-1 bg-green-50 text-green-600 rounded-lg">📸 활동사진 1장</span>
+            <button type="button" onClick={handleRemoveActivityPhoto}
+              className="text-xs text-red-400 font-bold">삭제</button>
           )}
         </div>
-      )}
+        <div
+          className="relative aspect-video w-full rounded-3xl border-2 border-dashed border-zinc-200 bg-zinc-50 flex items-center justify-center overflow-hidden active:scale-[0.98] transition-all cursor-pointer"
+          onClick={() => !activityPreview && document.getElementById('activity-input')?.click()}
+        >
+          {activityPreview ? (
+            <img src={activityPreview} alt="활동 사진 미리보기" className="w-full h-full object-cover" />
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-zinc-400">
+              <span className="text-5xl">📷</span>
+              <p className="font-bold">활동 사진 선택 (1장)</p>
+              <p className="text-xs">오늘 활동한 사진을 올려요</p>
+            </div>
+          )}
+        </div>
+        <input id="activity-input" type="file" accept="image/*" capture="environment"
+          className="hidden" onChange={handleActivityChange} />
+      </div>
 
       {/* 활동 내용 */}
       <div className="flex flex-col gap-2">
@@ -255,19 +212,23 @@ export default function ReceiptUploadForm({
         </div>
       </div>
 
-      {/* 재원 선택 */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-zinc-500 ml-1">💳 어떤 돈을 썼나요?</label>
-        <select
-          name="funding_source_id"
-          className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-lg font-bold appearance-none"
-          required
-        >
-          {fundingSources.map(fs => (
-            <option key={fs.id} value={fs.id}>{fs.name}</option>
-          ))}
-        </select>
-      </div>
+      {/* 재원 선택 (1개이면 자동선택 숨김) */}
+      {fundingSources.length <= 1 ? (
+        <input type="hidden" name="funding_source_id" value={fundingSources[0]?.id ?? ''} />
+      ) : (
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-bold text-zinc-500 ml-1">💳 어떤 돈을 썼나요?</label>
+          <select
+            name="funding_source_id"
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-lg font-bold appearance-none"
+            required
+          >
+            {fundingSources.map(fs => (
+              <option key={fs.id} value={fs.id}>{fs.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* 날짜 */}
       <div className="flex flex-col gap-2">

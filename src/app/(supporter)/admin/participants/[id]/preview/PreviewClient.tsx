@@ -65,6 +65,7 @@ export default function PreviewClient({
               <HomeDashboard
                 profile={participant}
                 participant={participant}
+                participantId={participant.id}
                 fundingSources={fundingSources || []}
                 recentTransactions={recentTransactions || []}
                 remainingDays={remainingDays}

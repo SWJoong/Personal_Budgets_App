@@ -9,6 +9,8 @@ interface AccessibilityContextType {
   setFontSize: (size: FontSize) => void
   highContrast: boolean
   setHighContrast: (on: boolean) => void
+  easyTerms: boolean
+  setEasyTerms: (on: boolean) => void
 }
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined)
@@ -16,6 +18,7 @@ const AccessibilityContext = createContext<AccessibilityContextType | undefined>
 export function AccessibilityProvider({ children }: { children: React.ReactNode }) {
   const [fontSize, setFontSizeState] = useState<FontSize>('normal')
   const [highContrast, setHighContrastState] = useState(false)
+  const [easyTerms, setEasyTermsState] = useState(false)
 
   // 로컬 스토리지에서 설정 불러오기
   useEffect(() => {
@@ -23,6 +26,8 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     if (savedFont) setFontSizeState(savedFont)
     const savedContrast = localStorage.getItem('app-high-contrast')
     if (savedContrast === 'true') setHighContrastState(true)
+    const savedEasyTerms = localStorage.getItem('app-easy-terms')
+    if (savedEasyTerms === 'true') setEasyTermsState(true)
   }, [])
 
   const setFontSize = (size: FontSize) => {
@@ -47,7 +52,18 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     }
   }
 
-  // 초기 로드 시 폰트 사이즈 & 고대비 적용
+  const setEasyTerms = (on: boolean) => {
+    setEasyTermsState(on)
+    localStorage.setItem('app-easy-terms', String(on))
+    const html = document.documentElement
+    if (on) {
+      html.classList.add('easy-terms')
+    } else {
+      html.classList.remove('easy-terms')
+    }
+  }
+
+  // 초기 로드 시 폰트 사이즈 & 고대비 & 쉬운 용어 적용
   useEffect(() => {
     const html = document.documentElement
     if (fontSize === 'normal') html.style.fontSize = '16px'
@@ -56,10 +72,13 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
 
     if (highContrast) html.classList.add('high-contrast')
     else html.classList.remove('high-contrast')
-  }, [fontSize, highContrast])
+
+    if (easyTerms) html.classList.add('easy-terms')
+    else html.classList.remove('easy-terms')
+  }, [fontSize, highContrast, easyTerms])
 
   return (
-    <AccessibilityContext.Provider value={{ fontSize, setFontSize, highContrast, setHighContrast }}>
+    <AccessibilityContext.Provider value={{ fontSize, setFontSize, highContrast, setHighContrast, easyTerms, setEasyTerms }}>
       {children}
     </AccessibilityContext.Provider>
   )

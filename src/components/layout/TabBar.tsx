@@ -37,9 +37,7 @@ export function TabBar() {
   // 역할별 탭 구성
   const participantTabs = [
     { name: '홈', href: '/', icon: '🏠' },
-    { name: '오늘 계획', href: '/plan', icon: '📝' },
     { name: '영수증', href: '/receipt', icon: '🧾' },
-    { name: '달력', href: '/calendar', icon: '📅' },
     { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
