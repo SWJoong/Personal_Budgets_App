@@ -54,7 +54,7 @@ function PizzaChart({ percentage }: { percentage: number }) {
 
   return (
     <div className="flex items-center justify-center py-5">
-      <div className="relative w-40 h-40 sm:w-44 sm:h-44">
+      <div className="relative w-40 h-40 lg:w-52 lg:h-52">
         <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 drop-shadow-md">
           {/* 접시 */}
           <circle cx="50" cy="50" r="48" fill="#e5e7eb" stroke="#d1d5db" strokeWidth="1.5" />
@@ -114,7 +114,7 @@ function WaterViz({ percentage, currentBalance }: { percentage: number; currentB
   return (
     <div className="flex flex-col items-center justify-center w-full py-4 pb-5 gap-3">
       <div
-        className={`relative w-28 h-40 sm:w-32 sm:h-44 rounded-b-[2rem] border-4 border-t-0 ${cupBorder} bg-blue-50/30 overflow-hidden shadow-inner`}
+        className={`relative w-28 h-40 lg:w-36 lg:h-52 rounded-b-[2rem] border-4 border-t-0 ${cupBorder} bg-blue-50/30 overflow-hidden shadow-inner`}
       >
         {/* 물 */}
         <div
@@ -569,7 +569,7 @@ export default function BalanceVisualWidget({
             onClick={closeUploadSheet}
             aria-hidden="true"
           />
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl animate-fade-in-up max-h-[90dvh] overflow-y-auto sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:max-w-[500px] sm:w-full">
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl animate-fade-in-up max-h-[90dvh] overflow-y-auto lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:max-w-[600px] lg:w-full">
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full bg-zinc-200" />
             </div>

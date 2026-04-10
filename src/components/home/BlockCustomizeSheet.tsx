@@ -66,7 +66,7 @@ export default function BlockCustomizeSheet({
 
       {/* 바텀시트 */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:max-w-[500px] sm:w-full ${
+        className={`fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:max-w-[600px] lg:w-full ${
           isOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
         role="dialog"
