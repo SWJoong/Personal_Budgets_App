@@ -21,10 +21,10 @@ export default async function ReceiptPage() {
   // 데이터가 없는 경우 (지원자가 아직 등록하지 않음)
   if (!participant) {
     return (
-      <div className="flex flex-col min-h-screen bg-background text-foreground p-6">
-         <header className="flex h-16 items-center gap-3 mb-6">
-          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl">←</Link>
-          <h1 className="text-2xl font-bold tracking-tight">영수증 올리기</h1>
+      <div className="flex flex-col min-h-dvh bg-background text-foreground p-4">
+         <header className="flex h-14 items-center gap-3 mb-6">
+          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
+          <h1 className="text-lg font-bold tracking-tight">영수증 올리기</h1>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
           <span className="text-6xl">📋</span>
@@ -35,16 +35,16 @@ export default async function ReceiptPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground pb-10">
-      <header className="flex h-16 items-center gap-3 px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl">←</Link>
-        <h1 className="text-2xl font-bold tracking-tight">영수증 올리기</h1>
+    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
+      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+        <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
+        <h1 className="text-lg font-bold tracking-tight">영수증 올리기</h1>
       </header>
 
-      <main className="flex-1 p-6 max-w-sm mx-auto w-full">
-        <div className="mb-8">
-          <h2 className="text-lg font-bold text-zinc-800">새로운 활동 기록</h2>
-          <p className="text-zinc-500 font-medium">사용한 영수증 사진을 찍어서 보내주세요.</p>
+      <main className="flex-1 p-4 w-full">
+        <div className="mb-6">
+          <h2 className="text-base font-bold text-zinc-800">새로운 활동 기록</h2>
+          <p className="text-sm text-zinc-500 font-medium mt-0.5">사용한 영수증 사진을 찍어서 보내주세요.</p>
         </div>
 
         <ReceiptUploadForm 

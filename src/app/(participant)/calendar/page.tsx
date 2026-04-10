@@ -19,11 +19,11 @@ export default async function CalendarPage() {
     .order('date', { ascending: false })
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground pb-10">
-      <header className="flex h-16 items-center justify-between px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
+      <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl">←</Link>
-          <h1 className="text-xl font-bold tracking-tight">달력</h1>
+          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
+          <h1 className="text-lg font-bold tracking-tight">달력</h1>
         </div>
         <div className="flex gap-3 text-[10px] font-bold">
           <div className="flex items-center gap-1.5">
@@ -37,7 +37,7 @@ export default async function CalendarPage() {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
+      <main className="flex-1 w-full p-4">
         <TransactionCalendar transactions={transactions || []} />
       </main>
     </div>

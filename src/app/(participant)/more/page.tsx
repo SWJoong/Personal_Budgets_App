@@ -25,13 +25,13 @@ export default async function MorePage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground pb-10">
-      <header className="flex h-16 items-center justify-between px-6 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-        <h1 className="text-xl font-bold tracking-tight">더보기</h1>
+    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
+      <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
+        <h1 className="text-lg font-bold tracking-tight">더보기</h1>
         <NavDropdown />
       </header>
 
-      <main className="flex-1 p-6 max-w-lg mx-auto w-full flex flex-col gap-8">
+      <main className="flex-1 p-4 w-full flex flex-col gap-6">
         {/* 프로필 요약 */}
         <section className="flex items-center gap-4 p-6 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm">
           <div className="w-16 h-16 rounded-3xl bg-zinc-100 flex items-center justify-center text-3xl font-black text-zinc-400">

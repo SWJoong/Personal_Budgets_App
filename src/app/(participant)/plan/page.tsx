@@ -29,13 +29,13 @@ export default async function PlanPage() {
     .limit(5)
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground pb-10">
-      <header className="flex h-16 items-center gap-3 px-6 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl">←</Link>
-        <h1 className="text-xl font-bold tracking-tight">오늘의 계획</h1>
+    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
+      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
+        <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
+        <h1 className="text-lg font-bold tracking-tight">오늘의 계획</h1>
       </header>
 
-      <main className="flex-1 p-6 max-w-lg mx-auto w-full flex flex-col gap-8">
+      <main className="flex-1 p-4 w-full flex flex-col gap-6">
         {/* 현재 잔액 요약 */}
         <div className="p-6 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm flex justify-between items-center relative overflow-hidden">
           <div className="flex flex-col z-10 relative">

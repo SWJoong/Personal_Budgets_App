@@ -1,6 +1,7 @@
 'use client'
 
 import { formatCurrency } from '@/utils/budget-visuals'
+import { EasyTerm } from '@/components/ui/EasyTerm'
 
 interface MonthlyData {
   month: string  // 'YYYY-MM'
@@ -20,17 +21,19 @@ export default function BudgetTrendChart({ monthlyData }: Props) {
 
   return (
     <section className="flex flex-col gap-3">
-      <h3 className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] ml-1">월별 지출 추이</h3>
+      <h3 className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] ml-1">
+        <EasyTerm formal="월별 지출 추이" easy="달마다 쓴 돈" />
+      </h3>
       <div className="bg-white rounded-[2rem] p-6 ring-1 ring-zinc-200 shadow-sm">
         {/* 범례 */}
         <div className="flex items-center gap-4 mb-5 text-[11px] font-bold text-zinc-500">
           <span className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-sm bg-blue-500" />
-            지출
+            <EasyTerm formal="지출" easy="쓴 돈" />
           </span>
           <span className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-sm bg-zinc-300 border-2 border-dashed border-zinc-500" />
-            예산 기준선
+            <EasyTerm formal="예산 기준선" easy="쓸 수 있는 돈 기준" />
           </span>
         </div>
 

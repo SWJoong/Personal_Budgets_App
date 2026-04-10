@@ -53,8 +53,8 @@ function PizzaChart({ percentage }: { percentage: number }) {
   const offset = circumference - circumference * Math.max(0, Math.min(1, percentage / 100))
 
   return (
-    <div className="flex items-center justify-center py-6">
-      <div className="relative" style={{ width: 176, height: 176 }}>
+    <div className="flex items-center justify-center py-5">
+      <div className="relative w-40 h-40 sm:w-44 sm:h-44">
         <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 drop-shadow-md">
           {/* 접시 */}
           <circle cx="50" cy="50" r="48" fill="#e5e7eb" stroke="#d1d5db" strokeWidth="1.5" />
@@ -112,9 +112,9 @@ function WaterViz({ percentage, currentBalance }: { percentage: number; currentB
   const fillH = Math.max(5, percentage)
 
   return (
-    <div className="flex flex-col items-center justify-center w-full py-4 pb-6 gap-3">
+    <div className="flex flex-col items-center justify-center w-full py-4 pb-5 gap-3">
       <div
-        className={`relative w-32 h-44 rounded-b-[2rem] border-4 border-t-0 ${cupBorder} bg-blue-50/30 overflow-hidden shadow-inner`}
+        className={`relative w-28 h-40 sm:w-32 sm:h-44 rounded-b-[2rem] border-4 border-t-0 ${cupBorder} bg-blue-50/30 overflow-hidden shadow-inner`}
       >
         {/* 물 */}
         <div
@@ -171,8 +171,8 @@ function EmojiViz({
   const remaining = Math.max(0, Math.min(10, Math.round(percentage / 10)))
 
   return (
-    <div className="py-4 px-2">
-      <div className="grid grid-cols-5 gap-3 px-4">
+    <div className="py-4 px-3">
+      <div className="grid grid-cols-5 gap-2 sm:gap-3 px-2">
         {Array.from({ length: 10 }, (_, i) => {
           const filled = i < remaining
           return (
@@ -409,24 +409,24 @@ export default function BalanceVisualWidget({
   return (
     <section className="rounded-[2.5rem] bg-white ring-1 ring-zinc-100 shadow-lg overflow-hidden">
       {/* 헤더: 잔액 + 차트 전환 */}
-      <div className="flex items-start justify-between px-6 pt-6 pb-3">
+      <div className="flex items-start justify-between px-5 pt-5 pb-2">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em]">
+          <p className="text-[11px] font-black text-zinc-300 uppercase tracking-[0.2em]">
             <EasyTerm formal="잔액 요약" easy="남은 돈" />
           </p>
-          <p className={`text-4xl font-black mt-1 transition-all duration-500 ${c.text}`}>
-            {formatCurrency(displayBalance)}원
+          <p className={`text-3xl font-black mt-1 transition-all duration-500 leading-tight ${c.text}`}>
+            {formatCurrency(displayBalance)}<span className="text-xl">원</span>
           </p>
-          <p className="text-sm text-zinc-400 font-bold mt-0.5">
-            {remainingDays}일 남음 · {displayPct}%
+          <p className="text-xs text-zinc-400 font-bold mt-0.5 flex items-center gap-2">
+            <span>{remainingDays}일 남음 · {displayPct}%</span>
             {pendingDeduction > 0 && (
-              <span className="ml-2 text-orange-500 text-xs">⏳ 반영 중</span>
+              <span className="text-orange-500">⏳ 반영 중</span>
             )}
           </p>
         </div>
 
-        {/* 차트 스타일 전환 (가로 배치) */}
-        <div className="flex bg-zinc-100 rounded-xl p-1 gap-1 shrink-0 ml-3 mt-1">
+        {/* 차트 스타일 전환 */}
+        <div className="flex bg-zinc-100 rounded-xl p-1 gap-1 shrink-0 ml-2 mt-0.5">
           {STYLE_OPTIONS.map(opt => (
             <button
               key={opt.key}
@@ -434,7 +434,7 @@ export default function BalanceVisualWidget({
               aria-label={opt.title}
               aria-pressed={style === opt.key}
               title={opt.title}
-              className={`w-9 h-9 rounded-lg text-base transition-all duration-200 ${
+              className={`w-10 h-10 rounded-lg text-lg transition-all duration-200 ${
                 style === opt.key
                   ? 'bg-white shadow-sm scale-105'
                   : 'hover:bg-zinc-200 active:scale-95'
@@ -447,7 +447,7 @@ export default function BalanceVisualWidget({
       </div>
 
       {/* 게이지 바 (시뮬레이션 시 2단 표시) */}
-      <div className="px-6 pb-2">
+      <div className="px-5 pb-2">
         <div
           className="h-2.5 w-full rounded-full overflow-hidden relative"
           style={{ background: `${c.fill}22` }}
@@ -519,13 +519,13 @@ export default function BalanceVisualWidget({
       </div>
 
       {/* 상태 메시지 */}
-      <div className={`px-6 py-3 flex items-center gap-3 ${c.bg} border-t ${c.border}`}>
+      <div className={`px-5 py-3 flex items-center gap-3 ${c.bg} border-t ${c.border}`}>
         <span className="text-2xl shrink-0">{icon}</span>
         <p className="text-sm font-bold text-zinc-700 leading-snug break-keep">{statusMessage}</p>
       </div>
 
       {/* 영수증 / 활동사진 버튼 — 인라인 파일 업로드 */}
-      <div className="flex gap-3 px-6 py-4 border-t border-zinc-100">
+      <div className="flex gap-3 px-5 py-3.5 border-t border-zinc-100">
         <button
           type="button"
           onClick={() => receiptInputRef.current?.click()}
@@ -569,11 +569,11 @@ export default function BalanceVisualWidget({
             onClick={closeUploadSheet}
             aria-hidden="true"
           />
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl animate-fade-in-up max-h-[85vh] overflow-y-auto">
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl animate-fade-in-up max-h-[90dvh] overflow-y-auto sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:max-w-[500px] sm:w-full">
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full bg-zinc-200" />
             </div>
-            <div className="px-6 pb-8 pt-2">
+            <div className="px-5 pb-8 pt-2">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-black text-zinc-900">
                   {uploadMode === 'receipt' ? '🧂 영수증 등록' : '📸 활동 기록'}

@@ -27,6 +27,7 @@ interface DailyTransaction {
   activity_name: string
   status: 'pending' | 'confirmed'
   receipt_image_url?: string | null
+  activity_image_url?: string | null
 }
 
 interface MonthlyData {
@@ -81,18 +82,18 @@ export default function HomeDashboard({
   const stagger = () => ({ animationDelay: `${(staggerIdx++) * 0.08}s` })
 
   return (
-    <div className="flex flex-col min-h-screen easy-read-bg text-foreground participant-view">
-      <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
-        <h1 className="text-xl font-bold tracking-tight text-foreground">아름드리꿈터</h1>
+    <div className="flex flex-col min-h-dvh easy-read-bg text-foreground participant-view">
+      <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/90 backdrop-blur-md border-b border-border">
+        <h1 className="text-lg font-bold tracking-tight text-foreground">아름드리꿈터</h1>
         <div className="flex items-center gap-2">
-          <div className="text-xs font-bold px-3 py-1.5 bg-primary/10 rounded-full text-primary">
+          <div className="text-xs font-bold px-2.5 py-1 bg-primary/10 rounded-full text-primary whitespace-nowrap">
             {userName} 님
           </div>
           <NavDropdown />
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-6">
+      <main className="flex-1 w-full p-4 flex flex-col gap-4">
         {/* [필수] 잔액 시각화 위젯 */}
         <div className="stagger-item" style={stagger()}>
           <BalanceVisualWidget
@@ -283,15 +284,19 @@ export default function HomeDashboard({
         )}
       </main>
 
-      {/* 확장형 FAB: 화면 구성 편집 */}
-      <button
-        onClick={() => setIsSheetOpen(true)}
-        className="fixed bottom-6 right-4 z-30 flex items-center gap-2 py-3 pl-5 pr-4 rounded-full bg-zinc-900 text-white shadow-xl active:scale-95 transition-all hover:bg-zinc-800"
-        aria-label="화면 구성 편집"
-      >
-        <span className="text-sm font-black whitespace-nowrap">화면 구성 편집</span>
-        <span className="text-lg leading-none">+</span>
-      </button>
+      {/* 확장형 FAB (sticky) — 스크롤해도 항상 하단에 표시 */}
+      <div className="sticky bottom-0 z-30 flex justify-end px-4 pb-4 pt-2 pointer-events-none">
+        <button
+          onClick={() => setIsSheetOpen(true)}
+          className="pointer-events-auto flex items-center gap-2 py-3 pl-5 pr-4 rounded-full bg-zinc-900 text-white shadow-xl active:scale-95 transition-all hover:bg-zinc-800"
+          aria-label="화면 구성 편집"
+        >
+          <span className="text-sm font-black whitespace-nowrap">
+            <EasyTerm formal="화면 구성 편집" easy="화면 꾸미기" />
+          </span>
+          <span className="text-lg leading-none">+</span>
+        </button>
+      </div>
 
       {/* 블록 커스터마이징 바텀시트 */}
       <BlockCustomizeSheet
