@@ -180,6 +180,21 @@ button, [role="button"], a {
     animation: pulse-gentle 1.5s ease-in-out infinite;
   }
 
+  @keyframes fadeInDown {
+    0% {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.96);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .animate-fade-in-down {
+    animation: fadeInDown 0.15s ease-out;
+  }
+
   /* 순차 등장 애니메이션 — 각 블록별 animation-delay 적용 */
   .stagger-item {
     opacity: 0;

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { createTransaction } from '@/app/actions/transaction'
@@ -35,14 +34,6 @@ const THEME = {
 
 type ThemeKey = keyof typeof THEME
 
-interface DailyTransaction {
-  date: string
-  amount: number
-  activity_name: string
-  status: 'pending' | 'confirmed'
-  receipt_image_url?: string | null
-}
-
 interface Props {
   currentBalance: number
   totalBudget: number
@@ -51,7 +42,6 @@ interface Props {
   icon: string
   statusMessage: string
   remainingDays: number
-  dailyTransactions?: DailyTransaction[]
   participantId?: string
   fundingSources?: { id: string; name: string }[]
 }
@@ -248,129 +238,6 @@ function EmojiViz({
   )
 }
 
-// ── 주간 막대 차트 ─────────────────────────────────────────────
-function WeeklyChart({
-  dailyTransactions,
-  themeColor,
-}: {
-  dailyTransactions: DailyTransaction[]
-  themeColor: string
-}) {
-  const c = THEME[(themeColor as ThemeKey)] ?? THEME.zinc
-  const today = new Date()
-  const [selectedDay, setSelectedDay] = useState<string | null>(null)
-
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today)
-    d.setDate(d.getDate() - (6 - i))
-    return d.toISOString().split('T')[0]
-  })
-
-  const dailyTotals = last7Days.map(date => {
-    const txs = dailyTransactions.filter(t => t.date === date)
-    return {
-      date,
-      label: `${Number(date.split('-')[1])}/${Number(date.split('-')[2])}`,
-      total: txs.reduce((s, t) => s + Number(t.amount), 0),
-      transactions: txs,
-    }
-  })
-
-  const maxDaily = Math.max(...dailyTotals.map(d => d.total), 1)
-  const todayStr = today.toISOString().split('T')[0]
-  const selectedTxs = selectedDay
-    ? dailyTotals.find(d => d.date === selectedDay)?.transactions ?? []
-    : []
-
-  return (
-    <div className="pt-4 border-t border-zinc-100">
-      <h4 className="text-xs font-black text-zinc-300 uppercase tracking-widest px-6 mb-4">
-        이번 주 지출
-      </h4>
-
-      <div className="flex items-end gap-1.5 h-32 px-6">
-        {dailyTotals.map(day => {
-          const barH = day.total > 0 ? Math.max((day.total / maxDaily) * 100, 8) : 3
-          const isSelected = selectedDay === day.date
-          const isToday = day.date === todayStr
-
-          return (
-            <button
-              key={day.date}
-              onClick={() => setSelectedDay(isSelected ? null : day.date)}
-              className="flex-1 flex flex-col items-center gap-1 group"
-            >
-              {day.total > 0 && (
-                <span
-                  className={`text-[9px] font-black transition-opacity ${
-                    isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                  }`}
-                  style={{ color: c.fill }}
-                >
-                  {formatCurrency(day.total)}
-                </span>
-              )}
-              <div
-                className={`w-full rounded-xl transition-all duration-500 ${
-                  isSelected ? 'ring-2 ring-offset-1' : 'hover:opacity-80'
-                }`}
-                style={{
-                  height: `${barH}%`,
-                  background: day.total > 0
-                    ? isToday ? c.fill : `${c.fill}88`
-                    : '#f4f4f5',
-                }}
-              />
-              <span
-                className={`text-[9px] font-bold ${isToday ? 'font-black' : 'text-zinc-400'}`}
-                style={{ color: isToday ? c.fill : undefined }}
-              >
-                {day.label}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      {selectedDay && (
-        <div className="mt-4 px-6 pb-5 animate-fade-in-up">
-          {selectedTxs.length > 0 ? (
-            <div className="flex flex-col gap-2">
-              <h5 className="text-xs font-black text-zinc-400 mb-1">
-                {selectedDay.split('-')[1]}월 {selectedDay.split('-')[2]}일
-              </h5>
-              {selectedTxs.map((tx, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-zinc-50">
-                  {tx.receipt_image_url ? (
-                    <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0">
-                      <img src={tx.receipt_image_url} alt="영수증" className="w-full h-full object-cover" />
-                    </div>
-                  ) : (
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 ${
-                      tx.status === 'confirmed' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-500'
-                    }`}>
-                      {tx.status === 'confirmed' ? '✓' : '⏳'}
-                    </div>
-                  )}
-                  <p className="flex-1 font-bold text-zinc-800 text-sm truncate">{tx.activity_name}</p>
-                  <span className="font-black text-zinc-900 text-sm shrink-0">
-                    -{formatCurrency(Number(tx.amount))}원
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-4">
-              <span className="text-3xl opacity-30">💤</span>
-              <p className="text-sm text-zinc-400 font-bold mt-2">이 날은 지출이 없었어요</p>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ── 메인 위젯 ─────────────────────────────────────────────────────
 export default function BalanceVisualWidget({
   currentBalance,
@@ -380,7 +247,6 @@ export default function BalanceVisualWidget({
   icon,
   statusMessage,
   remainingDays,
-  dailyTransactions = [],
   participantId,
   fundingSources = [],
 }: Props) {
@@ -388,7 +254,6 @@ export default function BalanceVisualWidget({
   const [style, setStyle] = useState<WidgetStyle>('pie')
   const [selectedEmoji, setSelectedEmoji] = useState('🍎')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [showWeekly, setShowWeekly] = useState(false)
 
   // 인라인 업로드 상태
   const receiptInputRef = useRef<HTMLInputElement>(null)
@@ -714,27 +579,6 @@ export default function BalanceVisualWidget({
         </>
       )}
 
-      {/* 주간 지출 토글 */}
-      {dailyTransactions.length > 0 && (
-        <div className="border-t border-zinc-100">
-          <button
-            onClick={() => setShowWeekly(p => !p)}
-            className="w-full flex items-center justify-between px-6 py-3.5 text-xs font-black text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 transition-colors"
-            aria-expanded={showWeekly}
-          >
-            <span>이번 주 지출 보기</span>
-            <span className={`transition-transform duration-300 ${showWeekly ? 'rotate-180' : ''}`}>
-              ▾
-            </span>
-          </button>
-
-          <div className={`transition-all duration-500 overflow-hidden ${
-            showWeekly ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
-          }`}>
-            <WeeklyChart dailyTransactions={dailyTransactions} themeColor={themeColor} />
-          </div>
-        </div>
-      )}
     </section>
   )
 }

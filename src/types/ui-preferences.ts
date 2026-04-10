@@ -4,6 +4,7 @@ export type BlockId =
   | 'recent_transactions'
   | 'plan_shortcut'
   | 'evaluation_letter'
+  | 'weekly_chart'
 
 export interface UIPreferences {
   enabled_blocks: BlockId[]
@@ -17,6 +18,7 @@ export const OPTIONAL_BLOCKS: BlockId[] = [
   'recent_transactions',
   'plan_shortcut',
   'evaluation_letter',
+  'weekly_chart',
 ]
 
 export const BLOCK_METADATA: Record<BlockId, { icon: string; label: string; description: string }> = {
@@ -25,8 +27,16 @@ export const BLOCK_METADATA: Record<BlockId, { icon: string; label: string; desc
   recent_transactions: { icon: '🕐', label: '최근 사용 내역', description: '최근 3건 사용 내역' },
   plan_shortcut:       { icon: '🤔', label: '계획 AI',        description: '오늘 활동 계획 세우기' },
   evaluation_letter:   { icon: '💌', label: '지원자 편지',    description: '지원자 선생님의 이달 편지' },
+  weekly_chart:        { icon: '📉', label: '이번 주 지출',   description: '최근 7일 하루별 지출 막대 그래프' },
 }
 
 export const DEFAULT_PREFERENCES: UIPreferences = {
-  enabled_blocks: ['yearly_balance', 'monthly_trend', 'recent_transactions', 'plan_shortcut', 'evaluation_letter'],
+  enabled_blocks: [
+    'yearly_balance',
+    'monthly_trend',
+    'recent_transactions',
+    'plan_shortcut',
+    'evaluation_letter',
+    'weekly_chart',
+  ],
 }

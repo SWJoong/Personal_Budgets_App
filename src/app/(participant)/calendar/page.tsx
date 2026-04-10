@@ -19,7 +19,7 @@ export default async function CalendarPage() {
     .order('date', { ascending: false })
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground pb-24">
+    <div className="flex flex-col min-h-screen bg-background text-foreground pb-10">
       <header className="flex h-16 items-center justify-between px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
         <div className="flex items-center gap-3">
           <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl">←</Link>

@@ -78,7 +78,7 @@ export default function BlockCustomizeSheet({
           <div className="w-10 h-1 rounded-full bg-zinc-200" />
         </div>
 
-        <div className="px-6 pb-8 pt-3 max-h-[70vh] overflow-y-auto">
+        <div className="px-6 pb-10 pt-3 max-h-[80vh] overflow-y-auto" style={{ paddingBottom: 'max(2.5rem, env(safe-area-inset-bottom) + 0.5rem)' }}>
           <h2 className="text-lg font-black text-zinc-900 mb-1">화면 구성 편집</h2>
           <p className="text-sm text-zinc-400 mb-6">보고 싶은 정보를 선택하세요</p>
 

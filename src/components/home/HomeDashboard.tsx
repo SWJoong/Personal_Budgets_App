@@ -1,13 +1,15 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { formatCurrency, getBudgetVisualInfo } from '@/utils/budget-visuals'
 import Link from 'next/link'
 import BalanceVisualWidget from './BalanceVisualWidget'
 import BudgetTrendChart from './BudgetTrendChart'
 import BlockCustomizeSheet from './BlockCustomizeSheet'
+import WeeklyChartBlock from './WeeklyChartBlock'
 import { UIPreferences, DEFAULT_PREFERENCES } from '@/types/ui-preferences'
 import { saveUIPreferences } from '@/app/actions/preferences'
+import NavDropdown from '@/components/layout/NavDropdown'
 
 interface FundingSource {
   id: string
@@ -83,23 +85,14 @@ export default function HomeDashboard({
   const stagger = () => ({ animationDelay: `${(staggerIdx++) * 0.08}s` })
 
   return (
-    <div className="flex flex-col min-h-screen easy-read-bg text-foreground pb-20 participant-view">
+    <div className="flex flex-col min-h-screen easy-read-bg text-foreground participant-view">
       <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <h1 className="text-xl font-bold tracking-tight text-foreground">아름드리꿈터</h1>
         <div className="flex items-center gap-2">
           <div className="text-xs font-bold px-3 py-1.5 bg-primary/10 rounded-full text-primary">
             {userName} 님
           </div>
-          <Link
-            href="/more"
-            className="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-all active:scale-95"
-            aria-label="설정"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-            </svg>
-          </Link>
+          <NavDropdown />
         </div>
       </header>
 
@@ -142,7 +135,6 @@ export default function HomeDashboard({
                 icon={visual.icon}
                 statusMessage={visual.message}
                 remainingDays={remainingDays}
-                dailyTransactions={dailyTransactions}
                 participantId={participantId}
                 fundingSources={fundingSources}
               />
@@ -173,6 +165,16 @@ export default function HomeDashboard({
             {enabled.has('monthly_trend') && monthlyTrend.length > 0 && (
               <div className="stagger-item" style={stagger()}>
                 <BudgetTrendChart monthlyData={monthlyTrend} />
+              </div>
+            )}
+
+            {/* [선택] 이번 주 지출 차트 */}
+            {enabled.has('weekly_chart') && dailyTransactions.length > 0 && (
+              <div className="stagger-item" style={stagger()}>
+                <WeeklyChartBlock
+                  dailyTransactions={dailyTransactions}
+                  themeColor={visual.themeColor}
+                />
               </div>
             )}
           </>
@@ -321,13 +323,14 @@ export default function HomeDashboard({
         )}
       </main>
 
-      {/* FAB + 버튼: 블록 커스터마이징 */}
+      {/* 확장형 FAB: 화면 구성 편집 */}
       <button
         onClick={() => setIsSheetOpen(true)}
-        className="fixed bottom-24 right-4 z-30 w-14 h-14 rounded-full bg-zinc-900 text-white shadow-xl text-2xl flex items-center justify-center active:scale-95 transition-transform"
+        className="fixed bottom-6 right-4 z-30 flex items-center gap-2 py-3 pl-5 pr-4 rounded-full bg-zinc-900 text-white shadow-xl active:scale-95 transition-all hover:bg-zinc-800"
         aria-label="화면 구성 편집"
       >
-        +
+        <span className="text-sm font-black whitespace-nowrap">화면 구성 편집</span>
+        <span className="text-lg leading-none">+</span>
       </button>
 
       {/* 블록 커스터마이징 바텀시트 */}
