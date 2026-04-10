@@ -5,6 +5,7 @@ export type BlockId =
   | 'plan_shortcut'
   | 'evaluation_letter'
   | 'weekly_chart'
+  | 'source_view'
 
 export interface UIPreferences {
   enabled_blocks: BlockId[]
@@ -19,6 +20,7 @@ export const OPTIONAL_BLOCKS: BlockId[] = [
   'plan_shortcut',
   'evaluation_letter',
   'weekly_chart',
+  'source_view',
 ]
 
 export const BLOCK_METADATA: Record<BlockId, { icon: string; label: string; description: string }> = {
@@ -28,6 +30,7 @@ export const BLOCK_METADATA: Record<BlockId, { icon: string; label: string; desc
   plan_shortcut:       { icon: '🤔', label: '계획 AI',        description: '오늘 활동 계획 세우기' },
   evaluation_letter:   { icon: '💌', label: '지원자 편지',    description: '지원자 선생님의 이달 편지' },
   weekly_chart:        { icon: '📉', label: '이번 주 지출',   description: '최근 7일 하루별 지출 막대 그래프' },
+  source_view:         { icon: '💳', label: '재원별 보기',    description: '재원(돈의 종류)별 잔액 카드' },
 }
 
 export const DEFAULT_PREFERENCES: UIPreferences = {

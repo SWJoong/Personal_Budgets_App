@@ -63,14 +63,12 @@ export default function PreviewClient({
             {/* 실제 당사자 앱 렌더링 */}
             <div className="pt-7">
               <HomeDashboard
-                profile={participant}
                 participant={participant}
                 participantId={participant.id}
                 fundingSources={fundingSources || []}
                 recentTransactions={recentTransactions || []}
                 remainingDays={remainingDays}
                 totalDaysInMonth={totalDaysInMonth}
-                elapsedDays={elapsedDays}
                 userName={participant.name || ''}
                 dailyTransactions={dailyTransactions || []}
                 monthlyTrend={monthlyTrend}

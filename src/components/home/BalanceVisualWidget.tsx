@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { createTransaction } from '@/app/actions/transaction'
 import { analyzeReceipt } from '@/app/actions/ocr'
+import { EasyTerm } from '@/components/ui/EasyTerm'
 
 type WidgetStyle = 'pie' | 'water' | 'emoji'
 
@@ -255,6 +256,25 @@ export default function BalanceVisualWidget({
   const [selectedEmoji, setSelectedEmoji] = useState('🍎')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
 
+  // 낙관적(optimistic) 잔액 차감 — 임시 저장 즉시 반영
+  const [pendingDeduction, setPendingDeduction] = useState(0)
+  useEffect(() => { setPendingDeduction(0) }, [currentBalance])
+
+  // 금액 시뮬레이션 — "이만큼 사면 얼마나 남을까?"
+  const [simAmount, setSimAmount] = useState('')
+
+  // 화면에 보여줄 실제 잔액 (낙관적 차감 적용)
+  const displayBalance = Math.max(0, currentBalance - pendingDeduction)
+  const displayPct = totalBudget > 0 ? Math.round((displayBalance / totalBudget) * 100) : percentage
+
+  // 시뮬레이션 적용 퍼센트 (차트에 반영)
+  const simValue = parseFloat(simAmount.replace(/,/g, '')) || 0
+  const activePct = simValue > 0
+    ? Math.max(0, Math.round(((displayBalance - simValue) / totalBudget) * 100))
+    : displayPct
+  const simBalance = Math.max(0, displayBalance - simValue)
+  const isSimOver = simValue > 0 && simValue > displayBalance
+
   // 인라인 업로드 상태
   const receiptInputRef = useRef<HTMLInputElement>(null)
   const activityInputRef = useRef<HTMLInputElement>(null)
@@ -343,6 +363,9 @@ export default function BalanceVisualWidget({
   const handleInlineSubmit = async () => {
     if (!participantId || !uploadFile) return
     setUploadSubmitting(true)
+    // 낙관적 잔액 차감: 서버 응답 전에 UI에 즉시 반영
+    const amountNum = parseFloat(uploadAmount) || 0
+    if (amountNum > 0) setPendingDeduction(prev => prev + amountNum)
     try {
       const formData = new FormData()
       formData.set('participant_id', participantId)
@@ -367,6 +390,8 @@ export default function BalanceVisualWidget({
       }
     } catch (err) {
       console.error(err)
+      // 실패 시 낙관적 차감 롤백
+      if (amountNum > 0) setPendingDeduction(prev => Math.max(0, prev - amountNum))
       setUploadToast('등록 실패. 다시 시도해 주세요.')
     } finally {
       setUploadSubmitting(false)
@@ -386,12 +411,17 @@ export default function BalanceVisualWidget({
       {/* 헤더: 잔액 + 차트 전환 */}
       <div className="flex items-start justify-between px-6 pt-6 pb-3">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em]">잔액 요약</p>
-          <p className={`text-4xl font-black mt-1 ${c.text}`}>
-            {formatCurrency(currentBalance)}원
+          <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em]">
+            <EasyTerm formal="잔액 요약" easy="남은 돈" />
+          </p>
+          <p className={`text-4xl font-black mt-1 transition-all duration-500 ${c.text}`}>
+            {formatCurrency(displayBalance)}원
           </p>
           <p className="text-sm text-zinc-400 font-bold mt-0.5">
-            {remainingDays}일 남음 · {percentage}%
+            {remainingDays}일 남음 · {displayPct}%
+            {pendingDeduction > 0 && (
+              <span className="ml-2 text-orange-500 text-xs">⏳ 반영 중</span>
+            )}
           </p>
         </div>
 
@@ -416,35 +446,75 @@ export default function BalanceVisualWidget({
         </div>
       </div>
 
-      {/* 게이지 바 */}
+      {/* 게이지 바 (시뮬레이션 시 2단 표시) */}
       <div className="px-6 pb-2">
         <div
-          className="h-2.5 w-full rounded-full overflow-hidden"
+          className="h-2.5 w-full rounded-full overflow-hidden relative"
           style={{ background: `${c.fill}22` }}
           role="progressbar"
-          aria-valuenow={percentage}
+          aria-valuenow={activePct}
           aria-valuemin={0}
           aria-valuemax={100}
         >
+          {/* 실제 잔액 바 */}
           <div
-            className="h-full rounded-full transition-all duration-1000"
-            style={{ width: `${percentage}%`, background: c.fill }}
+            className="h-full rounded-full transition-all duration-700 absolute inset-y-0 left-0"
+            style={{ width: `${displayPct}%`, background: `${c.fill}55` }}
+          />
+          {/* 시뮬레이션 후 잔액 바 */}
+          <div
+            className="h-full rounded-full transition-all duration-700 absolute inset-y-0 left-0"
+            style={{
+              width: `${activePct}%`,
+              background: isSimOver ? '#ef4444' : c.fill,
+            }}
           />
         </div>
       </div>
 
       {/* 시각화 영역 */}
       <div style={{ background: `linear-gradient(to bottom, white, ${c.light}33)` }}>
-        {style === 'pie'   && <PizzaChart percentage={percentage} />}
-        {style === 'water' && <WaterViz percentage={percentage} currentBalance={currentBalance} />}
+        {style === 'pie'   && <PizzaChart percentage={activePct} />}
+        {style === 'water' && <WaterViz percentage={activePct} currentBalance={simValue > 0 ? simBalance : displayBalance} />}
         {style === 'emoji' && (
           <EmojiViz
-            percentage={percentage}
+            percentage={activePct}
             emoji={selectedEmoji}
             showPicker={showEmojiPicker}
             onPickerToggle={() => setShowEmojiPicker(p => !p)}
             onSelectEmoji={changeEmoji}
           />
+        )}
+      </div>
+
+      {/* 금액 시뮬레이션 — "이만큼 사면 얼마 남을까?" */}
+      <div className="px-5 pb-4 pt-2">
+        <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl ring-1 transition-colors ${
+          isSimOver ? 'bg-red-50 ring-red-200' : simValue > 0 ? 'bg-zinc-50 ring-zinc-200' : 'bg-zinc-50 ring-zinc-100'
+        }`}>
+          <span className="text-lg shrink-0">🛍️</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            value={simAmount}
+            onChange={e => setSimAmount(e.target.value)}
+            placeholder="얼마나 쓸 건가요? (직접 입력)"
+            className="flex-1 bg-transparent outline-none text-sm font-bold text-zinc-700 placeholder:text-zinc-300 placeholder:font-medium min-w-0"
+          />
+          <span className="text-sm font-bold text-zinc-400 shrink-0">원</span>
+          {simAmount && (
+            <button onClick={() => setSimAmount('')} className="text-zinc-300 hover:text-zinc-500 text-xs shrink-0">✕</button>
+          )}
+        </div>
+        {simValue > 0 && (
+          <div className="mt-2 flex items-center justify-between px-1">
+            <span className="text-xs text-zinc-400 font-bold">
+              <EasyTerm formal="구매 후 잔액" easy="사고 남는 돈" />
+            </span>
+            <span className={`text-sm font-black transition-colors ${isSimOver ? 'text-red-500' : 'text-zinc-800'}`}>
+              {isSimOver ? '돈이 부족해요 ❌' : `${formatCurrency(simBalance)}원`}
+            </span>
+          </div>
         )}
       </div>
 

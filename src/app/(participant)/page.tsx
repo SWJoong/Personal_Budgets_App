@@ -138,14 +138,12 @@ export default async function Home() {
 
   return (
     <HomeDashboard
-      profile={profile}
       participant={participant}
       participantId={user.id}
       fundingSources={participant.funding_sources || []}
       recentTransactions={recentTransactions || []}
       remainingDays={remainingDays}
       totalDaysInMonth={totalDaysInMonth}
-      elapsedDays={elapsedDays}
       userName={profile?.name || user.email?.split('@')[0] || ''}
       dailyTransactions={dailyTransactions || []}
       monthlyTrend={monthlyTrend}
