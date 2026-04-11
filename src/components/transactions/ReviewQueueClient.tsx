@@ -280,19 +280,22 @@ export default function ReviewQueueClient({ transactions, allFundingSources }: P
                 <div className="flex flex-col gap-1.5 shrink-0">
                   <button
                     onClick={() => confirmOne(tx.id)}
-                    className="px-3 py-1.5 rounded-lg bg-green-500 text-white text-xs font-black hover:bg-green-600 active:scale-95 transition-all"
+                    disabled={isBusy}
+                    className="px-3 py-1.5 rounded-lg bg-green-500 text-white text-xs font-black hover:bg-green-600 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-1 min-w-[44px]"
                   >
-                    확인
+                    {isBusy ? <span className="inline-block w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : '확인'}
                   </button>
                   <button
                     onClick={() => startEdit(tx)}
-                    className="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 text-xs font-black hover:bg-zinc-200 active:scale-95 transition-all"
+                    disabled={isBusy}
+                    className="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 text-xs font-black hover:bg-zinc-200 active:scale-95 transition-all disabled:opacity-60"
                   >
                     수정
                   </button>
                   <button
                     onClick={() => deleteOne(tx.id)}
-                    className="px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-black hover:bg-red-100 active:scale-95 transition-all"
+                    disabled={isBusy}
+                    className="px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-black hover:bg-red-100 active:scale-95 transition-all disabled:opacity-60"
                   >
                     삭제
                   </button>

@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import ParticipantPreviewCard from '@/components/admin/ParticipantPreviewCard'
 import AlertPanel from '@/components/admin/AlertPanel'
 
@@ -91,7 +92,25 @@ export default async function AdminDashboardPage() {
         </section>
 
         {/* 알림 패널 */}
-        <AlertPanel />
+        <Suspense fallback={
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 overflow-hidden animate-pulse">
+            <div className="flex items-center gap-2 px-5 py-3 border-b border-zinc-200 bg-zinc-100">
+              <div className="w-5 h-5 rounded-full bg-zinc-300" />
+              <div className="h-4 w-32 bg-zinc-300 rounded" />
+            </div>
+            <div className="divide-y divide-zinc-100">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="flex items-center gap-3 px-5 py-3">
+                  <div className="w-5 h-5 rounded-full bg-zinc-200" />
+                  <div className="h-4 w-16 bg-zinc-200 rounded" />
+                  <div className="h-4 w-40 bg-zinc-200 rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+        }>
+          <AlertPanel />
+        </Suspense>
 
         {/* 전체 통계 카드 */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">

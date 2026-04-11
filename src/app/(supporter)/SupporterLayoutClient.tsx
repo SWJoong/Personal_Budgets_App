@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
+import NavigationProgress from '@/components/layout/NavigationProgress'
 
 export function SupporterLayoutClient({
   children,
@@ -12,6 +13,7 @@ export function SupporterLayoutClient({
 
   return (
     <div className="flex min-h-screen bg-background">
+      <NavigationProgress />
       {/* Desktop sidebar */}
       <div className="hidden md:block">
         <AdminSidebar />
