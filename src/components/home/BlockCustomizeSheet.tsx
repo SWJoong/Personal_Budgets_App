@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { UIPreferences, OPTIONAL_BLOCKS, BLOCK_METADATA, REQUIRED_BLOCKS, BlockId } from '@/types/ui-preferences'
 
 interface BlockItem {
@@ -23,10 +23,16 @@ export default function BlockCustomizeSheet({
 }: BlockCustomizeSheetProps) {
   const [blocks, setBlocks] = useState<BlockItem[]>(() => buildBlockList(currentPreferences))
   const [draggingId, setDraggingId] = useState<BlockId | null>(null)
+  const [swapTargetId, setSwapTargetId] = useState<BlockId | null>(null)
 
-  // ref로 핸들러 클로저의 stale 문제 방지
-  const draggingRef   = useRef<BlockId | null>(null)
+  // 포인터 핸들러 stale 방지 refs
+  const draggingRef    = useRef<BlockId | null>(null)
   const enabledListRef = useRef<HTMLDivElement>(null)
+
+  // FLIP 애니메이션을 위한 refs
+  const itemElemsRef   = useRef<Map<BlockId, HTMLDivElement>>(new Map())
+  const prevPositions  = useRef<Map<BlockId, number>>(new Map())
+  const shouldFlip     = useRef(false)
 
   function buildBlockList(prefs: UIPreferences): BlockItem[] {
     const enabledSet = new Set(prefs.enabled_blocks)
@@ -48,17 +54,47 @@ export default function BlockCustomizeSheet({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
+  // ── FLIP 애니메이션 ───────────────────────────────────────────────────────
+  // blocks 상태가 바뀐 뒤(DOM 반영 직후) 이전 위치 → 새 위치로 부드럽게 이동
+  useLayoutEffect(() => {
+    if (!shouldFlip.current) return
+    shouldFlip.current = false
+
+    itemElemsRef.current.forEach((el, id) => {
+      const prev = prevPositions.current.get(id)
+      if (prev === undefined) return
+      const next = el.getBoundingClientRect().top
+      const delta = prev - next
+      if (Math.abs(delta) < 1) return
+
+      // 이전 위치에서 시작 (transition 없이)
+      el.style.transition = 'none'
+      el.style.transform  = `translateY(${delta}px)`
+      // reflow 강제 → transition 적용
+      void el.offsetHeight
+      el.style.transition = 'transform 240ms cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+      el.style.transform  = 'translateY(0px)'
+    })
+  }, [blocks])
+
+  function capturePositions() {
+    itemElemsRef.current.forEach((el, id) => {
+      prevPositions.current.set(id, el.getBoundingClientRect().top)
+    })
+  }
+
   function toggleBlock(blockId: BlockId) {
     setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, enabled: !b.enabled } : b))
   }
 
-  // ── 드래그 핸들러 ─────────────────────────────────────────────
+  // ── 드래그 핸들러 ─────────────────────────────────────────────────────────
   function onHandlePointerDown(e: React.PointerEvent<HTMLSpanElement>, id: BlockId) {
     e.preventDefault()
     e.stopPropagation()
     e.currentTarget.setPointerCapture(e.pointerId)
     draggingRef.current = id
     setDraggingId(id)
+    setSwapTargetId(null)
   }
 
   function onHandlePointerMove(e: React.PointerEvent<HTMLSpanElement>) {
@@ -67,20 +103,30 @@ export default function BlockCustomizeSheet({
 
     const items = Array.from(enabledListRef.current.children) as HTMLElement[]
 
-    // 포인터 Y 위치가 각 아이템의 어느 영역에 속하는지 확인
     for (const item of items) {
       const rect = item.getBoundingClientRect()
       if (e.clientY >= rect.top && e.clientY < rect.bottom) {
         const targetId = item.dataset.id as BlockId | undefined
-        if (!targetId || targetId === currentId) return
+        if (!targetId || targetId === currentId) {
+          setSwapTargetId(null)
+          return
+        }
 
-        // 두 아이템의 위치를 교환 (swap)
+        setSwapTargetId(targetId)
+
+        // 위치 캡처 → setBlocks → useLayoutEffect에서 FLIP 실행
+        capturePositions()
+
         setBlocks(prev => {
           const enabled  = prev.filter(b => b.enabled)
           const disabled = prev.filter(b => !b.enabled)
           const fromIdx  = enabled.findIndex(b => b.id === currentId)
           const toIdx    = enabled.findIndex(b => b.id === targetId)
-          if (fromIdx === -1 || toIdx === -1) return prev
+          if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) {
+            shouldFlip.current = false
+            return prev
+          }
+          shouldFlip.current = true
           const next = [...enabled]
           ;[next[fromIdx], next[toIdx]] = [next[toIdx], next[fromIdx]]
           return [...next, ...disabled]
@@ -93,6 +139,7 @@ export default function BlockCustomizeSheet({
   function onHandlePointerUp() {
     draggingRef.current = null
     setDraggingId(null)
+    setSwapTargetId(null)
   }
 
   function handleSave() {
@@ -159,21 +206,30 @@ export default function BlockCustomizeSheet({
           {enabledBlocks.length > 0 && (
             <div className="mb-4">
               <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">
-                표시 중 — 길게 잡고 위아래로 드래그해요
+                표시 중 — 핸들을 잡고 위아래로 드래그해요
               </p>
               <div ref={enabledListRef} className="flex flex-col gap-2">
                 {enabledBlocks.map((block) => {
-                  const meta = BLOCK_METADATA[block.id]
+                  const meta      = BLOCK_METADATA[block.id]
                   const isDragging = draggingId === block.id
+                  const isTarget   = swapTargetId === block.id && !isDragging
+
                   return (
                     <div
                       key={block.id}
                       data-id={block.id}
-                      className={`flex items-center gap-3 p-4 rounded-2xl bg-zinc-900 ring-1 transition-all select-none ${
-                        isDragging
-                          ? 'ring-white/40 scale-[1.03] shadow-2xl opacity-80'
-                          : 'ring-zinc-800'
-                      }`}
+                      ref={(el) => {
+                        if (el) itemElemsRef.current.set(block.id, el)
+                        else    itemElemsRef.current.delete(block.id)
+                      }}
+                      className={`
+                        flex items-center gap-3 p-4 rounded-2xl bg-zinc-900 ring-1 select-none
+                        ${isDragging
+                          ? 'ring-white/40 scale-[1.04] shadow-[0_12px_36px_rgba(0,0,0,0.5)] opacity-80 z-10 relative'
+                          : isTarget
+                          ? 'ring-blue-400 shadow-[0_0_0_3px_rgba(96,165,250,0.25)]'
+                          : 'ring-zinc-800'}
+                      `}
                     >
                       {/* 드래그 핸들 */}
                       <span

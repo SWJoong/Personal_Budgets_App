@@ -66,7 +66,7 @@ export default function PlanComparison({
       setSaved(true)
       if (onSaved) onSaved()
     } catch {
-      alert('저장에 실패했어요. 다시 시도해 주세요.')
+      alert('저장하지 못했어요. 다시 눌러봐요.')
     } finally {
       setSaving(false)
     }
@@ -78,7 +78,7 @@ export default function PlanComparison({
     <div className="flex flex-col gap-6">
       <div className="text-center">
         <h2 className="text-xl font-black text-zinc-900 mb-1">"{activityName}"</h2>
-        <p className="text-zinc-500 font-bold text-sm">어떤 방법이 더 좋을까요?</p>
+        <p className="text-zinc-500 font-bold text-sm">어떤 방법으로 할까요?</p>
       </div>
 
       {/* 물컵 예산 미리보기 */}
@@ -110,7 +110,7 @@ export default function PlanComparison({
               <div className="flex justify-between items-start mb-3">
                 <div className="flex flex-col gap-0.5">
                   <span className={`text-[10px] font-black uppercase tracking-widest ${isSelected ? 'text-zinc-400' : 'text-zinc-300'}`}>
-                    방법 {index + 1}
+                    방법 {index === 0 ? 'A' : 'B'}
                   </span>
                   <h3 className={`text-lg font-black ${isSelected ? 'text-white' : 'text-zinc-800'}`}>
                     {option.name}
@@ -124,13 +124,13 @@ export default function PlanComparison({
 
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className={`p-3 rounded-xl ${isSelected ? 'bg-zinc-800' : 'bg-zinc-50'}`}>
-                  <p className={`text-[10px] font-bold mb-0.5 ${isSelected ? 'text-zinc-500' : 'text-zinc-400'}`}>비용</p>
+                  <p className={`text-[10px] font-bold mb-0.5 ${isSelected ? 'text-zinc-500' : 'text-zinc-400'}`}>쓸 돈</p>
                   <p className={`font-black text-base ${isSelected ? 'text-white' : 'text-zinc-900'}`}>
                     {formatCurrency(option.cost)}원
                   </p>
                 </div>
                 <div className={`p-3 rounded-xl ${isSelected ? 'bg-zinc-800' : 'bg-zinc-50'}`}>
-                  <p className={`text-[10px] font-bold mb-0.5 ${isSelected ? 'text-zinc-500' : 'text-zinc-400'}`}>시간</p>
+                  <p className={`text-[10px] font-bold mb-0.5 ${isSelected ? 'text-zinc-500' : 'text-zinc-400'}`}>걸리는 시간</p>
                   <p className={`font-black text-base ${isSelected ? 'text-white' : 'text-zinc-900'}`}>
                     {option.time}
                   </p>
@@ -139,7 +139,7 @@ export default function PlanComparison({
 
               <div className={`pt-3 border-t ${isSelected ? 'border-zinc-800' : 'border-zinc-100'}`}>
                 <p className={`text-[10px] font-bold mb-1 ${isSelected ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                  이걸 선택하면 남는 돈
+                  이걸 고르면 남는 돈
                 </p>
                 <div className="flex items-center justify-between">
                   <span className={`text-lg font-black ${
@@ -148,7 +148,7 @@ export default function PlanComparison({
                     {formatCurrency(Math.max(0, remainingAfter))}원
                   </span>
                   {isOverBudget && (
-                    <span className="px-2 py-0.5 rounded-lg bg-red-100 text-[10px] font-black text-red-600">예산 부족</span>
+                    <span className="px-2 py-0.5 rounded-lg bg-red-100 text-[10px] font-black text-red-600">돈이 모자라요</span>
                   )}
                 </div>
               </div>
@@ -171,7 +171,7 @@ export default function PlanComparison({
             disabled={saving}
             className="w-full py-5 rounded-3xl bg-primary text-primary-foreground text-lg font-black shadow-xl active:scale-95 transition-all disabled:bg-zinc-200"
           >
-            {saving ? '저장 중...' : '이걸로 결정하기 👍'}
+            {saving ? '저장 중...' : '이걸로 할게요 👍'}
           </button>
         </div>
       )}

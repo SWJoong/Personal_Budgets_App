@@ -50,9 +50,9 @@ export default function WaterCupPlanPreview({
   return (
     <div className="bg-white rounded-[2rem] p-6 ring-1 ring-zinc-200 shadow-sm">
       <div className="flex justify-between items-center mb-4">
-        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">예산 미리보기</span>
+        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">쓰면 얼마가 남을까요?</span>
         <span className="text-sm font-black text-zinc-700">
-          잔액: {formatCurrency(Math.max(0, displayBalance))}원
+          남는 돈: {formatCurrency(Math.max(0, displayBalance))}원
         </span>
       </div>
 
@@ -151,11 +151,11 @@ export default function WaterCupPlanPreview({
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-black text-zinc-700 truncate">{option.name}</p>
-                  <p className="text-[10px] font-bold text-zinc-400">-{formatCurrency(option.cost)}원</p>
+                  <p className="text-[10px] font-bold text-zinc-400">쓸 돈 {formatCurrency(option.cost)}원</p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className={`text-xs font-black ${isOptionOver ? 'text-red-600' : isSelected ? 'text-zinc-800' : 'text-zinc-500'}`}>
-                    {isOptionOver ? '예산 초과' : formatCurrency(remaining) + '원'}
+                    {isOptionOver ? '돈이 모자라요' : formatCurrency(remaining) + '원'}
                   </p>
                 </div>
               </div>
@@ -166,10 +166,10 @@ export default function WaterCupPlanPreview({
 
       {/* 현재 잔액 기준 표시 */}
       <div className="mt-4 pt-3 border-t border-zinc-100 flex justify-between text-[10px] font-bold text-zinc-400">
-        <span>현재 잔액: {formatCurrency(currentBalance)}원</span>
+        <span>지금 있는 돈: {formatCurrency(currentBalance)}원</span>
         {selectedIndex !== null && (
           <span className={displayBalance < 0 ? 'text-red-500' : 'text-zinc-600'}>
-            선택 후: {formatCurrency(Math.max(0, displayBalance))}원
+            고른 후: {formatCurrency(Math.max(0, displayBalance))}원
           </span>
         )}
       </div>

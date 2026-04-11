@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { suggestActivityOptions, suggestMethodOptions, savePlan } from '@/app/actions/plan'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { speak } from '@/utils/tts'
+import WaterCupPlanPreview from '@/components/charts/WaterCupPlanPreview'
 
 type WizardStage = 'loading' | 'activity' | 'method' | 'when' | 'confirm' | 'feedback' | 'done'
 
@@ -48,9 +49,12 @@ export default function PlanChatContainer({
   const [selectedWhen, setSelectedWhen] = useState('')
   // 직접 입력
   const [customActivity, setCustomActivity] = useState('')
+  const [customMethod, setCustomMethod] = useState('')
   const [customCost, setCustomCost] = useState('')
   const [customWhen, setCustomWhen] = useState('')
   const [showCustom, setShowCustom] = useState(false)
+  // 방법 선택 단계에서 물컵 미리보기 hover 인덱스
+  const [hoveredMethodIndex, setHoveredMethodIndex] = useState<number | null>(null)
   // 로딩·저장
   const [saving, setSaving] = useState(false)
 
@@ -83,6 +87,7 @@ export default function PlanChatContainer({
     } else {
       setMethodOptions(METHOD_FALLBACK)
     }
+    setHoveredMethodIndex(null)
     setStage('method')
   }
 
@@ -99,9 +104,11 @@ export default function PlanChatContainer({
   }
 
   function handleCustomMethodSubmit() {
-    if (!customCost.trim()) return
-    setSelectedMethod(selectedActivity)
-    setSelectedCost(Number(customCost))
+    if (!customMethod.trim()) return
+    setSelectedMethod(customMethod.trim())
+    setSelectedCost(Number(customCost) || 0)
+    setCustomMethod('')
+    setCustomCost('')
     setShowCustom(false)
     setStage('when')
   }
@@ -149,9 +156,11 @@ export default function PlanChatContainer({
     setSelectedCost(0)
     setSelectedWhen('')
     setCustomActivity('')
+    setCustomMethod('')
     setCustomCost('')
     setCustomWhen('')
     setShowCustom(false)
+    setHoveredMethodIndex(null)
     loadActivityOptions()
   }
 
@@ -237,12 +246,25 @@ export default function PlanChatContainer({
 
           {!showCustom ? (
             <>
+              {/* 물컵 예산 미리보기 — 두 선택지 비교 */}
+              <WaterCupPlanPreview
+                currentBalance={totalBalance}
+                totalBudget={totalBalance}
+                options={[
+                  { name: methodOptions.a, cost: methodOptions.a_cost, icon: METHOD_ICONS.a },
+                  { name: methodOptions.b, cost: methodOptions.b_cost, icon: METHOD_ICONS.b },
+                ]}
+                selectedIndex={hoveredMethodIndex}
+              />
+
               <OptionButton
                 icon={METHOD_ICONS.a}
                 label={methodOptions.a}
                 cost={methodOptions.a_cost}
                 badge="A"
                 onClick={() => handleSelectMethod(methodOptions.a, methodOptions.a_cost)}
+                onHover={() => setHoveredMethodIndex(0)}
+                onLeave={() => setHoveredMethodIndex(null)}
               />
               <OptionButton
                 icon={METHOD_ICONS.b}
@@ -250,6 +272,8 @@ export default function PlanChatContainer({
                 cost={methodOptions.b_cost}
                 badge="B"
                 onClick={() => handleSelectMethod(methodOptions.b, methodOptions.b_cost)}
+                onHover={() => setHoveredMethodIndex(1)}
+                onLeave={() => setHoveredMethodIndex(null)}
               />
               <OptionButton
                 icon="✏️"
@@ -261,27 +285,36 @@ export default function PlanChatContainer({
             </>
           ) : (
             <div className="flex flex-col gap-3">
+              <input
+                type="text"
+                value={customMethod}
+                onChange={(e) => setCustomMethod(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && customMethod.trim() && handleCustomMethodSubmit()}
+                placeholder="어떻게 할지 입력해요 (예: 혼자 테이크아웃)"
+                className="w-full px-4 py-4 rounded-2xl bg-zinc-50 text-base font-bold outline-none focus:ring-2 focus:ring-zinc-900 border border-zinc-200"
+                autoFocus
+              />
               <div className="relative">
                 <input
                   type="number"
                   inputMode="numeric"
                   value={customCost}
                   onChange={(e) => setCustomCost(e.target.value)}
-                  placeholder="예상 비용"
+                  placeholder="예상 비용 (안 적어도 돼요)"
                   className="w-full px-4 py-4 pr-12 rounded-2xl bg-zinc-50 text-base font-bold outline-none focus:ring-2 focus:ring-zinc-900 border border-zinc-200"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-zinc-400">원</span>
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setShowCustom(false)}
+                  onClick={() => { setShowCustom(false); setCustomMethod(''); setCustomCost('') }}
                   className="flex-1 py-4 rounded-2xl bg-zinc-100 text-zinc-500 font-black text-sm"
                 >
                   뒤로
                 </button>
                 <button
                   onClick={handleCustomMethodSubmit}
-                  disabled={!customCost.trim()}
+                  disabled={!customMethod.trim()}
                   className="flex-1 py-4 rounded-2xl bg-zinc-900 text-white font-black text-sm disabled:bg-zinc-200 disabled:text-zinc-400"
                 >
                   다음 →
@@ -411,6 +444,8 @@ function OptionButton({
   badge,
   onClick,
   muted = false,
+  onHover,
+  onLeave,
 }: {
   icon: string
   label: string
@@ -418,10 +453,16 @@ function OptionButton({
   badge: string
   onClick: () => void
   muted?: boolean
+  onHover?: () => void
+  onLeave?: () => void
 }) {
   return (
     <button
       onClick={onClick}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      onTouchStart={onHover}
+      onTouchEnd={onLeave}
       className={`flex items-center gap-4 w-full py-5 px-5 rounded-2xl text-left transition-all active:scale-[0.97] ${
         muted
           ? 'bg-zinc-50 ring-1 ring-zinc-100 hover:bg-zinc-100'
