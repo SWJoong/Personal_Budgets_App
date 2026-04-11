@@ -415,13 +415,54 @@ export default function BalanceVisualWidget({
     e.target.value = ''
   }
 
+  // 이미지를 최대 1000px, JPEG 82%로 압축한다. 실패 시 원본 파일을 그대로 반환한다.
+  function compressImage(file: File, maxPx = 1000): Promise<File> {
+    return new Promise((resolve) => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+
+      // 로드 실패 시 원본 반환
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
+
+      img.onload = () => {
+        URL.revokeObjectURL(url)
+        try {
+          const longest = Math.max(img.width, img.height)
+          if (longest === 0) { resolve(file); return }
+          const scale = Math.min(1, maxPx / longest)
+          const canvas = document.createElement('canvas')
+          canvas.width  = Math.max(1, Math.round(img.width  * scale))
+          canvas.height = Math.max(1, Math.round(img.height * scale))
+          const ctx = canvas.getContext('2d')
+          if (!ctx) { resolve(file); return }   // Canvas 2D 미지원 시 원본 반환
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) { resolve(file); return }  // toBlob 실패 시 원본 반환
+              const name = (file.name || 'image').replace(/\.[^.]+$/, '') + '.jpg'
+              resolve(new File([blob], name, { type: 'image/jpeg' }))
+            },
+            'image/jpeg',
+            0.82
+          )
+        } catch {
+          resolve(file)  // canvas 조작 오류 시 원본 반환
+        }
+      }
+      img.src = url
+    })
+  }
+
   const handleInlineSubmit = async () => {
     if (!participantId || !uploadFile) return
     setUploadSubmitting(true)
-    // 낙관적 잔액 차감: 서버 응답 전에 UI에 즉시 반영
     const amountNum = parseFloat(uploadAmount) || 0
     if (amountNum > 0) setPendingDeduction(prev => prev + amountNum)
     try {
+      // 순차 압축 (병렬 시 모바일에서 canvas 메모리 초과 가능)
+      const mainCompressed   = await compressImage(uploadFile)
+      const secondCompressed = secondFile ? await compressImage(secondFile) : null
+
       const formData = new FormData()
       formData.set('participant_id', participantId)
       formData.set('date', uploadDate)
@@ -431,11 +472,11 @@ export default function BalanceVisualWidget({
         formData.set('funding_source_id', fundingSources[0].id)
       }
       if (uploadMode === 'receipt') {
-        formData.set('receipt', uploadFile)
-        if (secondFile) formData.set('activity_image', secondFile)
+        formData.set('receipt', mainCompressed)
+        if (secondCompressed) formData.set('activity_image', secondCompressed)
       } else {
-        formData.set('activity_image', uploadFile)
-        if (secondFile) formData.set('receipt', secondFile)
+        formData.set('activity_image', mainCompressed)
+        if (secondCompressed) formData.set('receipt', secondCompressed)
       }
       const result = await createTransaction(formData)
       if (result.success) {
@@ -444,10 +485,12 @@ export default function BalanceVisualWidget({
           closeUploadSheet()
           router.refresh()
         }, 1200)
+      } else {
+        if (amountNum > 0) setPendingDeduction(prev => Math.max(0, prev - amountNum))
+        setUploadToast('등록 실패. 다시 시도해 주세요.')
       }
     } catch (err) {
-      console.error(err)
-      // 실패 시 낙관적 차감 롤백
+      console.error('handleInlineSubmit 오류:', err)
       if (amountNum > 0) setPendingDeduction(prev => Math.max(0, prev - amountNum))
       setUploadToast('등록 실패. 다시 시도해 주세요.')
     } finally {

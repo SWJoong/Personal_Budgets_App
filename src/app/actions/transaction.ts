@@ -35,22 +35,19 @@ export async function createTransaction(formData: FormData) {
   let receipt_image_url = null
   let activity_image_url = null
 
-  // 영수증 사진 업로드
+  // 영수증 사진 업로드 (실패해도 거래 저장은 진행)
   if (receiptFile && receiptFile.size > 0) {
-    const fileExt = receiptFile.name.split('.').pop()
+    const fileExt = (receiptFile.name.split('.').pop() || 'jpg').toLowerCase()
     const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`
-
     const { error: uploadError } = await supabase.storage
       .from('receipts')
       .upload(fileName, receiptFile)
-
     if (uploadError) {
       console.error('Receipt Upload Error:', uploadError)
-      throw new Error('Failed to upload receipt image')
+    } else {
+      const { data: { publicUrl } } = supabase.storage.from('receipts').getPublicUrl(fileName)
+      receipt_image_url = publicUrl
     }
-
-    const { data: { publicUrl } } = supabase.storage.from('receipts').getPublicUrl(fileName)
-    receipt_image_url = publicUrl
   }
 
   // 활동 사진 업로드
