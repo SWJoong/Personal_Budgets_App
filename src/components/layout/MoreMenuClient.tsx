@@ -118,8 +118,8 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
           {/* 쉬운 용어 모드 토글 */}
           <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-zinc-700">쉬운 말 모드</span>
-              <span className="text-xs text-zinc-400 font-medium">어려운 말을 쉬운 말로 바꿰요</span>
+              <span className="text-sm font-bold text-zinc-700">쉬운 말</span>
+              <span className="text-xs text-zinc-400 font-medium">쉬운 말로 바꿉니다</span>
             </div>
             <button
               onClick={() => setEasyTerms(!easyTerms)}
