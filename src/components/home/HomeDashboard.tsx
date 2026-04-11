@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import { formatCurrency, getBudgetVisualInfo } from '@/utils/budget-visuals'
+import { speak } from '@/utils/tts'
 import Link from 'next/link'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import BalanceVisualWidget from './BalanceVisualWidget'
 import BudgetTrendChart from './BudgetTrendChart'
 import BlockCustomizeSheet from './BlockCustomizeSheet'
 import WeeklyChartBlock from './WeeklyChartBlock'
-import { UIPreferences, DEFAULT_PREFERENCES } from '@/types/ui-preferences'
+import { UIPreferences, DEFAULT_PREFERENCES, BlockId } from '@/types/ui-preferences'
 import { saveUIPreferences } from '@/app/actions/preferences'
 import NavDropdown from '@/components/layout/NavDropdown'
 
@@ -61,8 +62,6 @@ export default function HomeDashboard({
     uiPreferences ?? DEFAULT_PREFERENCES
   )
 
-  const enabled = new Set(localPreferences.enabled_blocks)
-
   async function handleSavePreferences(newPrefs: UIPreferences) {
     setLocalPreferences(newPrefs)
     setIsSheetOpen(false)
@@ -77,41 +76,14 @@ export default function HomeDashboard({
 
   const visual = getBudgetVisualInfo(totalMonthBalance, totalMonthlyBudget, remainingDays, totalDaysInMonth)
 
-  // 순차 등장 블록 인덱스 (각 블록마다 0.08s 간격)
-  let staggerIdx = 0
-  const stagger = () => ({ animationDelay: `${(staggerIdx++) * 0.08}s` })
+  // ── 블록별 렌더 함수 (enabled_blocks 배열 순서에 따라 호출) ──────
+  function renderBlock(blockId: BlockId) {
+    switch (blockId) {
 
-  return (
-    <div className="flex flex-col min-h-dvh easy-read-bg text-foreground participant-view">
-      <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/90 backdrop-blur-md border-b border-border">
-        <h1 className="text-lg font-bold tracking-tight text-foreground">아름드리꿈터</h1>
-        <div className="flex items-center gap-2">
-          <div className="text-xs font-bold px-2.5 py-1 bg-primary/10 rounded-full text-primary whitespace-nowrap">
-            {userName} 님
-          </div>
-          <NavDropdown />
-        </div>
-      </header>
-
-      <main className="flex-1 w-full p-4 flex flex-col gap-4">
-        {/* [필수] 잔액 시각화 위젯 */}
-        <div className="stagger-item" style={stagger()}>
-          <BalanceVisualWidget
-            currentBalance={totalMonthBalance}
-            totalBudget={totalMonthlyBudget}
-            percentage={visual.percentage}
-            themeColor={visual.themeColor}
-            icon={visual.icon}
-            statusMessage={visual.message}
-            remainingDays={remainingDays}
-            participantId={participantId}
-            fundingSources={fundingSources}
-          />
-        </div>
-
-        {/* [선택] 재원별 보기 */}
-        {enabled.has('source_view') && fundingSources.length > 0 && (
-          <section className="flex flex-col gap-3 stagger-item" style={stagger()}>
+      case 'source_view':
+        if (fundingSources.length === 0) return null
+        return (
+          <section className="flex flex-col gap-3">
             <h3 className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] ml-1">
               <EasyTerm formal="재원별 잔액" easy="돈 종류별 남은 돈" />
             </h3>
@@ -125,27 +97,27 @@ export default function HomeDashboard({
               return (
                 <div key={fs.id} className={`p-5 rounded-3xl ring-1 shadow-sm transition-all ${
                   fsVisual.status === 'critical' ? 'bg-red-50 ring-red-200' :
-                  fsVisual.status === 'warning' ? 'bg-orange-50 ring-orange-200' :
+                  fsVisual.status === 'warning'  ? 'bg-orange-50 ring-orange-200' :
                   'bg-white ring-zinc-100'
                 }`}>
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{fs.name}</p>
-                      <p className={`text-2xl font-black mt-1 ${
+                      <p className={`text-2xl font-black mt-1 hc-amount ${
                         fsVisual.status === 'critical' ? 'text-red-600' :
-                        fsVisual.status === 'warning' ? 'text-orange-600' : 'text-zinc-900'
+                        fsVisual.status === 'warning'  ? 'text-orange-600' : 'text-zinc-900'
                       }`}>{formatCurrency(Number(fs.current_month_balance))}원</p>
                     </div>
-                    <p className={`text-lg font-black ${
+                    <p className={`text-lg font-black hc-amount ${
                       fsPercentage <= 20 ? 'text-red-600' :
                       fsPercentage <= 40 ? 'text-orange-600' : 'text-zinc-900'
                     }`}>{fsPercentage}%</p>
                   </div>
-                  <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden hc-gauge">
                     <div
-                      className={`h-full rounded-full transition-all ${
+                      className={`h-full rounded-full transition-all hc-gauge-fill ${
                         fsVisual.status === 'critical' ? 'bg-red-500' :
-                        fsVisual.status === 'warning' ? 'bg-orange-500' : 'bg-zinc-900'
+                        fsVisual.status === 'warning'  ? 'bg-orange-500' : 'bg-zinc-900'
                       }`}
                       style={{ width: `${fsPercentage}%` }}
                     />
@@ -154,53 +126,46 @@ export default function HomeDashboard({
               )
             })}
           </section>
-        )}
+        )
 
-        {/* [선택] 올해 잔액 카드 */}
-        {enabled.has('yearly_balance') && (
-          <section className="p-6 rounded-[2rem] bg-white ring-1 ring-zinc-100 flex justify-between items-center shadow-sm stagger-item" style={stagger()}>
+      case 'yearly_balance':
+        return (
+          <section className="p-6 rounded-[2rem] bg-white ring-1 ring-zinc-100 flex justify-between items-center shadow-sm">
             <div className="flex flex-col gap-1">
               <span className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em]">
                 <EasyTerm formal="올해 전체 잔액" easy="올해 남은 돈" />
               </span>
-              <span className="text-2xl font-black text-zinc-800">{formatCurrency(totalYearBalance)}원</span>
+              <span className="text-2xl font-black text-zinc-800 hc-amount">{formatCurrency(totalYearBalance)}원</span>
             </div>
             <div className="flex flex-col items-end gap-1 text-right">
               <span className="text-xs text-zinc-400 font-bold">
                 <EasyTerm formal="연간 예산" easy="1년 쓸 수 있는 돈" />
               </span>
               <div className="flex items-center gap-2">
-                <div className="w-16 h-1.5 bg-zinc-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-zinc-400 rounded-full" style={{ width: `${totalYearlyBudget > 0 ? (totalYearBalance / totalYearlyBudget) * 100 : 0}%` }} />
+                <div className="w-16 h-1.5 bg-zinc-100 rounded-full overflow-hidden hc-gauge">
+                  <div className="h-full bg-zinc-400 rounded-full hc-gauge-fill" style={{ width: `${totalYearlyBudget > 0 ? (totalYearBalance / totalYearlyBudget) * 100 : 0}%` }} />
                 </div>
-                <span className="text-xs font-black text-zinc-500">
+                <span className="text-xs font-black text-zinc-500 hc-amount">
                   {totalYearlyBudget > 0 ? Math.round((totalYearBalance / totalYearlyBudget) * 100) : 0}%
                 </span>
               </div>
             </div>
           </section>
-        )}
+        )
 
-        {/* [선택] 월별 예산 추이 차트 */}
-        {enabled.has('monthly_trend') && monthlyTrend.length > 0 && (
-          <div className="stagger-item" style={stagger()}>
-            <BudgetTrendChart monthlyData={monthlyTrend} />
-          </div>
-        )}
+      case 'monthly_trend':
+        if (monthlyTrend.length === 0) return null
+        return <BudgetTrendChart monthlyData={monthlyTrend} />
 
-        {/* [선택] 이번 주 지출 차트 */}
-        {enabled.has('weekly_chart') && dailyTransactions.length > 0 && (
-          <div className="stagger-item" style={stagger()}>
-            <WeeklyChartBlock dailyTransactions={dailyTransactions} themeColor={visual.themeColor} />
-          </div>
-        )}
+      case 'weekly_chart':
+        if (dailyTransactions.length === 0) return null
+        return <WeeklyChartBlock dailyTransactions={dailyTransactions} themeColor={visual.themeColor} />
 
-        {/* [선택] 계획 AI 바로가기 */}
-        {enabled.has('plan_shortcut') && (
+      case 'plan_shortcut':
+        return (
           <Link
             href="/plan"
-            className="group flex items-center gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-900 hover:bg-zinc-50 transition-all shadow-sm active:scale-[0.98] stagger-item"
-            style={stagger()}
+            className="group flex items-center gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-900 hover:bg-zinc-50 transition-all shadow-sm active:scale-[0.98]"
           >
             <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
               <span className="text-3xl">🤔</span>
@@ -211,15 +176,29 @@ export default function HomeDashboard({
             </div>
             <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">→</span>
           </Link>
-        )}
+        )
 
-        {/* [선택] 최근 사용 내역 */}
-        {enabled.has('recent_transactions') && (
-          <section className="flex flex-col gap-3 stagger-item" style={stagger()}>
+      case 'recent_transactions':
+        return (
+          <section className="flex flex-col gap-3">
             <div className="flex justify-between items-center">
-              <h3 className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] ml-1">
-                <EasyTerm formal="최근 사용 내역" easy="최근에 쓴 돈" />
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] ml-1">
+                  <EasyTerm formal="최근 사용 내역" easy="최근에 쓴 돈" />
+                </h3>
+                {recentTransactions.length > 0 && (
+                  <button
+                    onClick={() => {
+                      const txText = recentTransactions.slice(0, 3)
+                        .map((tx: any) => `${tx.activity_name} ${formatCurrency(tx.amount)}원`)
+                        .join(', ')
+                      speak(`최근 사용 내역입니다. ${txText}`)
+                    }}
+                    className="w-6 h-6 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-xs active:scale-95"
+                    aria-label="최근 내역 음성으로 듣기"
+                  >🔊</button>
+                )}
+              </div>
               <Link href="/calendar" className="text-xs font-bold text-zinc-400 hover:text-zinc-600 transition-colors">
                 전체 보기 →
               </Link>
@@ -249,10 +228,8 @@ export default function HomeDashboard({
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-zinc-900 text-sm">-{formatCurrency(tx.amount)}원</p>
-                    <span className={`text-xs font-bold ${
-                      tx.status === 'confirmed' ? 'text-green-600' : 'text-orange-500'
-                    }`}>
+                    <p className="font-bold text-zinc-900 text-sm hc-amount">-{formatCurrency(tx.amount)}원</p>
+                    <span className={`text-xs font-bold ${tx.status === 'confirmed' ? 'text-green-600' : 'text-orange-500'}`}>
                       {tx.status === 'confirmed'
                         ? <EasyTerm formal="확정" easy="확인됨" />
                         : <EasyTerm formal="임시" easy="확인 중" />
@@ -263,11 +240,12 @@ export default function HomeDashboard({
               ))
             )}
           </section>
-        )}
+        )
 
-        {/* [선택] 지원자 편지 */}
-        {enabled.has('evaluation_letter') && latestEvaluation && (
-          <section className="p-6 rounded-[2rem] bg-white ring-1 ring-zinc-100 shadow-sm flex flex-col gap-3 stagger-item" style={stagger()}>
+      case 'evaluation_letter':
+        if (!latestEvaluation) return null
+        return (
+          <section className="p-6 rounded-[2rem] bg-white ring-1 ring-zinc-100 shadow-sm flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <span className="text-3xl">💌</span>
               <div>
@@ -281,10 +259,54 @@ export default function HomeDashboard({
               <p className="text-sm text-zinc-600 leading-relaxed line-clamp-3">{latestEvaluation.tried}</p>
             )}
           </section>
-        )}
+        )
+
+      default:
+        return null
+    }
+  }
+
+  return (
+    <div className="flex flex-col min-h-dvh easy-read-bg text-foreground participant-view">
+      <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/90 backdrop-blur-md border-b border-border">
+        <h1 className="text-lg font-bold tracking-tight text-foreground">아름드리꿈터</h1>
+        <div className="flex items-center gap-2">
+          <div className="text-xs font-bold px-2.5 py-1 bg-primary/10 rounded-full text-primary whitespace-nowrap">
+            {userName} 님
+          </div>
+          <NavDropdown />
+        </div>
+      </header>
+
+      <main className="flex-1 w-full p-4 flex flex-col gap-4">
+        {/* [필수] 잔액 시각화 위젯 */}
+        <div className="stagger-item" style={{ animationDelay: '0s' }}>
+          <BalanceVisualWidget
+            currentBalance={totalMonthBalance}
+            totalBudget={totalMonthlyBudget}
+            percentage={visual.percentage}
+            themeColor={visual.themeColor}
+            icon={visual.icon}
+            statusMessage={visual.message}
+            remainingDays={remainingDays}
+            participantId={participantId}
+            fundingSources={fundingSources}
+          />
+        </div>
+
+        {/* [선택] enabled_blocks 배열 순서대로 렌더링 */}
+        {localPreferences.enabled_blocks.map((blockId, idx) => {
+          const content = renderBlock(blockId)
+          if (!content) return null
+          return (
+            <div key={blockId} className="stagger-item" style={{ animationDelay: `${(idx + 1) * 0.08}s` }}>
+              {content}
+            </div>
+          )
+        })}
       </main>
 
-      {/* 확장형 FAB (sticky) — 스크롤해도 항상 하단에 표시 */}
+      {/* 확장형 FAB (sticky) */}
       <div className="sticky bottom-0 z-30 flex justify-end px-4 pb-4 pt-2 pointer-events-none">
         <button
           onClick={() => setIsSheetOpen(true)}

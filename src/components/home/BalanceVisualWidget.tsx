@@ -6,8 +6,9 @@ import { formatCurrency } from '@/utils/budget-visuals'
 import { createTransaction } from '@/app/actions/transaction'
 import { analyzeReceipt } from '@/app/actions/ocr'
 import { EasyTerm } from '@/components/ui/EasyTerm'
+import { speak } from '@/utils/tts'
 
-type WidgetStyle = 'pie' | 'water' | 'emoji'
+type WidgetStyle = 'pie' | 'water' | 'emoji' | 'text'
 
 const EMOJI_CHOICES = [
   { emoji: '🍎', name: '사과' },
@@ -239,6 +240,25 @@ function EmojiViz({
   )
 }
 
+// ── 숫자/텍스트 표시 모드 ────────────────────────────────────────
+function TextViz({ percentage, currentBalance }: { percentage: number; currentBalance: number }) {
+  const isLow = percentage < 30
+  return (
+    <div className="flex flex-col items-center justify-center py-10 px-6 gap-2">
+      <p className="text-[11px] font-black text-zinc-300 uppercase tracking-[0.2em]">남은 예산</p>
+      <p className={`text-8xl font-black leading-none hc-amount ${isLow ? 'text-red-600' : 'text-zinc-900'}`}>
+        {percentage}%
+      </p>
+      <p className={`text-3xl font-bold mt-2 hc-amount ${isLow ? 'text-red-500' : 'text-zinc-500'}`}>
+        {formatCurrency(currentBalance)}원
+      </p>
+      {isLow && (
+        <p className="text-sm font-bold text-red-500 mt-1">돈이 얼마 없어요</p>
+      )}
+    </div>
+  )
+}
+
 // ── 메인 위젯 ─────────────────────────────────────────────────────
 export default function BalanceVisualWidget({
   currentBalance,
@@ -278,6 +298,7 @@ export default function BalanceVisualWidget({
   // 인라인 업로드 상태
   const receiptInputRef = useRef<HTMLInputElement>(null)
   const activityInputRef = useRef<HTMLInputElement>(null)
+  const secondFileRef = useRef<HTMLInputElement>(null)  // 두 번째 파일 (추가 사진)
   const [uploadMode, setUploadMode] = useState<'receipt' | 'activity' | null>(null)
   const [uploadPreview, setUploadPreview] = useState<string | null>(null)
   const [uploadFile, setUploadFile] = useState<File | null>(null)
@@ -287,6 +308,9 @@ export default function BalanceVisualWidget({
   const [uploadDate, setUploadDate] = useState(new Date().toISOString().split('T')[0])
   const [uploadSubmitting, setUploadSubmitting] = useState(false)
   const [uploadToast, setUploadToast] = useState<string | null>(null)
+  // 두 번째 파일 (영수증+활동사진 동시)
+  const [secondFile, setSecondFile] = useState<File | null>(null)
+  const [secondPreview, setSecondPreview] = useState<string | null>(null)
 
   useEffect(() => {
     const raw = localStorage.getItem('balance-widget-style') as string | null
@@ -358,6 +382,18 @@ export default function BalanceVisualWidget({
     setUploadAmount('')
     setUploadAnalyzing(false)
     setUploadToast(null)
+    setSecondFile(null)
+    setSecondPreview(null)
+  }
+
+  const handleSecondFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setSecondFile(file)
+    const reader = new FileReader()
+    reader.onloadend = () => setSecondPreview(reader.result as string)
+    reader.readAsDataURL(file)
+    e.target.value = ''
   }
 
   const handleInlineSubmit = async () => {
@@ -377,8 +413,10 @@ export default function BalanceVisualWidget({
       }
       if (uploadMode === 'receipt') {
         formData.set('receipt', uploadFile)
+        if (secondFile) formData.set('activity_image', secondFile)
       } else {
         formData.set('activity_image', uploadFile)
+        if (secondFile) formData.set('receipt', secondFile)
       }
       const result = await createTransaction(formData)
       if (result.success) {
@@ -404,6 +442,7 @@ export default function BalanceVisualWidget({
     { key: 'pie'   as WidgetStyle, label: '🍕', title: '피자 그래프' },
     { key: 'water' as WidgetStyle, label: '🥤', title: '물컵 그래프' },
     { key: 'emoji' as WidgetStyle, label: '✨', title: '이모지' },
+    { key: 'text'  as WidgetStyle, label: '🔢', title: '숫자 표시' },
   ]
 
   return (
@@ -414,9 +453,19 @@ export default function BalanceVisualWidget({
           <p className="text-[11px] font-black text-zinc-300 uppercase tracking-[0.2em]">
             <EasyTerm formal="잔액 요약" easy="남은 돈" />
           </p>
-          <p className={`text-3xl font-black mt-1 transition-all duration-500 leading-tight ${c.text}`}>
-            {formatCurrency(displayBalance)}<span className="text-xl">원</span>
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className={`text-3xl font-black transition-all duration-500 leading-tight hc-amount ${c.text}`}>
+              {formatCurrency(displayBalance)}<span className="text-xl">원</span>
+            </p>
+            <button
+              onClick={() => speak(`남은 돈은 ${formatCurrency(displayBalance)}원입니다. 예산의 ${displayPct}퍼센트가 남아있습니다. ${remainingDays}일 남았습니다.`)}
+              className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-sm active:scale-95 transition-all shrink-0"
+              aria-label="잔액 음성으로 듣기"
+              title="음성으로 듣기"
+            >
+              🔊
+            </button>
+          </div>
           <p className="text-xs text-zinc-400 font-bold mt-0.5 flex items-center gap-2">
             <span>{remainingDays}일 남음 · {displayPct}%</span>
             {pendingDeduction > 0 && (
@@ -485,6 +534,7 @@ export default function BalanceVisualWidget({
             onSelectEmoji={changeEmoji}
           />
         )}
+        {style === 'text' && <TextViz percentage={activePct} currentBalance={simValue > 0 ? simBalance : displayBalance} />}
       </div>
 
       {/* 금액 시뮬레이션 — "이만큼 사면 얼마 남을까?" */}
@@ -593,6 +643,32 @@ export default function BalanceVisualWidget({
                   )}
                 </div>
               )}
+
+              {/* 두 번째 사진 추가 (영수증↔활동사진 동시 등록) */}
+              <div className="mb-4">
+                {secondPreview ? (
+                  <div className="relative aspect-video rounded-2xl overflow-hidden ring-1 ring-zinc-200">
+                    <img src={secondPreview} alt="추가 사진" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => { setSecondFile(null); setSecondPreview(null) }}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white text-xs flex items-center justify-center"
+                    >✕</button>
+                    <span className="absolute bottom-2 left-2 text-[10px] font-black text-white bg-black/40 px-2 py-0.5 rounded-full">
+                      {uploadMode === 'receipt' ? '활동사진' : '영수증'}
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => secondFileRef.current?.click()}
+                    className="w-full py-3 rounded-2xl border-2 border-dashed border-zinc-200 text-zinc-400 text-sm font-bold hover:border-zinc-400 hover:text-zinc-600 transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>{uploadMode === 'receipt' ? '📸' : '🧾'}</span>
+                    <span>{uploadMode === 'receipt' ? '활동사진도 추가하기 (선택)' : '영수증도 추가하기 (선택)'}</span>
+                  </button>
+                )}
+                <input ref={secondFileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleSecondFile} />
+              </div>
 
               {/* 활동 내용 */}
               <div className="flex flex-col gap-3">

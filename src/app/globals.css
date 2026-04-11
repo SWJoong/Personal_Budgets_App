@@ -334,10 +334,57 @@ html.font-xlarge {
 
 /* High-contrast mode */
 html.high-contrast {
-  --color-primary: hsl(207 100% 30%);
+  --color-primary: hsl(207 100% 25%);
   --color-foreground: hsl(0 0% 0%);
   --color-background: hsl(0 0% 100%);
   --color-border: hsl(0 0% 0%);
+}
+
+/* 고대비: 카드 배경/테두리 강제 */
+html.high-contrast .participant-view section,
+html.high-contrast .participant-view [class*="rounded-"] {
+  background-color: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: none !important;
+}
+
+/* 고대비: 중요 금액 텍스트 */
+html.high-contrast .hc-amount {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+/* 고대비: 상태 메시지 영역 */
+html.high-contrast .hc-status-bar {
+  background-color: #f0f0f0 !important;
+  border-top: 2px solid #000 !important;
+}
+html.high-contrast .hc-status-bar p,
+html.high-contrast .hc-status-bar span {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+/* 고대비: 게이지 바 */
+html.high-contrast .hc-gauge {
+  background-color: #cccccc !important;
+}
+html.high-contrast .hc-gauge-fill {
+  background-color: #000000 !important;
+}
+
+/* 고대비: 버튼 및 뱃지 */
+html.high-contrast .participant-view button:not([class*="bg-zinc-900"]):not([class*="bg-red"]) {
+  border: 2px solid #000 !important;
+}
+
+/* 고대비: 텍스트 가시성 보장 */
+html.high-contrast .participant-view p,
+html.high-contrast .participant-view span:not([class*="term-"]),
+html.high-contrast .participant-view h1,
+html.high-contrast .participant-view h2,
+html.high-contrast .participant-view h3 {
+  color: #000000 !important;
 }
 
 /* Easy-read mode for participants */

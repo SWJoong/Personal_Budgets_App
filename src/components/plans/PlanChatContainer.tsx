@@ -1,51 +1,35 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { suggestActivities, savePlan } from '@/app/actions/plan'
-import PlanComparison from './PlanComparison'
+import { suggestActivityOptions, suggestMethodOptions, savePlan } from '@/app/actions/plan'
 import { formatCurrency } from '@/utils/budget-visuals'
+import { speak } from '@/utils/tts'
 
-interface PlanContext {
-  activity: string
-  when: string
-  where: string
-  who: string
-  why: string
+type WizardStage = 'loading' | 'activity' | 'method' | 'when' | 'confirm' | 'feedback' | 'done'
+
+const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토']
+
+const ACTIVITY_FALLBACK = { a: '카페 음료 마시기', b: '편의점 간식 사기' }
+const METHOD_FALLBACK = { a: '간단하게', b: '조금 더 여유있게', a_cost: 5000, b_cost: 10000 }
+
+const ACTIVITY_ICONS: Record<string, string> = {
+  a: '🧁',
+  b: '🛒',
+}
+const METHOD_ICONS: Record<string, string> = {
+  a: '🏃',
+  b: '🪑',
 }
 
-interface PlanOption {
-  name: string
-  cost: number
-  time: string
-  icon: string
-  description?: string
+interface OptionData {
+  a: string
+  b: string
 }
-
-interface Message {
-  role: 'bot' | 'user'
-  text: string
+interface MethodData extends OptionData {
+  a_cost: number
+  b_cost: number
 }
-
-// 채팅 단계
-type Step = 'activity' | 'when' | 'where' | 'who' | 'why' | 'choose' | 'comparison' | 'manual' | 'done'
-
-const STEP_QUESTIONS: Record<Exclude<Step, 'choose' | 'comparison' | 'manual' | 'done'>, string> = {
-  activity: '안녕하세요! 오늘은 무엇을 하고 싶으세요? 🤔',
-  when: '언제 할 예정인가요? (예: 오늘 오후, 이번 주말)',
-  where: '어디서 할 예정인가요? (예: 집 근처, 시내)',
-  who: '혼자 하나요, 아니면 누구와 함께 하나요?',
-  why: '왜 이것을 하고 싶으세요? (선택사항)',
-}
-
-const STEP_CHIPS: Partial<Record<Step, string[]>> = {
-  when: ['오늘 오전', '오늘 오후', '오늘 저녁', '이번 주말'],
-  where: ['집 근처', '시내', '공원', '쇼핑센터'],
-  who: ['혼자', '부모님과', '친구와', '지원자 선생님과'],
-  why: ['즐거움을 위해', '운동하고 싶어서', '기분 전환하고 싶어서', '건너뛰기'],
-}
-
-const STEPS: Step[] = ['activity', 'when', 'where', 'who', 'why', 'choose']
 
 export default function PlanChatContainer({
   totalBalance,
@@ -55,332 +39,472 @@ export default function PlanChatContainer({
   participantId: string
 }) {
   const router = useRouter()
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'bot', text: STEP_QUESTIONS.activity },
-  ])
-  const [step, setStep] = useState<Step>('activity')
-  const [input, setInput] = useState('')
-  const [context, setContext] = useState<Partial<PlanContext>>({})
-  const [loading, setLoading] = useState(false)
-  const [planData, setPlanData] = useState<{ activityName: string; options: PlanOption[] } | null>(null)
+  const [stage, setStage] = useState<WizardStage>('loading')
+  const [activityOptions, setActivityOptions] = useState<OptionData>(ACTIVITY_FALLBACK)
+  const [methodOptions, setMethodOptions] = useState<MethodData>(METHOD_FALLBACK)
+  const [selectedActivity, setSelectedActivity] = useState('')
+  const [selectedMethod, setSelectedMethod] = useState('')
+  const [selectedCost, setSelectedCost] = useState(0)
+  const [selectedWhen, setSelectedWhen] = useState('')
+  // 직접 입력
+  const [customActivity, setCustomActivity] = useState('')
+  const [customCost, setCustomCost] = useState('')
+  const [customWhen, setCustomWhen] = useState('')
+  const [showCustom, setShowCustom] = useState(false)
+  // 로딩·저장
   const [saving, setSaving] = useState(false)
-  const [savedPlanId, setSavedPlanId] = useState<string | null>(null)
 
-  // 수기 입력 모드
-  const [manualActivity, setManualActivity] = useState('')
-  const [manualCost, setManualCost] = useState('')
-
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-
+  // 컴포넌트 마운트 시 활동 추천 로드
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    loadActivityOptions()
+  }, [])
 
-  const addMessage = (role: 'bot' | 'user', text: string) => {
-    setMessages(prev => [...prev, { role, text }])
-  }
-
-  const handleUserAnswer = (answer: string) => {
-    if (!answer.trim()) return
-    addMessage('user', answer)
-    setInput('')
-    processStep(step, answer.trim())
-  }
-
-  const processStep = (currentStep: Step, answer: string) => {
-    const newContext = { ...context }
-
-    if (currentStep === 'activity') newContext.activity = answer
-    else if (currentStep === 'when') newContext.when = answer
-    else if (currentStep === 'where') newContext.where = answer
-    else if (currentStep === 'who') newContext.who = answer
-    else if (currentStep === 'why') {
-      if (answer !== '건너뛰기') newContext.why = answer
+  async function loadActivityOptions() {
+    setStage('loading')
+    const now = new Date()
+    const day = DAY_NAMES[now.getDay()]
+    const month = now.getMonth() + 1
+    const result = await suggestActivityOptions(totalBalance, day, month)
+    if (result.success && result.data) {
+      setActivityOptions(result.data)
+    } else {
+      setActivityOptions(ACTIVITY_FALLBACK)
     }
+    setStage('activity')
+  }
 
-    setContext(newContext)
-
-    const stepIndex = STEPS.indexOf(currentStep)
-    const nextStep = STEPS[stepIndex + 1]
-
-    if (nextStep === 'choose') {
-      // 모든 질문 완료 → 선택지 제공
-      const summary = [
-        `활동: ${newContext.activity}`,
-        newContext.when && `언제: ${newContext.when}`,
-        newContext.where && `어디서: ${newContext.where}`,
-        newContext.who && `누구와: ${newContext.who}`,
-        newContext.why && `이유: ${newContext.why}`,
-      ].filter(Boolean).join(' · ')
-
-      setTimeout(() => {
-        addMessage('bot', `좋아요! 정리해 드릴게요.\n${summary}\n\nAI 추천을 받을까요, 아니면 직접 금액을 입력하시겠어요?`)
-        setStep('choose')
-      }, 300)
-    } else if (nextStep && STEP_QUESTIONS[nextStep as keyof typeof STEP_QUESTIONS]) {
-      setTimeout(() => {
-        addMessage('bot', STEP_QUESTIONS[nextStep as keyof typeof STEP_QUESTIONS])
-        setStep(nextStep)
-      }, 300)
+  async function handleSelectActivity(label: string) {
+    setSelectedActivity(label)
+    setShowCustom(false)
+    setStage('loading')
+    const result = await suggestMethodOptions(label, totalBalance)
+    if (result.success && result.data) {
+      setMethodOptions(result.data)
+    } else {
+      setMethodOptions(METHOD_FALLBACK)
     }
+    setStage('method')
   }
 
-  const handleGetAI = async () => {
-    setLoading(true)
-    addMessage('user', 'AI 추천 받기')
-    try {
-      const result = await suggestActivities(totalBalance, context as PlanContext)
-      if (result.success && result.data) {
-        setPlanData(result.data)
-        setStep('comparison')
-        addMessage('bot', `"${result.data.activityName}"로 두 가지 방법을 추천드려요! 아래에서 비교해 보세요.`)
-      } else {
-        addMessage('bot', '추천을 가져오지 못했어요. 직접 입력을 이용해 주세요.')
-        setStep('manual')
-      }
-    } catch {
-      addMessage('bot', '오류가 발생했어요. 직접 입력해 주세요.')
-      setStep('manual')
-    } finally {
-      setLoading(false)
-    }
+  function handleCustomActivitySubmit() {
+    if (!customActivity.trim()) return
+    handleSelectActivity(customActivity.trim())
   }
 
-  const handleManual = () => {
-    addMessage('user', '직접 입력하기')
-    addMessage('bot', '활동 이름과 예상 비용을 입력해 주세요.')
-    setStep('manual')
+  function handleSelectMethod(label: string, cost: number) {
+    setSelectedMethod(label)
+    setSelectedCost(cost)
+    setShowCustom(false)
+    setStage('when')
   }
 
-  const handleManualSave = async () => {
-    if (!manualActivity.trim() || !manualCost.trim()) return
+  function handleCustomMethodSubmit() {
+    if (!customCost.trim()) return
+    setSelectedMethod(selectedActivity)
+    setSelectedCost(Number(customCost))
+    setShowCustom(false)
+    setStage('when')
+  }
+
+  function handleSelectWhen(label: string) {
+    setSelectedWhen(label)
+    setShowCustom(false)
+    setStage('confirm')
+  }
+
+  function handleCustomWhenSubmit() {
+    if (!customWhen.trim()) return
+    setSelectedWhen(customWhen.trim())
+    setShowCustom(false)
+    setStage('confirm')
+  }
+
+  async function handleConfirm() {
     setSaving(true)
     try {
+      const date = new Date().toISOString().split('T')[0]
       await savePlan({
         participantId,
-        activityName: manualActivity,
-        date: new Date().toISOString().split('T')[0],
-        options: [{ name: manualActivity, cost: Number(manualCost), time: '미정', icon: '📝' }],
+        activityName: selectedActivity,
+        date,
+        options: [
+          { name: selectedMethod, cost: selectedCost, time: selectedWhen, icon: '📝' },
+        ],
         selectedOptionIndex: 0,
-        details: context as PlanContext,
+        details: { activity: selectedActivity, when: selectedWhen },
       })
-      addMessage('bot', `"${manualActivity}" 계획이 저장되었어요!`)
-      setStep('done')
       router.refresh()
+      setStage('feedback')
     } catch {
-      addMessage('bot', '저장 중 오류가 발생했어요.')
+      // 저장 실패해도 피드백으로 이동
+      setStage('feedback')
     } finally {
       setSaving(false)
     }
   }
 
-  const handleSelectPlan = async (selectedIndex: number) => {
-    if (!planData) return
-    setSaving(true)
-    try {
-      await savePlan({
-        participantId,
-        activityName: planData.activityName,
-        date: new Date().toISOString().split('T')[0],
-        options: planData.options,
-        selectedOptionIndex: selectedIndex,
-        details: context as PlanContext,
-      })
-      const selectedOption = planData.options[selectedIndex]
-      addMessage('bot', `"${selectedOption.name}" 계획을 저장했어요! (${formatCurrency(selectedOption.cost)}원)`)
-      setStep('done')
-      router.refresh()
-    } catch {
-      addMessage('bot', '저장 중 오류가 발생했어요.')
-    } finally {
-      setSaving(false)
-    }
+  function handleReset() {
+    setSelectedActivity('')
+    setSelectedMethod('')
+    setSelectedCost(0)
+    setSelectedWhen('')
+    setCustomActivity('')
+    setCustomCost('')
+    setCustomWhen('')
+    setShowCustom(false)
+    loadActivityOptions()
   }
 
-  const handleReset = () => {
-    setMessages([{ role: 'bot', text: STEP_QUESTIONS.activity }])
-    setStep('activity')
-    setInput('')
-    setContext({})
-    setPlanData(null)
-    setManualActivity('')
-    setManualCost('')
-    setSavedPlanId(null)
+  function handleSpeakPlan() {
+    speak(
+      `오늘 계획이에요. ${selectedActivity}. ${selectedMethod}. ${selectedWhen}. ${formatCurrency(selectedCost)}원 예상이에요.`
+    )
   }
 
-  const currentChips = STEP_CHIPS[step] || []
-  const isInputStep = ['activity', 'when', 'where', 'who', 'why'].includes(step)
+  const remainingAfter = totalBalance - selectedCost
 
   return (
     <div className="flex flex-col bg-white rounded-[2rem] ring-1 ring-zinc-100 shadow-sm overflow-hidden">
-      {/* 채팅 헤더 */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-zinc-100 bg-gradient-to-r from-primary/5 to-transparent">
-        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-lg">🤝</div>
-        <div>
-          <p className="font-black text-zinc-800 text-sm">계획 세우기</p>
-          <p className="text-[10px] text-zinc-400 font-medium">지원자와 함께 오늘의 계획을 만들어요</p>
-        </div>
-        {step !== 'activity' && (
-          <button onClick={handleReset} className="ml-auto text-xs text-zinc-400 font-bold hover:text-zinc-600">
-            처음부터
-          </button>
-        )}
-      </div>
 
-      {/* 채팅 메시지 영역 */}
-      <div className="flex flex-col gap-3 p-4 max-h-80 overflow-y-auto">
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            {msg.role === 'bot' && (
-              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-sm mr-2 mt-1 shrink-0">🤝</div>
-            )}
-            <div className={`max-w-[78%] px-4 py-2.5 rounded-2xl text-sm font-bold whitespace-pre-wrap leading-relaxed ${
-              msg.role === 'user'
-                ? 'bg-zinc-900 text-white rounded-br-sm'
-                : 'bg-zinc-100 text-zinc-800 rounded-bl-sm'
-            }`}>
-              {msg.text}
-            </div>
-          </div>
-        ))}
-        {loading && (
-          <div className="flex justify-start">
-            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-sm mr-2 mt-1 shrink-0">🤝</div>
-            <div className="bg-zinc-100 px-4 py-3 rounded-2xl rounded-bl-sm">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              </div>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* 입력 영역 */}
-      <div className="border-t border-zinc-100 p-4 flex flex-col gap-3">
-
-        {/* 빠른 선택 칩 */}
-        {currentChips.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {currentChips.map((chip) => (
-              <button
-                key={chip}
-                type="button"
-                onClick={() => handleUserAnswer(chip)}
-                className="px-3 py-1.5 rounded-full bg-zinc-100 text-zinc-700 text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors"
-              >
-                {chip}
-              </button>
+      {/* 로딩 */}
+      {stage === 'loading' && (
+        <div className="flex flex-col items-center justify-center py-16 gap-4">
+          <div className="flex gap-1.5">
+            {[0, 150, 300].map((delay) => (
+              <span
+                key={delay}
+                className="w-3 h-3 bg-zinc-300 rounded-full animate-bounce"
+                style={{ animationDelay: `${delay}ms` }}
+              />
             ))}
           </div>
-        )}
+          <p className="text-sm font-bold text-zinc-400">추천을 불러오고 있어요</p>
+        </div>
+      )}
 
-        {/* 텍스트 입력 */}
-        {isInputStep && (
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleUserAnswer(input)}
-              placeholder="직접 입력..."
-              className="flex-1 px-4 py-3 rounded-2xl bg-zinc-100 text-sm font-bold outline-none focus:ring-2 focus:ring-primary"
-            />
-            <button
-              type="button"
-              onClick={() => handleUserAnswer(input)}
-              disabled={!input.trim()}
-              className="px-4 py-3 rounded-2xl bg-zinc-900 text-white text-sm font-bold disabled:bg-zinc-200 disabled:text-zinc-400 transition-all"
-            >
-              전송
-            </button>
+      {/* 단계 1 — 활동 선택 */}
+      {stage === 'activity' && (
+        <div className="flex flex-col gap-4 p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-3xl">🤔</span>
+            <h2 className="text-lg font-black text-zinc-900">오늘 뭐 하고 싶어요?</h2>
           </div>
-        )}
 
-        {/* AI / 직접입력 선택 */}
-        {step === 'choose' && (
-          <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={handleGetAI}
-              disabled={loading}
-              className="w-full py-3.5 rounded-2xl bg-zinc-900 text-white font-black text-sm flex items-center justify-center gap-2 disabled:bg-zinc-200"
-            >
-              <span>✨</span> AI가 추천해 줘
-            </button>
-            <button
-              type="button"
-              onClick={handleManual}
-              className="w-full py-3.5 rounded-2xl bg-zinc-100 text-zinc-700 font-black text-sm flex items-center justify-center gap-2"
-            >
-              <span>✏️</span> 직접 금액 입력하기
-            </button>
-          </div>
-        )}
-
-        {/* 수기 입력 폼 */}
-        {step === 'manual' && (
-          <div className="flex flex-col gap-3">
-            <input
-              type="text"
-              value={manualActivity}
-              onChange={(e) => setManualActivity(e.target.value)}
-              placeholder="활동 이름 (예: 카페 가기)"
-              className="w-full px-4 py-3 rounded-2xl bg-zinc-100 text-sm font-bold outline-none focus:ring-2 focus:ring-primary"
-            />
-            <div className="relative">
-              <input
-                type="number"
-                inputMode="numeric"
-                value={manualCost}
-                onChange={(e) => setManualCost(e.target.value)}
-                placeholder="예상 비용"
-                className="w-full px-4 py-3 pr-10 rounded-2xl bg-zinc-100 text-sm font-bold outline-none focus:ring-2 focus:ring-primary"
+          {!showCustom ? (
+            <>
+              <OptionButton
+                icon={ACTIVITY_ICONS.a}
+                label={activityOptions.a}
+                badge="A"
+                onClick={() => handleSelectActivity(activityOptions.a)}
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">원</span>
+              <OptionButton
+                icon={ACTIVITY_ICONS.b}
+                label={activityOptions.b}
+                badge="B"
+                onClick={() => handleSelectActivity(activityOptions.b)}
+              />
+              <OptionButton
+                icon="✏️"
+                label="직접 입력할게요"
+                badge="C"
+                onClick={() => setShowCustom(true)}
+                muted
+              />
+            </>
+          ) : (
+            <CustomInput
+              placeholder="활동 이름을 입력해요"
+              value={customActivity}
+              onChange={setCustomActivity}
+              onSubmit={handleCustomActivitySubmit}
+              onBack={() => setShowCustom(false)}
+            />
+          )}
+        </div>
+      )}
+
+      {/* 단계 2 — 방법·비용 선택 */}
+      {stage === 'method' && (
+        <div className="flex flex-col gap-4 p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-3xl">🙂</span>
+            <div>
+              <p className="text-xs font-bold text-zinc-400">{selectedActivity}</p>
+              <h2 className="text-lg font-black text-zinc-900">어떻게 할까요?</h2>
             </div>
+          </div>
+
+          {!showCustom ? (
+            <>
+              <OptionButton
+                icon={METHOD_ICONS.a}
+                label={methodOptions.a}
+                cost={methodOptions.a_cost}
+                badge="A"
+                onClick={() => handleSelectMethod(methodOptions.a, methodOptions.a_cost)}
+              />
+              <OptionButton
+                icon={METHOD_ICONS.b}
+                label={methodOptions.b}
+                cost={methodOptions.b_cost}
+                badge="B"
+                onClick={() => handleSelectMethod(methodOptions.b, methodOptions.b_cost)}
+              />
+              <OptionButton
+                icon="✏️"
+                label="직접 입력할게요"
+                badge="C"
+                onClick={() => setShowCustom(true)}
+                muted
+              />
+            </>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <div className="relative">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={customCost}
+                  onChange={(e) => setCustomCost(e.target.value)}
+                  placeholder="예상 비용"
+                  className="w-full px-4 py-4 pr-12 rounded-2xl bg-zinc-50 text-base font-bold outline-none focus:ring-2 focus:ring-zinc-900 border border-zinc-200"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-zinc-400">원</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowCustom(false)}
+                  className="flex-1 py-4 rounded-2xl bg-zinc-100 text-zinc-500 font-black text-sm"
+                >
+                  뒤로
+                </button>
+                <button
+                  onClick={handleCustomMethodSubmit}
+                  disabled={!customCost.trim()}
+                  className="flex-1 py-4 rounded-2xl bg-zinc-900 text-white font-black text-sm disabled:bg-zinc-200 disabled:text-zinc-400"
+                >
+                  다음 →
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 단계 3 — 언제 */}
+      {stage === 'when' && (
+        <div className="flex flex-col gap-4 p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-3xl">📅</span>
+            <h2 className="text-lg font-black text-zinc-900">언제 갈 거예요?</h2>
+          </div>
+
+          {!showCustom ? (
+            <>
+              <OptionButton icon="🌅" label="오전 (지금 바로)" badge="A" onClick={() => handleSelectWhen('오전')} />
+              <OptionButton icon="🌇" label="오후" badge="B" onClick={() => handleSelectWhen('오후')} />
+              <OptionButton icon="✏️" label="직접 입력" badge="C" onClick={() => setShowCustom(true)} muted />
+            </>
+          ) : (
+            <CustomInput
+              placeholder="언제 할지 입력해요"
+              value={customWhen}
+              onChange={setCustomWhen}
+              onSubmit={handleCustomWhenSubmit}
+              onBack={() => setShowCustom(false)}
+            />
+          )}
+        </div>
+      )}
+
+      {/* 단계 4 — 확인 */}
+      {stage === 'confirm' && (
+        <div className="flex flex-col gap-5 p-6">
+          <div className="flex items-center gap-3 mb-1">
+            <span className="text-3xl">📋</span>
+            <h2 className="text-lg font-black text-zinc-900">오늘 계획이에요!</h2>
+          </div>
+
+          <div className="flex flex-col gap-3 p-5 rounded-2xl bg-zinc-50 ring-1 ring-zinc-100">
+            <SummaryRow icon="🎯" label={selectedActivity} />
+            <SummaryRow icon="📌" label={selectedMethod} />
+            <SummaryRow icon="📅" label={selectedWhen} />
+            <SummaryRow
+              icon="💰"
+              label={`${formatCurrency(selectedCost)}원 예상`}
+              sub={remainingAfter >= 0 ? `쓰고 나면 ${formatCurrency(remainingAfter)}원이 남아요` : undefined}
+            />
+          </div>
+
+          <button
+            onClick={handleSpeakPlan}
+            className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-zinc-100 text-zinc-600 font-bold text-sm active:scale-95 transition-transform"
+          >
+            <span>🔊</span> 읽어주기
+          </button>
+
+          <div className="flex gap-3">
             <button
-              type="button"
-              onClick={handleManualSave}
-              disabled={!manualActivity.trim() || !manualCost.trim() || saving}
-              className="w-full py-3.5 rounded-2xl bg-zinc-900 text-white font-black text-sm disabled:bg-zinc-200"
+              onClick={handleReset}
+              className="flex-1 py-5 rounded-2xl bg-zinc-100 text-zinc-600 font-black text-sm active:scale-95 transition-transform"
             >
-              {saving ? '저장 중...' : '계획 저장하기'}
+              🔄 다시 짜기
+            </button>
+            <button
+              onClick={handleConfirm}
+              disabled={saving}
+              className="flex-[2] py-5 rounded-2xl bg-zinc-900 text-white font-black text-sm active:scale-95 transition-transform disabled:bg-zinc-200 disabled:text-zinc-400"
+            >
+              {saving ? '저장 중...' : '✅ 이렇게 할게요!'}
             </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* 완료 후 */}
-        {step === 'done' && (
+      {/* 단계 5 — 피드백 */}
+      {stage === 'feedback' && (
+        <div className="flex flex-col items-center gap-6 py-10 px-6">
+          <p className="text-lg font-black text-zinc-800 text-center">계획 세우기 어떠셨어요?</p>
+          <div className="flex gap-8">
+            <button
+              onClick={() => setStage('done')}
+              className="flex flex-col items-center gap-2 active:scale-90 transition-transform"
+            >
+              <span className="text-6xl">😊</span>
+              <span className="text-sm font-bold text-zinc-600">좋았어요</span>
+            </button>
+            <button
+              onClick={() => setStage('done')}
+              className="flex flex-col items-center gap-2 active:scale-90 transition-transform"
+            >
+              <span className="text-6xl">😔</span>
+              <span className="text-sm font-bold text-zinc-600">어려웠어요</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 완료 */}
+      {stage === 'done' && (
+        <div className="flex flex-col items-center gap-4 py-10 px-6">
+          <span className="text-5xl">🎉</span>
+          <p className="text-base font-black text-zinc-800 text-center">계획이 저장됐어요!</p>
           <button
-            type="button"
             onClick={handleReset}
-            className="w-full py-3.5 rounded-2xl bg-zinc-100 text-zinc-700 font-black text-sm"
+            className="w-full py-4 rounded-2xl bg-zinc-100 text-zinc-700 font-black text-sm active:scale-95 transition-transform"
           >
             새 계획 만들기
           </button>
-        )}
-      </div>
-
-      {/* AI 추천 결과 비교 (채팅 아래에 표시) */}
-      {step === 'comparison' && planData && (
-        <div className="border-t border-zinc-100 p-4">
-          <PlanComparison
-            activityName={planData.activityName}
-            initialOptions={planData.options}
-            currentBalance={totalBalance}
-            participantId={participantId}
-            planContext={context as PlanContext}
-            onSaved={() => {
-              addMessage('bot', '계획이 저장되었어요!')
-              setStep('done')
-              router.refresh()
-            }}
-          />
         </div>
       )}
+    </div>
+  )
+}
+
+// ── 서브 컴포넌트 ────────────────────────────────────────────────────────────
+
+function OptionButton({
+  icon,
+  label,
+  cost,
+  badge,
+  onClick,
+  muted = false,
+}: {
+  icon: string
+  label: string
+  cost?: number
+  badge: string
+  onClick: () => void
+  muted?: boolean
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-4 w-full py-5 px-5 rounded-2xl text-left transition-all active:scale-[0.97] ${
+        muted
+          ? 'bg-zinc-50 ring-1 ring-zinc-100 hover:bg-zinc-100'
+          : 'bg-white ring-1 ring-zinc-200 hover:ring-zinc-900 shadow-sm hover:shadow'
+      }`}
+    >
+      <span className="text-2xl shrink-0">{icon}</span>
+      <span className={`flex-1 text-base font-black ${muted ? 'text-zinc-400' : 'text-zinc-800'}`}>
+        {label}
+      </span>
+      {cost !== undefined && (
+        <span className="text-sm font-bold text-zinc-500 shrink-0">
+          {cost.toLocaleString()}원
+        </span>
+      )}
+      <span className={`text-xs font-black px-2 py-1 rounded-lg shrink-0 ${
+        muted ? 'bg-zinc-200 text-zinc-400' : 'bg-zinc-900 text-white'
+      }`}>
+        {badge}
+      </span>
+    </button>
+  )
+}
+
+function SummaryRow({
+  icon,
+  label,
+  sub,
+}: {
+  icon: string
+  label: string
+  sub?: string
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="text-xl shrink-0 mt-0.5">{icon}</span>
+      <div className="flex flex-col">
+        <span className="text-base font-black text-zinc-800">{label}</span>
+        {sub && <span className="text-xs font-bold text-zinc-400 mt-0.5">{sub}</span>}
+      </div>
+    </div>
+  )
+}
+
+function CustomInput({
+  placeholder,
+  value,
+  onChange,
+  onSubmit,
+  onBack,
+}: {
+  placeholder: string
+  value: string
+  onChange: (v: string) => void
+  onSubmit: () => void
+  onBack: () => void
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
+        placeholder={placeholder}
+        className="w-full px-4 py-4 rounded-2xl bg-zinc-50 text-base font-bold outline-none focus:ring-2 focus:ring-zinc-900 border border-zinc-200"
+        autoFocus
+      />
+      <div className="flex gap-2">
+        <button
+          onClick={onBack}
+          className="flex-1 py-4 rounded-2xl bg-zinc-100 text-zinc-500 font-black text-sm"
+        >
+          뒤로
+        </button>
+        <button
+          onClick={onSubmit}
+          disabled={!value.trim()}
+          className="flex-1 py-4 rounded-2xl bg-zinc-900 text-white font-black text-sm disabled:bg-zinc-200 disabled:text-zinc-400"
+        >
+          다음 →
+        </button>
+      </div>
     </div>
   )
 }

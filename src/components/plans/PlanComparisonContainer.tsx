@@ -2,8 +2,6 @@
 
 import { useState } from 'react'
 import PlanComparison from './PlanComparison'
-import { suggestActivities } from '@/app/actions/plan'
-
 interface PlanOption {
   name: string
   cost: number
@@ -18,19 +16,8 @@ export default function PlanComparisonContainer({ totalBalance }: { totalBalance
 
   const handleGetRecommendation = async () => {
     setLoading(true)
-    try {
-      const result = await suggestActivities(totalBalance)
-      if (result.success && result.data) {
-        setPlanData(result.data)
-      } else {
-        alert('추천을 가져오지 못했습니다. 다시 시도해 주세요.')
-      }
-    } catch (error) {
-      console.error(error)
-      alert('오류가 발생했습니다.')
-    } finally {
-      setLoading(false)
-    }
+    // 이 컴포넌트는 더 이상 사용하지 않습니다.
+    setLoading(false)
   }
 
   return (

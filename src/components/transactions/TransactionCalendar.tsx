@@ -10,6 +10,7 @@ interface Transaction {
   activity_name: string
   status: 'pending' | 'confirmed'
   receipt_image_url?: string | null
+  activity_image_url?: string | null
 }
 
 interface Props {
@@ -85,9 +86,11 @@ export default function TransactionCalendar({ transactions }: Props) {
             const hasConfirmed = dayTxs.some(t => t.status === 'confirmed')
             const hasPending = dayTxs.some(t => t.status === 'pending')
             
-            // 첫 번째 썸네일 이미지 찾기
-            const thumbnailTx = dayTxs.find(t => t.receipt_image_url)
-            const thumbnailUrl = thumbnailTx?.receipt_image_url
+            // 활동사진 우선, 없으면 영수증 사진
+            const thumbnailUrl =
+              dayTxs.find(t => t.activity_image_url)?.activity_image_url ??
+              dayTxs.find(t => t.receipt_image_url)?.receipt_image_url ??
+              null
 
             return (
               <button
@@ -157,9 +160,13 @@ export default function TransactionCalendar({ transactions }: Props) {
             {selectedTransactions.map(tx => (
               <div key={tx.id} className="bg-white rounded-3xl p-5 ring-1 ring-zinc-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-start sm:items-center gap-4">
-                  {tx.receipt_image_url ? (
+                  {(tx.activity_image_url || tx.receipt_image_url) ? (
                     <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-sm shrink-0">
-                      <img src={tx.receipt_image_url} alt="영수증" className="w-full h-full object-cover" />
+                      <img
+                        src={(tx.activity_image_url || tx.receipt_image_url)!}
+                        alt="활동"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   ) : (
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black shrink-0 ${

@@ -19,67 +19,98 @@ interface PlanContext {
   why?: string
 }
 
+async function callOpenAI(messages: { role: string; content: string }[]) {
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) throw new Error('API 키 설정이 필요합니다.')
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages,
+      response_format: { type: 'json_object' },
+    }),
+  })
+  const data = await response.json()
+  return JSON.parse(data.choices[0].message.content)
+}
+
 /**
- * 당사자의 현재 잔액과 상황에 맞춰 활동을 추천하는 서버 액션
+ * 단계 1: 잔액·요일 기반 활동 2가지 추천
  */
-export async function suggestActivities(currentBalance: number, context?: PlanContext) {
-  const apiKey = process.env.OPENAI_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('API 키 설정이 필요합니다.');
-  }
-
-  const contextLines = context ? [
-    context.activity && `하고 싶은 것: ${context.activity}`,
-    context.when && `언제: ${context.when}`,
-    context.where && `어디서: ${context.where}`,
-    context.who && `누구와: ${context.who}`,
-    context.why && `이유: ${context.why}`,
-  ].filter(Boolean).join('\n') : ''
-
+export async function suggestActivityOptions(
+  balance: number,
+  dayOfWeek: string,
+  month: number
+): Promise<{ success: boolean; data?: { a: string; b: string }; error?: string }> {
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+    const result = await callOpenAI([
+      {
+        role: 'system',
+        content: `당신은 발달장애인 성인을 위한 일상 계획 도우미입니다.
+사용자는 이번 달 ${balance.toLocaleString()}원이 남아있습니다.
+오늘은 ${dayOfWeek}요일(${month}월)입니다.
+
+일상적이고 예산에 맞는 활동 2가지를 추천해주세요.
+조건:
+- 각 활동명은 10글자 이내
+- 예산의 5~25% 수준의 비용
+- 현실적인 일상 활동 (식사, 음료, 쇼핑, 산책 등)
+
+반드시 JSON으로만 응답:
+{"a": "활동명A", "b": "활동명B"}`,
       },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: `너는 발달장애인 당사자의 자기주도적 예산 관리를 돕는 도우미야.
-당사자가 현재 사용할 수 있는 예산은 ${currentBalance}원이야.
-${contextLines ? `당사자가 알려준 정보:\n${contextLines}\n` : ''}
-이 정보를 바탕으로 예산 범위 내에서 즐길 수 있는 활동 1가지를 정하고, 그 활동을 즐길 수 있는 2가지 방법(저렴한 방법 vs 일반적인 방법)을 추천해줘.
-반드시 JSON 형식으로만 답변해줘.
-
-응답 형식 예시:
-{
-  "activityName": "영화 보기",
-  "options": [
-    { "name": "조조 영화 보기", "cost": 10000, "time": "2시간", "icon": "🎬", "description": "아침 일찍 저렴하게 영화를 봐요" },
-    { "name": "일반 영화 + 팝콘", "cost": 22000, "time": "2시간 30분", "icon": "🍿", "description": "맛있는 팝콘과 함께 영화를 즐겨요" }
-  ]
-}`
-          },
-          {
-            role: "user",
-            content: contextLines ? "내가 알려준 정보에 맞는 활동을 추천해줘." : "오늘 할 수 있는 재미있는 활동을 추천해줘."
-          }
-        ],
-        response_format: { type: "json_object" }
-      })
-    });
-
-    const data = await response.json();
-    const result = JSON.parse(data.choices[0].message.content);
-
-    return { success: true, data: result };
+      { role: 'user', content: '오늘 할 수 있는 활동을 추천해줘.' },
+    ])
+    return { success: true, data: { a: result.a, b: result.b } }
   } catch (error: any) {
-    console.error('AI 추천 오류:', error);
-    return { success: false, error: error.message };
+    console.error('활동 추천 오류:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * 단계 2: 선택한 활동·잔액 기반 방법·비용 2가지 추천
+ */
+export async function suggestMethodOptions(
+  activity: string,
+  balance: number
+): Promise<{ success: boolean; data?: { a: string; b: string; a_cost: number; b_cost: number }; error?: string }> {
+  try {
+    const result = await callOpenAI([
+      {
+        role: 'system',
+        content: `당사자가 오늘 "${activity}"을(를) 하려고 합니다.
+이번 달 남은 예산은 ${balance.toLocaleString()}원입니다.
+
+이 활동을 하는 2가지 방법을 추천해주세요.
+조건:
+- 방법 A: 더 간단하거나 저렴한 방법
+- 방법 B: 조금 다른 방법 (비용이 달라도 됩니다)
+- 각 설명은 15글자 이내
+- 예상 비용은 아라비아숫자(원)로 제시
+
+반드시 JSON으로만 응답:
+{"a": "방법 설명", "b": "방법 설명", "a_cost": 5000, "b_cost": 7000}`,
+      },
+      { role: 'user', content: `${activity}을(를) 어떻게 하면 좋을지 추천해줘.` },
+    ])
+    return {
+      success: true,
+      data: {
+        a: result.a,
+        b: result.b,
+        a_cost: Number(result.a_cost) || 5000,
+        b_cost: Number(result.b_cost) || 10000,
+      },
+    }
+  } catch (error: any) {
+    console.error('방법 추천 오류:', error)
+    return { success: false, error: error.message }
   }
 }
 
