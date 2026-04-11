@@ -608,6 +608,7 @@ export default function BalanceVisualWidget({
           <input
             type="number"
             inputMode="numeric"
+            step={1000}
             value={simAmount}
             onChange={e => setSimAmount(e.target.value)}
             placeholder="얼마나 쓸 건가요? (직접 입력)"
