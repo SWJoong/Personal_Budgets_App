@@ -68,7 +68,7 @@ export default function PlanChatContainer({
     const now = new Date()
     const day = DAY_NAMES[now.getDay()]
     const month = now.getMonth() + 1
-    const result = await suggestActivityOptions(totalBalance, day, month)
+    const result = await suggestActivityOptions(totalBalance, day, month, participantId)
     if (result.success && result.data) {
       setActivityOptions(result.data)
     } else {

@@ -40,26 +40,49 @@ async function callOpenAI(messages: { role: string; content: string }[]) {
 }
 
 /**
- * 단계 1: 잔액·요일 기반 활동 2가지 추천
+ * 단계 1: 잔액·요일 기반 활동 2가지 추천 (저장된 계획 기반 개인화 포함)
  */
 export async function suggestActivityOptions(
   balance: number,
   dayOfWeek: string,
-  month: number
+  month: number,
+  participantId?: string
 ): Promise<{ success: boolean; data?: { a: string; b: string }; error?: string }> {
   try {
+    // 이전에 저장한 계획에서 활동 목록 조회 (개인화용)
+    let recentContext = ''
+    if (participantId) {
+      const supabase = await createClient()
+      const { data: plans } = await supabase
+        .from('plans')
+        .select('activity_name')
+        .eq('participant_id', participantId)
+        .order('date', { ascending: false })
+        .limit(10)
+
+      const activities = (plans ?? [])
+        .map((p: { activity_name: string }) => p.activity_name)
+        .filter(Boolean)
+
+      if (activities.length > 0) {
+        const unique = [...new Set(activities)].slice(0, 6).join(', ')
+        recentContext = `\n이 사람이 최근에 좋아했던 활동들: ${unique}\n이전 활동과 비슷하거나 연관된 것 위주로 추천하되, 가끔은 새로운 활동도 제안해주세요.`
+      }
+    }
+
     const result = await callOpenAI([
       {
         role: 'system',
         content: `당신은 발달장애인 성인을 위한 일상 계획 도우미입니다.
 사용자는 이번 달 ${balance.toLocaleString()}원이 남아있습니다.
-오늘은 ${dayOfWeek}요일(${month}월)입니다.
+오늘은 ${dayOfWeek}요일(${month}월)입니다.${recentContext}
 
 일상적이고 예산에 맞는 활동 2가지를 추천해주세요.
 조건:
 - 각 활동명은 10글자 이내
 - 예산의 5~25% 수준의 비용
 - 현실적인 일상 활동 (식사, 음료, 쇼핑, 산책 등)
+- 특수문자(#, &, ~, %, ^, /) 사용 금지
 
 반드시 JSON으로만 응답:
 {"a": "활동명A", "b": "활동명B"}`,

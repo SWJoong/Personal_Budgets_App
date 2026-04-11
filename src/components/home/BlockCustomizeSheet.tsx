@@ -23,16 +23,17 @@ export default function BlockCustomizeSheet({
 }: BlockCustomizeSheetProps) {
   const [blocks, setBlocks] = useState<BlockItem[]>(() => buildBlockList(currentPreferences))
   const [draggingId, setDraggingId] = useState<BlockId | null>(null)
-  const [swapTargetId, setSwapTargetId] = useState<BlockId | null>(null)
+  // 드래그 중 삽입 위치 — 해당 아이템 '위'에 삽입. 'END'는 맨 아래.
+  const [insertBeforeId, setInsertBeforeId] = useState<BlockId | 'END' | null>(null)
 
-  // 포인터 핸들러 stale 방지 refs
-  const draggingRef    = useRef<BlockId | null>(null)
-  const enabledListRef = useRef<HTMLDivElement>(null)
+  const draggingRef     = useRef<BlockId | null>(null)
+  const insertBeforeRef = useRef<BlockId | 'END' | null>(null)
+  const enabledListRef  = useRef<HTMLDivElement>(null)
 
-  // FLIP 애니메이션을 위한 refs
-  const itemElemsRef   = useRef<Map<BlockId, HTMLDivElement>>(new Map())
-  const prevPositions  = useRef<Map<BlockId, number>>(new Map())
-  const shouldFlip     = useRef(false)
+  // FLIP 애니메이션 refs
+  const itemElemsRef  = useRef<Map<BlockId, HTMLDivElement>>(new Map())
+  const prevPositions = useRef<Map<BlockId, number>>(new Map())
+  const shouldFlip    = useRef(false)
 
   function buildBlockList(prefs: UIPreferences): BlockItem[] {
     const enabledSet = new Set(prefs.enabled_blocks)
@@ -55,7 +56,7 @@ export default function BlockCustomizeSheet({
   }, [isOpen, onClose])
 
   // ── FLIP 애니메이션 ───────────────────────────────────────────────────────
-  // blocks 상태가 바뀐 뒤(DOM 반영 직후) 이전 위치 → 새 위치로 부드럽게 이동
+  // 드롭 후 배열이 재정렬되면 각 아이템이 이전 위치 → 새 위치로 부드럽게 이동
   useLayoutEffect(() => {
     if (!shouldFlip.current) return
     shouldFlip.current = false
@@ -67,12 +68,12 @@ export default function BlockCustomizeSheet({
       const delta = prev - next
       if (Math.abs(delta) < 1) return
 
-      // 이전 위치에서 시작 (transition 없이)
+      // 이전 위치에서 시작 (transition 없음)
       el.style.transition = 'none'
       el.style.transform  = `translateY(${delta}px)`
-      // reflow 강제 → transition 적용
-      void el.offsetHeight
-      el.style.transition = 'transform 240ms cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+      void el.offsetHeight                                   // reflow 강제
+      // 새 위치로 부드럽게 이동
+      el.style.transition = 'transform 260ms cubic-bezier(0.25, 0.46, 0.45, 0.94)'
       el.style.transform  = 'translateY(0px)'
     })
   }, [blocks])
@@ -87,14 +88,18 @@ export default function BlockCustomizeSheet({
     setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, enabled: !b.enabled } : b))
   }
 
-  // ── 드래그 핸들러 ─────────────────────────────────────────────────────────
+  // ── 드래그 핸들러 (insert-on-release) ─────────────────────────────────────
+  // 드래그 중에는 배열 순서를 변경하지 않는다.
+  // 삽입 위치(insertBeforeId)만 추적하고, 드롭 시 한 번만 재정렬 → FLIP 애니메이션.
+
   function onHandlePointerDown(e: React.PointerEvent<HTMLSpanElement>, id: BlockId) {
     e.preventDefault()
     e.stopPropagation()
     e.currentTarget.setPointerCapture(e.pointerId)
-    draggingRef.current = id
+    draggingRef.current      = id
+    insertBeforeRef.current  = null
     setDraggingId(id)
-    setSwapTargetId(null)
+    setInsertBeforeId(null)
   }
 
   function onHandlePointerMove(e: React.PointerEvent<HTMLSpanElement>) {
@@ -102,44 +107,60 @@ export default function BlockCustomizeSheet({
     if (!currentId || !enabledListRef.current) return
 
     const items = Array.from(enabledListRef.current.children) as HTMLElement[]
+    let newTarget: BlockId | 'END' = 'END'
 
     for (const item of items) {
+      const targetId = item.dataset.id as BlockId | undefined
+      if (!targetId || targetId === currentId) continue       // 드래그 중인 아이템 건너뜀
+
       const rect = item.getBoundingClientRect()
-      if (e.clientY >= rect.top && e.clientY < rect.bottom) {
-        const targetId = item.dataset.id as BlockId | undefined
-        if (!targetId || targetId === currentId) {
-          setSwapTargetId(null)
-          return
-        }
+      const mid  = (rect.top + rect.bottom) / 2
 
-        setSwapTargetId(targetId)
-
-        // 위치 캡처 → setBlocks → useLayoutEffect에서 FLIP 실행
-        capturePositions()
-
-        setBlocks(prev => {
-          const enabled  = prev.filter(b => b.enabled)
-          const disabled = prev.filter(b => !b.enabled)
-          const fromIdx  = enabled.findIndex(b => b.id === currentId)
-          const toIdx    = enabled.findIndex(b => b.id === targetId)
-          if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) {
-            shouldFlip.current = false
-            return prev
-          }
-          shouldFlip.current = true
-          const next = [...enabled]
-          ;[next[fromIdx], next[toIdx]] = [next[toIdx], next[fromIdx]]
-          return [...next, ...disabled]
-        })
+      if (e.clientY < mid) {
+        newTarget = targetId
         break
       }
+    }
+
+    if (insertBeforeRef.current !== newTarget) {
+      insertBeforeRef.current = newTarget
+      setInsertBeforeId(newTarget)
     }
   }
 
   function onHandlePointerUp() {
-    draggingRef.current = null
+    const currentId = draggingRef.current
+    const target    = insertBeforeRef.current
+
+    if (currentId && target !== null) {
+      // 드롭 — 현재 위치 캡처 후 배열 재정렬 → FLIP 실행
+      capturePositions()
+      shouldFlip.current = true
+
+      setBlocks(prev => {
+        const enabled  = prev.filter(b => b.enabled)
+        const disabled = prev.filter(b => !b.enabled)
+        const item     = enabled.find(b => b.id === currentId)
+        if (!item) return prev
+
+        const without = enabled.filter(b => b.id !== currentId)
+
+        if (target === 'END') {
+          return [...without, item, ...disabled]
+        }
+
+        const idx = without.findIndex(b => b.id === target)
+        if (idx === -1) return [...without, item, ...disabled]
+        const next = [...without]
+        next.splice(idx, 0, item)
+        return [...next, ...disabled]
+      })
+    }
+
+    draggingRef.current     = null
+    insertBeforeRef.current = null
     setDraggingId(null)
-    setSwapTargetId(null)
+    setInsertBeforeId(null)
   }
 
   function handleSave() {
@@ -202,7 +223,7 @@ export default function BlockCustomizeSheet({
             </div>
           </div>
 
-          {/* ON 블록 — 드래그로 순서 변경 */}
+          {/* ON 블록 */}
           {enabledBlocks.length > 0 && (
             <div className="mb-4">
               <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">
@@ -210,9 +231,9 @@ export default function BlockCustomizeSheet({
               </p>
               <div ref={enabledListRef} className="flex flex-col gap-2">
                 {enabledBlocks.map((block) => {
-                  const meta      = BLOCK_METADATA[block.id]
+                  const meta       = BLOCK_METADATA[block.id]
                   const isDragging = draggingId === block.id
-                  const isTarget   = swapTargetId === block.id && !isDragging
+                  const isTarget   = insertBeforeId === block.id && !!draggingId
 
                   return (
                     <div
@@ -222,12 +243,14 @@ export default function BlockCustomizeSheet({
                         if (el) itemElemsRef.current.set(block.id, el)
                         else    itemElemsRef.current.delete(block.id)
                       }}
+                      style={isTarget
+                        ? { boxShadow: '0 -3px 0 0 #3b82f6' }
+                        : undefined
+                      }
                       className={`
                         flex items-center gap-3 p-4 rounded-2xl bg-zinc-900 ring-1 select-none
                         ${isDragging
-                          ? 'ring-white/40 scale-[1.04] shadow-[0_12px_36px_rgba(0,0,0,0.5)] opacity-80 z-10 relative'
-                          : isTarget
-                          ? 'ring-blue-400 shadow-[0_0_0_3px_rgba(96,165,250,0.25)]'
+                          ? 'ring-white/30 scale-[1.04] shadow-[0_14px_40px_rgba(0,0,0,0.55)] opacity-75 relative z-10'
                           : 'ring-zinc-800'}
                       `}
                     >
@@ -264,6 +287,11 @@ export default function BlockCustomizeSheet({
                     </div>
                   )
                 })}
+
+                {/* 맨 아래 삽입 표시선 */}
+                {draggingId && insertBeforeId === 'END' && (
+                  <div className="h-0.5 rounded-full bg-blue-400 mx-1" />
+                )}
               </div>
             </div>
           )}
