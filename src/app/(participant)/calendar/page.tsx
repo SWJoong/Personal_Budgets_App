@@ -30,7 +30,7 @@ export default async function CalendarPage() {
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-green-500"></div>
             <span className="text-zinc-500">
-              <EasyTerm formal="예산 반영됨" easy="돈에서 뺀어요" />
+              <EasyTerm formal="예산 반영됨" easy="돈에서 뺐어요" />
             </span>
           </div>
           <div className="flex items-center gap-1.5">

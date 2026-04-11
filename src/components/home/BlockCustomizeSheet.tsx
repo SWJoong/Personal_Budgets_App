@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { UIPreferences, OPTIONAL_BLOCKS, BLOCK_METADATA, REQUIRED_BLOCKS, BlockId } from '@/types/ui-preferences'
 
 interface BlockItem {
@@ -21,8 +21,12 @@ export default function BlockCustomizeSheet({
   onSave,
   onClose,
 }: BlockCustomizeSheetProps) {
-  // 순서 포함한 블록 목록 — enabled 블록은 저장 순서 유지, disabled는 하단에
   const [blocks, setBlocks] = useState<BlockItem[]>(() => buildBlockList(currentPreferences))
+  const [draggingId, setDraggingId] = useState<BlockId | null>(null)
+
+  // ref로 핸들러 클로저의 stale 문제 방지
+  const draggingRef   = useRef<BlockId | null>(null)
+  const enabledListRef = useRef<HTMLDivElement>(null)
 
   function buildBlockList(prefs: UIPreferences): BlockItem[] {
     const enabledSet = new Set(prefs.enabled_blocks)
@@ -33,12 +37,10 @@ export default function BlockCustomizeSheet({
     return result
   }
 
-  // 시트가 열릴 때마다 현재 설정으로 초기화
   useEffect(() => {
     if (isOpen) setBlocks(buildBlockList(currentPreferences))
   }, [isOpen, currentPreferences])
 
-  // ESC 키로 닫기
   useEffect(() => {
     if (!isOpen) return
     const handleKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -50,25 +52,47 @@ export default function BlockCustomizeSheet({
     setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, enabled: !b.enabled } : b))
   }
 
-  function moveBlock(blockId: BlockId, direction: 'up' | 'down') {
-    setBlocks(prev => {
-      // 이동은 enabled 블록 내에서만
-      const enabledIndices = prev.map((b, i) => b.enabled ? i : -1).filter(i => i !== -1)
-      const posInEnabled = enabledIndices.findIndex(i => prev[i].id === blockId)
-      if (posInEnabled === -1) return prev
+  // ── 드래그 핸들러 ─────────────────────────────────────────────
+  function onHandlePointerDown(e: React.PointerEvent<HTMLSpanElement>, id: BlockId) {
+    e.preventDefault()
+    e.stopPropagation()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    draggingRef.current = id
+    setDraggingId(id)
+  }
 
-      if (direction === 'up' && posInEnabled === 0) return prev
-      if (direction === 'down' && posInEnabled === enabledIndices.length - 1) return prev
+  function onHandlePointerMove(e: React.PointerEvent<HTMLSpanElement>) {
+    const currentId = draggingRef.current
+    if (!currentId || !enabledListRef.current) return
 
-      const targetIdx = direction === 'up'
-        ? enabledIndices[posInEnabled - 1]
-        : enabledIndices[posInEnabled + 1]
-      const currentIdx = enabledIndices[posInEnabled]
+    const items = Array.from(enabledListRef.current.children) as HTMLElement[]
 
-      const next = [...prev]
-      ;[next[currentIdx], next[targetIdx]] = [next[targetIdx], next[currentIdx]]
-      return next
-    })
+    // 포인터 Y 위치가 각 아이템의 어느 영역에 속하는지 확인
+    for (const item of items) {
+      const rect = item.getBoundingClientRect()
+      if (e.clientY >= rect.top && e.clientY < rect.bottom) {
+        const targetId = item.dataset.id as BlockId | undefined
+        if (!targetId || targetId === currentId) return
+
+        // 두 아이템의 위치를 교환 (swap)
+        setBlocks(prev => {
+          const enabled  = prev.filter(b => b.enabled)
+          const disabled = prev.filter(b => !b.enabled)
+          const fromIdx  = enabled.findIndex(b => b.id === currentId)
+          const toIdx    = enabled.findIndex(b => b.id === targetId)
+          if (fromIdx === -1 || toIdx === -1) return prev
+          const next = [...enabled]
+          ;[next[fromIdx], next[toIdx]] = [next[toIdx], next[fromIdx]]
+          return [...next, ...disabled]
+        })
+        break
+      }
+    }
+  }
+
+  function onHandlePointerUp() {
+    draggingRef.current = null
+    setDraggingId(null)
   }
 
   function handleSave() {
@@ -76,12 +100,11 @@ export default function BlockCustomizeSheet({
     onSave({ enabled_blocks: enabledBlocks })
   }
 
-  const enabledBlocks = blocks.filter(b => b.enabled)
+  const enabledBlocks  = blocks.filter(b => b.enabled)
   const disabledBlocks = blocks.filter(b => !b.enabled)
 
   return (
     <>
-      {/* 오버레이 */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
@@ -90,7 +113,6 @@ export default function BlockCustomizeSheet({
         />
       )}
 
-      {/* 바텀시트 */}
       <div
         className={`fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:max-w-[600px] lg:w-full ${
           isOpen ? 'translate-y-0' : 'translate-y-full'
@@ -99,7 +121,6 @@ export default function BlockCustomizeSheet({
         aria-modal="true"
         aria-label="화면 구성 편집"
       >
-        {/* 핸들 바 */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-zinc-200" />
         </div>
@@ -109,7 +130,9 @@ export default function BlockCustomizeSheet({
           style={{ paddingBottom: 'max(2.5rem, env(safe-area-inset-bottom) + 0.5rem)' }}
         >
           <h2 className="text-lg font-black text-zinc-900 mb-1">화면 구성 편집</h2>
-          <p className="text-sm text-zinc-400 mb-6">보고 싶은 정보를 선택하고 순서를 바꿀 수 있어요</p>
+          <p className="text-sm text-zinc-400 mb-6">
+            보고 싶은 정보를 선택하고 순서를 바꿀 수 있어요
+          </p>
 
           {/* 필수 블록 */}
           <div className="mb-4">
@@ -132,36 +155,44 @@ export default function BlockCustomizeSheet({
             </div>
           </div>
 
-          {/* ON 블록 (순서 변경 가능) */}
+          {/* ON 블록 — 드래그로 순서 변경 */}
           {enabledBlocks.length > 0 && (
             <div className="mb-4">
-              <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">표시 중 — 순서 변경 가능</p>
-              <div className="flex flex-col gap-2">
-                {enabledBlocks.map((block, posIdx) => {
+              <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">
+                표시 중 — 길게 잡고 위아래로 드래그해요
+              </p>
+              <div ref={enabledListRef} className="flex flex-col gap-2">
+                {enabledBlocks.map((block) => {
                   const meta = BLOCK_METADATA[block.id]
+                  const isDragging = draggingId === block.id
                   return (
                     <div
                       key={block.id}
-                      className="flex items-center gap-3 p-4 rounded-2xl bg-zinc-900 ring-1 ring-zinc-800"
+                      data-id={block.id}
+                      className={`flex items-center gap-3 p-4 rounded-2xl bg-zinc-900 ring-1 transition-all select-none ${
+                        isDragging
+                          ? 'ring-white/40 scale-[1.03] shadow-2xl opacity-80'
+                          : 'ring-zinc-800'
+                      }`}
                     >
-                      {/* 순서 버튼 */}
-                      <div className="flex flex-col gap-0.5 shrink-0">
-                        <button
-                          onClick={() => moveBlock(block.id, 'up')}
-                          disabled={posIdx === 0}
-                          className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black disabled:opacity-20 text-white hover:bg-white/20 active:scale-90 transition-all"
-                          aria-label="위로 이동"
-                        >▲</button>
-                        <button
-                          onClick={() => moveBlock(block.id, 'down')}
-                          disabled={posIdx === enabledBlocks.length - 1}
-                          className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black disabled:opacity-20 text-white hover:bg-white/20 active:scale-90 transition-all"
-                          aria-label="아래로 이동"
-                        >▼</button>
-                      </div>
+                      {/* 드래그 핸들 */}
+                      <span
+                        onPointerDown={(e) => onHandlePointerDown(e, block.id)}
+                        onPointerMove={onHandlePointerMove}
+                        onPointerUp={onHandlePointerUp}
+                        onPointerCancel={onHandlePointerUp}
+                        className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 touch-none select-none transition-colors ${
+                          isDragging
+                            ? 'cursor-grabbing bg-white/20'
+                            : 'cursor-grab text-zinc-500 hover:bg-white/10'
+                        }`}
+                        aria-label="드래그해서 순서 변경"
+                      >
+                        <DragHandleIcon />
+                      </span>
 
-                      <span className="text-2xl">{meta.icon}</span>
-                      <div className="flex-1">
+                      <span className="text-2xl shrink-0">{meta.icon}</span>
+                      <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-white">{meta.label}</p>
                         <p className="text-xs text-zinc-400">{meta.description}</p>
                       </div>
@@ -207,7 +238,6 @@ export default function BlockCustomizeSheet({
             </div>
           )}
 
-          {/* 저장 버튼 */}
           <button
             onClick={handleSave}
             className="w-full mt-6 py-4 rounded-2xl bg-zinc-900 text-white font-black text-base active:scale-[0.98] transition-transform"
@@ -217,5 +247,19 @@ export default function BlockCustomizeSheet({
         </div>
       </div>
     </>
+  )
+}
+
+// 6점 격자 드래그 핸들 아이콘
+function DragHandleIcon() {
+  return (
+    <svg width="14" height="18" viewBox="0 0 14 18" fill="currentColor" className="text-zinc-400">
+      <circle cx="4"  cy="3"  r="2" />
+      <circle cx="10" cy="3"  r="2" />
+      <circle cx="4"  cy="9"  r="2" />
+      <circle cx="10" cy="9"  r="2" />
+      <circle cx="4"  cy="15" r="2" />
+      <circle cx="10" cy="15" r="2" />
+    </svg>
   )
 }

@@ -194,7 +194,7 @@ export default function TransactionCalendar({ transactions }: Props) {
                     <p className="font-bold text-zinc-900 text-lg">{tx.activity_name}</p>
                     <p className={`text-xs font-bold ${tx.status === 'confirmed' ? 'text-green-600' : 'text-orange-500'}`}>
                       {tx.status === 'confirmed'
-                        ? <EasyTerm formal="예산 반영 완료" easy="돈에서 뺀어요" />
+                        ? <EasyTerm formal="예산 반영 완료" easy="돈에서 뺐어요" />
                         : <EasyTerm formal="확인 대기 중" easy="선생님이 확인하고 있어요" />
                       }
                     </p>
