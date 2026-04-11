@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ParticipantPreviewCard from '@/components/admin/ParticipantPreviewCard'
+import AlertPanel from '@/components/admin/AlertPanel'
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
@@ -88,6 +89,9 @@ export default async function AdminDashboardPage() {
             당사자들의 예산 사용 현황을 한눈에 확인하세요.
           </p>
         </section>
+
+        {/* 알림 패널 */}
+        <AlertPanel />
 
         {/* 전체 통계 카드 */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -87,6 +87,7 @@ export function AdminSidebar() {
   const menuItems = [
     { name: '관리자 대시보드', href: '/admin', icon: '📊' },
     { name: '당사자 관리', href: '/admin/participants', icon: '👥' },
+    { name: '영수증 검토 대기', href: '/supporter/review', icon: '🧾' },
     { name: '회계/거래장부', href: '/supporter/transactions', icon: '📒' },
     { name: '증빙/서류 보관함', href: '/supporter/documents', icon: '📁' },
     { name: '평가 관리', href: '/supporter/evaluations', icon: '📝' },
