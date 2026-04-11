@@ -391,7 +391,26 @@ export default function BalanceVisualWidget({
     if (!file) return
     setSecondFile(file)
     const reader = new FileReader()
-    reader.onloadend = () => setSecondPreview(reader.result as string)
+    reader.onloadend = async () => {
+      setSecondPreview(reader.result as string)
+      // 활동사진이 첫 번째 파일일 때 두 번째 파일(영수증)에 OCR 실행
+      if (uploadMode === 'activity') {
+        const base64 = (reader.result as string).split(',')[1]
+        setUploadAnalyzing(true)
+        try {
+          const result = await analyzeReceipt(base64)
+          if (result.success && result.data) {
+            if (result.data.store) setUploadDescription(result.data.store)
+            if (result.data.amount) setUploadAmount(String(result.data.amount))
+            if (result.data.date) setUploadDate(result.data.date)
+          }
+        } catch (err) {
+          console.error('OCR 분석 실패:', err)
+        } finally {
+          setUploadAnalyzing(false)
+        }
+      }
+    }
     reader.readAsDataURL(file)
     e.target.value = ''
   }
@@ -685,6 +704,7 @@ export default function BalanceVisualWidget({
                   <input
                     type="number"
                     inputMode="numeric"
+                    step={1000}
                     value={uploadAmount}
                     onChange={(e) => setUploadAmount(e.target.value)}
                     placeholder="0"
