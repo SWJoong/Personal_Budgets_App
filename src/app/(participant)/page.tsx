@@ -57,11 +57,11 @@ export default async function Home() {
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-bold tracking-tight">반가워요!</h2>
             <p className="text-zinc-500 font-medium leading-relaxed">
-              아직 예산 정보가 등록되지 않았습니다.<br />지원자 선생님께 문의해 주세요.
+              아직 예산 정보가 없어요.<br />지원자 선생님에게 말씀해 주세요.
             </p>
           </div>
           <button className="mt-4 px-8 py-3 bg-zinc-100 text-zinc-500 rounded-xl font-bold pointer-events-none">
-            준비 중입니다
+            준비하고 있어요
           </button>
         </main>
       </div>

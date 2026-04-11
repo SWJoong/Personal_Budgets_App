@@ -120,10 +120,10 @@ export default function BlockCustomizeSheet({
                   <span className="text-2xl">{blockId === 'balance_widget' ? '💰' : '📸'}</span>
                   <div className="flex-1">
                     <p className="text-sm font-bold text-zinc-500">
-                      {blockId === 'balance_widget' ? '잔액 위젯' : '영수증 버튼'}
+                      {blockId === 'balance_widget' ? '남은 돈 보기' : '영수증 버튼'}
                     </p>
                     <p className="text-xs text-zinc-400">
-                      {blockId === 'balance_widget' ? '현재 예산 잔액 시각화' : '영수증 사진 찍기'}
+                      {blockId === 'balance_widget' ? '남은 돈을 그림으로 보여줘요' : '영수증 사진 찍기'}
                     </p>
                   </div>
                   <span className="text-zinc-300">🔒</span>

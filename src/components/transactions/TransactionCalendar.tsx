@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { formatCurrency } from '@/utils/budget-visuals'
+import { EasyTerm } from '@/components/ui/EasyTerm'
+import { speak } from '@/utils/tts'
+import SelfCheckFeedback from '@/components/ui/SelfCheckFeedback'
 
 interface Transaction {
   id: string
@@ -140,7 +143,7 @@ export default function TransactionCalendar({ transactions }: Props) {
       {/* 선택된 날짜 상세 내역 */}
       <div className={`transition-all duration-300 ${selectedDate ? 'opacity-100 translate-y-0' : 'opacity-50 translate-y-4 pointer-events-none'}`}>
         <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2 mb-3">
-          {selectedDate ? `${selectedDate.split('-')[1]}월 ${selectedDate.split('-')[2]}일 기록` : '날짜를 선택하세요'}
+          {selectedDate ? `${selectedDate.split('-')[1]}월 ${selectedDate.split('-')[2]}일 기록` : '날짜를 선택해요'}
         </h3>
         
         {selectedTransactions.length === 0 ? (
@@ -153,7 +156,19 @@ export default function TransactionCalendar({ transactions }: Props) {
             {/* 총 합계 요약 */}
             <div className="bg-zinc-900 text-white rounded-3xl p-6 shadow-md flex justify-between items-center">
               <span className="text-sm font-bold opacity-80">이 날 쓴 돈</span>
-              <span className="text-2xl font-black">{formatCurrency(selectedTotal)}원</span>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl font-black">{formatCurrency(selectedTotal)}원</span>
+                <button
+                  onClick={() => {
+                    const txText = selectedTransactions
+                      .map((tx: any) => `${tx.activity_name} ${formatCurrency(tx.amount)}원`)
+                      .join(', ')
+                    speak(`${selectedDate?.split('-')[1]}월 ${selectedDate?.split('-')[2]}일에 쓴 돈이에요. ${txText}. 합계 ${formatCurrency(selectedTotal)}원을 썼어요.`)
+                  }}
+                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-sm active:scale-95 transition-all"
+                  aria-label="이 날 내역 음성으로 듣기"
+                >🔊</button>
+              </div>
             </div>
 
             {/* 개별 내역 리스트 */}
@@ -178,7 +193,10 @@ export default function TransactionCalendar({ transactions }: Props) {
                   <div className="flex flex-col">
                     <p className="font-bold text-zinc-900 text-lg">{tx.activity_name}</p>
                     <p className={`text-xs font-bold ${tx.status === 'confirmed' ? 'text-green-600' : 'text-orange-500'}`}>
-                      {tx.status === 'confirmed' ? '예산 반영 완료' : '확인 대기 중...'}
+                      {tx.status === 'confirmed'
+                        ? <EasyTerm formal="예산 반영 완료" easy="돈에서 뺀어요" />
+                        : <EasyTerm formal="확인 대기 중" easy="선생님이 확인하고 있어요" />
+                      }
                     </p>
                   </div>
                 </div>
@@ -187,6 +205,13 @@ export default function TransactionCalendar({ transactions }: Props) {
                 </div>
               </div>
             ))}
+            
+            <div className="mt-6 pt-6 border-t border-zinc-100">
+              <SelfCheckFeedback
+                question="내역을 확인하기 쉬웠나요?"
+                compact={true}
+              />
+            </div>
           </div>
         )}
       </div>

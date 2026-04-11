@@ -4,6 +4,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createTransaction } from '@/app/actions/transaction'
 import { analyzeReceipt } from '@/app/actions/ocr'
+import { EasyTerm } from '@/components/ui/EasyTerm'
+import SelfCheckFeedback from '@/components/ui/SelfCheckFeedback'
+import { speak } from '@/utils/tts'
 
 interface FundingSource {
   id: string
@@ -21,6 +24,7 @@ export default function ReceiptUploadForm({
   const [loading, setLoading] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
   const [toast, setToast] = useState<{type: 'success' | 'error', message: string} | null>(null)
+  const [showFeedback, setShowFeedback] = useState(false)
 
   // 영수증 사진 상태
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
@@ -93,11 +97,8 @@ export default function ReceiptUploadForm({
 
       const result = await createTransaction(formData)
       if (result.success) {
-        setToast({type: 'success', message: '활동이 성공적으로 등록되었습니다!'})
-        setTimeout(() => {
-          router.push('/')
-          router.refresh()
-        }, 1500)
+        setToast({type: 'success', message: '활동을 등록했어요! ✅'})
+        setShowFeedback(true)
       }
     } catch (error) {
       console.error(error)
@@ -123,7 +124,7 @@ export default function ReceiptUploadForm({
       {/* 영수증 사진 */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-bold text-zinc-500 ml-1">🧾 영수증 사진 <span className="text-zinc-300 font-medium">(선택)</span></label>
+          <label className="text-sm font-bold text-zinc-500 ml-1">🧾 <EasyTerm formal="영수증 사진" easy="물건 산 종이 사진" /> <span className="text-zinc-300 font-medium">(선택)</span></label>
           {receiptPreview && (
             <button type="button" onClick={() => { setReceiptPreview(null); setReceiptFile(null) }}
               className="text-xs text-red-400 font-bold">삭제</button>
@@ -146,8 +147,8 @@ export default function ReceiptUploadForm({
           ) : (
             <div className="flex flex-col items-center gap-2 text-zinc-400">
               <span className="text-5xl">🧾</span>
-              <p className="font-bold">영수증 사진 선택 (선택사항)</p>
-              <p className="text-xs">찍으면 AI가 자동으로 내용을 읽어요</p>
+              <p className="font-bold"><EasyTerm formal="영수증 사진 선택" easy="물건 산 종이 사진 찍기" /> (선택)</p>
+              <p className="text-xs">사진을 찍으면 AI가 자동으로 내용을 읽어줘요</p>
             </div>
           )}
         </div>
@@ -158,7 +159,7 @@ export default function ReceiptUploadForm({
       {/* 활동 사진 */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-bold text-zinc-500 ml-1">📸 활동 사진 <span className="text-zinc-300 font-medium">(선택, 1장)</span></label>
+          <label className="text-sm font-bold text-zinc-500 ml-1">📸 <EasyTerm formal="활동 사진" easy="오늘 한 일 사진" /> <span className="text-zinc-300 font-medium">(선택, 1장)</span></label>
           {activityPreview && (
             <button type="button" onClick={handleRemoveActivityPhoto}
               className="text-xs text-red-400 font-bold">삭제</button>
@@ -217,7 +218,7 @@ export default function ReceiptUploadForm({
         <input type="hidden" name="funding_source_id" value={fundingSources[0]?.id ?? ''} />
       ) : (
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-bold text-zinc-500 ml-1">💳 어떤 돈을 썼나요?</label>
+          <label className="text-sm font-bold text-zinc-500 ml-1">💳 <EasyTerm formal="결제 수단" easy="어떤 돈을 썼나요" />?</label>
           <select
             name="funding_source_id"
             className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-lg font-bold appearance-none"
@@ -251,8 +252,21 @@ export default function ReceiptUploadForm({
       </button>
 
       <p className="text-center text-zinc-400 text-sm font-medium">
-        사진은 선택사항이에요.<br/>지원자 선생님이 확인한 뒤 정식으로 반영됩니다.
+        사진은 선택사항이에요.<br/>지원자 선생님이 확인하면 예산에 반영해요.
       </p>
+
+      {/* 자기결정 피드백 (가이드라인 §5.2) */}
+      {showFeedback && (
+        <SelfCheckFeedback
+          question="활동을 기록하기 쉬웠나요?"
+          onComplete={() => {
+            setTimeout(() => {
+              router.push('/')
+              router.refresh()
+            }, 1200)
+          }}
+        />
+      )}
     </form>
   )
 }

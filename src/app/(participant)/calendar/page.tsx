@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import TransactionCalendar from '@/components/transactions/TransactionCalendar'
+import { EasyTerm } from '@/components/ui/EasyTerm'
 
 export default async function CalendarPage() {
   const supabase = await createClient()
@@ -28,11 +29,15 @@ export default async function CalendarPage() {
         <div className="flex gap-3 text-[10px] font-bold">
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span className="text-zinc-500">예산 반영됨</span>
+            <span className="text-zinc-500">
+              <EasyTerm formal="예산 반영됨" easy="돈에서 뺀어요" />
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-            <span className="text-zinc-500">확인 대기중</span>
+            <span className="text-zinc-500">
+              <EasyTerm formal="확인 대기중" easy="선생님이 확인 중" />
+            </span>
           </div>
         </div>
       </header>

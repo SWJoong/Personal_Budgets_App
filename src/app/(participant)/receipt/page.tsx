@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ReceiptUploadForm from '@/components/transactions/ReceiptUploadForm'
+import { EasyTerm } from '@/components/ui/EasyTerm'
 
 export default async function ReceiptPage() {
   const supabase = await createClient()
@@ -24,11 +25,13 @@ export default async function ReceiptPage() {
       <div className="flex flex-col min-h-dvh bg-background text-foreground p-4">
          <header className="flex h-14 items-center gap-3 mb-6">
           <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
-          <h1 className="text-lg font-bold tracking-tight">영수증 올리기</h1>
+          <h1 className="text-lg font-bold tracking-tight">
+            <EasyTerm formal="영수증 올리기" easy="물건 산 종이 사진 보내기" />
+          </h1>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
           <span className="text-6xl">📋</span>
-          <p className="text-zinc-500 font-bold">아직 예산 정보가 없어요.<br/>지원자 선생님께 말씀해 주세요!</p>
+          <p className="text-zinc-500 font-bold">아직 예산 정보가 없어요.<br/>지원자 선생님에게 말씀해 주세요!</p>
         </div>
       </div>
     )
@@ -43,7 +46,7 @@ export default async function ReceiptPage() {
 
       <main className="flex-1 p-4 w-full">
         <div className="mb-6">
-          <h2 className="text-base font-bold text-zinc-800">새로운 활동 기록</h2>
+          <h2 className="text-base font-bold text-zinc-800"><EasyTerm formal="새로운 활동 기록" easy="오늘 한 일 적기" /></h2>
           <p className="text-sm text-zinc-500 font-medium mt-0.5">사용한 영수증 사진을 찍어서 보내주세요.</p>
         </div>
 

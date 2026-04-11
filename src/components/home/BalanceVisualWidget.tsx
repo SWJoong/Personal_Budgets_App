@@ -96,7 +96,7 @@ function PizzaChart({ percentage }: { percentage: number }) {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-2xl shadow-sm border border-white/60 text-center">
             <span className="text-[10px] text-zinc-500 block leading-tight">남은 피자</span>
-            <span className="text-lg font-black text-zinc-900 leading-tight">{percentage}%</span>
+            <span className="text-lg font-black text-zinc-900 leading-tight">{percentage}<EasyTerm formal="%" easy="퍼센트" /></span>
           </div>
         </div>
       </div>
@@ -140,7 +140,7 @@ function WaterViz({ percentage, currentBalance }: { percentage: number; currentB
         {/* 퍼센트 */}
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-2xl font-black text-white drop-shadow-md select-none">
-            {percentage}%
+            {percentage}<EasyTerm formal="%" easy="퍼센트" />
           </span>
         </div>
       </div>
@@ -247,7 +247,7 @@ function TextViz({ percentage, currentBalance }: { percentage: number; currentBa
     <div className="flex flex-col items-center justify-center py-10 px-6 gap-2">
       <p className="text-[11px] font-black text-zinc-300 uppercase tracking-[0.2em]">남은 예산</p>
       <p className={`text-8xl font-black leading-none hc-amount ${isLow ? 'text-red-600' : 'text-zinc-900'}`}>
-        {percentage}%
+        {percentage}<EasyTerm formal="%" easy="퍼센트" />
       </p>
       <p className={`text-3xl font-bold mt-2 hc-amount ${isLow ? 'text-red-500' : 'text-zinc-500'}`}>
         {formatCurrency(currentBalance)}원
@@ -467,7 +467,7 @@ export default function BalanceVisualWidget({
             </button>
           </div>
           <p className="text-xs text-zinc-400 font-bold mt-0.5 flex items-center gap-2">
-            <span>{remainingDays}일 남음 · {displayPct}%</span>
+            <span>{remainingDays}일 남음 · {displayPct}<EasyTerm formal="%" easy="퍼센트" /></span>
             {pendingDeduction > 0 && (
               <span className="text-orange-500">⏳ 반영 중</span>
             )}
@@ -521,8 +521,8 @@ export default function BalanceVisualWidget({
         </div>
       </div>
 
-      {/* 시각화 영역 */}
-      <div style={{ background: `linear-gradient(to bottom, white, ${c.light}33)` }}>
+      {/* 시각화 영역 — §4: 무광택 단색 */}
+      <div style={{ background: c.light }}>
         {style === 'pie'   && <PizzaChart percentage={activePct} />}
         {style === 'water' && <WaterViz percentage={activePct} currentBalance={simValue > 0 ? simBalance : displayBalance} />}
         {style === 'emoji' && (
@@ -718,7 +718,7 @@ export default function BalanceVisualWidget({
               </button>
 
               <p className="text-center text-zinc-400 text-xs font-medium mt-2">
-                지원자 선생님이 확인한 뒤 정식으로 반영됩니다.
+                지원자 선생님이 확인하면 예산에 반영해요.
               </p>
             </div>
           </div>

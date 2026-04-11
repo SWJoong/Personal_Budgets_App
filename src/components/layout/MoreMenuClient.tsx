@@ -13,7 +13,7 @@ interface FileLink {
 }
 
 export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] }) {
-  const { fontSize, setFontSize, highContrast, setHighContrast, easyTerms, setEasyTerms } = useAccessibility()
+  const { fontSize, setFontSize, highContrast, setHighContrast, easyTerms, setEasyTerms, yellowBg, setYellowBg } = useAccessibility()
   const supabase = createClient()
   const router = useRouter()
 
@@ -69,7 +69,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
         <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2">화면 설정</h3>
         <div className="bg-white rounded-[2rem] p-6 ring-1 ring-zinc-200 shadow-sm flex flex-col gap-6">
           <div className="flex flex-col gap-4">
-            <p className="text-sm font-bold text-zinc-600 mb-1">글자 크기를 조절할 수 있습니다.</p>
+            <p className="text-sm font-bold text-zinc-600 mb-1">글자 크기를 조절할 수 있어요.</p>
             <div className="flex gap-2">
               {[
                 { id: 'normal', label: '가', size: '기본' },
@@ -98,7 +98,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
           <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
             <div className="flex flex-col">
               <span className="text-sm font-bold text-zinc-700">고대비 모드</span>
-              <span className="text-xs text-zinc-400 font-medium">글씨와 배경의 대비를 높입니다</span>
+              <span className="text-xs text-zinc-400 font-medium">글씨와 배경의 대비를 높여요</span>
             </div>
             <button
               onClick={() => setHighContrast(!highContrast)}
@@ -119,7 +119,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
           <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
             <div className="flex flex-col">
               <span className="text-sm font-bold text-zinc-700">쉬운 말 모드</span>
-              <span className="text-xs text-zinc-400 font-medium">쉬운 말로 바꿉니다</span>
+              <span className="text-xs text-zinc-400 font-medium">어려운 말을 쉬운 말로 바꿰요</span>
             </div>
             <button
               onClick={() => setEasyTerms(!easyTerms)}
@@ -135,6 +135,27 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
               }`} />
             </button>
           </div>
+
+            {/* 노란 배경 모드 토글 (§4 난독증 배려) */}
+            <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-zinc-700">노란 배경 모드</span>
+                <span className="text-xs text-zinc-400 font-medium">배경을 노란색으로 바꿔요 (난독증 배려)</span>
+              </div>
+              <button
+                onClick={() => setYellowBg(!yellowBg)}
+                className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
+                  yellowBg ? 'bg-yellow-400' : 'bg-zinc-200'
+                }`}
+                role="switch"
+                aria-checked={yellowBg}
+                aria-label="노란 배경 모드 전환"
+              >
+                <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
+                  yellowBg ? 'left-7' : 'left-1'
+                }`} />
+              </button>
+            </div>
         </div>
       </section>
 
@@ -145,7 +166,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
           {fileLinks.length === 0 ? (
             <div className="py-8 text-center text-zinc-400">
               <span className="text-4xl block mb-2">📁</span>
-              <p className="text-sm font-bold">아직 등록된 서류가 없습니다.</p>
+              <p className="text-sm font-bold">아직 등록한 서류가 없어요.</p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">

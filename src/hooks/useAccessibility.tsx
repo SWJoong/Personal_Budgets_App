@@ -11,6 +11,8 @@ interface AccessibilityContextType {
   setHighContrast: (on: boolean) => void
   easyTerms: boolean
   setEasyTerms: (on: boolean) => void
+  yellowBg: boolean
+  setYellowBg: (on: boolean) => void
 }
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined)
@@ -19,6 +21,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
   const [fontSize, setFontSizeState] = useState<FontSize>('normal')
   const [highContrast, setHighContrastState] = useState(false)
   const [easyTerms, setEasyTermsState] = useState(false)
+  const [yellowBg, setYellowBgState] = useState(false)
 
   // 로컬 스토리지에서 설정 불러오기
   useEffect(() => {
@@ -28,6 +31,8 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     if (savedContrast === 'true') setHighContrastState(true)
     const savedEasyTerms = localStorage.getItem('app-easy-terms')
     if (savedEasyTerms === 'true') setEasyTermsState(true)
+    const savedYellowBg = localStorage.getItem('app-yellow-bg')
+    if (savedYellowBg === 'true') setYellowBgState(true)
   }, [])
 
   const setFontSize = (size: FontSize) => {
@@ -63,6 +68,17 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     }
   }
 
+  const setYellowBg = (on: boolean) => {
+    setYellowBgState(on)
+    localStorage.setItem('app-yellow-bg', String(on))
+    const html = document.documentElement
+    if (on) {
+      html.classList.add('yellow-bg')
+    } else {
+      html.classList.remove('yellow-bg')
+    }
+  }
+
   // 초기 로드 시 폰트 사이즈 & 고대비 & 쉬운 용어 적용
   useEffect(() => {
     const html = document.documentElement
@@ -75,10 +91,13 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
 
     if (easyTerms) html.classList.add('easy-terms')
     else html.classList.remove('easy-terms')
-  }, [fontSize, highContrast, easyTerms])
+
+    if (yellowBg) html.classList.add('yellow-bg')
+    else html.classList.remove('yellow-bg')
+  }, [fontSize, highContrast, easyTerms, yellowBg])
 
   return (
-    <AccessibilityContext.Provider value={{ fontSize, setFontSize, highContrast, setHighContrast, easyTerms, setEasyTerms }}>
+    <AccessibilityContext.Provider value={{ fontSize, setFontSize, highContrast, setHighContrast, easyTerms, setEasyTerms, yellowBg, setYellowBg }}>
       {children}
     </AccessibilityContext.Provider>
   )

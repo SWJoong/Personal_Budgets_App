@@ -111,7 +111,7 @@ export default function HomeDashboard({
                     <p className={`text-lg font-black hc-amount ${
                       fsPercentage <= 20 ? 'text-red-600' :
                       fsPercentage <= 40 ? 'text-orange-600' : 'text-zinc-900'
-                    }`}>{fsPercentage}%</p>
+                    }`}>{fsPercentage}<EasyTerm formal="%" easy="퍼센트" /></p>
                   </div>
                   <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden hc-gauge">
                     <div
@@ -146,7 +146,7 @@ export default function HomeDashboard({
                   <div className="h-full bg-zinc-400 rounded-full hc-gauge-fill" style={{ width: `${totalYearlyBudget > 0 ? (totalYearBalance / totalYearlyBudget) * 100 : 0}%` }} />
                 </div>
                 <span className="text-xs font-black text-zinc-500 hc-amount">
-                  {totalYearlyBudget > 0 ? Math.round((totalYearBalance / totalYearlyBudget) * 100) : 0}%
+                  {totalYearlyBudget > 0 ? Math.round((totalYearBalance / totalYearlyBudget) * 100) : 0}<EasyTerm formal="%" easy="퍼센트" />
                 </span>
               </div>
             </div>

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import { EasyTerm } from '@/components/ui/EasyTerm'
+import SelfCheckFeedback from '@/components/ui/SelfCheckFeedback'
 
 interface Person {
   id: string
@@ -20,7 +22,7 @@ interface Props {
 }
 
 type Role = 'participant' | 'supporter'
-type Step = 'role' | 'profile'
+type Step = 'role' | 'profile' | 'complete'
 
 export default function OnboardingClient({ userId, userEmail, userName, userAvatar, supporters, participants }: Props) {
   const router = useRouter()
@@ -86,8 +88,12 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
         if (partError) throw partError
       }
 
-      router.push('/')
-      router.refresh()
+      if (role === 'participant') {
+        setStep('complete')
+      } else {
+        router.push('/')
+        router.refresh()
+      }
     } catch (err: any) {
       setError(err.message || '저장 중 오류가 발생했습니다.')
       setLoading(false)
@@ -129,7 +135,9 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                   🙋
                 </div>
                 <div>
-                  <p className="text-lg font-black text-zinc-900">사용자 (당사자)</p>
+                  <p className="text-lg font-black text-zinc-900">
+                    <EasyTerm formal="사용자 (당사자)" easy="나의 예산을 관리하는 사람" />
+                  </p>
                   <p className="text-sm text-zinc-500 font-medium mt-1">나의 예산을 직접 관리하고 싶어요</p>
                 </div>
               </button>
@@ -149,7 +157,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
             </div>
 
             <p className="text-center text-xs text-zinc-400 mt-6">
-              나중에 더보기 → 계정 관리에서 변경할 수 있습니다.
+              나중에 더보기 → 계정 관리에서 바꾸 수 있어요.
             </p>
           </div>
         )}
@@ -210,7 +218,9 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                 <>
                   {/* Budget Type */}
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-zinc-500 ml-1">예산 구조</label>
+                    <label className="text-sm font-bold text-zinc-500 ml-1">
+                      <EasyTerm formal="예산 구조" easy="돈의 종류" />
+                    </label>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
@@ -242,7 +252,9 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                   {/* Supporter Selection */}
                   {supporters.length > 0 && (
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-bold text-zinc-500 ml-1">담당 지원자</label>
+                      <label className="text-sm font-bold text-zinc-500 ml-1">
+                        <EasyTerm formal="담당 지원자" easy="나를 도와주는 선생님" />
+                      </label>
                       <div className="flex flex-col gap-2">
                         {supporters.map((s) => (
                           <button
@@ -324,6 +336,22 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                 {loading ? '설정 중...' : '시작하기 🎉'}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* 3. Complete Step (SelfCheckFeedback) */}
+        {step === 'complete' && (
+          <div className="bg-white rounded-[2.5rem] p-8 shadow-xl ring-1 ring-zinc-200 fade-in flex flex-col items-center gap-6">
+            <h2 className="text-2xl font-black text-center text-zinc-900">
+              준비가 모두 끝났어요!
+            </h2>
+            <SelfCheckFeedback
+              question="앱 시작하기 설정이 쉬웠나요?"
+              onComplete={() => {
+                router.push('/')
+                router.refresh()
+              }}
+            />
           </div>
         )}
       </div>

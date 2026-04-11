@@ -24,9 +24,9 @@
   --color-accent: hsl(207 40% 90%);
   --color-accent-foreground: hsl(207 50% 20%);
 
-  /* Fonts */
-  --font-sans: var(--font-pretendard), "Noto Sans KR", "Apple SD Gothic Neo", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Nunito", "Noto Sans KR", sans-serif;
+  /* Fonts — §4 가이드라인: 세리프 없는 서체, Gulim/Dotum/맑은고딕 포함 */
+  --font-sans: var(--font-pretendard), "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", "Dotum", "돋움", "Gulim", "굴림", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Nunito", "Noto Sans KR", "Malgun Gothic", sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
@@ -68,8 +68,9 @@ button, [role="button"], a {
   background: hsl(210 30% 97%);
 }
 
+/* §4 UI/UX: 그라데이션 금지 → 무광택 단색 배경 */
 .warm-banner {
-  background: linear-gradient(135deg, hsl(207 60% 94%), hsl(207 40% 92%));
+  background: hsl(207 40% 93%);
   border-radius: 1.25rem;
   padding: 1.25rem;
 }
@@ -409,4 +410,19 @@ html:not(.easy-terms) .term-easy {
 
 html:not(.easy-terms) .term-formal {
   display: inline;
+}
+
+/* ─── §4 난독증 배려: 노란 배경 모드 ─── */
+html.yellow-bg {
+  background-color: #FFFF00 !important;
+}
+
+html.yellow-bg body {
+  background-color: #FFFF00 !important;
+}
+
+html.yellow-bg .bg-zinc-50,
+html.yellow-bg .bg-white,
+html.yellow-bg .bg-background {
+  background-color: #FFFDE0 !important;
 }
