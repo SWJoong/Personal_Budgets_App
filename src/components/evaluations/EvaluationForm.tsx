@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { upsertEvaluation, deleteEvaluation } from '@/app/actions/evaluation'
+import { upsertEvaluation, deleteEvaluation, publishEvaluation, unpublishEvaluation } from '@/app/actions/evaluation'
 
 interface Props {
   participantId: string
@@ -14,8 +14,10 @@ export default function EvaluationForm({ participantId, month, initialData }: Pr
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [publishing, setPublishing] = useState(false)
   const [aiProcessing, setAiProcessing] = useState(false)
   const [message, setMessage] = useState('')
+  const [publishedAt, setPublishedAt] = useState<string | null>(initialData?.published_at ?? null)
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
@@ -51,6 +53,27 @@ export default function EvaluationForm({ participantId, month, initialData }: Pr
       setMessage('❌ 삭제에 실패했습니다: ' + e.message)
     } finally {
       setDeleting(false)
+    }
+  }
+
+  async function handlePublish() {
+    if (!initialData?.id) return
+    setPublishing(true)
+    setMessage('')
+    try {
+      if (publishedAt) {
+        await unpublishEvaluation(initialData.id, participantId, month)
+        setPublishedAt(null)
+        setMessage('✅ 발행이 취소되었습니다. 당사자 화면에서 숨겨집니다.')
+      } else {
+        await publishEvaluation(initialData.id, participantId, month)
+        setPublishedAt(new Date().toISOString())
+        setMessage('✅ 당사자에게 발행되었습니다. 당사자 화면에 표시됩니다.')
+      }
+    } catch (e: any) {
+      setMessage('❌ 오류: ' + e.message)
+    } finally {
+      setPublishing(false)
     }
   }
 
@@ -121,6 +144,44 @@ export default function EvaluationForm({ participantId, month, initialData }: Pr
           </button>
         )}
       </div>
+
+      {initialData?.id && (
+        <div className="mt-2 flex flex-col gap-2">
+          <div className="h-px bg-zinc-200" />
+          {publishedAt ? (
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-green-50 border border-green-200">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">✅</span>
+                <div>
+                  <p className="text-sm font-black text-green-800">당사자에게 발행됨</p>
+                  <p className="text-xs text-green-600">
+                    {new Date(publishedAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handlePublish}
+                disabled={publishing}
+                className="px-4 py-2 rounded-xl bg-white ring-1 ring-green-300 text-green-700 text-sm font-black hover:bg-green-100 transition-all disabled:opacity-50"
+              >
+                {publishing ? '처리 중...' : '발행 취소'}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handlePublish}
+              disabled={publishing || loading}
+              className="w-full py-4 rounded-2xl bg-blue-600 text-white font-black text-base hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md"
+            >
+              {publishing
+                ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />발행 중...</>
+                : '💌 당사자에게 발행하기'}
+            </button>
+          )}
+        </div>
+      )}
     </form>
   )
 }

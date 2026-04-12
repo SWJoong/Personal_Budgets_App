@@ -48,7 +48,7 @@ interface HomeDashboardProps {
   dailyTransactions?: DailyTransaction[]
   monthlyTrend?: MonthlyData[]
   uiPreferences?: UIPreferences | null
-  latestEvaluation?: { month: string; tried: string | null; learned: string | null } | null
+  latestEvaluation?: { month: string; easy_summary: string | null; next_step: string | null } | null
 }
 
 export default function HomeDashboard({
@@ -243,22 +243,34 @@ export default function HomeDashboard({
         )
 
       case 'evaluation_letter':
-        if (!latestEvaluation) return null
+        if (!latestEvaluation || !latestEvaluation.easy_summary) return null
         return (
-          <section className="p-6 rounded-[2rem] bg-white ring-1 ring-zinc-100 shadow-sm flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">💌</span>
-              <div>
-                <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em]">
-                  <EasyTerm formal="지원자 편지" easy="선생님 편지" />
-                </p>
-                <p className="text-sm font-bold text-zinc-600">{latestEvaluation.month} 평가</p>
+          <Link href="/evaluations">
+            <section className="p-6 rounded-[2rem] bg-white ring-1 ring-zinc-100 shadow-sm flex flex-col gap-3 hover:ring-zinc-300 transition-all">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">💌</span>
+                  <div>
+                    <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em]">
+                      <EasyTerm formal="지원자 편지" easy="선생님 편지" />
+                    </p>
+                    <p className="text-sm font-bold text-zinc-600">
+                      {new Date(latestEvaluation.month).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long' })} 편지
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs text-zinc-400">읽기 →</span>
               </div>
-            </div>
-            {latestEvaluation.tried && (
-              <p className="text-sm text-zinc-600 leading-relaxed line-clamp-3">{latestEvaluation.tried}</p>
-            )}
-          </section>
+              <p className="text-sm text-zinc-700 leading-relaxed line-clamp-3 bg-zinc-50 rounded-2xl p-4">
+                {latestEvaluation.easy_summary}
+              </p>
+              {latestEvaluation.next_step && (
+                <p className="text-xs text-blue-600 font-bold px-1">
+                  ✨ 다음 달 약속: {latestEvaluation.next_step}
+                </p>
+              )}
+            </section>
+          </Link>
         )
 
       default:

@@ -91,6 +91,58 @@ export async function upsertEvaluation(formData: FormData) {
   return { success: true }
 }
 
+export async function publishEvaluation(evaluationId: string, participantId: string, month: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'supporter')) {
+    throw new Error('권한이 없습니다.')
+  }
+
+  const { error } = await supabase
+    .from('evaluations')
+    .update({ published_at: new Date().toISOString() })
+    .eq('id', evaluationId)
+  if (error) throw new Error('발행에 실패했습니다.')
+
+  revalidatePath(`/supporter/evaluations/${participantId}/${month}`)
+  revalidatePath('/evaluations')
+  revalidatePath('/')
+  return { success: true }
+}
+
+export async function unpublishEvaluation(evaluationId: string, participantId: string, month: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'supporter')) {
+    throw new Error('권한이 없습니다.')
+  }
+
+  const { error } = await supabase
+    .from('evaluations')
+    .update({ published_at: null })
+    .eq('id', evaluationId)
+  if (error) throw new Error('발행 취소에 실패했습니다.')
+
+  revalidatePath(`/supporter/evaluations/${participantId}/${month}`)
+  revalidatePath('/evaluations')
+  revalidatePath('/')
+  return { success: true }
+}
+
 export async function deleteEvaluation(evaluationId: string, participantId: string, month: string) {
   const supabase = await createClient()
 

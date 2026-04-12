@@ -10,11 +10,12 @@ export default async function ParticipantEvaluationsPage() {
 
   if (!user) redirect('/login')
 
-  // 당사자의 월별 평가 데이터 조회
+  // 당사자의 월별 평가 데이터 조회 (발행된 것만)
   const { data: evaluations } = await supabase
     .from('evaluations')
     .select('*')
     .eq('participant_id', user.id)
+    .not('published_at', 'is', null)
     .order('month', { ascending: false })
 
   return (

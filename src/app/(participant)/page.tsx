@@ -123,13 +123,14 @@ export default async function Home() {
     monthlyTrend.push({ month: m, totalSpent, budget: totalMonthlyBudget })
   }
 
-  // 지원자 편지 블록이 활성화된 경우에만 최근 평가 조회
-  let latestEvaluation: { month: string; tried: string | null; learned: string | null } | null = null
+  // 지원자 편지 블록이 활성화된 경우에만 최근 발행된 평가 조회
+  let latestEvaluation: { month: string; easy_summary: string | null; next_step: string | null } | null = null
   if (effectivePrefs.enabled_blocks.includes('evaluation_letter')) {
     const { data: evalData } = await supabase
       .from('evaluations')
-      .select('month, tried, learned')
+      .select('month, easy_summary, next_step')
       .eq('participant_id', user.id)
+      .not('published_at', 'is', null)
       .order('month', { ascending: false })
       .limit(1)
       .single()
