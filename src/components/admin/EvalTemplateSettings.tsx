@@ -91,10 +91,12 @@ export default function EvalTemplateSettings({ initialSetting }: Props) {
             <div key={id} className={`rounded-2xl ring-1 transition-all overflow-hidden ${
               isSelected ? 'ring-zinc-900 bg-zinc-900' : 'ring-zinc-200 bg-white hover:ring-zinc-400'
             }`}>
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => setActive(id)}
-                className="w-full flex items-center gap-3 px-5 py-4 text-left"
+                onKeyDown={e => e.key === 'Enter' && setActive(id)}
+                className="w-full flex items-center gap-3 px-5 py-4 text-left cursor-pointer"
               >
                 <div className={`w-5 h-5 rounded-full ring-2 flex items-center justify-center shrink-0 transition-all ${
                   isSelected ? 'ring-white bg-white' : 'ring-zinc-300 bg-transparent'
@@ -121,7 +123,7 @@ export default function EvalTemplateSettings({ initialSetting }: Props) {
                     {isPreviewing ? '접기' : '미리보기'}
                   </button>
                 )}
-              </button>
+              </div>
 
               {/* 필드 미리보기 */}
               {isPreviewing && id !== 'custom' && (

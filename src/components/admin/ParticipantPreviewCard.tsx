@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { formatCurrency, getBudgetVisualInfo } from '@/utils/budget-visuals'
 
 interface FundingSource {
@@ -21,10 +22,12 @@ interface ParticipantPreviewCardProps {
     yearly_budget_default: number
     funding_sources?: FundingSource[]
   }
+  href?: string
   onClick?: () => void
 }
 
-export default function ParticipantPreviewCard({ participant, onClick }: ParticipantPreviewCardProps) {
+export default function ParticipantPreviewCard({ participant, href, onClick }: ParticipantPreviewCardProps) {
+  const router = useRouter()
   const fundingSources = participant.funding_sources || []
 
   // 통합 계산
@@ -40,9 +43,14 @@ export default function ParticipantPreviewCard({ participant, onClick }: Partici
 
   const visual = getBudgetVisualInfo(totalMonthBalance, totalMonthlyBudget, remainingDays, totalDaysInMonth)
 
+  function handleCardClick() {
+    if (onClick) onClick()
+    else if (href) router.push(href)
+  }
+
   return (
     <div
-      onClick={onClick}
+      onClick={handleCardClick}
       className={`p-5 rounded-2xl ring-2 shadow-md transition-all cursor-pointer hover:scale-[1.02] hover:shadow-lg ${
         visual.status === 'luxury' ? 'bg-green-50 ring-green-200 hover:ring-green-300' :
         visual.status === 'stable' ? 'bg-blue-50 ring-blue-200 hover:ring-blue-300' :

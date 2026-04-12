@@ -153,9 +153,11 @@ export default async function AdminDashboardPage() {
           {previewParticipants && previewParticipants.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {previewParticipants.map((participant) => (
-                <Link key={participant.id} href={`/admin/participants/${participant.id}`}>
-                  <ParticipantPreviewCard participant={participant} />
-                </Link>
+                <ParticipantPreviewCard
+                  key={participant.id}
+                  participant={participant}
+                  href={`/admin/participants/${participant.id}`}
+                />
               ))}
             </div>
           ) : (

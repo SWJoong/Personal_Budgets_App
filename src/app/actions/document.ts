@@ -15,9 +15,15 @@ export async function uploadDocument(formData: FormData) {
   const file = formData.get('file') as File | null
   const externalUrl = formData.get('url') as string
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+
   let finalUrl = externalUrl
 
   if (file && file.size > 0) {
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error(`파일 용량이 10MB를 초과합니다. (${(file.size / 1024 / 1024).toFixed(1)}MB)`)
+    }
+
     const fileName = `${participantId}/${Math.random().toString(36).substring(2)}-${file.name}`
     const { error: uploadError } = await supabase.storage
       .from('documents')

@@ -192,6 +192,44 @@ export interface Database {
           created_at?: string
         }
       }
+      sis_assessments: {
+        Row: {
+          id: string
+          participant_id: string
+          assessed_at: string
+          raw_2a: number; raw_2b: number; raw_2c: number
+          raw_2d: number; raw_2e: number; raw_2f: number
+          std_2a: number; std_2b: number; std_2c: number
+          std_2d: number; std_2e: number; std_2f: number
+          total_std: number
+          index_score: string
+          percentile: string
+          creator_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          participant_id: string
+          assessed_at?: string
+          raw_2a: number; raw_2b: number; raw_2c: number
+          raw_2d: number; raw_2e: number; raw_2f: number
+          std_2a: number; std_2b: number; std_2c: number
+          std_2d: number; std_2e: number; std_2f: number
+          total_std: number
+          index_score: string
+          percentile: string
+          creator_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          participant_id?: string
+          assessed_at?: string
+          total_std?: number
+          index_score?: string
+          percentile?: string
+        }
+      }
       care_plans: {
         Row: {
           id: string

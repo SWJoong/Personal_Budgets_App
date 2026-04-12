@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { uploadDocument, deleteDocument } from '@/app/actions/document'
-import CarePlanSection from '@/components/documents/CarePlanSection'
+import SisASection from '@/components/documents/SisASection'
+import type { SisAssessmentRow } from '@/app/actions/sisAssessment'
 
 interface Participant {
   id: string
@@ -19,36 +20,48 @@ interface Document {
   participant?: { name?: string } | null
 }
 
-interface CarePlanSummary {
-  id: string
-  participant_id: string
-  plan_type: string
-  plan_year: number
-  updated_at: string
-}
-
 export default function DocumentManagerClient({
   participants,
   initialDocuments,
-  carePlans = [],
+  sisAssessments = [],
 }: {
   participants: Participant[]
   initialDocuments: Document[]
-  carePlans?: CarePlanSummary[]
+  sisAssessments?: SisAssessmentRow[]
 }) {
   const [loading, setLoading] = useState(false)
   const [documents, setDocuments] = useState(initialDocuments)
+  const [fileError, setFileError] = useState('')
+
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file && file.size > MAX_FILE_SIZE) {
+      setFileError(`파일 용량이 너무 큽니다. (${(file.size / 1024 / 1024).toFixed(1)}MB → 최대 10MB)`)
+      e.target.value = ''
+    } else {
+      setFileError('')
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setLoading(true)
+    if (fileError) return
+
     const formData = new FormData(e.currentTarget)
-    
+    const file = formData.get('file') as File | null
+    if (file && file.size > MAX_FILE_SIZE) {
+      setFileError(`파일 용량이 너무 큽니다. (최대 10MB)`)
+      return
+    }
+
+    setLoading(true)
     try {
       const result = await uploadDocument(formData)
       if (result.success) {
         alert('서류가 성공적으로 등록되었습니다.')
-        window.location.reload() // 간단하게 목록 갱신
+        window.location.reload()
       }
     } catch (error: any) {
       alert(error.message)
@@ -69,13 +82,13 @@ export default function DocumentManagerClient({
 
   return (
     <div className="flex flex-col gap-10">
-      {/* 이용계획서 작성 섹션 */}
+      {/* SIS-A 척도 관리 섹션 */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">개인예산 이용계획서</h2>
-          <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold">보건복지부형 · 서울형</span>
+          <h2 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">SIS-A 지원요구척도</h2>
+          <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold">원점수 입력 → 표준점수 자동 변환</span>
         </div>
-        <CarePlanSection participants={participants} carePlans={carePlans} />
+        <SisASection participants={participants} initialAssessments={sisAssessments} />
       </section>
 
       <div className="h-px bg-zinc-200" />
@@ -119,8 +132,19 @@ export default function DocumentManagerClient({
               <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">업로드 방식</label>
               <div className="grid grid-cols-1 gap-3">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] text-zinc-400 font-bold ml-1">파일 직접 업로드</span>
-                  <input name="file" type="file" className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 cursor-pointer" />
+                  <div className="flex items-center justify-between ml-1">
+                    <span className="text-[10px] text-zinc-400 font-bold">파일 직접 업로드</span>
+                    <span className="text-[10px] text-zinc-400">최대 10MB</span>
+                  </div>
+                  <input
+                    name="file"
+                    type="file"
+                    onChange={handleFileChange}
+                    className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 cursor-pointer"
+                  />
+                  {fileError && (
+                    <p className="text-xs text-red-500 font-bold mt-1 ml-1">{fileError}</p>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] text-zinc-400 font-bold ml-1">또는 외부 링크 (구글 드라이브 등)</span>
@@ -129,7 +153,7 @@ export default function DocumentManagerClient({
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="mt-4 w-full py-4 rounded-xl bg-zinc-900 text-white font-bold hover:bg-zinc-800 transition-all active:scale-95 disabled:bg-zinc-300">
+            <button type="submit" disabled={loading || !!fileError} className="mt-4 w-full py-4 rounded-xl bg-zinc-900 text-white font-bold hover:bg-zinc-800 transition-all active:scale-95 disabled:bg-zinc-300">
               {loading ? '처리 중...' : '서류 등록하기'}
             </button>
           </form>

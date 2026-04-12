@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import DocumentManagerClient from '@/components/documents/DocumentManagerClient'
-import { getAllCarePlans } from '@/app/actions/carePlan'
+import { getAllSisAssessments } from '@/app/actions/sisAssessment'
 
 export default async function SupporterDocumentsPage() {
   const supabase = await createClient()
@@ -38,8 +38,8 @@ export default async function SupporterDocumentsPage() {
     .select('*, participant:participants!file_links_participant_id_fkey ( name )')
     .order('created_at', { ascending: false })
 
-  // 이용계획서 목록 조회
-  const carePlans = await getAllCarePlans()
+  // SIS-A 평가 목록 조회 (migration 실행 전이면 빈 배열)
+  const sisAssessments = await getAllSisAssessments().catch(() => [])
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 p-8">
@@ -52,7 +52,7 @@ export default async function SupporterDocumentsPage() {
         <DocumentManagerClient
           participants={(participants || []) as any}
           initialDocuments={(documents || []) as any}
-          carePlans={carePlans as any}
+          sisAssessments={sisAssessments as any}
         />
       </main>
     </div>

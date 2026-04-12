@@ -1,6 +1,8 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import CarePlanSection from '@/components/documents/CarePlanSection'
+import { getAllCarePlans } from '@/app/actions/carePlan'
 
 export default async function EvaluationsPage() {
   const supabase = await createClient()
@@ -32,6 +34,9 @@ export default async function EvaluationsPage() {
 
   const { data: participants } = await query
 
+  // 이용계획서 목록 조회
+  const carePlans = await getAllCarePlans().catch(() => [])
+
   // 현재 월 기준 3개월치 리스트 생성
   const now = new Date()
   const months: { value: string; display: string }[] = []
@@ -45,11 +50,11 @@ export default async function EvaluationsPage() {
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 p-8">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-900">월별 PCP 평가 관리</h1>
-        <p className="text-zinc-500 mt-1">당사자별 활동을 돌아보고 PCP 4+1 형식으로 기록합니다.</p>
+        <h1 className="text-2xl font-bold text-zinc-900">계획과 평가</h1>
+        <p className="text-zinc-500 mt-1">이용계획서 작성과 월별 평가를 한 곳에서 관리합니다.</p>
       </header>
 
-      <main className="max-w-4xl flex flex-col gap-6">
+      <main className="max-w-4xl flex flex-col gap-8">
         <div className="bg-white rounded-2xl ring-1 ring-zinc-200 shadow-sm overflow-hidden">
           <table className="w-full text-left">
             <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 font-bold text-xs uppercase tracking-wider">
@@ -99,6 +104,18 @@ export default async function EvaluationsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* 이용계획서 섹션 */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">개인예산 이용계획서</h2>
+            <span className="px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-500 text-[10px] font-bold">보건복지부형 · 서울형</span>
+          </div>
+          <CarePlanSection
+            participants={(participants || []) as any}
+            carePlans={carePlans as any}
+          />
+        </section>
       </main>
     </div>
   )
