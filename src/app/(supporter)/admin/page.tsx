@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import ParticipantPreviewCard from '@/components/admin/ParticipantPreviewCard'
 import AlertPanel from '@/components/admin/AlertPanel'
+import SettlementSummary from '@/components/admin/SettlementSummary'
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
@@ -168,6 +169,26 @@ export default async function AdminDashboardPage() {
             </div>
           )}
         </section>
+
+        {/* 월간 정산 체크리스트 */}
+        <Suspense fallback={
+          <div className="rounded-2xl bg-white ring-1 ring-zinc-200 overflow-hidden animate-pulse">
+            <div className="px-5 py-3 bg-zinc-50 border-b border-zinc-200 flex justify-between">
+              <div className="h-5 w-40 bg-zinc-200 rounded" />
+              <div className="h-4 w-16 bg-zinc-200 rounded" />
+            </div>
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="grid grid-cols-[1fr_140px_100px_80px] px-5 py-3.5 border-b border-zinc-100 last:border-0 gap-4">
+                <div className="h-4 w-20 bg-zinc-200 rounded" />
+                <div className="h-6 w-24 bg-zinc-100 rounded-full mx-auto" />
+                <div className="h-4 w-12 bg-zinc-100 rounded mx-auto" />
+                <div className="h-4 w-8 bg-zinc-100 rounded mx-auto" />
+              </div>
+            ))}
+          </div>
+        }>
+          <SettlementSummary />
+        </Suspense>
 
         {/* 빠른 실행 */}
         <section className="flex flex-col gap-3">

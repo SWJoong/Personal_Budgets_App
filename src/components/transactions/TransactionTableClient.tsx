@@ -141,12 +141,26 @@ export default function TransactionTableClient({
             >검색</button>
           </div>
 
-          <button
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="px-3 py-1.5 bg-zinc-100 text-zinc-600 rounded-lg text-sm font-bold hover:bg-zinc-200 ml-auto shrink-0"
-          >
-            {showAdvanced ? '▲ 닫기' : '▼ 고급 필터'}
-          </button>
+          <div className="flex items-center gap-2 ml-auto shrink-0">
+            <a
+              href={(() => {
+                const params = new URLSearchParams()
+                Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v) })
+                return `/api/export/transactions?${params.toString()}`
+              })()}
+              download
+              className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center gap-1"
+              title="현재 필터 기준으로 CSV 다운로드"
+            >
+              📥 CSV
+            </a>
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="px-3 py-1.5 bg-zinc-100 text-zinc-600 rounded-lg text-sm font-bold hover:bg-zinc-200"
+            >
+              {showAdvanced ? '▲ 닫기' : '▼ 고급 필터'}
+            </button>
+          </div>
         </div>
 
         {/* 고급 필터 */}

@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react'
 import { updateUserRole } from '@/app/actions/admin'
 import Link from 'next/link'
 import type { UserRole } from '@/types/database'
+import type { OrgEvalSetting } from '@/types/eval-templates'
+import EvalTemplateSettings from '@/components/admin/EvalTemplateSettings'
 
 interface Profile {
   id: string
@@ -16,6 +18,7 @@ interface AdminSettingsClientProps {
   currentUserId: string
   currentUserEmail: string
   profiles: Profile[]
+  evalSetting: OrgEvalSetting
 }
 
 const ROLE_OPTIONS: { value: UserRole; label: string; emoji: string; desc: string }[] = [
@@ -40,10 +43,10 @@ export default function AdminSettingsClient({
   currentUserId,
   currentUserEmail,
   profiles,
+  evalSetting,
 }: AdminSettingsClientProps) {
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [editingUserId, setEditingUserId] = useState<string | null>(null)
 
   const handleRoleChange = (userId: string, newRole: UserRole) => {
     setMessage(null)
@@ -53,7 +56,6 @@ export default function AdminSettingsClient({
         setMessage({ type: 'error', text: result.error })
       } else {
         setMessage({ type: 'success', text: '역할이 변경되었습니다.' })
-        setEditingUserId(null)
       }
     })
   }
@@ -192,6 +194,11 @@ export default function AdminSettingsClient({
             </div>
           )}
         </section>
+
+        <div className="h-px bg-zinc-200" />
+
+        {/* 평가 양식 설정 */}
+        <EvalTemplateSettings initialSetting={evalSetting} />
       </main>
     </div>
   )

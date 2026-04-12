@@ -74,6 +74,27 @@ export default function AdminDashboardLoading() {
           </div>
         </section>
 
+        {/* 정산 체크리스트 skeleton */}
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="h-6 w-48 bg-zinc-200 rounded-lg animate-pulse" />
+            <div className="h-4 w-16 bg-zinc-200 rounded animate-pulse" />
+          </div>
+          <div className="bg-white rounded-2xl ring-1 ring-zinc-200 overflow-hidden animate-pulse">
+            <div className="grid grid-cols-[1fr_140px_100px_80px] px-5 py-3 bg-zinc-50 border-b border-zinc-200 gap-4">
+              {[0,1,2,3].map(i => <div key={i} className="h-3 bg-zinc-200 rounded" />)}
+            </div>
+            {[0,1,2,3].map(i => (
+              <div key={i} className="grid grid-cols-[1fr_140px_100px_80px] px-5 py-3.5 border-b border-zinc-100 last:border-0 gap-4 items-center">
+                <div className="h-4 w-20 bg-zinc-200 rounded" />
+                <div className="h-6 w-24 bg-zinc-100 rounded-full mx-auto" />
+                <div className="h-4 w-12 bg-zinc-100 rounded mx-auto" />
+                <div className="h-4 w-8 bg-zinc-100 rounded mx-auto" />
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* 빠른 실행 skeleton */}
         <section className="flex flex-col gap-3">
           <div className="h-3 w-16 bg-zinc-200 rounded animate-pulse ml-1" />

@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { ensureAdminAccount } from '@/app/actions/admin'
+import { getEvalTemplateSetting } from '@/app/actions/evalTemplates'
 import AdminSettingsClient from './AdminSettingsClient'
 
 export default async function AdminSettingsPage() {
@@ -29,11 +30,15 @@ export default async function AdminSettingsPage() {
     .select('*')
     .order('created_at', { ascending: false })
 
+  // 현재 평가 양식 설정
+  const evalSetting = await getEvalTemplateSetting()
+
   return (
-    <AdminSettingsClient 
+    <AdminSettingsClient
       currentUserId={user.id}
       currentUserEmail={user.email || ''}
       profiles={allProfiles || []}
+      evalSetting={evalSetting}
     />
   )
 }

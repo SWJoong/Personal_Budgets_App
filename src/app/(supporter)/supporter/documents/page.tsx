@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import DocumentManagerClient from '@/components/documents/DocumentManagerClient'
+import { getAllCarePlans } from '@/app/actions/carePlan'
 
 export default async function SupporterDocumentsPage() {
   const supabase = await createClient()
@@ -37,6 +38,9 @@ export default async function SupporterDocumentsPage() {
     .select('*, participant:participants!file_links_participant_id_fkey ( name )')
     .order('created_at', { ascending: false })
 
+  // 이용계획서 목록 조회
+  const carePlans = await getAllCarePlans()
+
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 p-8">
       <header className="mb-8">
@@ -45,9 +49,10 @@ export default async function SupporterDocumentsPage() {
       </header>
 
       <main className="max-w-6xl flex flex-col gap-8">
-        <DocumentManagerClient 
-          participants={(participants || []) as any} 
-          initialDocuments={(documents || []) as any} 
+        <DocumentManagerClient
+          participants={(participants || []) as any}
+          initialDocuments={(documents || []) as any}
+          carePlans={carePlans as any}
         />
       </main>
     </div>

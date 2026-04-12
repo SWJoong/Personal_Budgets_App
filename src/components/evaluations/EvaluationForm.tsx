@@ -3,14 +3,17 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { upsertEvaluation, deleteEvaluation, publishEvaluation, unpublishEvaluation } from '@/app/actions/evaluation'
+import type { EvalField, EvalTemplateId } from '@/types/eval-templates'
 
 interface Props {
   participantId: string
   month: string
   initialData?: any
+  templateId?: EvalTemplateId
+  templateFields?: EvalField[]
 }
 
-export default function EvaluationForm({ participantId, month, initialData }: Props) {
+export default function EvaluationForm({ participantId, month, initialData, templateId = 'pcp', templateFields }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -77,18 +80,44 @@ export default function EvaluationForm({ participantId, month, initialData }: Pr
     }
   }
 
-  const questions = [
-    { id: 'tried', label: '1. 시도한 것 (What have we tried?)', placeholder: '이번 달에 새롭게 시도한 활동이나 방법은 무엇인가요?', value: initialData?.tried },
-    { id: 'learned', label: '2. 배운 것 (What have we learned?)', placeholder: '시도한 활동을 통해 당사자나 지원자가 알게 된 사실은 무엇인가요?', value: initialData?.learned },
-    { id: 'pleased', label: '3. 만족하는 것 (What are we pleased about?)', placeholder: '잘 진행되었거나 당사자가 즐거워했던 부분은 무엇인가요?', value: initialData?.pleased },
-    { id: 'concerned', label: '4. 고민되는 것 (What are we concerned about?)', placeholder: '어려움이 있었거나 개선이 필요한 부분은 무엇인가요?', value: initialData?.concerned },
-    { id: 'next_step', label: '+1. 향후 계획 (What are we going to do next?)', placeholder: '다음 달에는 어떤 점을 다르게 하거나 새로 시도해볼까요?', value: initialData?.next_step },
+  // PCP: 기존 컬럼에서 값을 읽음 / 비PCP: template_data JSON에서 읽음
+  const isPcp = templateId === 'pcp'
+  const templateData = initialData?.template_data as Record<string, string> | null | undefined
+
+  // 기존 PCP 컬럼 매핑
+  const PCP_FIELD_VALUES: Record<string, string | null> = {
+    tried: initialData?.tried ?? '',
+    learned: initialData?.learned ?? '',
+    pleased: initialData?.pleased ?? '',
+    concerned: initialData?.concerned ?? '',
+    next_step: initialData?.next_step ?? '',
+  }
+
+  const defaultFields: EvalField[] = [
+    { id: 'tried',     label: '1. 시도한 것 (What have we tried?)',        placeholder: '이번 달에 새롭게 시도한 활동이나 방법은 무엇인가요?',         rows: 4 },
+    { id: 'learned',   label: '2. 배운 것 (What have we learned?)',         placeholder: '시도한 활동을 통해 당사자나 지원자가 알게 된 사실은 무엇인가요?', rows: 4 },
+    { id: 'pleased',   label: '3. 만족하는 것 (What are we pleased about?)', placeholder: '잘 진행되었거나 당사자가 즐거워했던 부분은 무엇인가요?',        rows: 4 },
+    { id: 'concerned', label: '4. 고민되는 것 (What are we concerned about?)',placeholder: '어려움이 있었거나 개선이 필요한 부분은 무엇인가요?',          rows: 4 },
+    { id: 'next_step', label: '+1. 향후 계획 (What are we going to do next?)',placeholder: '다음 달에는 어떤 점을 다르게 하거나 새로 시도해볼까요?',     rows: 4 },
   ]
+
+  const fields = templateFields ?? defaultFields
+
+  const questions = fields.map(f => ({
+    id: f.id,
+    label: f.label,
+    placeholder: f.placeholder,
+    rows: f.rows,
+    value: isPcp
+      ? (PCP_FIELD_VALUES[f.id] ?? '')
+      : (templateData?.[f.id] ?? ''),
+  }))
 
   return (
     <form action={handleSubmit} className="flex flex-col gap-6">
       <input type="hidden" name="participant_id" value={participantId} />
       <input type="hidden" name="month" value={month} />
+      <input type="hidden" name="evaluation_template" value={templateId} />
 
       {message && (
         <div className={`p-4 rounded-xl font-bold text-sm flex items-center gap-3 ${
@@ -113,7 +142,7 @@ export default function EvaluationForm({ participantId, month, initialData }: Pr
             name={q.id}
             defaultValue={q.value || ''}
             placeholder={q.placeholder}
-            rows={4}
+            rows={q.rows ?? 4}
             className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base leading-relaxed transition-all"
           />
         </div>

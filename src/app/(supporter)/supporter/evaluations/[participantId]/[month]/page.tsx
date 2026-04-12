@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import EvaluationForm from '@/components/evaluations/EvaluationForm'
+import { getEvalTemplateSetting } from '@/app/actions/evalTemplates'
+import { resolveTemplateFields, EVAL_TEMPLATES, type EvalField } from '@/types/eval-templates'
 
 interface Props {
   params: Promise<{ participantId: string; month: string }>
@@ -46,6 +48,14 @@ export default async function EvaluationDetailPage({ params }: Props) {
     .eq('participant_id', participantId)
     .eq('month', month)
     .single()
+
+  // 현재 기관 평가 양식 설정
+  const evalSetting = await getEvalTemplateSetting()
+  const templateFields = resolveTemplateFields(evalSetting)
+  const templateId = evalSetting.active
+  const templateName = templateId === 'custom'
+    ? '자체 양식'
+    : EVAL_TEMPLATES[templateId].name
 
   const displayMonth = `${new Date(month).getFullYear()}년 ${new Date(month).getMonth() + 1}월`
 
@@ -103,10 +113,18 @@ export default async function EvaluationDetailPage({ params }: Props) {
 
         {/* 우측: 평가 작성 폼 */}
         <div className="flex-1">
-          <EvaluationForm 
+          <div className="flex items-center gap-2 mb-4">
+            <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-zinc-200 text-zinc-600 uppercase tracking-wider">
+              {templateName}
+            </span>
+            <span className="text-xs text-zinc-400">양식 기준으로 작성합니다</span>
+          </div>
+          <EvaluationForm
             participantId={participantId}
             month={month}
             initialData={existingEvaluation}
+            templateId={templateId}
+            templateFields={templateFields}
           />
         </div>
       </main>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { uploadDocument, deleteDocument } from '@/app/actions/document'
+import CarePlanSection from '@/components/documents/CarePlanSection'
 
 interface Participant {
   id: string
@@ -18,12 +19,22 @@ interface Document {
   participant?: { name?: string } | null
 }
 
-export default function DocumentManagerClient({ 
-  participants, 
-  initialDocuments 
-}: { 
+interface CarePlanSummary {
+  id: string
+  participant_id: string
+  plan_type: string
+  plan_year: number
+  updated_at: string
+}
+
+export default function DocumentManagerClient({
+  participants,
+  initialDocuments,
+  carePlans = [],
+}: {
   participants: Participant[]
   initialDocuments: Document[]
+  carePlans?: CarePlanSummary[]
 }) {
   const [loading, setLoading] = useState(false)
   const [documents, setDocuments] = useState(initialDocuments)
@@ -57,7 +68,20 @@ export default function DocumentManagerClient({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="flex flex-col gap-10">
+      {/* 이용계획서 작성 섹션 */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">개인예산 이용계획서</h2>
+          <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold">보건복지부형 · 서울형</span>
+        </div>
+        <CarePlanSection participants={participants} carePlans={carePlans} />
+      </section>
+
+      <div className="h-px bg-zinc-200" />
+
+      {/* 파일/링크 서류 관리 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* 서류 등록 폼 */}
       <section className="lg:col-span-1">
         <div className="bg-white rounded-2xl p-6 ring-1 ring-zinc-200 shadow-sm sticky top-24">
@@ -159,6 +183,7 @@ export default function DocumentManagerClient({
           </table>
         </div>
       </section>
+      </div> {/* end grid (파일/링크 서류 관리) */}
     </div>
   )
 }

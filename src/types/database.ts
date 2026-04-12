@@ -192,6 +192,38 @@ export interface Database {
           created_at?: string
         }
       }
+      care_plans: {
+        Row: {
+          id: string
+          participant_id: string
+          plan_type: string
+          plan_year: number
+          content: Json
+          creator_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          participant_id: string
+          plan_type: string
+          plan_year: number
+          content?: Json
+          creator_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          participant_id?: string
+          plan_type?: string
+          plan_year?: number
+          content?: Json
+          creator_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       plans: {
         Row: {
           id: string
@@ -243,6 +275,8 @@ export interface Database {
           created_at: string
           updated_at: string
           published_at: string | null
+          evaluation_template: string | null
+          template_data: Json | null
         }
         Insert: {
           id?: string
@@ -259,6 +293,8 @@ export interface Database {
           created_at?: string
           updated_at?: string
           published_at?: string | null
+          evaluation_template?: string | null
+          template_data?: Json | null
         }
         Update: {
           id?: string
@@ -275,7 +311,14 @@ export interface Database {
           created_at?: string
           updated_at?: string
           published_at?: string | null
+          evaluation_template?: string | null
+          template_data?: Json | null
         }
+      }
+      system_settings: {
+        Row: { key: string; value: Json; updated_at: string }
+        Insert: { key: string; value: Json; updated_at?: string }
+        Update: { key?: string; value?: Json; updated_at?: string }
       }
     }
   }
