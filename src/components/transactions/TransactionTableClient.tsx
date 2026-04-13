@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import type { MapTransaction } from '@/components/map/KakaoMap'
+import ImportResultModal from './ImportResultModal'
 
 const KakaoMap = dynamic(() => import('@/components/map/KakaoMap'), { ssr: false })
 
@@ -31,6 +32,7 @@ interface Participant {
 interface TransactionTableClientProps {
   transactions: Transaction[]
   participants: Participant[]
+  participantFundingSources?: Record<string, { id: string; name: string }[]>
   categories: string[]
   paymentMethods: string[]
   currentFilters: {
@@ -50,6 +52,7 @@ interface TransactionTableClientProps {
 export default function TransactionTableClient({
   transactions,
   participants,
+  participantFundingSources = {},
   categories,
   paymentMethods,
   currentFilters,
@@ -59,6 +62,7 @@ export default function TransactionTableClient({
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'table' | 'map'>('table')
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [showImport, setShowImport] = useState(false)
   const [filters, setFilters] = useState({
     participant: currentFilters.participant || '',
     status: currentFilters.status || '',
@@ -104,8 +108,18 @@ export default function TransactionTableClient({
 
   return (
     <>
+      {/* CSV 임포트 모달 */}
+      {showImport && (
+        <ImportResultModal
+          participants={participants}
+          participantFundingSources={participantFundingSources}
+          onClose={() => setShowImport(false)}
+          onImported={() => { router.refresh(); setShowImport(false) }}
+        />
+      )}
+
       {/* 탭 토글 */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 print:hidden">
         <button
           onClick={() => setActiveTab('table')}
           className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
@@ -147,7 +161,7 @@ export default function TransactionTableClient({
       {activeTab === 'table' && (
       <>
       {/* 필터 영역 */}
-      <div className="bg-white rounded-xl ring-1 ring-zinc-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl ring-1 ring-zinc-200 shadow-sm overflow-hidden print:hidden">
         {/* 빠른 필터 + 검색 */}
         <div className="p-4 flex flex-wrap items-center gap-2">
           <span className="text-sm font-bold text-zinc-500 mr-1">필터:</span>
@@ -194,6 +208,13 @@ export default function TransactionTableClient({
           </div>
 
           <div className="flex items-center gap-2 ml-auto shrink-0">
+            <button
+              onClick={() => setShowImport(true)}
+              className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors flex items-center gap-1 print:hidden"
+              title="카카오뱅크 CSV 가져오기"
+            >
+              📤 CSV 가져오기
+            </button>
             <a
               href={(() => {
                 const params = new URLSearchParams()
@@ -325,9 +346,9 @@ export default function TransactionTableClient({
       </div>
 
       {/* 데이터 테이블 */}
-      <div className="bg-white rounded-xl ring-1 ring-zinc-200 shadow-sm overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
+      <div className="bg-white rounded-xl ring-1 ring-zinc-200 shadow-sm overflow-hidden flex flex-col print:ring-0 print:shadow-none">
+        <div className="overflow-x-auto print:overflow-visible">
+          <table className="w-full text-left text-sm whitespace-nowrap print:whitespace-normal print:text-xs">
             <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 font-bold uppercase text-[11px] tracking-wider">
               <tr>
                 <th className="px-4 py-3">상태</th>
@@ -336,8 +357,8 @@ export default function TransactionTableClient({
                 <th className="px-4 py-3">분류</th>
                 <th className="px-4 py-3">활동 내역</th>
                 <th className="px-4 py-3 text-right">금액</th>
-                <th className="px-4 py-3 text-center">결제수단</th>
-                <th className="px-4 py-3">관리</th>
+                <th className="px-4 py-3 text-center print:hidden">결제수단</th>
+                <th className="px-4 py-3 print:hidden">관리</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -368,8 +389,8 @@ export default function TransactionTableClient({
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right font-black text-zinc-900">{formatAmount(tx.amount)}원</td>
-                    <td className="px-4 py-3 text-center text-zinc-500 text-xs">{tx.payment_method || '-'}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-center text-zinc-500 text-xs print:hidden">{tx.payment_method || '-'}</td>
+                    <td className="px-4 py-3 print:hidden">
                       <Link
                         href={`/supporter/transactions/${tx.id}`}
                         className="text-blue-600 hover:text-blue-800 text-xs font-bold underline"

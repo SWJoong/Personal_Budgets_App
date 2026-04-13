@@ -24,7 +24,7 @@ export function AdminSidebar() {
   ]
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-slate-300 flex flex-col pt-6 pb-4 shadow-2xl z-40">
+    <aside className="h-full w-full bg-gradient-to-b from-slate-900 to-slate-800 text-slate-300 flex flex-col pt-6 pb-4 shadow-2xl overflow-y-auto">
       <div className="px-6 mb-8">
         <Link href="/admin" className="block hover:opacity-80 transition-opacity">
           <h2 className="text-white font-bold text-lg tracking-tight leading-tight">

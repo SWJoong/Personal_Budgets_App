@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getEvalTemplateSetting } from '@/app/actions/evalTemplates'
-import { resolveTemplateFields, resolveAiPrompt } from '@/types/eval-templates'
+import { resolveTemplateFields, resolveAiPrompt, type EvalTemplateId, type OrgEvalSetting } from '@/types/eval-templates'
 
 export async function upsertEvaluation(formData: FormData) {
   const supabase = await createClient()
@@ -13,7 +13,7 @@ export async function upsertEvaluation(formData: FormData) {
 
   const participantId = formData.get('participant_id') as string
   const month = formData.get('month') as string
-  const evaluation_template = (formData.get('evaluation_template') as string) || 'pcp'
+  const evaluation_template = ((formData.get('evaluation_template') as string) || 'pcp') as EvalTemplateId
   const isPcp = evaluation_template === 'pcp'
 
   // PCP 전용 컬럼
@@ -23,13 +23,18 @@ export async function upsertEvaluation(formData: FormData) {
   const concerned = isPcp ? formData.get('concerned') as string : null
   const next_step = isPcp ? formData.get('next_step') as string : null
 
-  // 현재 기관 평가 양식 설정 조회
-  const setting = await getEvalTemplateSetting()
+  // 제출된 양식 유형 기준으로 effective setting 구성
+  // custom인 경우에만 기관 설정에서 custom_fields를 가져옴
+  const orgSetting = evaluation_template === 'custom' ? await getEvalTemplateSetting() : null
+  const effectiveSetting: OrgEvalSetting = {
+    active: evaluation_template,
+    custom_fields: orgSetting?.custom_fields,
+  }
 
-  // 비PCP: 모든 필드를 template_data JSON으로 수집
+  // 비PCP: 제출된 양식 기준으로 필드를 수집
   let template_data: Record<string, string> | null = null
   if (!isPcp) {
-    const fields = resolveTemplateFields(setting)
+    const fields = resolveTemplateFields(effectiveSetting)
     template_data = {}
     for (const field of fields) {
       template_data[field.id] = (formData.get(field.id) as string) || ''
@@ -41,7 +46,7 @@ export async function upsertEvaluation(formData: FormData) {
   let easy_summary = null
 
   const apiKey = process.env.OPENAI_API_KEY
-  const aiPromptHint = resolveAiPrompt(setting)
+  const aiPromptHint = resolveAiPrompt(effectiveSetting)
 
   let shouldRunAI = false
   let aiUserContent = ''
@@ -50,7 +55,7 @@ export async function upsertEvaluation(formData: FormData) {
     shouldRunAI = !!(apiKey && (tried || learned || pleased || concerned))
     aiUserContent = `[시도한 것]: ${tried}\n[배운 것]: ${learned}\n[만족하는 것]: ${pleased}\n[고민되는 것]: ${concerned}\n[다음 단계]: ${next_step}`
   } else if (apiKey && template_data) {
-    const fields = resolveTemplateFields(setting)
+    const fields = resolveTemplateFields(effectiveSetting)
     shouldRunAI = fields.some(f => template_data![f.id])
     aiUserContent = fields.map(f => `[${f.label}]: ${template_data![f.id] || ''}`).join('\n')
   }

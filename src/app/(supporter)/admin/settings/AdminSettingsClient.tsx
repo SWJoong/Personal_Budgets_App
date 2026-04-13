@@ -197,7 +197,18 @@ export default function AdminSettingsClient({
 
         <div className="h-px bg-zinc-200" />
 
-        {/* 평가 양식 설정 */}
+        {/* 평가 양식 기본값 설정 */}
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-blue-50 border border-blue-100">
+          <span className="text-xl shrink-0 mt-0.5">💡</span>
+          <div>
+            <p className="text-sm font-bold text-blue-800">평가 양식은 각 평가 작성 시에도 변경 가능합니다</p>
+            <p className="text-xs text-blue-600 mt-1 leading-relaxed">
+              아래에서 설정하는 양식은 새 평가 작성 시 기본값으로 적용됩니다.
+              실무자가 개별 평가 작성 화면에서 양식을 변경하면, 해당 평가에는 변경된 양식이 저장됩니다.
+            </p>
+          </div>
+        </div>
+
         <EvalTemplateSettings initialSetting={evalSetting} />
       </main>
     </div>

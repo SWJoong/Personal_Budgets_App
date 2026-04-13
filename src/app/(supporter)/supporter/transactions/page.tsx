@@ -34,16 +34,25 @@ export default async function TransactionsPage({
     redirect('/')
   }
 
-  // 당사자 목록 (필터용)
+  // 당사자 목록 (필터용 + 임포트용)
   let participantsQuery = supabase
     .from('participants')
-    .select('id, name')
+    .select('id, name, funding_sources ( id, name )')
 
   if (profile.role === 'supporter') {
     participantsQuery = participantsQuery.eq('assigned_supporter_id', user.id)
   }
 
   const { data: participants } = await participantsQuery
+
+  // 당사자별 재원 맵 (임포트 모달용)
+  const participantFundingSources: Record<string, { id: string; name: string }[]> = {}
+  for (const p of participants || []) {
+    participantFundingSources[(p as any).id] = ((p as any).funding_sources || []).map((fs: any) => ({
+      id: fs.id,
+      name: fs.name,
+    }))
+  }
 
   // 트랜잭션 조회
   let txQuery = supabase
@@ -124,7 +133,7 @@ export default async function TransactionsPage({
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">거래 및 회계 관리 (장부)</h1>
         <Link
           href="/supporter/transactions/new"
-          className="px-4 py-2 bg-zinc-900 text-white text-sm font-bold rounded-lg hover:bg-zinc-800 transition-colors"
+          className="px-4 py-2 bg-zinc-900 text-white text-sm font-bold rounded-lg hover:bg-zinc-800 transition-colors print:hidden"
         >
           + 내역 직접 등록
         </Link>
@@ -155,6 +164,7 @@ export default async function TransactionsPage({
         <TransactionTableClient
           transactions={transactions || []}
           participants={(participants || []).map((p: any) => ({ id: p.id, name: p.name || '이름없음' }))}
+          participantFundingSources={participantFundingSources}
           categories={categories}
           paymentMethods={paymentMethods}
           currentFilters={params}

@@ -1,9 +1,9 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import EvaluationForm from '@/components/evaluations/EvaluationForm'
+import EvaluationPageClient from '@/components/evaluations/EvaluationPageClient'
 import { getEvalTemplateSetting } from '@/app/actions/evalTemplates'
-import { resolveTemplateFields, EVAL_TEMPLATES, type EvalField } from '@/types/eval-templates'
+import { type EvalTemplateId } from '@/types/eval-templates'
 
 interface Props {
   params: Promise<{ participantId: string; month: string }>
@@ -49,13 +49,12 @@ export default async function EvaluationDetailPage({ params }: Props) {
     .eq('month', month)
     .single()
 
-  // 현재 기관 평가 양식 설정
+  // 기관 평가 양식 기본 설정 (custom_fields 등 참조용)
   const evalSetting = await getEvalTemplateSetting()
-  const templateFields = resolveTemplateFields(evalSetting)
-  const templateId = evalSetting.active
-  const templateName = templateId === 'custom'
-    ? '자체 양식'
-    : EVAL_TEMPLATES[templateId].name
+
+  // 이미 저장된 평가가 있으면 해당 양식 우선, 없으면 기관 기본값
+  const initialTemplateId: EvalTemplateId =
+    (existingEvaluation?.evaluation_template as EvalTemplateId | undefined) ?? evalSetting.active
 
   const displayMonth = `${new Date(month).getFullYear()}년 ${new Date(month).getMonth() + 1}월`
 
@@ -64,7 +63,7 @@ export default async function EvaluationDetailPage({ params }: Props) {
       <header className="mb-8 flex items-center gap-4">
         <Link href="/supporter/evaluations" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl font-bold">←</Link>
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">{participant.name} 님 PCP 평가</h1>
+          <h1 className="text-2xl font-bold text-zinc-900">{participant.name} 님 월별 평가</h1>
           <p className="text-zinc-500 mt-1">{displayMonth} 활동 기록 및 분석</p>
         </div>
       </header>
@@ -104,27 +103,22 @@ export default async function EvaluationDetailPage({ params }: Props) {
           </section>
 
           <div className="p-6 rounded-2xl bg-blue-50 border border-blue-100">
-            <h4 className="text-blue-800 font-bold text-sm mb-2">💡 작성 팁 (PCP 4+1)</h4>
+            <h4 className="text-blue-800 font-bold text-sm mb-2">💡 작성 팁</h4>
             <p className="text-blue-700 text-xs leading-relaxed">
               당사자의 선택과 경험을 중심으로 기록해 주세요. 수치보다는 당사자가 무엇을 배우고 느꼈는지, 지원자가 무엇을 보았는지가 중요합니다.
+              우측에서 기관에 맞는 평가 양식을 선택할 수 있습니다.
             </p>
           </div>
         </div>
 
-        {/* 우측: 평가 작성 폼 */}
+        {/* 우측: 양식 선택 + 평가 작성 폼 */}
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-zinc-200 text-zinc-600 uppercase tracking-wider">
-              {templateName}
-            </span>
-            <span className="text-xs text-zinc-400">양식 기준으로 작성합니다</span>
-          </div>
-          <EvaluationForm
+          <EvaluationPageClient
             participantId={participantId}
             month={month}
             initialData={existingEvaluation}
-            templateId={templateId}
-            templateFields={templateFields}
+            orgSetting={evalSetting}
+            initialTemplateId={initialTemplateId}
           />
         </div>
       </main>
