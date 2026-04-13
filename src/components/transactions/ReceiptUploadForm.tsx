@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createTransaction } from '@/app/actions/transaction'
 import { analyzeReceipt } from '@/app/actions/ocr'
+import { searchPlaces } from '@/app/actions/geocode'
+import type { PlaceResult } from '@/app/actions/geocode'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import SelfCheckFeedback from '@/components/ui/SelfCheckFeedback'
 import { speak } from '@/utils/tts'
@@ -38,6 +40,8 @@ export default function ReceiptUploadForm({
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  // 자동 감지된 장소
+  const [autoPlace, setAutoPlace] = useState<PlaceResult | null>(null)
 
   const handleReceiptChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -52,9 +56,17 @@ export default function ReceiptUploadForm({
       try {
         const result = await analyzeReceipt(base64)
         if (result.success && result.data) {
-          setDescription(result.data.store || '')
+          const storeName = result.data.store || ''
+          setDescription(storeName)
           setAmount(String(result.data.amount || ''))
           if (result.data.date) setDate(result.data.date)
+
+          // 상호명으로 카카오 장소 자동 검색
+          if (storeName) {
+            searchPlaces(storeName).then(places => {
+              if (places.length > 0) setAutoPlace(places[0])
+            }).catch(() => {})
+          }
         }
       } catch (error) {
         console.error('분석 실패:', error)
@@ -94,6 +106,11 @@ export default function ReceiptUploadForm({
       formData.set('amount', amount)
       if (receiptFile) formData.set('receipt', receiptFile)
       if (activityFile) formData.set('activity_image', activityFile)
+      if (autoPlace) {
+        formData.set('place_name', autoPlace.place_name)
+        formData.set('place_lat', String(autoPlace.lat))
+        formData.set('place_lng', String(autoPlace.lng))
+      }
 
       const result = await createTransaction(formData)
       if (result.success) {
@@ -195,6 +212,25 @@ export default function ReceiptUploadForm({
           required
         />
       </div>
+
+      {/* 자동 감지된 장소 (OCR 결과) */}
+      {autoPlace && (
+        <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-blue-50 ring-1 ring-blue-200">
+          <span className="text-base shrink-0">📍</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-black text-blue-700">장소 자동 감지</p>
+            <p className="text-sm font-bold text-blue-900 truncate">{autoPlace.place_name}</p>
+            <p className="text-xs text-blue-400 truncate">{autoPlace.road_address_name || autoPlace.address_name}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAutoPlace(null)}
+            className="text-xs text-blue-400 hover:text-blue-600 font-bold shrink-0 px-2 py-1 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            지우기
+          </button>
+        </div>
+      )}
 
       {/* 금액 */}
       <div className="flex flex-col gap-2">

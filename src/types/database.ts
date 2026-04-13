@@ -128,10 +128,14 @@ export interface Database {
           memo: string | null
           payment_method: string | null
           receipt_image_url: string | null
+          activity_image_url?: string | null
           status: 'pending' | 'confirmed'
           creator_id: string | null
           created_at: string
           updated_at: string
+          place_name: string | null
+          place_lat: number | null
+          place_lng: number | null
         }
         Insert: {
           id?: string
@@ -144,10 +148,14 @@ export interface Database {
           memo?: string | null
           payment_method?: string | null
           receipt_image_url?: string | null
+          activity_image_url?: string | null
           status?: 'pending' | 'confirmed'
           creator_id?: string | null
           created_at?: string
           updated_at?: string
+          place_name?: string | null
+          place_lat?: number | null
+          place_lng?: number | null
         }
         Update: {
           id?: string
@@ -160,10 +168,14 @@ export interface Database {
           memo?: string | null
           payment_method?: string | null
           receipt_image_url?: string | null
+          activity_image_url?: string | null
           status?: 'pending' | 'confirmed'
           creator_id?: string | null
           created_at?: string
           updated_at?: string
+          place_name?: string | null
+          place_lat?: number | null
+          place_lng?: number | null
         }
       }
       file_links: {

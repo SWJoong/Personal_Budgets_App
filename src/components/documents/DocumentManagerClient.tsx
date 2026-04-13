@@ -24,14 +24,17 @@ export default function DocumentManagerClient({
   participants,
   initialDocuments,
   sisAssessments = [],
+  initialParticipantId,
 }: {
   participants: Participant[]
   initialDocuments: Document[]
   sisAssessments?: SisAssessmentRow[]
+  initialParticipantId?: string
 }) {
   const [loading, setLoading] = useState(false)
   const [documents, setDocuments] = useState(initialDocuments)
   const [fileError, setFileError] = useState('')
+  const [filterParticipantId, setFilterParticipantId] = useState(initialParticipantId || '')
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
 
@@ -104,7 +107,7 @@ export default function DocumentManagerClient({
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">대상 당사자</label>
-              <select name="participant_id" className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-zinc-900 focus:outline-none font-medium" required>
+              <select name="participant_id" defaultValue={initialParticipantId || ''} className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-zinc-900 focus:outline-none font-medium" required>
                 <option value="">당사자를 선택하세요</option>
                 {participants.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
@@ -162,6 +165,24 @@ export default function DocumentManagerClient({
 
       {/* 등록된 서류 목록 */}
       <section className="lg:col-span-2">
+        {/* 당사자 필터 */}
+        <div className="flex items-center gap-3 mb-3">
+          <select
+            value={filterParticipantId}
+            onChange={e => setFilterParticipantId(e.target.value)}
+            className="p-2.5 rounded-xl bg-white ring-1 ring-zinc-200 text-zinc-800 font-medium text-sm focus:ring-zinc-400 focus:outline-none"
+          >
+            <option value="">전체 당사자</option>
+            {participants.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+          {filterParticipantId && (
+            <button onClick={() => setFilterParticipantId('')} className="text-xs text-zinc-400 hover:text-zinc-600 font-bold">
+              필터 해제
+            </button>
+          )}
+        </div>
         <div className="bg-white rounded-2xl ring-1 ring-zinc-200 shadow-sm overflow-hidden">
           <table className="w-full text-left">
             <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 font-bold text-xs uppercase tracking-wider">
@@ -174,12 +195,12 @@ export default function DocumentManagerClient({
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
-              {documents.length === 0 ? (
+              {documents.filter(d => !filterParticipantId || d.participant_id === filterParticipantId).length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-zinc-400">등록된 서류가 없습니다.</td>
                 </tr>
               ) : (
-                documents.map((doc) => (
+                documents.filter(d => !filterParticipantId || d.participant_id === filterParticipantId).map((doc) => (
                   <tr key={doc.id} className="hover:bg-zinc-50 transition-colors">
                     <td className="px-6 py-4">
                       <a href={doc.url} target="_blank" rel="noopener noreferrer" className="font-bold text-zinc-900 hover:text-primary transition-colors flex items-center gap-2">

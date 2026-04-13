@@ -93,6 +93,15 @@ export default async function TransactionsPage({
 
   const { data: transactions } = await txQuery
 
+  // 지도용 — place 정보 포함된 전체 거래 (필터 무관)
+  const { data: allLocatedTx } = await supabase
+    .from('transactions')
+    .select('id, activity_name, amount, date, status, place_name, place_lat, place_lng, participant:participants!transactions_participant_id_fkey ( name )')
+    .not('place_lat', 'is', null)
+    .limit(500)
+
+  const mapApiKey = process.env.KAKAO_MAP_API_KEY ?? ''
+
   // 요약 계산
   const totalCount = transactions?.length || 0
   const pendingCount = transactions?.filter((t: any) => t.status === 'pending').length || 0
@@ -142,13 +151,25 @@ export default async function TransactionsPage({
           </div>
         </div>
 
-        {/* 클라이언트 컴포넌트로 필터 + 테이블 */}
+        {/* 클라이언트 컴포넌트로 필터 + 테이블 + 지도 */}
         <TransactionTableClient
           transactions={transactions || []}
           participants={(participants || []).map((p: any) => ({ id: p.id, name: p.name || '이름없음' }))}
           categories={categories}
           paymentMethods={paymentMethods}
           currentFilters={params}
+          mapApiKey={mapApiKey}
+          mapTransactions={(allLocatedTx || []).map((t: any) => ({
+            id: t.id,
+            activity_name: t.activity_name,
+            amount: t.amount,
+            date: t.date,
+            status: t.status,
+            place_name: t.place_name,
+            place_lat: t.place_lat,
+            place_lng: t.place_lng,
+            participant_name: t.participant?.name,
+          }))}
         />
       </main>
     </div>

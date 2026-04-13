@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { updateTransactionDetail, deleteTransactionWithBalance } from '@/app/actions/transaction'
+import PlaceSearch from '@/components/map/PlaceSearch'
+import type { PlaceResult } from '@/app/actions/geocode'
 
 interface Tx {
   id: string
@@ -19,6 +21,9 @@ interface Tx {
   funding_source_id: string | null
   participant: { name: string } | null
   funding_source: { name: string } | null
+  place_name?: string | null
+  place_lat?: number | null
+  place_lng?: number | null
 }
 
 export default function TransactionDetailClient({ tx }: { tx: Tx }) {
@@ -35,6 +40,13 @@ export default function TransactionDetailClient({ tx }: { tx: Tx }) {
   const [date, setDate] = useState(tx.date)
   const [paymentMethod, setPaymentMethod] = useState(tx.payment_method || '')
   const [status, setStatus] = useState<'pending' | 'confirmed'>(tx.status)
+
+  // 결제 장소
+  const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(
+    tx.place_name && tx.place_lat && tx.place_lng
+      ? { id: '', place_name: tx.place_name, address_name: '', road_address_name: '', category_name: '', lat: tx.place_lat, lng: tx.place_lng }
+      : null
+  )
 
   const categories = ['식비', '교통비', '여가활동', '생활용품', '의료비', '교육', '기타']
 
@@ -53,6 +65,9 @@ export default function TransactionDetailClient({ tx }: { tx: Tx }) {
           memo: memo || null,
           payment_method: paymentMethod || null,
           status,
+          place_name: selectedPlace?.place_name ?? null,
+          place_lat: selectedPlace?.lat ?? null,
+          place_lng: selectedPlace?.lng ?? null,
         },
         tx.status,
         Math.abs(tx.amount),
@@ -147,6 +162,31 @@ export default function TransactionDetailClient({ tx }: { tx: Tx }) {
                 <label className="text-xs font-black text-zinc-500">활동 내용</label>
                 <input type="text" value={activityName} onChange={e => setActivityName(e.target.value)}
                   className="p-3 rounded-lg bg-zinc-50 ring-1 ring-zinc-200 text-zinc-900 font-medium focus:ring-zinc-400 focus:outline-none" required />
+              </fieldset>
+
+              <fieldset className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black text-zinc-500">결제 장소</label>
+                  {!selectedPlace && activityName && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const { searchPlaces } = await import('@/app/actions/geocode')
+                        const places = await searchPlaces(activityName)
+                        if (places.length > 0) setSelectedPlace(places[0])
+                      }}
+                      className="text-xs font-bold text-blue-500 hover:text-blue-700 transition-colors"
+                    >
+                      활동명으로 자동 검색
+                    </button>
+                  )}
+                </div>
+                <PlaceSearch
+                  onSelect={setSelectedPlace}
+                  onClear={() => setSelectedPlace(null)}
+                  selectedPlace={selectedPlace}
+                  defaultQuery={activityName}
+                />
               </fieldset>
 
               <fieldset className="flex flex-col gap-2">

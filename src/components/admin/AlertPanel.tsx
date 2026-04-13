@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
+import { formatCurrency } from '@/utils/budget-visuals'
 
 interface Alert {
   type: 'low_balance' | 'pending_receipt' | 'missing_evaluation'
@@ -23,13 +24,14 @@ export default async function AlertPanel() {
     for (const fs of sources) {
       const budget = Number(fs.monthly_budget)
       if (budget <= 0) continue
-      const ratio = Math.round((Number(fs.current_month_balance) / budget) * 100)
-      if (ratio < threshold) {
+      const balance = Number(fs.current_month_balance)
+      const ratio = Math.round((balance / budget) * 100)
+      if (balance < threshold) {
         alerts.push({
           type: 'low_balance',
           participantId: p.id,
           participantName: (p as any).name,
-          message: `이번 달 잔액 ${ratio}% 남음 (기준 ${threshold}%)`,
+          message: `이번 달 잔액 ${ratio}% 남음 (기준액 ${formatCurrency(threshold)}원 미만)`,
         })
       }
     }

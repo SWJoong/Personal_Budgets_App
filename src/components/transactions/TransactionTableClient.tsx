@@ -3,6 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+import type { MapTransaction } from '@/components/map/KakaoMap'
+
+const KakaoMap = dynamic(() => import('@/components/map/KakaoMap'), { ssr: false })
 
 interface Transaction {
   id: string
@@ -15,6 +19,7 @@ interface Transaction {
   memo?: string
   participant?: {
     profiles?: { name: string }
+    name?: string
   }
 }
 
@@ -38,6 +43,8 @@ interface TransactionTableClientProps {
     sort?: string
     keyword?: string
   }
+  mapApiKey?: string
+  mapTransactions?: MapTransaction[]
 }
 
 export default function TransactionTableClient({
@@ -45,9 +52,12 @@ export default function TransactionTableClient({
   participants,
   categories,
   paymentMethods,
-  currentFilters
+  currentFilters,
+  mapApiKey = '',
+  mapTransactions = [],
 }: TransactionTableClientProps) {
   const router = useRouter()
+  const [activeTab, setActiveTab] = useState<'table' | 'map'>('table')
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [filters, setFilters] = useState({
     participant: currentFilters.participant || '',
@@ -94,6 +104,48 @@ export default function TransactionTableClient({
 
   return (
     <>
+      {/* 탭 토글 */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setActiveTab('table')}
+          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+            activeTab === 'table' ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-500 ring-1 ring-zinc-200 hover:ring-zinc-400'
+          }`}
+        >
+          📋 목록
+        </button>
+        <button
+          onClick={() => setActiveTab('map')}
+          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+            activeTab === 'map' ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-500 ring-1 ring-zinc-200 hover:ring-zinc-400'
+          }`}
+        >
+          🗺️ 지도
+          {mapTransactions.length > 0 && (
+            <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-[10px]">
+              {mapTransactions.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* 지도 탭 */}
+      {activeTab === 'map' && (
+        <div className="flex flex-col gap-3">
+          <p className="text-xs text-zinc-400 font-medium">
+            장소 정보가 등록된 거래를 지도에서 확인합니다. 거래 등록 시 장소를 검색하면 이 지도에 표시됩니다.
+          </p>
+          <KakaoMap
+            apiKey={mapApiKey}
+            transactions={mapTransactions}
+            height="520px"
+          />
+        </div>
+      )}
+
+      {/* 목록 탭 */}
+      {activeTab === 'table' && (
+      <>
       {/* 필터 영역 */}
       <div className="bg-white rounded-xl ring-1 ring-zinc-200 shadow-sm overflow-hidden">
         {/* 빠른 필터 + 검색 */}
@@ -325,6 +377,8 @@ export default function TransactionTableClient({
           </table>
         </div>
       </div>
+      </>
+      )}
     </>
   )
 }

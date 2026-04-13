@@ -177,6 +177,17 @@ export async function unpublishEvaluation(evaluationId: string, participantId: s
   return { success: true }
 }
 
+export async function getEvaluation(participantId: string, month: string) {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('evaluations')
+    .select('*')
+    .eq('participant_id', participantId)
+    .eq('month', month)
+    .single()
+  return data ?? null
+}
+
 export async function deleteEvaluation(evaluationId: string, participantId: string, month: string) {
   const supabase = await createClient()
 

@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createTransaction } from '@/app/actions/transaction'
+import PlaceSearch from '@/components/map/PlaceSearch'
+import type { PlaceResult } from '@/app/actions/geocode'
 
 interface ParticipantOption {
   id: string
@@ -33,6 +35,7 @@ export default function NewTransactionPage() {
   const [isExpense, setIsExpense] = useState(true) // 지출/수입 토글
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
+  const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null)
 
   const categories = ['식비', '교통비', '여가활동', '생활용품', '의료비', '교육', '기타']
 
@@ -119,6 +122,12 @@ export default function NewTransactionPage() {
       formData.append('status', status)
       formData.append('is_expense', String(isExpense))
       formData.append('payment_method', paymentMethod)
+
+      if (selectedPlace) {
+        formData.append('place_name', selectedPlace.place_name)
+        formData.append('place_lat', String(selectedPlace.lat))
+        formData.append('place_lng', String(selectedPlace.lng))
+      }
 
       if (receiptFile) {
         formData.append('receipt', receiptFile)
@@ -264,6 +273,19 @@ export default function NewTransactionPage() {
                 placeholder="어디에 사용했나요?"
                 className="p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-bold focus:ring-2 focus:ring-zinc-900 focus:outline-none"
                 required
+              />
+            </fieldset>
+
+            {/* 결제 장소 */}
+            <fieldset className="flex flex-col gap-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
+                결제 장소 <span className="normal-case font-medium text-zinc-300">(선택)</span>
+              </label>
+              <PlaceSearch
+                onSelect={setSelectedPlace}
+                onClear={() => setSelectedPlace(null)}
+                selectedPlace={selectedPlace}
+                defaultQuery={activityName}
               />
             </fieldset>
 

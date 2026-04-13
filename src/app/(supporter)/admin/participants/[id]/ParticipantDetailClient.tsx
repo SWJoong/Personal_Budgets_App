@@ -179,6 +179,34 @@ export default function ParticipantDetailClient({
           })}
         </section>
 
+        {/* 빠른 이동 */}
+        <section className="flex flex-col gap-3">
+          <h2 className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] ml-1">빠른 이동</h2>
+          <div className="grid grid-cols-3 gap-3">
+            <Link
+              href={`/supporter/transactions?participant=${participant.id}`}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.97] group"
+            >
+              <span className="text-2xl group-hover:scale-110 transition-transform">📒</span>
+              <span className="text-xs font-black text-zinc-700 text-center">거래 장부</span>
+            </Link>
+            <Link
+              href={`/supporter/evaluations?participant_id=${participant.id}`}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.97] group"
+            >
+              <span className="text-2xl group-hover:scale-110 transition-transform">📝</span>
+              <span className="text-xs font-black text-zinc-700 text-center">계획과 평가</span>
+            </Link>
+            <Link
+              href={`/supporter/documents?participant_id=${participant.id}`}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.97] group"
+            >
+              <span className="text-2xl group-hover:scale-110 transition-transform">📁</span>
+              <span className="text-xs font-black text-zinc-700 text-center">증빙 서류</span>
+            </Link>
+          </div>
+        </section>
+
         {/* 최근 사용 내역 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] ml-1">최근 사용 내역</h2>
@@ -188,12 +216,12 @@ export default function ParticipantDetailClient({
             </div>
           ) : (
             recentTransactions.map((tx: any) => (
-              <div key={tx.id} className="p-4 rounded-xl bg-white ring-1 ring-zinc-200 flex justify-between items-center">
+              <Link key={tx.id} href={`/supporter/transactions/${tx.id}`} className="p-4 rounded-xl bg-white ring-1 ring-zinc-200 flex justify-between items-center hover:ring-zinc-400 transition-colors active:scale-[0.99]">
                 <div>
                   <p className="font-bold text-zinc-800 text-sm">{tx.activity_name}</p>
                   <p className="text-xs text-zinc-400">{tx.date} · {tx.category || '미분류'}</p>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex flex-col items-end gap-1">
                   <p className="font-bold text-zinc-900">{formatCurrency(tx.amount)}원</p>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     tx.status === 'confirmed' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
@@ -201,7 +229,7 @@ export default function ParticipantDetailClient({
                     {tx.status === 'confirmed' ? '확정' : '임시'}
                   </span>
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </section>

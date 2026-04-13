@@ -29,6 +29,9 @@ export async function createTransaction(formData: FormData) {
   const payment_method = (formData.get('payment_method') as string) || '체크카드'
   const receiptFile = formData.get('receipt') as File | null
   const activityFile = formData.get('activity_image') as File | null
+  const place_name = (formData.get('place_name') as string) || null
+  const place_lat = formData.get('place_lat') ? Number(formData.get('place_lat')) : null
+  const place_lng = formData.get('place_lng') ? Number(formData.get('place_lng')) : null
 
   const amount = is_expense ? rawAmount : -Math.abs(rawAmount)
 
@@ -83,6 +86,9 @@ export async function createTransaction(formData: FormData) {
     receipt_image_url,
     activity_image_url,
     payment_method,
+    place_name,
+    place_lat,
+    place_lng,
   })
 
   if (error) {
@@ -148,6 +154,9 @@ export async function updateTransactionDetail(
     memo: string | null
     payment_method: string | null
     status: 'pending' | 'confirmed'
+    place_name?: string | null
+    place_lat?: number | null
+    place_lng?: number | null
   },
   oldStatus: 'pending' | 'confirmed',
   oldAmount: number,

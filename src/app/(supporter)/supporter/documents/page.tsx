@@ -1,10 +1,13 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import DocumentManagerClient from '@/components/documents/DocumentManagerClient'
 import { getAllSisAssessments } from '@/app/actions/sisAssessment'
 
-export default async function SupporterDocumentsPage() {
+export default async function SupporterDocumentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ participant_id?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -40,6 +43,7 @@ export default async function SupporterDocumentsPage() {
 
   // SIS-A 평가 목록 조회 (migration 실행 전이면 빈 배열)
   const sisAssessments = await getAllSisAssessments().catch(() => [])
+  const params = await searchParams
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 p-8">
@@ -53,6 +57,7 @@ export default async function SupporterDocumentsPage() {
           participants={(participants || []) as any}
           initialDocuments={(documents || []) as any}
           sisAssessments={sisAssessments as any}
+          initialParticipantId={params.participant_id}
         />
       </main>
     </div>
