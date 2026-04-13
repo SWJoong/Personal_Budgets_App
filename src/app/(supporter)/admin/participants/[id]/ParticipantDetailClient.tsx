@@ -63,6 +63,13 @@ export default function ParticipantDetailClient({
         </div>
         <div className="flex items-center gap-2">
           <Link
+            href={`/admin/participants/${participant.id}/report`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors"
+          >
+            <span>🖨️</span>
+            <span>월간 보고서</span>
+          </Link>
+          <Link
             href={`/admin/participants/${participant.id}/preview`}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
           >

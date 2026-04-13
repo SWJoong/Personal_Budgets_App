@@ -6,7 +6,12 @@ import ParticipantPreviewCard from '@/components/admin/ParticipantPreviewCard'
 import AlertPanel from '@/components/admin/AlertPanel'
 import SettlementSummary from '@/components/admin/SettlementSummary'
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string; supporter_id?: string }>
+}) {
+  const params = await searchParams
   const supabase = await createClient()
   const authData = await supabase.auth.getUser()
   const user = authData.data.user
@@ -24,27 +29,48 @@ export default async function AdminDashboardPage() {
     redirect('/')
   }
 
-  // seed.sql의 첫 4명 참가자 ID
-  const targetParticipantIds = [
-    '33333333-3333-3333-3333-333333333301', // 김철수
-    '33333333-3333-3333-3333-333333333302', // 이영희
-    '33333333-3333-3333-3333-333333333303', // 박민수
-    '33333333-3333-3333-3333-333333333304', // 정수진
-  ]
+  const isSuppoterView = params.view === 'supporter'
+  const selectedSupporterId = params.supporter_id || ''
 
-  const previewData = await supabase
-    .from('participants')
-    .select(`
-      *,
-      funding_sources (*)
-    `)
-    .in('id', targetParticipantIds)
+  // 실무자 목록 조회 (뷰 토글용)
+  const { data: supporters } = await supabase
+    .from('profiles')
+    .select('id, name, email')
+    .eq('role', 'supporter')
     .order('name', { ascending: true })
+
+  // 미리보기 참가자 목록 결정
+  let previewParticipantsQuery = supabase
+    .from('participants')
+    .select('*, funding_sources (*)')
+    .order('name', { ascending: true })
+
+  if (isSuppoterView && selectedSupporterId) {
+    previewParticipantsQuery = previewParticipantsQuery.eq('assigned_supporter_id', selectedSupporterId)
+  } else if (!isSuppoterView) {
+    // 관리자 뷰: seed.sql 첫 4명 데모 참가자
+    const targetParticipantIds = [
+      '33333333-3333-3333-3333-333333333301',
+      '33333333-3333-3333-3333-333333333302',
+      '33333333-3333-3333-3333-333333333303',
+      '33333333-3333-3333-3333-333333333304',
+    ]
+    previewParticipantsQuery = previewParticipantsQuery.in('id', targetParticipantIds)
+  }
+
+  const previewData = await previewParticipantsQuery
   const previewParticipants: any[] = previewData.data || []
 
-  const { data: allParticipants } = await supabase
+  // 통계: 실무자 뷰면 해당 supporter 배정 당사자만, 관리자 뷰면 전체
+  let statsQuery = supabase
     .from('participants')
     .select('id, monthly_budget_default, funding_sources(monthly_budget, current_month_balance)')
+
+  if (isSuppoterView && selectedSupporterId) {
+    statsQuery = statsQuery.eq('assigned_supporter_id', selectedSupporterId)
+  }
+
+  const { data: allParticipants } = await statsQuery
 
   const totalParticipants = allParticipants?.length || 0
   const totalMonthlyBudget = allParticipants?.reduce((sum: number, p: any) => {
@@ -59,27 +85,70 @@ export default async function AdminDashboardPage() {
 
   const totalMonthlySpent = totalMonthlyBudget - totalMonthlyBalance
 
+  const selectedSupporterName = (supporters || []).find((s: any) => s.id === selectedSupporterId)?.name || ''
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
       <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-        <h1 className="text-xl font-bold tracking-tight">관리자 대시보드</h1>
-        <div className="flex items-center gap-3">
+        <h1 className="text-xl font-bold tracking-tight">
+          {isSuppoterView ? '실무자 뷰' : '관리자 대시보드'}
+        </h1>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin"
+            className={`px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${
+              !isSuppoterView ? 'bg-red-50 text-red-500' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+            }`}
+          >
+            관리자
+          </Link>
+          <Link
+            href="/admin?view=supporter"
+            className={`px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${
+              isSuppoterView ? 'bg-blue-50 text-blue-600' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+            }`}
+          >
+            실무자 뷰
+          </Link>
           <Link
             href="/admin/participants"
-            className="text-xs font-bold text-zinc-500 hover:text-zinc-700 transition-colors"
+            className="text-xs font-bold text-zinc-400 hover:text-zinc-600 transition-colors ml-1"
           >
-            전체 관리
+            전체 →
           </Link>
-          <div className="px-3 py-1 bg-red-50 rounded-full text-[10px] font-bold text-red-500">관리자</div>
         </div>
       </header>
 
       <main className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
-        {/* 안내 배너 */}
-        <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium">
-          <span className="mt-0.5 text-base">ℹ️</span>
-          <span>현재 화면은 관리자 화면입니다. 좌측 하단 로그아웃 시 당사자 화면을 선택해 볼 수 있습니다.</span>
-        </div>
+        {/* 실무자 뷰 배너 + 실무자 선택 */}
+        {isSuppoterView ? (
+          <div className="flex flex-col gap-3 px-4 py-4 rounded-xl bg-blue-50 border border-blue-200">
+            <div className="flex items-center gap-2 text-blue-700 text-sm font-bold">
+              <span>👁</span>
+              <span>실무자 접근 범위 미리보기 — 선택한 실무자의 담당 당사자 데이터만 표시됩니다.</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(supporters || []).map((s: any) => (
+                <Link
+                  key={s.id}
+                  href={`/admin?view=supporter&supporter_id=${s.id}`}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
+                    selectedSupporterId === s.id
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white ring-1 ring-blue-200 text-blue-700 hover:bg-blue-100'
+                  }`}
+                >
+                  {s.name || s.email}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium">
+            <span className="mt-0.5 text-base">ℹ️</span>
+            <span>현재 화면은 관리자 화면입니다. 좌측 하단 로그아웃 시 당사자 화면을 선택해 볼 수 있습니다.</span>
+          </div>
+        )}
 
         {/* 환영 메시지 */}
         <section className="p-6 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-700 text-white shadow-lg">
@@ -137,9 +206,13 @@ export default async function AdminDashboardPage() {
         <section className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-black text-zinc-900">당사자 화면 미리보기</h2>
+              <h2 className="text-lg font-black text-zinc-900">
+                {isSuppoterView && selectedSupporterName ? `${selectedSupporterName}의 담당 당사자` : '당사자 화면 미리보기'}
+              </h2>
               <p className="text-xs text-zinc-500 font-medium mt-0.5">
-                참가자들이 보는 화면을 미리 확인할 수 있습니다
+                {isSuppoterView && selectedSupporterName
+                  ? '선택한 실무자에게 배정된 당사자만 표시됩니다'
+                  : '참가자들이 보는 화면을 미리 확인할 수 있습니다'}
               </p>
             </div>
             <Link
@@ -163,11 +236,13 @@ export default async function AdminDashboardPage() {
           ) : (
             <div className="p-8 rounded-2xl bg-zinc-50 border-2 border-dashed border-zinc-200 text-center">
               <p className="text-sm font-bold text-zinc-400">
-                미리보기 대상 참가자가 없습니다.
+                {isSuppoterView ? '이 실무자에게 배정된 당사자가 없습니다.' : '미리보기 대상 참가자가 없습니다.'}
               </p>
-              <p className="text-xs text-zinc-400 mt-1">
-                seed.sql을 실행하여 데모 데이터를 생성하세요.
-              </p>
+              {!isSuppoterView && (
+                <p className="text-xs text-zinc-400 mt-1">
+                  seed.sql을 실행하여 데모 데이터를 생성하세요.
+                </p>
+              )}
             </div>
           )}
         </section>

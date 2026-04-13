@@ -207,6 +207,13 @@ export default function TransactionTableClient({
               📥 CSV
             </a>
             <button
+              onClick={() => window.print()}
+              className="px-3 py-1.5 bg-zinc-700 text-white rounded-lg text-sm font-bold hover:bg-zinc-900 transition-colors flex items-center gap-1 print:hidden"
+              title="현재 목록 인쇄 / PDF 저장"
+            >
+              🖨️ 인쇄
+            </button>
+            <button
               onClick={() => setShowAdvanced(!showAdvanced)}
               className="px-3 py-1.5 bg-zinc-100 text-zinc-600 rounded-lg text-sm font-bold hover:bg-zinc-200"
             >

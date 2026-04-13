@@ -16,9 +16,20 @@ export interface MapTransaction {
   participant_name?: string
 }
 
+export interface MapPlan {
+  id: string
+  activity_name: string
+  place_name: string
+  place_lat: number
+  place_lng: number
+  date: string
+  cost?: number
+}
+
 interface KakaoMapProps {
   apiKey: string
   transactions: MapTransaction[]
+  plans?: MapPlan[]
   height?: string
 }
 
@@ -27,7 +38,16 @@ const STATUS_COLOR: Record<string, string> = {
   pending: '#f97316',
 }
 
-export default function KakaoMap({ apiKey, transactions, height = '480px' }: KakaoMapProps) {
+// 계획 핀용 인디고 원형 SVG 마커 이미지 (data URI)
+const PLAN_MARKER_SVG = encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
+  <ellipse cx="16" cy="38" rx="6" ry="2" fill="rgba(0,0,0,0.15)"/>
+  <path d="M16 0C9.373 0 4 5.373 4 12c0 9 12 26 12 26S28 21 28 12C28 5.373 22.627 0 16 0z" fill="#6366f1"/>
+  <circle cx="16" cy="12" r="6" fill="white"/>
+  <text x="16" y="16" font-size="8" text-anchor="middle" fill="#6366f1" font-family="sans-serif" font-weight="bold">📋</text>
+</svg>`)
+
+export default function KakaoMap({ apiKey, transactions, plans = [], height = '480px' }: KakaoMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<kakao.maps.Map | null>(null)
   const markersRef = useRef<kakao.maps.Marker[]>([])
@@ -36,6 +56,7 @@ export default function KakaoMap({ apiKey, transactions, height = '480px' }: Kak
   const validTx = transactions.filter(
     (t) => t.place_lat !== null && t.place_lng !== null
   )
+  const validPlans = plans.filter((p) => p.place_lat && p.place_lng)
 
   const drawMarkers = useCallback(() => {
     const map = mapRef.current
@@ -45,10 +66,12 @@ export default function KakaoMap({ apiKey, transactions, height = '480px' }: Kak
     markersRef.current.forEach((m) => m.setMap(null))
     markersRef.current = []
 
-    if (validTx.length === 0) return
+    const hasAny = validTx.length > 0 || validPlans.length > 0
+    if (!hasAny) return
 
     const bounds = new kakao.maps.LatLngBounds()
 
+    // 거래 마커 (기존)
     validTx.forEach((tx) => {
       const position = new kakao.maps.LatLng(tx.place_lat!, tx.place_lng!)
       bounds.extend(position)
@@ -86,8 +109,52 @@ export default function KakaoMap({ apiKey, transactions, height = '480px' }: Kak
       })
     })
 
+    // 계획 마커 (신규 — 인디고 핀)
+    const planMarkerImage = new kakao.maps.MarkerImage(
+      `data:image/svg+xml;charset=utf-8,${PLAN_MARKER_SVG}`,
+      new kakao.maps.Size(32, 40),
+      { offset: new kakao.maps.Point(16, 40) }
+    )
+
+    validPlans.forEach((plan) => {
+      const position = new kakao.maps.LatLng(plan.place_lat, plan.place_lng)
+      bounds.extend(position)
+
+      const marker = new kakao.maps.Marker({ position, map, image: planMarkerImage })
+      markersRef.current.push(marker)
+
+      const content = `
+        <div style="
+          padding:10px 14px;
+          font-size:12px;
+          line-height:1.6;
+          max-width:220px;
+          border-radius:10px;
+          background:#fff;
+          box-shadow:0 2px 8px rgba(0,0,0,.15);
+          border-left:3px solid #6366f1;
+        ">
+          <span style="font-size:10px;font-weight:bold;color:#6366f1;background:#eef2ff;padding:2px 6px;border-radius:4px;">📋 계획</span>
+          <br/>
+          <b style="font-size:13px;color:#18181b;">${plan.activity_name}</b>
+          <br/><span style="color:#71717a;">${plan.place_name}</span>
+          <br/>
+          <span style="color:#3f3f46;">${plan.date}</span>
+          ${plan.cost ? `&nbsp;·&nbsp;<b style="color:#6366f1;">${formatCurrency(plan.cost)}원 예상</b>` : ''}
+        </div>
+      `
+
+      const infoWindow = new kakao.maps.InfoWindow({ content, removable: true })
+
+      kakao.maps.event.addListener(marker, 'click', () => {
+        infoWindowRef.current?.close()
+        infoWindow.open(map, marker)
+        infoWindowRef.current = infoWindow
+      })
+    })
+
     map.setBounds(bounds, 60, 60, 60, 60)
-  }, [validTx])
+  }, [validTx, validPlans])
 
   const initMap = useCallback(() => {
     if (!mapContainerRef.current || !window.kakao?.maps) return
@@ -121,16 +188,16 @@ export default function KakaoMap({ apiKey, transactions, height = '480px' }: Kak
         onLoad={() => window.kakao.maps.load(initMap)}
       />
       <div ref={mapContainerRef} style={{ width: '100%', height }} />
-      {validTx.length === 0 && (
+      {validTx.length === 0 && validPlans.length === 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-50/90 gap-2">
           <span className="text-3xl">📍</span>
-          <p className="text-sm font-bold text-zinc-500">장소 정보가 있는 거래가 없습니다.</p>
-          <p className="text-xs text-zinc-400">거래 등록 시 장소를 검색하면 지도에 표시됩니다.</p>
+          <p className="text-sm font-bold text-zinc-500">장소 정보가 있는 내역이 없습니다.</p>
+          <p className="text-xs text-zinc-400">계획 세울 때 장소를 검색하면 지도에 표시됩니다.</p>
         </div>
       )}
-      {validTx.length > 0 && (
+      {(validTx.length > 0 || validPlans.length > 0) && (
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl text-xs font-bold text-zinc-600 shadow-sm ring-1 ring-zinc-200">
-          📍 {validTx.length}개 장소
+          📍 {validTx.length + validPlans.length}개 장소
         </div>
       )}
     </div>

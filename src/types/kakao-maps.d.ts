@@ -23,6 +23,18 @@ declare namespace kakao {
       isEmpty(): boolean
     }
 
+    class Size {
+      constructor(width: number, height: number)
+    }
+
+    class Point {
+      constructor(x: number, y: number)
+    }
+
+    class MarkerImage {
+      constructor(src: string, size: Size, options?: { offset?: Point; spriteSize?: Size; spriteOrigin?: Point })
+    }
+
     class Marker {
       constructor(options: MarkerOptions)
       setMap(map: Map | null): void
@@ -48,6 +60,7 @@ declare namespace kakao {
       position: LatLng
       map?: Map
       title?: string
+      image?: MarkerImage
     }
 
     interface InfoWindowOptions {

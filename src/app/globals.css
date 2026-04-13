@@ -417,6 +417,65 @@ html.yellow-bg {
   background-color: #FFFF00 !important;
 }
 
+/* ─── 인쇄 / PDF 저장 ─── */
+@media print {
+  /* 사이드바·탭바·헤더·필터·버튼 숨기기 */
+  aside,
+  nav,
+  .tab-bar,
+  [data-print-hide] {
+    display: none !important;
+  }
+
+  /* Tailwind print:hidden 유틸리티 */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* SupporterLayoutClient 사이드바 컨테이너 */
+  .md\:block:has([data-sidebar]),
+  [data-sidebar] {
+    display: none !important;
+  }
+
+  /* 레이아웃 펼치기 — ml-64 해제 */
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 11pt;
+  }
+
+  main {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* 테이블 인쇄 최적화 */
+  table {
+    border-collapse: collapse;
+    font-size: 10pt;
+  }
+
+  /* 페이지 나누기 방지 */
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* 링크 URL 숨기기 */
+  a[href]::after {
+    content: none !important;
+  }
+
+  /* 색상 유지 */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 html.yellow-bg body {
   background-color: #FFFF00 !important;
 }

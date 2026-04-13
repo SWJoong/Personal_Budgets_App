@@ -147,6 +147,9 @@ export async function savePlan({
   options,
   selectedOptionIndex,
   details,
+  place_name,
+  place_lat,
+  place_lng,
 }: {
   participantId: string
   activityName: string
@@ -154,6 +157,9 @@ export async function savePlan({
   options: PlanOption[]
   selectedOptionIndex: number
   details?: PlanContext
+  place_name?: string | null
+  place_lat?: number | null
+  place_lng?: number | null
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -176,6 +182,9 @@ export async function savePlan({
     selected_option_index: selectedOptionIndex,
     creator_id,
     details: details || null,
+    place_name: place_name ?? null,
+    place_lat: place_lat ?? null,
+    place_lng: place_lng ?? null,
   })
 
   if (error) {

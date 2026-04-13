@@ -285,6 +285,9 @@ export interface Database {
           creator_id: string | null
           created_at: string
           updated_at: string
+          place_name: string | null
+          place_lat: number | null
+          place_lng: number | null
         }
         Insert: {
           id?: string
@@ -296,6 +299,9 @@ export interface Database {
           creator_id?: string | null
           created_at?: string
           updated_at?: string
+          place_name?: string | null
+          place_lat?: number | null
+          place_lng?: number | null
         }
         Update: {
           id?: string
@@ -307,6 +313,9 @@ export interface Database {
           creator_id?: string | null
           created_at?: string
           updated_at?: string
+          place_name?: string | null
+          place_lat?: number | null
+          place_lng?: number | null
         }
       }
       evaluations: {
