@@ -288,6 +288,9 @@ export async function updateTransaction(
     memo?: string | null
     status?: 'pending' | 'confirmed'
     funding_source_id?: string
+    place_name?: string | null
+    place_lat?: number | null
+    place_lng?: number | null
   }
 ) {
   const supabase = await createClient()

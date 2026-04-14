@@ -23,14 +23,14 @@ export async function analyzeReceipt(base64Image: string) {
         messages: [
           {
             role: "system",
-            content: "너는 영수증 분석 전문가야. 이미지에서 '날짜(YYYY-MM-DD)', '합계 금액(숫자만)', '상호명(활동 내용)'을 찾아 반드시 JSON 형식으로만 답변해줘. 결과 예시: {\"date\": \"2026-03-24\", \"amount\": 15000, \"store\": \"스타벅스\"}"
+            content: "너는 영수증 분석 전문가야. 이미지에서 '날짜(YYYY-MM-DD)', '합계 금액(숫자만)', '상호명', '주소'를 찾아 반드시 JSON 형식으로만 답변해줘. 주소가 없으면 null로 반환. 결과 예시: {\"date\": \"2026-03-24\", \"amount\": 15000, \"store\": \"스타벅스\", \"address\": \"서울특별시 강남구 테헤란로 101\"}"
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "이 영수증에서 날짜, 금액, 상호명을 추출해줘."
+                text: "이 영수증에서 날짜, 금액, 상호명, 주소를 추출해줘."
               },
               {
                 type: "image_url",
@@ -58,7 +58,8 @@ export async function analyzeReceipt(base64Image: string) {
       data: {
         date: result.date,
         amount: result.amount,
-        store: result.store
+        store: result.store,
+        address: result.address ?? null
       }
     };
   } catch (error: any) {

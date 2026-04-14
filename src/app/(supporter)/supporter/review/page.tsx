@@ -54,6 +54,9 @@ export default async function ReviewQueuePage() {
       payment_method,
       receipt_image_url,
       funding_source_id,
+      place_name,
+      place_lat,
+      place_lng,
       participants!transactions_participant_id_fkey ( name ),
       funding_sources!transactions_funding_source_id_fkey ( name )
     `)
@@ -78,6 +81,9 @@ export default async function ReviewQueuePage() {
     receipt_image_url: t.receipt_image_url ?? null,
     funding_source_id: t.funding_source_id ?? null,
     funding_source_name: t.funding_sources?.name ?? null,
+    place_name: t.place_name ?? null,
+    place_lat: t.place_lat ?? null,
+    place_lng: t.place_lng ?? null,
   }))
 
   return (

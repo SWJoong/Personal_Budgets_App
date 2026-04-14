@@ -2,6 +2,27 @@
 
 import { useState, useTransition } from 'react'
 import { updateTransactionStatus, updateTransaction, deleteTransaction } from '@/app/actions/transaction'
+import type { PlaceResult } from '@/app/actions/geocode'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type KakaoWindow = Window & { kakao: any }
+
+function loadKakaoSDK(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const w = window as KakaoWindow
+    if (w.kakao?.maps?.services) { resolve(); return }
+    const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY
+    if (!apiKey) { reject(new Error('NEXT_PUBLIC_KAKAO_MAP_API_KEY not set')); return }
+    const existing = document.getElementById('kakao-map-sdk-services')
+    if (existing) { existing.addEventListener('load', () => w.kakao.maps.load(() => resolve())); return }
+    const script = document.createElement('script')
+    script.id = 'kakao-map-sdk-services'
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services&autoload=false`
+    script.onload = () => w.kakao.maps.load(() => resolve())
+    script.onerror = () => reject(new Error('Failed to load Kakao SDK'))
+    document.head.appendChild(script)
+  })
+}
 
 interface FundingSource {
   id: string
@@ -20,6 +41,9 @@ interface ReviewTransaction {
   receipt_image_url: string | null
   funding_source_id: string | null
   funding_source_name: string | null
+  place_name: string | null
+  place_lat: number | null
+  place_lng: number | null
 }
 
 interface Props {
@@ -31,6 +55,10 @@ export default function ReviewQueueClient({ transactions, allFundingSources }: P
   const [items, setItems] = useState(transactions)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValues, setEditValues] = useState<Partial<ReviewTransaction>>({})
+  const [editPlace, setEditPlace] = useState<PlaceResult | null>(null)
+  const [placeSearchQuery, setPlaceSearchQuery] = useState('')
+  const [placeSearchResults, setPlaceSearchResults] = useState<PlaceResult[]>([])
+  const [placeSearching, setPlaceSearching] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set())
@@ -52,11 +80,55 @@ export default function ReviewQueueClient({ transactions, allFundingSources }: P
       category: tx.category,
       funding_source_id: tx.funding_source_id ?? '',
     })
+    setEditPlace(tx.place_name ? {
+      id: '',
+      place_name: tx.place_name,
+      address_name: '',
+      road_address_name: '',
+      category_name: '',
+      lat: tx.place_lat ?? 0,
+      lng: tx.place_lng ?? 0,
+    } : null)
+    setPlaceSearchQuery(tx.activity_name)
+    setPlaceSearchResults([])
   }
 
   function cancelEdit() {
     setEditingId(null)
     setEditValues({})
+    setEditPlace(null)
+    setPlaceSearchResults([])
+  }
+
+  async function handlePlaceSearch() {
+    if (!placeSearchQuery.trim()) return
+    setPlaceSearching(true)
+    setPlaceSearchResults([])
+    try {
+      await loadKakaoSDK()
+      const w = window as KakaoWindow
+      const ps = new w.kakao.maps.services.Places()
+      ps.keywordSearch(
+        placeSearchQuery,
+        (data: any[], status: string) => {
+          if (status === w.kakao.maps.services.Status.OK) {
+            setPlaceSearchResults(data.slice(0, 5).map((doc: any) => ({
+              id: doc.id,
+              place_name: doc.place_name,
+              address_name: doc.address_name,
+              road_address_name: doc.road_address_name,
+              category_name: doc.category_name,
+              lat: parseFloat(doc.y),
+              lng: parseFloat(doc.x),
+            })))
+          }
+          setPlaceSearching(false)
+        },
+        { size: 5 }
+      )
+    } catch {
+      setPlaceSearching(false)
+    }
   }
 
   async function saveEdit(txId: string) {
@@ -69,12 +141,17 @@ export default function ReviewQueueClient({ transactions, allFundingSources }: P
         date: editValues.date,
         category: editValues.category,
         funding_source_id: editValues.funding_source_id || undefined,
+        place_name: editPlace?.place_name ?? null,
+        place_lat: editPlace?.lat ?? null,
+        place_lng: editPlace?.lng ?? null,
       })
       setItems(prev => prev.map(t => t.id === txId
-        ? { ...t, ...editValues, amount }
+        ? { ...t, ...editValues, amount, place_name: editPlace?.place_name ?? null, place_lat: editPlace?.lat ?? null, place_lng: editPlace?.lng ?? null }
         : t
       ))
       setEditingId(null)
+      setEditPlace(null)
+      setPlaceSearchResults([])
     } catch {
       alert('수정에 실패했어요. 다시 시도해 주세요.')
     } finally {
@@ -224,6 +301,62 @@ export default function ReviewQueueClient({ transactions, allFundingSources }: P
                       </select>
                     </div>
                   )}
+                  {/* 결제 장소 검색 */}
+                  <div className="flex flex-col gap-1.5 col-span-2">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">결제 장소</label>
+                    {editPlace ? (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-50 ring-1 ring-blue-200">
+                        <span className="text-sm">📍</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-blue-900 truncate">{editPlace.place_name}</p>
+                          <p className="text-xs text-blue-400 truncate">{editPlace.road_address_name || editPlace.address_name}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => { setEditPlace(null); setPlaceSearchResults([]) }}
+                          className="text-xs font-bold text-blue-400 hover:text-blue-600 shrink-0"
+                        >
+                          변경
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-1">
+                        <div className="flex gap-1.5">
+                          <input
+                            type="text"
+                            value={placeSearchQuery}
+                            onChange={e => setPlaceSearchQuery(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handlePlaceSearch())}
+                            placeholder="장소명 검색"
+                            className="flex-1 px-3 py-2 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm font-bold outline-none focus:ring-zinc-900"
+                          />
+                          <button
+                            type="button"
+                            onClick={handlePlaceSearch}
+                            disabled={placeSearching || !placeSearchQuery.trim()}
+                            className="px-3 py-2 rounded-xl bg-zinc-900 text-white text-xs font-bold hover:bg-zinc-700 disabled:bg-zinc-300 transition-colors"
+                          >
+                            {placeSearching ? '...' : '검색'}
+                          </button>
+                        </div>
+                        {placeSearchResults.length > 0 && (
+                          <div className="rounded-xl ring-1 ring-zinc-200 overflow-hidden bg-white">
+                            {placeSearchResults.map(p => (
+                              <button
+                                key={p.id}
+                                type="button"
+                                onClick={() => { setEditPlace(p); setPlaceSearchResults([]) }}
+                                className="w-full flex flex-col px-3 py-2 text-left hover:bg-zinc-50 border-b border-zinc-100 last:border-0 transition-colors"
+                              >
+                                <span className="text-sm font-bold text-zinc-900">{p.place_name}</span>
+                                <span className="text-xs text-zinc-400">{p.road_address_name || p.address_name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-2 pt-1">
                   <button
@@ -266,6 +399,9 @@ export default function ReviewQueueClient({ transactions, allFundingSources }: P
                   <p className="text-xs text-zinc-400 mt-0.5">
                     {tx.date} · {tx.category} · {tx.funding_source_name ?? '재원 미지정'}
                   </p>
+                  {tx.place_name && (
+                    <p className="text-xs text-blue-500 mt-0.5 truncate">📍 {tx.place_name}</p>
+                  )}
                 </div>
 
                 {/* 금액 */}
