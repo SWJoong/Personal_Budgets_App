@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { AdminHelpPage } from '@/data/adminHelpContent'
 
 interface Props {
@@ -8,7 +10,10 @@ interface Props {
 }
 
 export default function AdminHelpModal({ page, onClose }: Props) {
-  return (
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
+  const modal = (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
       onClick={onClose}
@@ -65,4 +70,7 @@ export default function AdminHelpModal({ page, onClose }: Props) {
       </div>
     </div>
   )
+
+  if (!mounted) return null
+  return createPortal(modal, document.body)
 }

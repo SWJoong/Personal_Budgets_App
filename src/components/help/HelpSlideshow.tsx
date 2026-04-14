@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import type { HelpSection } from '@/data/helpSlides'
 
 interface Props {
@@ -10,11 +11,14 @@ interface Props {
 
 export default function HelpSlideshow({ section, onClose }: Props) {
   const [current, setCurrent] = useState(0)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   const slide = section.slides[current]
   const total = section.slides.length
   const isLast = current === total - 1
 
-  return (
+  const modal = (
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
       onClick={onClose}
@@ -99,4 +103,7 @@ export default function HelpSlideshow({ section, onClose }: Props) {
       </div>
     </div>
   )
+
+  if (!mounted) return null
+  return createPortal(modal, document.body)
 }

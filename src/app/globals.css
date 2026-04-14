@@ -485,3 +485,7 @@ html.yellow-bg .bg-white,
 html.yellow-bg .bg-background {
   background-color: #FFFDE0 !important;
 }
+
+/* 스크롤바 숨김 유틸리티 */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

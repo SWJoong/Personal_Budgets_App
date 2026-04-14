@@ -7,41 +7,15 @@ import { createTransaction } from '@/app/actions/transaction'
 import { analyzeReceipt } from '@/app/actions/ocr'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import { speak } from '@/utils/tts'
+import {
+  loadEmojiCatalog, searchEmoji, getEmojisByGroup,
+  GROUP_LABELS, GROUP_ORDER,
+  type EmojiEntry,
+} from '@/utils/emojiCatalog'
 
 type WidgetStyle = 'pie' | 'water' | 'emoji' | 'text'
 
 const DEFAULT_EMOJI_FAVORITES = ['🍎', '🍪', '⭐', '🐥', '🌸', '🎈', '🍋', '🍩', '🦊', '🎀']
-
-// 검색용 이모지 카탈로그 (이름으로 검색 가능)
-const EMOJI_CATALOG = [
-  { emoji: '🍎', name: '사과' }, { emoji: '🍊', name: '귤 오렌지' },
-  { emoji: '🍋', name: '레몬' }, { emoji: '🍇', name: '포도' },
-  { emoji: '🍓', name: '딸기' }, { emoji: '🍑', name: '복숭아' },
-  { emoji: '🫐', name: '블루베리' }, { emoji: '🍉', name: '수박' },
-  { emoji: '🍪', name: '쿠키 과자' }, { emoji: '🍩', name: '도넛' },
-  { emoji: '🍰', name: '케이크' }, { emoji: '🧁', name: '컵케이크' },
-  { emoji: '🍕', name: '피자' }, { emoji: '🍔', name: '햄버거' },
-  { emoji: '🍦', name: '아이스크림' }, { emoji: '🍫', name: '초콜릿' },
-  { emoji: '⭐', name: '별' }, { emoji: '🌟', name: '반짝별' },
-  { emoji: '💫', name: '빛나는별' }, { emoji: '✨', name: '반짝' },
-  { emoji: '❤️', name: '하트' }, { emoji: '🧡', name: '주황하트' },
-  { emoji: '💛', name: '노란하트' }, { emoji: '💚', name: '초록하트' },
-  { emoji: '💙', name: '파란하트' }, { emoji: '💜', name: '보라하트' },
-  { emoji: '🌸', name: '꽃 벚꽃' }, { emoji: '🌺', name: '히비스커스꽃' },
-  { emoji: '🌻', name: '해바라기' }, { emoji: '🌷', name: '튤립' },
-  { emoji: '🌈', name: '무지개' }, { emoji: '☀️', name: '태양 해' },
-  { emoji: '🌙', name: '달' }, { emoji: '⛅', name: '구름' },
-  { emoji: '🎈', name: '풍선' }, { emoji: '🎀', name: '리본' },
-  { emoji: '🎁', name: '선물' }, { emoji: '🎉', name: '파티' },
-  { emoji: '🎊', name: '축제 꽃가루' }, { emoji: '🎵', name: '음표 음악' },
-  { emoji: '🐥', name: '병아리' }, { emoji: '🐣', name: '알병아리' },
-  { emoji: '🐱', name: '고양이' }, { emoji: '🐶', name: '강아지' },
-  { emoji: '🐻', name: '곰' }, { emoji: '🦊', name: '여우' },
-  { emoji: '🐰', name: '토끼' }, { emoji: '🐸', name: '개구리' },
-  { emoji: '🐼', name: '판다' }, { emoji: '🦄', name: '유니콘' },
-  { emoji: '🌸', name: '봄꽃' }, { emoji: '🍀', name: '클로버' },
-  { emoji: '💎', name: '다이아몬드' }, { emoji: '🌠', name: '별똥별' },
-]
 
 const THEME = {
   green:  { fill: '#22c55e', stroke: '#16a34a', light: '#dcfce7', text: 'text-green-700', bg: 'bg-green-50', border: 'border-green-100' },
@@ -189,26 +163,33 @@ function EmojiViz({
 }) {
   const remaining = Math.max(0, Math.min(10, Math.round(percentage / 10)))
 
-  // 즐겨찾기 이모지 (localStorage 기반, 최대 10개)
+  // 즐겨찾기 (localStorage, 최대 10개)
   const [favorites, setFavorites] = useState<string[]>(() => {
     if (typeof window === 'undefined') return DEFAULT_EMOJI_FAVORITES
     try {
       const saved = localStorage.getItem('emoji-favorites')
       const parsed = saved ? JSON.parse(saved) : null
       return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_EMOJI_FAVORITES
-    } catch {
-      return DEFAULT_EMOJI_FAVORITES
-    }
+    } catch { return DEFAULT_EMOJI_FAVORITES }
   })
 
-  const [inputValue, setInputValue] = useState('')
+  // 카탈로그 — 피커가 처음 열릴 때 lazy load
+  const [catalog, setCatalog] = useState<EmojiEntry[]>([])
+  const [catalogLoading, setCatalogLoading] = useState(false)
 
-  // 검색 결과: 입력값이 있으면 카탈로그에서 필터
-  const searchResults = inputValue.trim()
-    ? EMOJI_CATALOG.filter(item =>
-        item.name.includes(inputValue) || item.emoji === inputValue.trim()
-      ).slice(0, 12)
-    : []
+  // 탭: 'fav' | 'search' | group key
+  const [tab, setTab] = useState<string>('fav')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // 피커가 열릴 때 카탈로그 로드
+  useEffect(() => {
+    if (!showPicker || catalog.length > 0 || catalogLoading) return
+    setCatalogLoading(true)
+    loadEmojiCatalog().then(data => {
+      setCatalog(data)
+      setCatalogLoading(false)
+    })
+  }, [showPicker, catalog.length, catalogLoading])
 
   function saveFavorites(next: string[]) {
     setFavorites(next)
@@ -224,13 +205,31 @@ function EmojiViz({
     saveFavorites(favorites.filter(f => f !== e))
   }
 
-  // 입력된 값이 이모지인지 간단 감지 (surrogate pair 또는 emoji range)
-  function isEmoji(str: string) {
+  function pickEmoji(e: string) {
+    addFavorite(e)
+    onSelectEmoji(e)
+  }
+
+  function isEmojiChar(str: string) {
     return /\p{Emoji}/u.test(str.trim()) && str.trim().length <= 4
   }
 
-  const trimmedInput = inputValue.trim()
-  const canAdd = isEmoji(trimmedInput) && !favorites.includes(trimmedInput) && favorites.length < 10
+  const searchResults = searchQuery.trim().length > 0 && catalog.length > 0
+    ? searchEmoji(catalog, searchQuery)
+    : []
+
+  const browseGroup = catalog.length > 0 && tab !== 'fav' && tab !== 'search'
+    ? getEmojisByGroup(catalog, tab)
+    : []
+
+  const TABS = [
+    { key: 'fav', label: '⭐ 즐겨찾기' },
+    { key: 'search', label: '🔍 검색' },
+    ...GROUP_ORDER.slice(0, 6).map(g => ({
+      key: g,
+      label: `${GROUP_LABELS[g]?.icon} ${GROUP_LABELS[g]?.label}`,
+    })),
+  ]
 
   return (
     <div className="py-4 px-3">
@@ -245,13 +244,9 @@ function EmojiViz({
                 filled ? 'bg-white shadow-sm ring-1 ring-zinc-100' : 'bg-zinc-50'
               }`}
             >
-              <span
-                className={`text-3xl select-none transition-all duration-700 ${
-                  filled ? 'scale-100' : 'opacity-[0.12] scale-90 grayscale'
-                }`}
-              >
-                {emoji}
-              </span>
+              <span className={`text-3xl select-none transition-all duration-700 ${
+                filled ? 'scale-100' : 'opacity-[0.12] scale-90 grayscale'
+              }`}>{emoji}</span>
             </div>
           )
         })}
@@ -259,12 +254,8 @@ function EmojiViz({
 
       <p className="text-center text-sm font-bold text-zinc-400 mt-4">
         {remaining > 0 ? (
-          <>
-            <span className="text-zinc-700">{remaining}개</span> 남았어요 (10개 중)
-          </>
-        ) : (
-          '이번 달 예산을 모두 사용했어요'
-        )}
+          <><span className="text-zinc-700">{remaining}개</span> 남았어요 (10개 중)</>
+        ) : '이번 달 예산을 모두 사용했어요'}
       </p>
 
       <div className="flex justify-center mt-3 pb-1">
@@ -279,85 +270,128 @@ function EmojiViz({
       </div>
 
       {showPicker && (
-        <div className="px-2 pt-3 pb-2 mt-1 border-t border-zinc-100 animate-fade-in-up flex flex-col gap-3">
-          {/* 직접 입력 + 검색 */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              placeholder="이모지 붙여넣기 또는 이름 검색"
-              className="flex-1 px-3 py-2 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-900 focus:outline-none"
-            />
-            <button
-              onClick={() => {
-                if (isEmoji(trimmedInput)) {
-                  addFavorite(trimmedInput)
-                  onSelectEmoji(trimmedInput)
-                  setInputValue('')
-                }
-              }}
-              disabled={!canAdd}
-              className="px-3 py-2 rounded-xl bg-zinc-900 text-white text-xs font-bold disabled:bg-zinc-300 transition-colors"
-            >
-              추가
-            </button>
+        <div className="mt-2 border-t border-zinc-100 animate-fade-in-up">
+          {/* 탭 스크롤 */}
+          <div className="flex gap-1 overflow-x-auto py-2 px-1 no-scrollbar">
+            {TABS.map(t => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all ${
+                  tab === t.key ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
 
-          {/* 검색 결과 */}
-          {searchResults.length > 0 && (
-            <div>
-              <p className="text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5">검색 결과</p>
-              <div className="grid grid-cols-6 gap-1.5">
-                {searchResults.map(({ emoji: e, name }) => (
-                  <button
-                    key={e}
-                    onClick={() => {
-                      addFavorite(e)
-                      onSelectEmoji(e)
-                      setInputValue('')
-                    }}
-                    title={name}
-                    className="aspect-square rounded-xl flex items-center justify-center text-2xl bg-zinc-50 hover:bg-blue-50 hover:ring-1 hover:ring-blue-200 transition-all active:scale-95"
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 즐겨찾기 목록 */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">즐겨찾기 ({favorites.length}/10)</p>
-            </div>
-            {favorites.length === 0 ? (
-              <p className="text-xs text-zinc-300 text-center py-3">이모지를 추가해보세요</p>
-            ) : (
-              <div className="grid grid-cols-5 gap-2">
-                {favorites.map(e => (
-                  <div key={e} className="relative group">
-                    <button
-                      onClick={() => onSelectEmoji(e)}
-                      aria-pressed={emoji === e}
-                      className={`w-full aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all ${
-                        emoji === e
-                          ? 'bg-zinc-900 ring-2 ring-zinc-900 ring-offset-1 scale-110'
-                          : 'bg-zinc-100 hover:bg-zinc-200 active:scale-95'
-                      }`}
-                    >
-                      {e}
-                    </button>
-                    <button
-                      onClick={() => removeFavorite(e)}
-                      className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[9px] font-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity leading-none"
-                      aria-label="삭제"
-                    >
-                      ×
-                    </button>
+          <div className="px-1 pb-2">
+            {/* 즐겨찾기 탭 */}
+            {tab === 'fav' && (
+              <div className="flex flex-col gap-3">
+                <p className="text-[10px] font-black text-zinc-400 tracking-wider">
+                  즐겨찾기 ({favorites.length}/10) — 길게 눌러 삭제
+                </p>
+                {favorites.length === 0 ? (
+                  <p className="text-xs text-zinc-300 text-center py-4">
+                    검색이나 카테고리에서 이모지를 추가해보세요
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-5 gap-2">
+                    {favorites.map(e => (
+                      <div key={e} className="relative group">
+                        <button
+                          onClick={() => onSelectEmoji(e)}
+                          aria-pressed={emoji === e}
+                          className={`w-full aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all ${
+                            emoji === e
+                              ? 'bg-zinc-900 ring-2 ring-zinc-900 ring-offset-1 scale-110'
+                              : 'bg-zinc-100 hover:bg-zinc-200 active:scale-95'
+                          }`}
+                        >{e}</button>
+                        <button
+                          onClick={() => removeFavorite(e)}
+                          className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[9px] font-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="삭제"
+                        >×</button>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+              </div>
+            )}
+
+            {/* 검색 탭 */}
+            {tab === 'search' && (
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="영어 이름 검색 (예: cat, apple) 또는 이모지 붙여넣기"
+                    className="flex-1 px-3 py-2 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-900 focus:outline-none"
+                    autoFocus
+                  />
+                  {isEmojiChar(searchQuery) && (
+                    <button
+                      onClick={() => { pickEmoji(searchQuery.trim()); setSearchQuery('') }}
+                      disabled={favorites.includes(searchQuery.trim()) || favorites.length >= 10}
+                      className="px-3 py-2 rounded-xl bg-zinc-900 text-white text-xs font-bold disabled:bg-zinc-300 shrink-0"
+                    >
+                      {emoji === searchQuery.trim() ? '선택됨' : '추가'}
+                    </button>
+                  )}
+                </div>
+                {catalogLoading && (
+                  <p className="text-xs text-zinc-400 text-center py-2">이모지 데이터 로딩 중...</p>
+                )}
+                {searchResults.length > 0 && (
+                  <div className="grid grid-cols-6 gap-1.5">
+                    {searchResults.map(({ emoji: e, slug }) => (
+                      <button
+                        key={e}
+                        onClick={() => pickEmoji(e)}
+                        title={slug.replace(/_/g, ' ')}
+                        className={`aspect-square rounded-xl flex items-center justify-center text-2xl transition-all active:scale-95 ${
+                          favorites.includes(e)
+                            ? 'bg-zinc-200 ring-1 ring-zinc-400'
+                            : 'bg-zinc-50 hover:bg-blue-50 hover:ring-1 hover:ring-blue-200'
+                        }`}
+                      >{e}</button>
+                    ))}
+                  </div>
+                )}
+                {!catalogLoading && searchQuery.trim() && searchResults.length === 0 && (
+                  <p className="text-xs text-zinc-400 text-center py-2">
+                    결과 없음 — 이모지를 직접 붙여넣거나 영어 키워드로 검색하세요
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* 카테고리 탭 */}
+            {tab !== 'fav' && tab !== 'search' && (
+              <div>
+                {catalogLoading ? (
+                  <p className="text-xs text-zinc-400 text-center py-4">로딩 중...</p>
+                ) : (
+                  <div className="grid grid-cols-7 gap-1 max-h-48 overflow-y-auto">
+                    {browseGroup.map(({ emoji: e, slug }) => (
+                      <button
+                        key={e}
+                        onClick={() => pickEmoji(e)}
+                        title={slug.replace(/_/g, ' ')}
+                        className={`aspect-square rounded-lg flex items-center justify-center text-xl transition-all active:scale-95 ${
+                          favorites.includes(e)
+                            ? 'bg-zinc-200 ring-1 ring-zinc-300'
+                            : 'hover:bg-zinc-100'
+                        } ${emoji === e ? 'ring-2 ring-zinc-900 scale-110' : ''}`}
+                      >{e}</button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
