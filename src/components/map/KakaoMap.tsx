@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
-import Script from 'next/script'
 import { formatCurrency } from '@/utils/budget-visuals'
 
 export interface MapTransaction {
@@ -168,12 +167,54 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
     drawMarkers()
   }, [drawMarkers])
 
-  // 카카오 SDK 이미 로드된 경우 (페이지 이동 후 재진입)
+  // SDK 로드 및 지도 초기화 (중복 로드 방지)
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.kakao?.maps) {
-      window.kakao.maps.load(initMap)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any
+
+    function onSDKLoad() {
+      if (!w.kakao?.maps) return
+      w.kakao.maps.load(initMap)
     }
-  }, [initMap])
+
+    // 이미 초기화된 경우
+    if (w.kakao?.maps) {
+      w.kakao.maps.load(initMap)
+      return
+    }
+
+    const key = apiKey || process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY
+    if (!key) return
+
+    // kakao-map-sdk-services 스크립트가 이미 있으면 그 로드 이벤트 재사용
+    const servicesScript = document.getElementById('kakao-map-sdk-services')
+    if (servicesScript) {
+      if (w.kakao) {
+        onSDKLoad()
+      } else {
+        servicesScript.addEventListener('load', onSDKLoad, { once: true })
+      }
+      return
+    }
+
+    // 기존 기본 SDK 스크립트가 이미 있으면 재사용
+    const existingScript = document.getElementById('kakao-map-sdk')
+    if (existingScript) {
+      if (w.kakao) {
+        onSDKLoad()
+      } else {
+        existingScript.addEventListener('load', onSDKLoad, { once: true })
+      }
+      return
+    }
+
+    // 새로 로드
+    const script = document.createElement('script')
+    script.id = 'kakao-map-sdk'
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&autoload=false`
+    script.onload = onSDKLoad
+    document.head.appendChild(script)
+  }, [apiKey, initMap])
 
   // transactions 변경 시 마커 재렌더
   useEffect(() => {
@@ -182,11 +223,6 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
 
   return (
     <div className="relative w-full rounded-2xl overflow-hidden ring-1 ring-zinc-200">
-      <Script
-        src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`}
-        strategy="afterInteractive"
-        onLoad={() => window.kakao.maps.load(initMap)}
-      />
       <div ref={mapContainerRef} style={{ width: '100%', height }} />
       {validTx.length === 0 && validPlans.length === 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-50/90 gap-2">
