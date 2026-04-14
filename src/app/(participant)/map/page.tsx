@@ -14,7 +14,7 @@ export default async function ParticipantMapPage() {
   // 거래 중 장소 정보 있는 것만 조회
   const { data: transactions } = await supabase
     .from('transactions')
-    .select('id, activity_name, amount, date, status, place_name, place_lat, place_lng')
+    .select('id, activity_name, amount, date, status, place_name, place_lat, place_lng, activity_image_url, receipt_image_url')
     .eq('participant_id', user.id)
     .not('place_lat', 'is', null)
     .order('date', { ascending: false })
@@ -41,6 +41,8 @@ export default async function ParticipantMapPage() {
     place_name: t.place_name,
     place_lat: t.place_lat,
     place_lng: t.place_lng,
+    activity_image_url: t.activity_image_url ?? null,
+    receipt_image_url: t.receipt_image_url ?? null,
   }))
 
   const mapPlans: MapPlan[] = (plansWithLocation || []).map((p: any) => {

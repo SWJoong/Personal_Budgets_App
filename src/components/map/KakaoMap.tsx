@@ -13,6 +13,8 @@ export interface MapTransaction {
   place_lat: number | null
   place_lng: number | null
   participant_name?: string
+  activity_image_url?: string | null
+  receipt_image_url?: string | null
 }
 
 export interface MapPlan {
@@ -78,24 +80,49 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
       const marker = new kakao.maps.Marker({ position, map })
       markersRef.current.push(marker)
 
+      // 활동 사진 우선, 없으면 영수증 사진
+      const thumbUrl = tx.activity_image_url || tx.receipt_image_url || null
+      const thumbLabel = tx.activity_image_url ? '활동' : tx.receipt_image_url ? '영수증' : ''
+
       const content = `
         <div style="
-          padding:10px 14px;
+          padding:0;
           font-size:12px;
           line-height:1.6;
-          max-width:220px;
-          border-radius:10px;
+          width:200px;
+          border-radius:12px;
           background:#fff;
-          box-shadow:0 2px 8px rgba(0,0,0,.15);
-          border-left:3px solid ${STATUS_COLOR[tx.status] ?? '#a1a1aa'};
+          box-shadow:0 2px 12px rgba(0,0,0,.18);
+          overflow:hidden;
+          border-top:3px solid ${STATUS_COLOR[tx.status] ?? '#a1a1aa'};
         ">
-          <b style="font-size:13px;color:#18181b;">${tx.activity_name}</b>
-          ${tx.place_name && tx.place_name !== tx.activity_name ? `<br/><span style="color:#71717a;">${tx.place_name}</span>` : ''}
-          <br/>
-          <span style="color:#3f3f46;">${tx.date}</span>
-          &nbsp;·&nbsp;
-          <b style="color:#18181b;">${formatCurrency(tx.amount)}원</b>
-          ${tx.participant_name ? `<br/><span style="color:#a1a1aa;font-size:11px;">${tx.participant_name}</span>` : ''}
+          ${thumbUrl ? `
+          <div style="position:relative;width:100%;height:90px;overflow:hidden;background:#f4f4f5;">
+            <img
+              src="${thumbUrl}"
+              alt="${thumbLabel}"
+              style="width:100%;height:100%;object-fit:cover;"
+              onerror="this.parentElement.style.display='none'"
+              crossorigin="anonymous"
+            />
+            <span style="
+              position:absolute;bottom:5px;left:6px;
+              font-size:9px;font-weight:800;
+              background:rgba(0,0,0,.45);color:#fff;
+              padding:1px 5px;border-radius:4px;
+            ">${thumbLabel} 사진</span>
+          </div>` : ''}
+          <div style="padding:10px 12px;">
+            <b style="font-size:13px;color:#18181b;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tx.activity_name}</b>
+            ${tx.place_name && tx.place_name !== tx.activity_name
+              ? `<span style="font-size:11px;color:#71717a;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tx.place_name}</span>`
+              : ''}
+            <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span style="color:#52525b;font-size:11px;">${tx.date}</span>
+              <b style="color:#18181b;font-size:12px;">${formatCurrency(tx.amount)}원</b>
+            </div>
+            ${tx.participant_name ? `<span style="color:#a1a1aa;font-size:10px;">${tx.participant_name}</span>` : ''}
+          </div>
         </div>
       `
 

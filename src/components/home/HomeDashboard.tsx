@@ -33,10 +33,19 @@ interface DailyTransaction {
   activity_image_url?: string | null
 }
 
+interface MonthlyTx {
+  id: string
+  activity_name: string
+  amount: number
+  date: string
+  category?: string | null
+}
+
 interface MonthlyData {
   month: string
   totalSpent: number
   budget: number
+  transactions?: MonthlyTx[]
 }
 
 interface HomeDashboardProps {

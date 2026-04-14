@@ -109,18 +109,29 @@ export default async function Home() {
   const sixMonthsAgo = new Date(year, month - 5, 1).toISOString().split('T')[0]
   const { data: allMonthTxs } = await supabase
     .from('transactions')
-    .select('amount, date')
+    .select('id, amount, date, activity_name, category')
     .eq('participant_id', user.id)
     .gte('date', sixMonthsAgo)
     .lte('date', lastDayOfMonth)
+    .order('date', { ascending: true })
 
   for (let i = 5; i >= 0; i--) {
     const d = new Date(year, month - i, 1)
     const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-    const totalSpent = (allMonthTxs || [])
-      .filter((t: any) => t.date.startsWith(m))
-      .reduce((sum: number, t: any) => sum + Number(t.amount), 0)
-    monthlyTrend.push({ month: m, totalSpent, budget: totalMonthlyBudget })
+    const monthTxs = (allMonthTxs || []).filter((t: any) => t.date.startsWith(m))
+    const totalSpent = monthTxs.reduce((sum: number, t: any) => sum + Number(t.amount), 0)
+    monthlyTrend.push({
+      month: m,
+      totalSpent,
+      budget: totalMonthlyBudget,
+      transactions: monthTxs.map((t: any) => ({
+        id: t.id,
+        activity_name: t.activity_name,
+        amount: Number(t.amount),
+        date: t.date,
+        category: t.category ?? null,
+      }))
+    })
   }
 
   // 지원자 편지 블록이 활성화된 경우에만 최근 발행된 평가 조회
