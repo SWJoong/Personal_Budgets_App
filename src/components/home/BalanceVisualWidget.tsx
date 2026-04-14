@@ -10,19 +10,37 @@ import { speak } from '@/utils/tts'
 
 type WidgetStyle = 'pie' | 'water' | 'emoji' | 'text'
 
-const EMOJI_CHOICES = [
-  { emoji: '🍎', name: '사과' },
-  { emoji: '🍪', name: '쿠키' },
-  { emoji: '⭐', name: '별' },
-  { emoji: '🐥', name: '병아리' },
-  { emoji: '🌸', name: '꽃' },
-  { emoji: '🎈', name: '풍선' },
-  { emoji: '🍋', name: '레몬' },
-  { emoji: '🍩', name: '도넛' },
-  { emoji: '🦊', name: '여우' },
-  { emoji: '🎀', name: '리본' },
-  { emoji: '🍇', name: '포도' },
-  { emoji: '🐻', name: '곰' },
+const DEFAULT_EMOJI_FAVORITES = ['🍎', '🍪', '⭐', '🐥', '🌸', '🎈', '🍋', '🍩', '🦊', '🎀']
+
+// 검색용 이모지 카탈로그 (이름으로 검색 가능)
+const EMOJI_CATALOG = [
+  { emoji: '🍎', name: '사과' }, { emoji: '🍊', name: '귤 오렌지' },
+  { emoji: '🍋', name: '레몬' }, { emoji: '🍇', name: '포도' },
+  { emoji: '🍓', name: '딸기' }, { emoji: '🍑', name: '복숭아' },
+  { emoji: '🫐', name: '블루베리' }, { emoji: '🍉', name: '수박' },
+  { emoji: '🍪', name: '쿠키 과자' }, { emoji: '🍩', name: '도넛' },
+  { emoji: '🍰', name: '케이크' }, { emoji: '🧁', name: '컵케이크' },
+  { emoji: '🍕', name: '피자' }, { emoji: '🍔', name: '햄버거' },
+  { emoji: '🍦', name: '아이스크림' }, { emoji: '🍫', name: '초콜릿' },
+  { emoji: '⭐', name: '별' }, { emoji: '🌟', name: '반짝별' },
+  { emoji: '💫', name: '빛나는별' }, { emoji: '✨', name: '반짝' },
+  { emoji: '❤️', name: '하트' }, { emoji: '🧡', name: '주황하트' },
+  { emoji: '💛', name: '노란하트' }, { emoji: '💚', name: '초록하트' },
+  { emoji: '💙', name: '파란하트' }, { emoji: '💜', name: '보라하트' },
+  { emoji: '🌸', name: '꽃 벚꽃' }, { emoji: '🌺', name: '히비스커스꽃' },
+  { emoji: '🌻', name: '해바라기' }, { emoji: '🌷', name: '튤립' },
+  { emoji: '🌈', name: '무지개' }, { emoji: '☀️', name: '태양 해' },
+  { emoji: '🌙', name: '달' }, { emoji: '⛅', name: '구름' },
+  { emoji: '🎈', name: '풍선' }, { emoji: '🎀', name: '리본' },
+  { emoji: '🎁', name: '선물' }, { emoji: '🎉', name: '파티' },
+  { emoji: '🎊', name: '축제 꽃가루' }, { emoji: '🎵', name: '음표 음악' },
+  { emoji: '🐥', name: '병아리' }, { emoji: '🐣', name: '알병아리' },
+  { emoji: '🐱', name: '고양이' }, { emoji: '🐶', name: '강아지' },
+  { emoji: '🐻', name: '곰' }, { emoji: '🦊', name: '여우' },
+  { emoji: '🐰', name: '토끼' }, { emoji: '🐸', name: '개구리' },
+  { emoji: '🐼', name: '판다' }, { emoji: '🦄', name: '유니콘' },
+  { emoji: '🌸', name: '봄꽃' }, { emoji: '🍀', name: '클로버' },
+  { emoji: '💎', name: '다이아몬드' }, { emoji: '🌠', name: '별똥별' },
 ]
 
 const THEME = {
@@ -171,8 +189,52 @@ function EmojiViz({
 }) {
   const remaining = Math.max(0, Math.min(10, Math.round(percentage / 10)))
 
+  // 즐겨찾기 이모지 (localStorage 기반, 최대 10개)
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return DEFAULT_EMOJI_FAVORITES
+    try {
+      const saved = localStorage.getItem('emoji-favorites')
+      const parsed = saved ? JSON.parse(saved) : null
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_EMOJI_FAVORITES
+    } catch {
+      return DEFAULT_EMOJI_FAVORITES
+    }
+  })
+
+  const [inputValue, setInputValue] = useState('')
+
+  // 검색 결과: 입력값이 있으면 카탈로그에서 필터
+  const searchResults = inputValue.trim()
+    ? EMOJI_CATALOG.filter(item =>
+        item.name.includes(inputValue) || item.emoji === inputValue.trim()
+      ).slice(0, 12)
+    : []
+
+  function saveFavorites(next: string[]) {
+    setFavorites(next)
+    localStorage.setItem('emoji-favorites', JSON.stringify(next))
+  }
+
+  function addFavorite(e: string) {
+    if (!e || favorites.includes(e) || favorites.length >= 10) return
+    saveFavorites([...favorites, e])
+  }
+
+  function removeFavorite(e: string) {
+    saveFavorites(favorites.filter(f => f !== e))
+  }
+
+  // 입력된 값이 이모지인지 간단 감지 (surrogate pair 또는 emoji range)
+  function isEmoji(str: string) {
+    return /\p{Emoji}/u.test(str.trim()) && str.trim().length <= 4
+  }
+
+  const trimmedInput = inputValue.trim()
+  const canAdd = isEmoji(trimmedInput) && !favorites.includes(trimmedInput) && favorites.length < 10
+
   return (
     <div className="py-4 px-3">
+      {/* 이모지 격자 */}
       <div className="grid grid-cols-5 gap-2 sm:gap-3 px-2">
         {Array.from({ length: 10 }, (_, i) => {
           const filled = i < remaining
@@ -217,23 +279,88 @@ function EmojiViz({
       </div>
 
       {showPicker && (
-        <div className="grid grid-cols-6 gap-2 px-2 pt-3 pb-2 mt-1 border-t border-zinc-100 animate-fade-in-up">
-          {EMOJI_CHOICES.map(({ emoji: e, name }) => (
+        <div className="px-2 pt-3 pb-2 mt-1 border-t border-zinc-100 animate-fade-in-up flex flex-col gap-3">
+          {/* 직접 입력 + 검색 */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={e => setInputValue(e.target.value)}
+              placeholder="이모지 붙여넣기 또는 이름 검색"
+              className="flex-1 px-3 py-2 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-900 focus:outline-none"
+            />
             <button
-              key={e}
-              onClick={() => onSelectEmoji(e)}
-              title={name}
-              aria-label={name}
-              aria-pressed={emoji === e}
-              className={`aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all ${
-                emoji === e
-                  ? 'bg-zinc-900 ring-2 ring-zinc-900 ring-offset-1 scale-110'
-                  : 'bg-zinc-100 hover:bg-zinc-200 active:scale-95'
-              }`}
+              onClick={() => {
+                if (isEmoji(trimmedInput)) {
+                  addFavorite(trimmedInput)
+                  onSelectEmoji(trimmedInput)
+                  setInputValue('')
+                }
+              }}
+              disabled={!canAdd}
+              className="px-3 py-2 rounded-xl bg-zinc-900 text-white text-xs font-bold disabled:bg-zinc-300 transition-colors"
             >
-              {e}
+              추가
             </button>
-          ))}
+          </div>
+
+          {/* 검색 결과 */}
+          {searchResults.length > 0 && (
+            <div>
+              <p className="text-[10px] font-black text-zinc-400 uppercase tracking-wider mb-1.5">검색 결과</p>
+              <div className="grid grid-cols-6 gap-1.5">
+                {searchResults.map(({ emoji: e, name }) => (
+                  <button
+                    key={e}
+                    onClick={() => {
+                      addFavorite(e)
+                      onSelectEmoji(e)
+                      setInputValue('')
+                    }}
+                    title={name}
+                    className="aspect-square rounded-xl flex items-center justify-center text-2xl bg-zinc-50 hover:bg-blue-50 hover:ring-1 hover:ring-blue-200 transition-all active:scale-95"
+                  >
+                    {e}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 즐겨찾기 목록 */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">즐겨찾기 ({favorites.length}/10)</p>
+            </div>
+            {favorites.length === 0 ? (
+              <p className="text-xs text-zinc-300 text-center py-3">이모지를 추가해보세요</p>
+            ) : (
+              <div className="grid grid-cols-5 gap-2">
+                {favorites.map(e => (
+                  <div key={e} className="relative group">
+                    <button
+                      onClick={() => onSelectEmoji(e)}
+                      aria-pressed={emoji === e}
+                      className={`w-full aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all ${
+                        emoji === e
+                          ? 'bg-zinc-900 ring-2 ring-zinc-900 ring-offset-1 scale-110'
+                          : 'bg-zinc-100 hover:bg-zinc-200 active:scale-95'
+                      }`}
+                    >
+                      {e}
+                    </button>
+                    <button
+                      onClick={() => removeFavorite(e)}
+                      className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[9px] font-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity leading-none"
+                      aria-label="삭제"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

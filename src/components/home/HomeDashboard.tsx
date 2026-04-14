@@ -244,6 +244,40 @@ export default function HomeDashboard({
           </section>
         )
 
+      case 'map_widget':
+        return (
+          <Link
+            href="/map"
+            className="group flex items-center gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-900 hover:bg-zinc-50 transition-all shadow-sm active:scale-[0.98]"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <span className="text-3xl">🗺️</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-zinc-800 text-base">활동 지도</p>
+              <p className="text-xs text-zinc-400 font-bold mt-0.5">거래 장소를 지도에서 확인해요</p>
+            </div>
+            <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">→</span>
+          </Link>
+        )
+
+      case 'activity_gallery':
+        return (
+          <Link
+            href="/gallery"
+            className="group flex items-center gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-900 hover:bg-zinc-50 transition-all shadow-sm active:scale-[0.98]"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-pink-50 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <span className="text-3xl">🖼️</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-zinc-800 text-base">활동 사진</p>
+              <p className="text-xs text-zinc-400 font-bold mt-0.5">활동 사진을 모아볼 수 있어요</p>
+            </div>
+            <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">→</span>
+          </Link>
+        )
+
       case 'evaluation_letter':
         if (!latestEvaluation || !latestEvaluation.easy_summary) return null
         return (

@@ -3,6 +3,39 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+export interface ParticipantWithFundingSources {
+  id: string
+  name: string
+  funding_sources: { id: string; name: string }[]
+}
+
+export async function getParticipantsWithFundingSources(): Promise<ParticipantWithFundingSources[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  let query = supabase
+    .from('participants')
+    .select('id, name, funding_sources ( id, name )')
+
+  if (profile?.role === 'supporter') {
+    query = query.eq('assigned_supporter_id', user.id)
+  }
+
+  const { data } = await query
+  return (data || []).map((p: any) => ({
+    id: p.id,
+    name: p.name || p.id.slice(0, 8),
+    funding_sources: p.funding_sources || [],
+  }))
+}
+
 export async function createTransaction(formData: FormData) {
   const supabase = await createClient()
 

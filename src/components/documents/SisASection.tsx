@@ -49,8 +49,7 @@ function DetailModal({ row, participantName, onClose, onDelete }: {
   async function handleSaveImage() {
     setSaving(true)
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { default: html2canvas } = await import('html2canvas' as any)
+      const html2canvas = (await import('html2canvas')).default
       const el = document.getElementById('sis-a-detail-content')
       if (!el) return
       const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })

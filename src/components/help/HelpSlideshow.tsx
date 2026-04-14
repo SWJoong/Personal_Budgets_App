@@ -16,11 +16,11 @@ export default function HelpSlideshow({ section, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
+        className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-y-auto max-h-[90vh]"
         onClick={e => e.stopPropagation()}
       >
         {/* 상단 헤더 */}

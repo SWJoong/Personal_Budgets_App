@@ -14,7 +14,7 @@ export default function AdminHelpModal({ page, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden"
+        className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         onClick={e => e.stopPropagation()}
       >
         {/* 헤더 */}
@@ -30,7 +30,7 @@ export default function AdminHelpModal({ page, onClose }: Props) {
         </div>
 
         {/* 항목 목록 */}
-        <div className="px-6 py-4 flex flex-col gap-4 max-h-[60vh] overflow-y-auto">
+        <div className="px-6 py-4 flex flex-col gap-4 overflow-y-auto flex-1">
           {page.items.map((item, i) => (
             <div key={i} className="flex items-start gap-3">
               <span className="text-2xl shrink-0 mt-0.5">{item.icon}</span>

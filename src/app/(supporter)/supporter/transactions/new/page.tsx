@@ -1,28 +1,21 @@
 'use client'
 
-import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { createTransaction } from '@/app/actions/transaction'
+import { createTransaction, getParticipantsWithFundingSources } from '@/app/actions/transaction'
+import type { ParticipantWithFundingSources } from '@/app/actions/transaction'
 import PlaceSearch from '@/components/map/PlaceSearch'
 import type { PlaceResult } from '@/app/actions/geocode'
 
-interface ParticipantOption {
-  id: string
-  name: string
-  funding_sources: { id: string; name: string }[]
-}
-
 export default function NewTransactionPage() {
-  const supabase = createClient()
   const router = useRouter()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const [participants, setParticipants] = useState<ParticipantOption[]>([])
+  const [participants, setParticipants] = useState<ParticipantWithFundingSources[]>([])
   const [selectedParticipant, setSelectedParticipant] = useState('')
   const [selectedFundingSource, setSelectedFundingSource] = useState('')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
@@ -46,37 +39,12 @@ export default function NewTransactionPage() {
   async function loadParticipants() {
     setLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      let query = supabase
-        .from('participants')
-        .select('id, name, funding_sources ( id, name )')
-
-      if (profile?.role === 'supporter') {
-        query = query.eq('assigned_supporter_id', user.id)
-      }
-
-      const { data } = await query
-
-      const mapped = (data || []).map((p: any) => ({
-        id: p.id,
-        name: p.name || p.id.slice(0, 8),
-        funding_sources: p.funding_sources || []
-      }))
-
-      setParticipants(mapped)
-
-      if (mapped.length === 1) {
-        setSelectedParticipant(mapped[0].id)
-        if (mapped[0].funding_sources.length === 1) {
-          setSelectedFundingSource(mapped[0].funding_sources[0].id)
+      const data = await getParticipantsWithFundingSources()
+      setParticipants(data)
+      if (data.length === 1) {
+        setSelectedParticipant(data[0].id)
+        if (data[0].funding_sources.length === 1) {
+          setSelectedFundingSource(data[0].funding_sources[0].id)
         }
       }
     } catch (e) {

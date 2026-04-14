@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { searchPlaces } from '@/app/actions/geocode'
 import type { PlaceResult } from '@/app/actions/geocode'
 
 interface PlaceSearchProps {
@@ -9,6 +8,42 @@ interface PlaceSearchProps {
   onClear: () => void
   selectedPlace: PlaceResult | null
   defaultQuery?: string
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type KakaoWindow = Window & { kakao: any }
+
+function loadKakaoSDK(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const w = window as KakaoWindow
+    // Already loaded with services
+    if (w.kakao?.maps?.services) {
+      resolve()
+      return
+    }
+
+    const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY
+    if (!apiKey) {
+      reject(new Error('NEXT_PUBLIC_KAKAO_MAP_API_KEY not set'))
+      return
+    }
+
+    // Script already in DOM — wait for it to load
+    const existingScript = document.getElementById('kakao-map-sdk-services')
+    if (existingScript) {
+      existingScript.addEventListener('load', () => {
+        w.kakao.maps.load(() => resolve())
+      })
+      return
+    }
+
+    const script = document.createElement('script')
+    script.id = 'kakao-map-sdk-services'
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services&autoload=false`
+    script.onload = () => w.kakao.maps.load(() => resolve())
+    script.onerror = () => reject(new Error('Failed to load Kakao SDK'))
+    document.head.appendChild(script)
+  })
 }
 
 export default function PlaceSearch({
@@ -23,7 +58,6 @@ export default function PlaceSearch({
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -38,9 +72,38 @@ export default function PlaceSearch({
     if (!query.trim()) return
     setLoading(true)
     setOpen(true)
-    const places = await searchPlaces(query)
-    setResults(places)
-    setLoading(false)
+    setResults([])
+
+    try {
+      await loadKakaoSDK()
+
+      const w = window as KakaoWindow
+      const ps = new w.kakao.maps.services.Places()
+      ps.keywordSearch(
+        query,
+        (data: any[], status: string) => {
+          if (status === w.kakao.maps.services.Status.OK) {
+            const mapped: PlaceResult[] = data.slice(0, 5).map((doc: any) => ({
+              id: doc.id,
+              place_name: doc.place_name,
+              address_name: doc.address_name,
+              road_address_name: doc.road_address_name,
+              category_name: doc.category_name,
+              lat: parseFloat(doc.y),
+              lng: parseFloat(doc.x),
+            }))
+            setResults(mapped)
+          } else {
+            setResults([])
+          }
+          setLoading(false)
+        },
+        { size: 5 }
+      )
+    } catch (e) {
+      console.error('Place search failed:', e)
+      setLoading(false)
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -77,7 +140,7 @@ export default function PlaceSearch({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="장소명 검색 (예: GS25 서울역점)"
+          placeholder="장소명 검색 (예: 교보문고 광화문점)"
           className="flex-1 p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 text-sm focus:ring-zinc-900 focus:outline-none"
         />
         <button
