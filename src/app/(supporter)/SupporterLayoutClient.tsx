@@ -5,31 +5,54 @@ import { usePathname } from 'next/navigation'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import NavigationProgress from '@/components/layout/NavigationProgress'
 
+const STORAGE_KEY = 'admin_sidebar_collapsed'
+
 export function SupporterLayoutClient({
   children,
 }: {
   children: React.ReactNode
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const pathname = usePathname()
+
+  // 마지막 접기 상태 복원 (localStorage)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved !== null) setSidebarCollapsed(saved === 'true')
+    } catch {}
+  }, [])
 
   // 페이지 이동 시 모바일 메뉴 자동 닫기
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed((v) => {
+      const next = !v
+      try { localStorage.setItem(STORAGE_KEY, String(next)) } catch {}
+      return next
+    })
+  }
+
   const closeMenu = () => setMobileMenuOpen(false)
+
+  // 데스크톱 사이드바 너비
+  const desktopW = sidebarCollapsed ? 'w-16' : 'w-64'
+  const mainML   = sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'
 
   return (
     <div className="flex min-h-screen bg-background">
       <NavigationProgress />
 
-      {/* 데스크톱 사이드바 — fixed 래퍼가 위치 결정, AdminSidebar는 h-full로 채움 */}
+      {/* 데스크톱 사이드바 — 접기/펼치기 지원 */}
       <div
-        className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 z-40 print:hidden"
+        className={`hidden md:flex fixed left-0 top-0 bottom-0 z-40 transition-all duration-300 print:hidden ${desktopW}`}
         data-print-hide
       >
-        <AdminSidebar />
+        <AdminSidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
       </div>
 
       {/* 모바일 상단 헤더 + 햄버거 */}
@@ -52,20 +75,16 @@ export function SupporterLayoutClient({
       {/* 모바일 슬라이드 오버레이 — 열렸을 때만 DOM에 존재 */}
       {mobileMenuOpen && (
         <>
-          {/* 백드롭: 클릭하면 닫힘 */}
           <div
             className="md:hidden fixed inset-0 bg-black/60 z-[60] print:hidden"
             onClick={closeMenu}
             aria-hidden="true"
             data-print-hide
           />
-
-          {/* 사이드바 드로어 */}
           <div
             className="md:hidden fixed left-0 top-0 bottom-0 w-72 z-[70] animate-in slide-in-from-left duration-200 print:hidden"
             data-print-hide
           >
-            {/* 드로어 내부 닫기 버튼 */}
             <div className="absolute top-3 right-3 z-10">
               <button
                 onClick={closeMenu}
@@ -75,12 +94,15 @@ export function SupporterLayoutClient({
                 <span className="text-lg leading-none">✕</span>
               </button>
             </div>
+            {/* 모바일 드로어는 항상 펼쳐진 상태 */}
             <AdminSidebar />
           </div>
         </>
       )}
 
-      <main className="flex-1 w-full md:ml-64 print:ml-0 relative min-h-screen pt-14 md:pt-0 print:pt-0">
+      <main
+        className={`flex-1 w-full transition-all duration-300 ${mainML} print:ml-0 relative min-h-screen pt-14 md:pt-0 print:pt-0`}
+      >
         {children}
       </main>
     </div>

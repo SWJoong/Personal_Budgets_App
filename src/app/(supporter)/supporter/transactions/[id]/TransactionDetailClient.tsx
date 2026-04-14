@@ -96,15 +96,23 @@ export default function TransactionDetailClient({ tx }: { tx: Tx }) {
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground p-4 sm:p-8">
-      <header className="flex items-center justify-between mb-8">
+      <header className="flex items-center justify-between mb-8 print:hidden">
         <div className="flex items-center gap-4">
           <Link href="/supporter/transactions" className="text-zinc-400 hover:text-zinc-600 text-2xl font-bold transition-colors">←</Link>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900">거래 내역 수정 및 승인</h1>
         </div>
-        <button
-          onClick={() => setShowDeleteConfirm(true)}
-          className="px-4 py-2 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-        >내역 삭제</button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => window.print()}
+            className="px-4 py-2 text-sm font-bold text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <span>🖨️</span> 인쇄
+          </button>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="px-4 py-2 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+          >내역 삭제</button>
+        </div>
       </header>
 
       <main className="w-full max-w-6xl flex flex-col lg:flex-row gap-8 items-start">

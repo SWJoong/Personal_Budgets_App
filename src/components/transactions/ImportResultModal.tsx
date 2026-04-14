@@ -35,13 +35,12 @@ export default function ImportResultModal({ participants, participantFundingSour
   const [checkedUnmatched, setCheckedUnmatched] = useState<Set<number>>(new Set())
   const [importCount, setImportCount] = useState(0)
   const [error, setError] = useState('')
+  const [xlsxWarning, setXlsxWarning] = useState(false)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
 
   const fundingSources = selectedParticipant ? (participantFundingSources[selectedParticipant] || []) : []
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file || !selectedParticipant) return
-
+  async function processFile(file: File) {
     setError('')
     setStep('parsing')
 
@@ -63,8 +62,35 @@ export default function ImportResultModal({ participants, participantFundingSour
       setError(err.message || '파일 분석 중 오류가 발생했습니다.')
       setStep('select')
     }
+  }
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !selectedParticipant) return
 
     e.target.value = ''
+
+    // .xlsx 파일이면 암호 경고 확인 후 진행
+    if (file.name.toLowerCase().endsWith('.xlsx')) {
+      setPendingFile(file)
+      setXlsxWarning(true)
+      return
+    }
+
+    await processFile(file)
+  }
+
+  async function confirmXlsxWarning() {
+    setXlsxWarning(false)
+    if (pendingFile) {
+      await processFile(pendingFile)
+      setPendingFile(null)
+    }
+  }
+
+  function cancelXlsxWarning() {
+    setXlsxWarning(false)
+    setPendingFile(null)
   }
 
   function toggleUnmatched(idx: number) {
@@ -100,6 +126,40 @@ export default function ImportResultModal({ participants, participantFundingSour
   }
 
   return (
+    <>
+    {/* 엑셀 암호 경고 다이얼로그 */}
+    {xlsxWarning && (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
+        <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl flex flex-col gap-4">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl shrink-0">⚠️</span>
+            <div>
+              <h3 className="font-bold text-zinc-900 mb-1">엑셀 파일 암호 확인</h3>
+              <p className="text-sm text-zinc-600 leading-relaxed">
+                카카오뱅크 엑셀 파일에 <strong>암호가 설정된 경우</strong> 파일을 열 수 없습니다.
+              </p>
+              <p className="text-sm text-zinc-600 leading-relaxed mt-1">
+                암호가 없는 파일이라면 계속 진행하세요. 암호가 있다면 취소 후 엑셀에서 암호를 제거하고 다시 업로드해 주세요.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={cancelXlsxWarning}
+              className="flex-1 py-2.5 rounded-xl bg-zinc-100 text-zinc-700 font-bold text-sm hover:bg-zinc-200 transition-colors"
+            >
+              취소
+            </button>
+            <button
+              onClick={confirmXlsxWarning}
+              className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors"
+            >
+              계속 진행
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
@@ -366,5 +426,6 @@ export default function ImportResultModal({ participants, participantFundingSour
         </div>
       </div>
     </div>
+    </>
   )
 }

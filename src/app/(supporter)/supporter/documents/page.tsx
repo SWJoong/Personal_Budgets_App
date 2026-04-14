@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import DocumentManagerClient from '@/components/documents/DocumentManagerClient'
 import { getAllSisAssessments } from '@/app/actions/sisAssessment'
+import AdminHelpButton from '@/components/help/AdminHelpButton'
 
 export default async function SupporterDocumentsPage({
   searchParams,
@@ -47,9 +48,12 @@ export default async function SupporterDocumentsPage({
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 p-8">
-      <header className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-900">증빙 및 서류 관리</h1>
-        <p className="text-zinc-500 mt-1">당사자별 계획서, 평가서, 참고자료를 업로드하거나 링크를 공유합니다.</p>
+      <header className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-900">증빙 및 서류 관리</h1>
+          <p className="text-zinc-500 mt-1">당사자별 계획서, 평가서, 참고자료를 업로드하거나 링크를 공유합니다.</p>
+        </div>
+        <AdminHelpButton pageKey="documents" />
       </header>
 
       <main className="max-w-6xl flex flex-col gap-8">

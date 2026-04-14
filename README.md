@@ -219,3 +219,186 @@ supabase db push
 ---
 
 > 이 프로젝트는 아름드리꿈터 주간이용시설의 발달장애인 당사자들을 위해 개발되었습니다.
+
+---
+
+# 기관 담당자용 배포 가이드
+
+> IT를 잘 몰라도 괜찮습니다. 아래 순서대로 따라 하면 우리 기관만의 앱을 운영할 수 있습니다.
+
+## 준비물 (모두 무료로 시작 가능)
+
+| 서비스 | 용도 | 가입 주소 |
+|--------|------|-----------|
+| **Supabase** | 데이터베이스 + 파일 저장 + 로그인 | supabase.com |
+| **Vercel** | 웹 서버(앱 배포) | vercel.com |
+| **카카오 개발자** | 지도 기능 | developers.kakao.com |
+| **GitHub** | 코드 저장소 | github.com |
+
+> OpenAI API는 AI 자동 요약 기능에만 필요합니다. 없어도 앱을 사용할 수 있습니다.
+
+---
+
+## Step 1 — Supabase 프로젝트 만들기
+
+1. [supabase.com](https://supabase.com) 에 접속해 회원가입 후 로그인합니다.
+2. **New Project** 버튼을 클릭합니다.
+3. 프로젝트 이름(예: `armdeuri-budgets`)과 **데이터베이스 비밀번호**를 입력합니다.  
+   ⚠️ 비밀번호는 안전한 곳에 따로 저장해 두세요.
+4. 지역은 **Northeast Asia (Seoul)**을 선택합니다.
+5. 프로젝트 생성 완료까지 약 1~2분 기다립니다.
+
+---
+
+## Step 2 — 데이터베이스 테이블 만들기 (마이그레이션)
+
+앱에서 사용하는 표(테이블)를 만드는 단계입니다.
+
+1. Supabase 대시보드 왼쪽 메뉴에서 **SQL Editor**를 클릭합니다.
+2. 이 저장소의 `supabase/migrations/` 폴더 안 SQL 파일을 **번호 순서대로** 실행합니다.
+
+   ```
+   04_fix_participants_rls.sql
+   05_atomic_first_admin.sql
+   06_add_12_demo_participants.sql   ← 데모 데이터 포함 (선택)
+   07_set_admin_accounts.sql
+   08_fix_rls_for_participant_creation.sql
+   09_add_activity_photo_and_plan_details.sql
+   10_demo_mode_profiles.sql
+   11_add_ui_preferences.sql
+   12_evaluations_published_at.sql
+   13_eval_templates.sql
+   14_care_plans.sql
+   15_sis_assessments.sql
+   16_transactions_location.sql
+   17_plans_location.sql
+   18_sample_location_data.sql      ← 샘플 거래 데이터 (선택)
+   ```
+
+3. 각 파일 내용을 SQL Editor에 붙여넣고 **Run** 버튼을 클릭합니다.  
+   ✅ "Success" 메시지가 나오면 다음 파일로 진행합니다.
+
+> **참고**: 06번, 18번은 테스트용 데모 데이터입니다. 실제 운영 시에는 건너뛰어도 됩니다.
+
+---
+
+## Step 3 — 필요한 키(Key) 값 메모하기
+
+### Supabase API 키
+Supabase 대시보드 → **Settings** → **API** 에서 아래 값을 메모합니다.
+
+| 항목 | 설명 |
+|------|------|
+| Project URL | `NEXT_PUBLIC_SUPABASE_URL` 에 입력할 값 |
+| anon/public 키 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` 에 입력할 값 |
+| service_role 키 | `SUPABASE_SERVICE_ROLE_KEY` 에 입력할 값 ⚠️ 외부 노출 금지 |
+
+### 카카오맵 API 키
+1. [developers.kakao.com](https://developers.kakao.com) 로그인 → **내 애플리케이션** → **애플리케이션 추가**
+2. **앱 키** 탭 → **JavaScript 키** 복사
+3. **플랫폼** 탭 → **Web** → 사이트 도메인에 배포 주소 추가  
+   (예: `https://your-app.vercel.app`)
+
+---
+
+## Step 4 — GitHub에 코드 올리기
+
+> 이미 GitHub에 올라가 있다면 이 단계는 건너뛰세요.
+
+1. [github.com](https://github.com) 에서 새 저장소를 만듭니다.
+2. 터미널에서 아래 명령어를 실행합니다.
+   ```bash
+   git init
+   git add .
+   git commit -m "initial commit"
+   git remote add origin https://github.com/사용자명/저장소명.git
+   git push -u origin main
+   ```
+
+---
+
+## Step 5 — Vercel에 배포하기
+
+1. [vercel.com](https://vercel.com) 에 접속해 GitHub 계정으로 로그인합니다.
+2. **New Project** → GitHub 저장소 선택 → **Import** 클릭합니다.
+3. **Environment Variables** 항목에 아래 값들을 입력합니다.
+
+   | 키 이름 | 값 |
+   |---------|-----|
+   | `NEXT_PUBLIC_SUPABASE_URL` | Step 3에서 메모한 Project URL |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon/public 키 |
+   | `SUPABASE_SERVICE_ROLE_KEY` | service_role 키 |
+   | `NEXT_PUBLIC_KAKAO_MAP_API_KEY` | 카카오 JavaScript 키 |
+   | `KAKAO_MAP_API_KEY` | 카카오 JavaScript 키 (동일 값) |
+   | `NEXT_PUBLIC_DEMO_MODE` | `false` (실제 운영) |
+
+4. **Deploy** 버튼을 클릭합니다.  
+   ✅ 배포 완료 후 `https://your-app.vercel.app` 주소가 생성됩니다.
+
+---
+
+## Step 6 — 첫 관리자 계정 만들기
+
+1. Supabase 대시보드 → **Authentication** → **Users** → **Add User** 클릭합니다.
+2. 관리자로 사용할 이메일과 비밀번호를 입력합니다.
+3. **SQL Editor** 에서 아래 쿼리를 실행합니다.  
+   `관리자_이메일@example.com` 부분을 실제 이메일로 바꿔서 실행합니다.
+
+   ```sql
+   UPDATE public.profiles
+   SET role = 'admin'
+   WHERE email = '관리자_이메일@example.com';
+   ```
+
+4. 앱 주소에 접속해 관리자 이메일로 로그인합니다.
+
+---
+
+## AI 기능 설정
+
+**월별 평가 AI 자동 요약** 기능은 OpenAI API를 사용합니다. API 키 없이도 앱을 정상적으로 사용할 수 있습니다.
+
+### 방식 A — 직접 입력 (API 키 불필요)
+- 모든 항목을 직접 입력하는 방식입니다.
+- 비용이 없고 인터넷 연결 없이도 작성 가능합니다.
+
+### 방식 B — AI 자동 요약 (OpenAI API 키 필요)
+- 평가 내용을 입력하면 AI가 쉬운 말 요약과 다음 계획을 자동으로 작성합니다.
+- 평가 1건당 약 ₩10~50 수준의 비용이 발생합니다.
+
+**OpenAI API 키 발급 방법**:
+1. [platform.openai.com](https://platform.openai.com) 에 접속해 로그인합니다.
+2. 계정 아이콘 → **API keys** → **Create new secret key** 클릭합니다.
+3. 생성된 키(`sk-...`로 시작)를 복사합니다.
+4. Vercel 대시보드 → 프로젝트 → **Settings** → **Environment Variables** 에 추가합니다.
+   ```
+   OPENAI_API_KEY = sk-...여기에_복사한_키...
+   ```
+5. **Redeploy**(재배포)를 실행합니다.
+
+| 비교 | 방식 A (직접 입력) | 방식 B (AI 자동) |
+|------|------------------|----------------|
+| API 키 | 불필요 | 필요 |
+| 비용 | 없음 | 소량 발생 |
+| 편의성 | 직접 작성 | 자동 요약 |
+
+---
+
+## 저장 용량 안내
+
+- Supabase **무료 티어**: 스토리지 **1 GB**
+- 영수증 이미지(100~200 KB) 기준 약 **5,000~10,000장** 저장 가능
+- 현재 사용량 확인: Supabase 대시보드 → **Storage** 섹션
+- 용량 초과 시: Supabase Pro 플랜($25/월, 100 GB)으로 업그레이드하거나 오래된 이미지를 주기적으로 정리합니다.
+
+---
+
+## 문제 해결
+
+| 증상 | 확인 사항 |
+|------|-----------|
+| 로그인 안 됨 | Supabase → Authentication → Users에 계정 존재 여부 확인. 이메일 인증 옵션이 켜진 경우 끄기 |
+| 지도 안 나옴 | `NEXT_PUBLIC_KAKAO_MAP_API_KEY` 값 확인. 카카오 콘솔 → 플랫폼 → Web에 도메인 등록 여부 확인 |
+| CSV 가져오기 오류 | 엑셀 파일 암호 제거 후 재시도 |
+| AI 요약 오류 | `OPENAI_API_KEY` 설정 및 OpenAI 사용 한도 확인 |
+| 데이터 없음 | `NEXT_PUBLIC_DEMO_MODE=false` 설정 확인 |

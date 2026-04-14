@@ -6,6 +6,8 @@ export type BlockId =
   | 'evaluation_letter'
   | 'weekly_chart'
   | 'source_view'
+  | 'map_widget'
+  | 'activity_gallery'
 
 export interface UIPreferences {
   enabled_blocks: BlockId[]
@@ -21,6 +23,8 @@ export const OPTIONAL_BLOCKS: BlockId[] = [
   'evaluation_letter',
   'weekly_chart',
   'source_view',
+  'map_widget',
+  'activity_gallery',
 ]
 
 export const BLOCK_METADATA: Record<BlockId, { icon: string; label: string; description: string }> = {
@@ -31,6 +35,8 @@ export const BLOCK_METADATA: Record<BlockId, { icon: string; label: string; desc
   evaluation_letter:   { icon: '💌', label: '지원자 편지',    description: '지원자 선생님의 이달 편지' },
   weekly_chart:        { icon: '📉', label: '이번 주 지출',   description: '최근 7일 하루별 지출 막대 그래프' },
   source_view:         { icon: '💳', label: '재원별 보기',    description: '재원(돈의 종류)별 잔액 카드' },
+  map_widget:          { icon: '🗺️', label: '활동 지도',      description: '거래 장소를 지도에서 확인' },
+  activity_gallery:    { icon: '🖼️', label: '활동 사진',      description: '활동 사진 모아보기' },
 }
 
 export const DEFAULT_PREFERENCES: UIPreferences = {

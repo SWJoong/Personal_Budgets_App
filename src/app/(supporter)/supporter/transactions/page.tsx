@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatCurrency } from '@/utils/budget-visuals'
 import TransactionTableClient from '@/components/transactions/TransactionTableClient'
+import AdminHelpButton from '@/components/help/AdminHelpButton'
 
 export default async function TransactionsPage({
   searchParams
@@ -131,12 +132,15 @@ export default async function TransactionsPage({
     <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground p-4 sm:p-8">
       <header className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900">거래 및 회계 관리 (장부)</h1>
-        <Link
-          href="/supporter/transactions/new"
-          className="px-4 py-2 bg-zinc-900 text-white text-sm font-bold rounded-lg hover:bg-zinc-800 transition-colors print:hidden"
-        >
-          + 내역 직접 등록
-        </Link>
+        <div className="flex items-center gap-2 print:hidden">
+          <AdminHelpButton pageKey="transactions" />
+          <Link
+            href="/supporter/transactions/new"
+            className="px-4 py-2 bg-zinc-900 text-white text-sm font-bold rounded-lg hover:bg-zinc-800 transition-colors"
+          >
+            + 내역 직접 등록
+          </Link>
+        </div>
       </header>
 
       <main className="w-full max-w-6xl flex flex-col gap-6">

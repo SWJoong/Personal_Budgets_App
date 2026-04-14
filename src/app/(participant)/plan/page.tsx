@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import PlanChatContainer from '@/components/plans/PlanChatContainer'
 import { formatCurrency } from '@/utils/budget-visuals'
+import HelpButton from '@/components/help/HelpButton'
+import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
 
 export default async function PlanPage() {
   const supabase = await createClient()
@@ -30,9 +32,11 @@ export default async function PlanPage() {
 
   return (
     <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
+      <HelpAutoTrigger sectionKey="plan" />
       <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
         <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
-        <h1 className="text-lg font-bold tracking-tight">오늘의 계획</h1>
+        <h1 className="text-lg font-bold tracking-tight flex-1">오늘의 계획</h1>
+        <HelpButton sectionKey="plan" />
       </header>
 
       <main className="flex-1 p-4 w-full flex flex-col gap-6">

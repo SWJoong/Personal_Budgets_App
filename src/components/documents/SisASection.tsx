@@ -44,6 +44,28 @@ function DetailModal({ row, participantName, onClose, onDelete }: {
   onDelete: () => void
 }) {
   const [deleting, setDeleting] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  async function handleSaveImage() {
+    setSaving(true)
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { default: html2canvas } = await import('html2canvas' as any)
+      const el = document.getElementById('sis-a-detail-content')
+      if (!el) return
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
+      const link = document.createElement('a')
+      link.download = `SIS-A_${participantName}_${new Date(row.assessed_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '-').replace('.', '')}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function handlePrint() {
+    window.print()
+  }
 
   async function handleDelete() {
     if (!confirm('이 SIS-A 평가 기록을 삭제하시겠습니까?')) return
@@ -75,16 +97,33 @@ function DetailModal({ row, participantName, onClose, onDelete }: {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="p-6 flex flex-col gap-4">
+        <div id="sis-a-detail-content" className="p-6 flex flex-col gap-4">
           {/* 헤더 */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between print:hidden">
             <div>
               <p className="font-black text-zinc-900">{participantName} 님</p>
               <p className="text-xs text-zinc-400">
                 {new Date(row.assessed_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
-            <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 text-xl font-bold">✕</button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSaveImage}
+                disabled={saving}
+                title="이미지로 저장"
+                className="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-600 text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-1"
+              >
+                {saving ? '저장 중...' : '🖼️ 이미지 저장'}
+              </button>
+              <button
+                onClick={handlePrint}
+                title="인쇄"
+                className="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-600 text-xs font-bold transition-colors flex items-center gap-1"
+              >
+                🖨️ 인쇄
+              </button>
+              <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 text-xl font-bold">✕</button>
+            </div>
           </div>
 
           {/* 요약 */}

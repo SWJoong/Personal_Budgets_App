@@ -6,6 +6,7 @@ import { useState } from "react";
 export default function RoleSelectionPage() {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<"admin" | "participant" | null>(null);
+  const [easterEggOpen, setEasterEggOpen] = useState(false);
 
   const handleRoleSelect = (role: "admin" | "participant") => {
     console.log("🎭 Role selected:", role);
@@ -27,6 +28,7 @@ export default function RoleSelectionPage() {
   };
 
   return (
+    <>
     <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50">
       {/* Decorative elements */}
       <div className="absolute top-20 right-20 text-8xl opacity-10 rotate-12 pointer-events-none select-none animate-float hidden md:block">
@@ -39,9 +41,13 @@ export default function RoleSelectionPage() {
       <div className="flex w-full max-w-2xl flex-col gap-8 rounded-3xl bg-white p-8 md:p-12 shadow-xl ring-1 ring-zinc-200 animate-fade-in-up">
         {/* Logo / Title area */}
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-5xl shadow-lg animate-celebrate">
+          <button
+            onClick={() => setEasterEggOpen(true)}
+            className="w-24 h-24 rounded-3xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-5xl shadow-lg animate-celebrate hover:scale-105 transition-transform cursor-pointer focus:outline-none"
+            aria-label="로고"
+          >
             💰
-          </div>
+          </button>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
             아름드리꿈터
           </h1>
@@ -193,5 +199,48 @@ export default function RoleSelectionPage() {
         </div>
       </div>
     </div>
+
+    {/* 이스터에그 — 버트런드 러셀 인용구 */}
+    {easterEggOpen && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"
+        onClick={() => setEasterEggOpen(false)}
+      >
+        <div
+          className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="text-2xl mb-4 text-center">💬</p>
+
+          {/* 메인 인용구 */}
+          <p className="text-sm text-slate-700 leading-relaxed mb-1">
+            "훌륭한 삶이란 사랑으로 힘을 얻고 지식으로 길잡이를 삼는 삶이다."
+          </p>
+          <p className="text-xs text-slate-400 text-right mb-4">— 버트런드 러셀</p>
+          <p className="text-xs text-slate-500 italic leading-relaxed mb-1">
+            "The good life is one inspired by love and guided by knowledge."
+          </p>
+          <p className="text-xs text-slate-400 text-right mb-5">— Bertrand Russell</p>
+
+          {/* 구분선 + 행복의 정복 인용구 */}
+          <div className="h-px bg-slate-100 mb-4" />
+          <p className="text-xs text-slate-500 leading-relaxed mb-1">
+            "행복의 비결은 이것이다: 당신의 관심사를 가능한 한 넓게 키우고,
+            당신의 관심사에 반응하는 것들에 대해 가능한 한 우호적으로 반응하라."
+          </p>
+          <p className="text-xs text-slate-400 text-right mb-5">
+            — 버트런드 러셀, 《행복의 정복》
+          </p>
+
+          <button
+            onClick={() => setEasterEggOpen(false)}
+            className="w-full py-2 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-700 transition-colors"
+          >
+            닫기
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ReviewQueueClient from '@/components/transactions/ReviewQueueClient'
+import AdminHelpButton from '@/components/help/AdminHelpButton'
 
 export default async function ReviewQueuePage() {
   const supabase = await createClient()
@@ -94,11 +95,14 @@ export default async function ReviewQueuePage() {
             당사자가 올린 영수증을 확인하고 잔액에 반영해요
           </p>
         </div>
-        {transactions.length > 0 && (
-          <span className="ml-auto px-3 py-1 rounded-full bg-orange-100 text-orange-600 text-sm font-black">
-            {transactions.length}건 대기
-          </span>
-        )}
+        <div className="ml-auto flex items-center gap-2">
+          {transactions.length > 0 && (
+            <span className="px-3 py-1 rounded-full bg-orange-100 text-orange-600 text-sm font-black">
+              {transactions.length}건 대기
+            </span>
+          )}
+          <AdminHelpButton pageKey="review" />
+        </div>
       </header>
 
       <main className="w-full max-w-2xl flex flex-col gap-4">

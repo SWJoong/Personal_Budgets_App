@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import MoreMenuClient from '@/components/layout/MoreMenuClient'
 import NavDropdown from '@/components/layout/NavDropdown'
+import HelpButton from '@/components/help/HelpButton'
+import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
 
 export default async function MorePage() {
   const supabase = await createClient()
@@ -26,9 +28,13 @@ export default async function MorePage() {
 
   return (
     <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
+      <HelpAutoTrigger sectionKey="more" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
         <h1 className="text-lg font-bold tracking-tight">더보기</h1>
-        <NavDropdown />
+        <div className="flex items-center gap-2">
+          <HelpButton sectionKey="more" />
+          <NavDropdown />
+        </div>
       </header>
 
       <main className="flex-1 p-4 w-full flex flex-col gap-6">

@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import ParticipantPreviewCard from '@/components/admin/ParticipantPreviewCard'
 import AlertPanel from '@/components/admin/AlertPanel'
 import SettlementSummary from '@/components/admin/SettlementSummary'
+import AdminHelpButton from '@/components/help/AdminHelpButton'
 
 export default async function AdminDashboardPage({
   searchParams,
@@ -116,6 +117,7 @@ export default async function AdminDashboardPage({
           >
             전체 →
           </Link>
+          <AdminHelpButton pageKey="dashboard" />
         </div>
       </header>
 

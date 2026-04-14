@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import TransactionCalendar from '@/components/transactions/TransactionCalendar'
 import { EasyTerm } from '@/components/ui/EasyTerm'
+import HelpButton from '@/components/help/HelpButton'
+import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
 
 export default async function CalendarPage() {
   const supabase = await createClient()
@@ -21,11 +23,13 @@ export default async function CalendarPage() {
 
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
+      <HelpAutoTrigger sectionKey="calendar" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
         <div className="flex items-center gap-3">
           <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
           <h1 className="text-lg font-bold tracking-tight">달력</h1>
         </div>
+        <div className="flex items-center gap-2">
         <div className="flex gap-3 text-[10px] font-bold">
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-green-500"></div>
@@ -39,6 +43,8 @@ export default async function CalendarPage() {
               <EasyTerm formal="확인 대기중" easy="선생님이 확인 중" />
             </span>
           </div>
+        </div>
+        <HelpButton sectionKey="calendar" />
         </div>
       </header>
 

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { updateUserRole } from '@/app/actions/admin'
 import Link from 'next/link'
+import AdminHelpButton from '@/components/help/AdminHelpButton'
 import type { UserRole } from '@/types/database'
 import type { OrgEvalSetting } from '@/types/eval-templates'
 import EvalTemplateSettings from '@/components/admin/EvalTemplateSettings'
@@ -67,7 +68,10 @@ export default function AdminSettingsClient({
           <Link href="/admin/participants" className="text-muted-foreground hover:text-foreground transition-colors">←</Link>
           <h1 className="text-xl font-bold tracking-tight">시스템 설정</h1>
         </div>
-        <div className="px-3 py-1 bg-red-50 rounded-full text-[10px] font-bold text-red-500 ring-1 ring-red-200">관리자</div>
+        <div className="flex items-center gap-2">
+          <div className="px-3 py-1 bg-red-50 rounded-full text-[10px] font-bold text-red-500 ring-1 ring-red-200">관리자</div>
+          <AdminHelpButton pageKey="settings" />
+        </div>
       </header>
 
       <main className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import CarePlanSection from '@/components/documents/CarePlanSection'
 import { getAllCarePlans } from '@/app/actions/carePlan'
 import EvaluationsPageClient from '@/components/evaluations/EvaluationsPageClient'
+import AdminHelpButton from '@/components/help/AdminHelpButton'
 
 export default async function EvaluationsPage({
   searchParams,
@@ -37,9 +38,12 @@ export default async function EvaluationsPage({
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 p-8">
-      <header className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-900">계획과 평가</h1>
-        <p className="text-zinc-500 mt-1">이용계획서 작성과 월별 평가를 한 곳에서 관리합니다.</p>
+      <header className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-900">계획과 평가</h1>
+          <p className="text-zinc-500 mt-1">이용계획서 작성과 월별 평가를 한 곳에서 관리합니다.</p>
+        </div>
+        <AdminHelpButton pageKey="evaluations" />
       </header>
 
       <main className="max-w-4xl flex flex-col gap-8">

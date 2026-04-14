@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ReceiptUploadForm from '@/components/transactions/ReceiptUploadForm'
 import { EasyTerm } from '@/components/ui/EasyTerm'
+import HelpButton from '@/components/help/HelpButton'
+import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
 
 export default async function ReceiptPage() {
   const supabase = await createClient()
@@ -39,9 +41,13 @@ export default async function ReceiptPage() {
 
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
-      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
-        <h1 className="text-lg font-bold tracking-tight">영수증 올리기</h1>
+      <HelpAutoTrigger sectionKey="receipt" />
+      <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
+          <h1 className="text-lg font-bold tracking-tight">영수증 올리기</h1>
+        </div>
+        <HelpButton sectionKey="receipt" />
       </header>
 
       <main className="flex-1 p-4 w-full">
