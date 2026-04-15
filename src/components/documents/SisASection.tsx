@@ -51,42 +51,28 @@ function DetailModal({ row, participantName, onClose, onDelete }: {
     setSaving(true)
     setSaveError(null)
     try {
-      const html2canvas = (await import('html2canvas')).default
+      const { toPng } = await import('html-to-image')
       const el = document.getElementById('sis-a-detail-content')
-      if (!el) { setSaveError('저장할 영역을 찾을 수 없습니다.'); return }
+      if (!el) { setSaveError('저장할 영역을 찾을 수 없습니다.'); setSaving(false); return }
 
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        useCORS: true,
+      const dateStr = new Date(row.assessed_at).toISOString().slice(0, 10)
+      const fileName = `SIS-A_${participantName}_${dateStr}.png`
+
+      const dataUrl = await toPng(el, {
+        pixelRatio: 2,
         backgroundColor: '#ffffff',
-        // print:hidden 요소(버튼 행)는 캡처 제외
-        ignoreElements: (node) => {
-          if (!(node instanceof HTMLElement)) return false
-          return node.dataset.printHide === 'true' ||
-            Array.from(node.classList).some(c => c === 'print:hidden')
+        filter: (node) => {
+          if (!(node instanceof HTMLElement)) return true
+          return node.dataset.printHide !== 'true'
         },
       })
 
-      // 파일명: SIS-A_홍길동_2026-04-14.png
-      const dateStr = new Date(row.assessed_at)
-        .toISOString()
-        .slice(0, 10)  // 'YYYY-MM-DD' — 브라우저 로케일 무관하게 안전
-      const fileName = `SIS-A_${participantName}_${dateStr}.png`
-
-      // Blob + Object URL 방식 (data URI보다 메모리 효율적, Safari 호환)
-      canvas.toBlob((blob) => {
-        if (!blob) { setSaveError('이미지 변환에 실패했습니다.'); return }
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = fileName
-        // DOM에 추가해야 일부 브라우저에서 click()이 동작함
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        // 짧은 지연 후 URL 해제 (click 처리 완료 대기)
-        setTimeout(() => URL.revokeObjectURL(url), 1000)
-      }, 'image/png')
+      const link = document.createElement('a')
+      link.href = dataUrl
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     } catch (e) {
       console.error('SIS-A 이미지 저장 오류:', e)
       setSaveError('이미지 저장에 실패했습니다. 다시 시도해 주세요.')
