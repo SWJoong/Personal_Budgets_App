@@ -34,11 +34,17 @@ export default async function SettlementSummary() {
     .in('participant_id', ids)
     .eq('month', currentMonth)
 
-  // 전체 서류 수
-  const { data: files } = await supabase
-    .from('file_links')
-    .select('participant_id')
-    .in('participant_id', ids)
+  // 전체 서류 수 (file_links 테이블이 없을 수도 있음)
+  let files: any[] | null = null
+  try {
+    const { data } = await supabase
+      .from('file_links')
+      .select('participant_id')
+      .in('participant_id', ids)
+    files = data
+  } catch {
+    files = null
+  }
 
   const summary = participants.map(p => {
     const ptxs = (transactions || []).filter((t: any) => t.participant_id === p.id)

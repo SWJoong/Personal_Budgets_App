@@ -37,10 +37,17 @@ export default async function SupporterDocumentsPage({
   const { data: participants } = await participantsQuery
 
   // 기존 등록된 모든 서류 조회
-  const { data: documents } = await supabase
-    .from('file_links')
-    .select('*, participant:participants!file_links_participant_id_fkey ( name )')
-    .order('created_at', { ascending: false })
+  let documents: any[] = []
+  try {
+    const { data: docsData } = await supabase
+      .from('file_links')
+      .select('*, participant:participants ( name )')
+      .order('created_at', { ascending: false })
+    documents = docsData || []
+  } catch {
+    // file_links 테이블이 없거나 쿼리 실패 시 빈 배열
+    documents = []
+  }
 
   // SIS-A 평가 목록 조회 (migration 실행 전이면 빈 배열)
   const sisAssessments = await getAllSisAssessments().catch(() => [])
@@ -59,7 +66,7 @@ export default async function SupporterDocumentsPage({
       <main className="max-w-6xl flex flex-col gap-8">
         <DocumentManagerClient
           participants={(participants || []) as any}
-          initialDocuments={(documents || []) as any}
+          initialDocuments={documents as any}
           sisAssessments={sisAssessments as any}
           initialParticipantId={params.participant_id}
         />
