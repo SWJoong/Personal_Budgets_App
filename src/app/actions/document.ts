@@ -15,6 +15,27 @@ export async function getDocumentUploadUrl(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.' }
 
+  // 역할 확인 + supporter인 경우 담당 참여자만 접근 허용
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'supporter')) {
+    return { error: '권한이 없습니다.' }
+  }
+
+  if (profile.role === 'supporter') {
+    const { data: assigned } = await supabase
+      .from('participants')
+      .select('id')
+      .eq('id', participantId)
+      .eq('assigned_supporter_id', user.id)
+      .single()
+    if (!assigned) return { error: '해당 참여자에 대한 접근 권한이 없습니다.' }
+  }
+
   const admin = createAdminClient()
   const safeFileName = originalFileName.replace(/[^a-zA-Z0-9가-힣._-]/g, '_')
   const filePath = `${participantId}/${Date.now()}-${safeFileName}`
@@ -39,6 +60,13 @@ export async function saveDocumentRecord(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.' }
+
+  // 서버가 발급한 경로 형식인지 검증 (경로 위변조 방지)
+  // 형식: {participantId}/{timestamp}-{safeFileName}
+  const expectedPrefix = `${participantId}/`
+  if (!filePath.startsWith(expectedPrefix) || filePath.includes('..')) {
+    return { error: '잘못된 파일 경로입니다.' }
+  }
 
   const admin = createAdminClient()
   const { data: { publicUrl } } = admin.storage.from('documents').getPublicUrl(filePath)
