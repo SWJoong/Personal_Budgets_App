@@ -72,67 +72,144 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
 
     const bounds = new kakao.maps.LatLngBounds()
 
-    // 거래 마커 (기존)
+    // ── 거래 마커: 같은 장소 클러스터링 (toFixed(4) ≈ 11m 정밀도) ──
+    const clusterMap = new Map<string, MapTransaction[]>()
     validTx.forEach((tx) => {
-      const position = new kakao.maps.LatLng(tx.place_lat!, tx.place_lng!)
+      const key = `${tx.place_lat!.toFixed(4)},${tx.place_lng!.toFixed(4)}`
+      if (!clusterMap.has(key)) clusterMap.set(key, [])
+      clusterMap.get(key)!.push(tx)
+    })
+
+    clusterMap.forEach((txGroup) => {
+      const lat = txGroup[0].place_lat!
+      const lng = txGroup[0].place_lng!
+      const position = new kakao.maps.LatLng(lat, lng)
       bounds.extend(position)
 
-      const marker = new kakao.maps.Marker({ position, map })
-      markersRef.current.push(marker)
+      if (txGroup.length === 1) {
+        // ── 단일 거래 마커 ──
+        const tx = txGroup[0]
+        const marker = new kakao.maps.Marker({ position, map })
+        markersRef.current.push(marker)
 
-      // 활동 사진 우선, 없으면 영수증 사진
-      const thumbUrl = tx.activity_image_url || tx.receipt_image_url || null
-      const thumbLabel = tx.activity_image_url ? '활동' : tx.receipt_image_url ? '영수증' : ''
+        const thumbUrl = tx.activity_image_url || tx.receipt_image_url || null
+        const thumbLabel = tx.activity_image_url ? '활동' : tx.receipt_image_url ? '영수증' : ''
 
-      const content = `
-        <div style="
-          padding:0;
-          font-size:12px;
-          line-height:1.6;
-          width:200px;
-          border-radius:12px;
-          background:#fff;
-          box-shadow:0 2px 12px rgba(0,0,0,.18);
-          overflow:hidden;
-          border-top:3px solid ${STATUS_COLOR[tx.status] ?? '#a1a1aa'};
-        ">
-          ${thumbUrl ? `
-          <div style="position:relative;width:100%;height:90px;overflow:hidden;background:#f4f4f5;">
-            <img
-              src="${thumbUrl}"
-              alt="${thumbLabel}"
-              style="width:100%;height:100%;object-fit:cover;"
-              onerror="this.parentElement.style.display='none'"
-              crossorigin="anonymous"
-            />
-            <span style="
-              position:absolute;bottom:5px;left:6px;
-              font-size:9px;font-weight:800;
-              background:rgba(0,0,0,.45);color:#fff;
-              padding:1px 5px;border-radius:4px;
-            ">${thumbLabel} 사진</span>
-          </div>` : ''}
-          <div style="padding:10px 12px;">
-            <b style="font-size:13px;color:#18181b;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tx.activity_name}</b>
-            ${tx.place_name && tx.place_name !== tx.activity_name
-              ? `<span style="font-size:11px;color:#71717a;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tx.place_name}</span>`
-              : ''}
-            <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-              <span style="color:#52525b;font-size:11px;">${tx.date}</span>
-              <b style="color:#18181b;font-size:12px;">${formatCurrency(tx.amount)}원</b>
+        const content = `
+          <div style="
+            padding:0;
+            font-size:12px;
+            line-height:1.6;
+            width:200px;
+            border-radius:12px;
+            background:#fff;
+            box-shadow:0 2px 12px rgba(0,0,0,.18);
+            overflow:hidden;
+            border-top:3px solid ${STATUS_COLOR[tx.status] ?? '#a1a1aa'};
+          ">
+            ${thumbUrl ? `
+            <div style="position:relative;width:100%;height:90px;overflow:hidden;background:#f4f4f5;">
+              <img
+                src="${thumbUrl}"
+                alt="${thumbLabel}"
+                style="width:100%;height:100%;object-fit:cover;"
+                onerror="this.parentElement.style.display='none'"
+                crossorigin="anonymous"
+              />
+              <span style="
+                position:absolute;bottom:5px;left:6px;
+                font-size:9px;font-weight:800;
+                background:rgba(0,0,0,.45);color:#fff;
+                padding:1px 5px;border-radius:4px;
+              ">${thumbLabel} 사진</span>
+            </div>` : ''}
+            <div style="padding:10px 12px;">
+              <b style="font-size:13px;color:#18181b;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tx.activity_name}</b>
+              ${tx.place_name && tx.place_name !== tx.activity_name
+                ? `<span style="font-size:11px;color:#71717a;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tx.place_name}</span>`
+                : ''}
+              <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <span style="color:#52525b;font-size:11px;">${tx.date}</span>
+                <b style="color:#18181b;font-size:12px;">${formatCurrency(tx.amount)}원</b>
+              </div>
+              ${tx.participant_name ? `<span style="color:#a1a1aa;font-size:10px;">${tx.participant_name}</span>` : ''}
             </div>
-            ${tx.participant_name ? `<span style="color:#a1a1aa;font-size:10px;">${tx.participant_name}</span>` : ''}
           </div>
-        </div>
-      `
+        `
 
-      const infoWindow = new kakao.maps.InfoWindow({ content, removable: true })
+        const infoWindow = new kakao.maps.InfoWindow({ content, removable: true })
+        kakao.maps.event.addListener(marker, 'click', () => {
+          infoWindowRef.current?.close()
+          infoWindow.open(map, marker)
+          infoWindowRef.current = infoWindow
+        })
+      } else {
+        // ── 클러스터 마커 (숫자 배지 포함 SVG 핀) ──
+        const count = txGroup.length
+        const clusterSvg = encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="48" viewBox="0 0 40 48">
+  <ellipse cx="20" cy="46" rx="7" ry="2.5" fill="rgba(0,0,0,0.15)"/>
+  <path d="M20 0C11.163 0 4 7.163 4 16c0 11.25 16 30 16 30S36 27.25 36 16C36 7.163 28.837 0 20 0z" fill="#3b82f6"/>
+  <circle cx="20" cy="16" r="10" fill="white"/>
+  <text x="20" y="20" font-size="${count >= 10 ? '9' : '11'}" text-anchor="middle" fill="#2563eb" font-family="sans-serif" font-weight="bold">${count}</text>
+</svg>`)
 
-      kakao.maps.event.addListener(marker, 'click', () => {
-        infoWindowRef.current?.close()
-        infoWindow.open(map, marker)
-        infoWindowRef.current = infoWindow
-      })
+        const clusterImage = new kakao.maps.MarkerImage(
+          `data:image/svg+xml;charset=utf-8,${clusterSvg}`,
+          new kakao.maps.Size(40, 48),
+          { offset: new kakao.maps.Point(20, 48) }
+        )
+
+        const marker = new kakao.maps.Marker({ position, map, image: clusterImage })
+        markersRef.current.push(marker)
+
+        // 클러스터 InfoWindow — 모든 거래 목록 + 썸네일
+        const totalAmt = txGroup.reduce((s, t) => s + t.amount, 0)
+        const placeName = txGroup[0].place_name ?? txGroup[0].activity_name
+
+        const rows = txGroup.map((tx) => {
+          const thumb = tx.activity_image_url || tx.receipt_image_url || null
+          return `
+            <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #f4f4f5;">
+              ${thumb ? `
+                <img src="${thumb}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;"
+                  onerror="this.style.display='none'" crossorigin="anonymous"/>
+              ` : `<div style="width:36px;height:36px;border-radius:6px;background:#e4e4e7;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;">🧾</div>`}
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:11px;font-weight:800;color:#18181b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tx.activity_name}</div>
+                <div style="font-size:10px;color:#71717a;">${tx.date}</div>
+              </div>
+              <b style="font-size:11px;color:#2563eb;white-space:nowrap;">${formatCurrency(tx.amount)}원</b>
+            </div>`
+        }).join('')
+
+        const content = `
+          <div style="
+            font-size:12px;
+            line-height:1.5;
+            width:240px;
+            border-radius:12px;
+            background:#fff;
+            box-shadow:0 2px 12px rgba(0,0,0,.18);
+            overflow:hidden;
+            border-top:4px solid #3b82f6;
+          ">
+            <div style="padding:10px 12px 6px;">
+              <b style="font-size:13px;color:#18181b;">${placeName}</b>
+              <span style="margin-left:6px;font-size:10px;font-weight:800;background:#eff6ff;color:#2563eb;padding:1px 6px;border-radius:4px;">${count}회 방문</span>
+              <div style="font-size:11px;color:#52525b;margin-top:2px;">합계 <b style="color:#18181b;">${formatCurrency(totalAmt)}원</b></div>
+            </div>
+            <div style="max-height:200px;overflow-y:auto;padding:0 12px 8px;">${rows}</div>
+          </div>
+        `
+
+        const infoWindow = new kakao.maps.InfoWindow({ content, removable: true })
+        kakao.maps.event.addListener(marker, 'click', () => {
+          infoWindowRef.current?.close()
+          infoWindow.open(map, marker)
+          infoWindowRef.current = infoWindow
+        })
+      }
     })
 
     // 계획 마커 (신규 — 인디고 핀)

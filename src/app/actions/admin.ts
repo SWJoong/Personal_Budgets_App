@@ -319,6 +319,40 @@ export async function updateFundingSource(fundingSourceId: string, formData: {
 }
 
 /**
+ * 재원 추가
+ */
+export async function createFundingSource(participantId: string, formData: {
+  name: string
+  monthlyBudget: number
+  yearlyBudget: number
+}) {
+  const { supabase } = await verifyAdmin()
+
+  try {
+    const { error } = await supabase
+      .from('funding_sources')
+      .insert({
+        participant_id: participantId,
+        name: formData.name,
+        monthly_budget: formData.monthlyBudget,
+        yearly_budget: formData.yearlyBudget,
+        current_month_balance: formData.monthlyBudget,
+        current_year_balance: formData.yearlyBudget,
+      })
+
+    if (error) {
+      return { error: `재원 추가 실패: ${error.message}` }
+    }
+
+    revalidatePath('/admin/participants')
+    revalidatePath(`/admin/participants/${participantId}`)
+    return { success: true }
+  } catch (e: any) {
+    return { error: `오류: ${e.message}` }
+  }
+}
+
+/**
  * 재원 삭제
  */
 export async function deleteFundingSource(fundingSourceId: string) {

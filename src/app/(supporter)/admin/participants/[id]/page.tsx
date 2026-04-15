@@ -65,6 +65,7 @@ export default async function ParticipantDetailPage({ params }: PageProps) {
   const monthPercentage = totalMonthlyBudget > 0 ? Math.round((totalMonthBalance / totalMonthlyBudget) * 100) : 0
 
   const backUrl = profile.role === 'admin' ? '/admin/participants' : '/supporter'
+  const isAdmin = profile.role === 'admin'
 
   return (
     <ParticipantDetailClient
@@ -76,6 +77,7 @@ export default async function ParticipantDetailPage({ params }: PageProps) {
       totalYearBalance={totalYearBalance}
       totalMonthlyBudget={totalMonthlyBudget}
       backUrl={backUrl}
+      isAdmin={isAdmin}
     />
   )
 }

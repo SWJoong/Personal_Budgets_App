@@ -88,7 +88,18 @@ export default async function TransactionsPage({
     txQuery = txQuery.order('amount', { ascending: true })
   } else if (params.sort === 'amount_desc') {
     txQuery = txQuery.order('amount', { ascending: false })
+  } else if (params.sort === 'date_asc') {
+    txQuery = txQuery.order('date', { ascending: true })
+  } else if (params.sort === 'name_asc') {
+    txQuery = txQuery.order('activity_name', { ascending: true })
+  } else if (params.sort === 'name_desc') {
+    txQuery = txQuery.order('activity_name', { ascending: false })
+  } else if (params.sort === 'category_asc') {
+    txQuery = txQuery.order('category', { ascending: true, nullsFirst: false })
+  } else if (params.sort === 'category_desc') {
+    txQuery = txQuery.order('category', { ascending: false, nullsFirst: false })
   } else {
+    // default: date_desc
     txQuery = txQuery.order('date', { ascending: false })
   }
 
@@ -106,7 +117,7 @@ export default async function TransactionsPage({
   // 지도용 — place 정보 포함된 전체 거래 (필터 무관)
   const { data: allLocatedTx } = await supabase
     .from('transactions')
-    .select('id, activity_name, amount, date, status, place_name, place_lat, place_lng, participant:participants!transactions_participant_id_fkey ( name )')
+    .select('id, activity_name, amount, date, status, place_name, place_lat, place_lng, activity_image_url, receipt_image_url, participant:participants!transactions_participant_id_fkey ( name )')
     .not('place_lat', 'is', null)
     .limit(500)
 
@@ -182,6 +193,8 @@ export default async function TransactionsPage({
             place_name: t.place_name,
             place_lat: t.place_lat,
             place_lng: t.place_lng,
+            activity_image_url: t.activity_image_url ?? null,
+            receipt_image_url: t.receipt_image_url ?? null,
             participant_name: t.participant?.name,
           }))}
         />
