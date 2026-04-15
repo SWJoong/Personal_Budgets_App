@@ -37,8 +37,9 @@ export async function getDocumentUploadUrl(
   }
 
   const admin = createAdminClient()
-  const safeFileName = originalFileName.replace(/[^a-zA-Z0-9가-힣._-]/g, '_')
-  const filePath = `${participantId}/${Date.now()}-${safeFileName}`
+  // Storage 경로는 ASCII만 허용 — 확장자만 추출하고 타임스탬프로 고유성 보장
+  const ext = (originalFileName.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+  const filePath = `${participantId}/${Date.now()}${ext ? '.' + ext : ''}`
 
   const { data, error } = await admin.storage
     .from('documents')
@@ -62,9 +63,9 @@ export async function saveDocumentRecord(
   if (!user) return { error: '로그인이 필요합니다.' }
 
   // 서버가 발급한 경로 형식인지 검증 (경로 위변조 방지)
-  // 형식: {participantId}/{timestamp}-{safeFileName}
+  // 형식: {participantId}/{timestamp}.{ext}
   const expectedPrefix = `${participantId}/`
-  if (!filePath.startsWith(expectedPrefix) || filePath.includes('..')) {
+  if (!filePath.startsWith(expectedPrefix) || filePath.includes('..') || /[^a-zA-Z0-9/_.-]/.test(filePath)) {
     return { error: '잘못된 파일 경로입니다.' }
   }
 
@@ -108,9 +109,8 @@ export async function uploadDocument(formData: FormData) {
       throw new Error(`파일 용량이 20MB를 초과합니다. (${(file.size / 1024 / 1024).toFixed(1)}MB)`)
     }
 
-    const safeFileName = file.name.replace(/[^a-zA-Z0-9가-힣._-]/g, '_')
-    const fileName = `${participantId}/${Date.now()}-${safeFileName}`
-    const ext = safeFileName.split('.').pop()?.toLowerCase() || ''
+    const ext = (file.name.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+    const fileName = `${participantId}/${Date.now()}${ext ? '.' + ext : ''}`
     const mimeMap: Record<string, string> = {
       xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       xls:  'application/vnd.ms-excel',
