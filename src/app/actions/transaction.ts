@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export interface ParticipantWithFundingSources {
@@ -321,9 +321,13 @@ export async function updateTransactionImages(
   participantId: string,
   formData: FormData
 ): Promise<{ success?: boolean; error?: string; receipt_image_url?: string; activity_image_url?: string }> {
+  // 인증 확인
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.' }
+
+  // Storage·DB 조작은 서비스 롤 클라이언트 사용 (RLS 우회)
+  const admin = createAdminClient()
 
   const receiptFile = formData.get('receipt') as File | null
   const activityFile = formData.get('activity_image') as File | null
@@ -333,26 +337,26 @@ export async function updateTransactionImages(
   if (receiptFile && receiptFile.size > 0) {
     const fileExt = (receiptFile.name.split('.').pop() || 'jpg').toLowerCase()
     const fileName = `${user.id}-${Date.now()}.${fileExt}`
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await admin.storage
       .from('receipts')
-      .upload(fileName, receiptFile)
+      .upload(fileName, receiptFile, { upsert: true })
     if (uploadError) {
       return { error: `영수증 업로드 실패: ${uploadError.message}` }
     }
-    const { data: { publicUrl } } = supabase.storage.from('receipts').getPublicUrl(fileName)
+    const { data: { publicUrl } } = admin.storage.from('receipts').getPublicUrl(fileName)
     imageUpdates.receipt_image_url = publicUrl
   }
 
   if (activityFile && activityFile.size > 0) {
     const fileExt = (activityFile.name.split('.').pop() || 'jpg').toLowerCase()
     const fileName = `${participantId}/${Date.now()}-activity.${fileExt}`
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await admin.storage
       .from('activity-photos')
-      .upload(fileName, activityFile)
+      .upload(fileName, activityFile, { upsert: true })
     if (uploadError) {
       return { error: `활동사진 업로드 실패: ${uploadError.message}` }
     }
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl } } = admin.storage
       .from('activity-photos')
       .getPublicUrl(fileName)
     imageUpdates.activity_image_url = publicUrl
@@ -362,7 +366,7 @@ export async function updateTransactionImages(
     return { error: '업로드할 파일이 없습니다.' }
   }
 
-  const { error } = await supabase
+  const { error } = await admin
     .from('transactions')
     .update(imageUpdates)
     .eq('id', transactionId)

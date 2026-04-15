@@ -1,11 +1,11 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export async function uploadDocument(formData: FormData) {
+  // 인증 확인은 사용자 세션 클라이언트로
   const supabase = await createClient()
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('로그인이 필요합니다.')
 
@@ -19,6 +19,9 @@ export async function uploadDocument(formData: FormData) {
 
   let finalUrl = externalUrl
 
+  // Storage 업로드·DB 쓰기는 서비스 롤 클라이언트 사용 (RLS 우회)
+  const admin = createAdminClient()
+
   if (file && file.size > 0) {
     if (file.size > MAX_FILE_SIZE) {
       throw new Error(`파일 용량이 20MB를 초과합니다. (${(file.size / 1024 / 1024).toFixed(1)}MB)`)
@@ -26,25 +29,24 @@ export async function uploadDocument(formData: FormData) {
 
     const safeFileName = file.name.replace(/[^a-zA-Z0-9가-힣._-]/g, '_')
     const fileName = `${participantId}/${Date.now()}-${safeFileName}`
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await admin.storage
       .from('documents')
-      .upload(fileName, file, { upsert: false })
+      .upload(fileName, file, { upsert: true })
 
     if (uploadError) {
-      // Supabase storage 버킷 미존재 시 안내
       if (uploadError.message.includes('bucket') || uploadError.message.includes('not found')) {
-        throw new Error('저장소 버킷이 준비되지 않았습니다. 관리자에게 문의하거나 Supabase Storage에서 "documents" 버킷을 생성해 주세요.')
+        throw new Error('저장소 버킷이 준비되지 않았습니다. Supabase Storage에서 "documents" 버킷을 확인해 주세요.')
       }
       throw new Error('파일 업로드 실패: ' + uploadError.message)
     }
 
-    const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(fileName)
+    const { data: { publicUrl } } = admin.storage.from('documents').getPublicUrl(fileName)
     finalUrl = publicUrl
   }
 
   if (!finalUrl) throw new Error('파일 또는 링크를 입력해주세요.')
 
-  const { error } = await supabase.from('file_links').insert({
+  const { error } = await admin.from('file_links').insert({
     participant_id: participantId,
     title,
     url: finalUrl,
@@ -59,9 +61,9 @@ export async function uploadDocument(formData: FormData) {
 }
 
 export async function deleteDocument(id: string) {
-  const supabase = await createClient()
+  const admin = createAdminClient()
 
-  const { error } = await supabase.from('file_links').delete().eq('id', id)
+  const { error } = await admin.from('file_links').delete().eq('id', id)
   if (error) throw error
 
   revalidatePath('/supporter/documents')
