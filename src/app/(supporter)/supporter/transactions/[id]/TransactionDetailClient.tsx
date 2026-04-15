@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatCurrency } from '@/utils/budget-visuals'
-import { updateTransactionDetail, deleteTransactionWithBalance } from '@/app/actions/transaction'
+import { updateTransactionDetail, deleteTransactionWithBalance, updateTransactionImages } from '@/app/actions/transaction'
 import PlaceSearch from '@/components/map/PlaceSearch'
 import type { PlaceResult } from '@/app/actions/geocode'
 
@@ -18,7 +18,9 @@ interface Tx {
   payment_method: string | null
   status: 'pending' | 'confirmed'
   receipt_image_url: string | null
+  activity_image_url: string | null
   funding_source_id: string | null
+  participant_id: string | null
   participant: { name: string } | null
   funding_source: { name: string } | null
   place_name?: string | null
@@ -48,7 +50,50 @@ export default function TransactionDetailClient({ tx }: { tx: Tx }) {
       : null
   )
 
+  // 이미지
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(tx.receipt_image_url)
+  const [activityUrl, setActivityUrl] = useState<string | null>(tx.activity_image_url)
+  const [uploadingReceipt, setUploadingReceipt] = useState(false)
+  const [uploadingActivity, setUploadingActivity] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const receiptInputRef = useRef<HTMLInputElement>(null)
+  const activityInputRef = useRef<HTMLInputElement>(null)
+  // 현재 미리보기 탭 ('receipt' | 'activity')
+  const [viewTab, setViewTab] = useState<'receipt' | 'activity'>(() =>
+    !tx.receipt_image_url && tx.activity_image_url ? 'activity' : 'receipt'
+  )
+
   const categories = ['식비', '교통비', '여가활동', '생활용품', '의료비', '교육', '기타']
+
+  async function handleImageUpload(field: 'receipt' | 'activity_image', file: File) {
+    const setUploading = field === 'receipt' ? setUploadingReceipt : setUploadingActivity
+    setUploading(true)
+    setUploadError('')
+    try {
+      const fd = new FormData()
+      fd.append(field, file)
+      const result = await updateTransactionImages(
+        tx.id,
+        tx.participant_id ?? '',
+        fd
+      )
+      if (result.error) {
+        setUploadError(result.error)
+      } else {
+        if (field === 'receipt' && result.receipt_image_url) {
+          setReceiptUrl(result.receipt_image_url)
+          setViewTab('receipt')
+        } else if (field === 'activity_image' && result.activity_image_url) {
+          setActivityUrl(result.activity_image_url)
+          setViewTab('activity')
+        }
+      }
+    } catch {
+      setUploadError('업로드 중 오류가 발생했습니다.')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   async function handleUpdate(e: React.FormEvent) {
     e.preventDefault()
@@ -94,6 +139,9 @@ export default function TransactionDetailClient({ tx }: { tx: Tx }) {
     }
   }
 
+  const hasReceipt = !!receiptUrl
+  const hasActivity = !!activityUrl
+
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground p-4 sm:p-8">
       <header className="flex items-center justify-between mb-8 print:hidden">
@@ -116,17 +164,118 @@ export default function TransactionDetailClient({ tx }: { tx: Tx }) {
       </header>
 
       <main className="w-full max-w-6xl flex flex-col lg:flex-row gap-8 items-start">
-        {/* 좌측: 증빙 뷰어 */}
+        {/* 좌측: 증빙 뷰어 + 업로드 */}
         <div className="w-full lg:w-1/2 flex flex-col gap-4">
-          <h2 className="text-lg font-bold text-zinc-800">증빙 자료 (영수증)</h2>
-          <div className="bg-white rounded-xl ring-1 ring-zinc-200 shadow-sm p-4 flex flex-col items-center justify-center min-h-[500px]">
-            {tx.receipt_image_url ? (
-              <img src={tx.receipt_image_url} alt="영수증 이미지" className="max-w-full max-h-[700px] object-contain rounded-lg" />
+          {/* 탭 헤더 */}
+          <div className="flex items-center justify-between">
+            <div className="flex gap-1 bg-zinc-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewTab('receipt')}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
+                  viewTab === 'receipt' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'
+                }`}
+              >
+                🧾 영수증{hasReceipt && ' ✓'}
+              </button>
+              <button
+                onClick={() => setViewTab('activity')}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
+                  viewTab === 'activity' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'
+                }`}
+              >
+                📷 활동사진{hasActivity && ' ✓'}
+              </button>
+            </div>
+            {/* 업로드 버튼 */}
+            <div className="flex gap-2">
+              <input
+                ref={receiptInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => {
+                  const f = e.target.files?.[0]
+                  if (f) handleImageUpload('receipt', f)
+                  e.target.value = ''
+                }}
+              />
+              <input
+                ref={activityInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => {
+                  const f = e.target.files?.[0]
+                  if (f) handleImageUpload('activity_image', f)
+                  e.target.value = ''
+                }}
+              />
+              {viewTab === 'receipt' ? (
+                <button
+                  type="button"
+                  onClick={() => receiptInputRef.current?.click()}
+                  disabled={uploadingReceipt}
+                  className="px-3 py-1.5 text-xs font-bold bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-50 flex items-center gap-1"
+                >
+                  {uploadingReceipt
+                    ? <><span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" /> 업로드 중...</>
+                    : <>{hasReceipt ? '🔄 교체' : '📎 첨부'}</>
+                  }
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => activityInputRef.current?.click()}
+                  disabled={uploadingActivity}
+                  className="px-3 py-1.5 text-xs font-bold bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-50 flex items-center gap-1"
+                >
+                  {uploadingActivity
+                    ? <><span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" /> 업로드 중...</>
+                    : <>{hasActivity ? '🔄 교체' : '📎 첨부'}</>
+                  }
+                </button>
+              )}
+            </div>
+          </div>
+
+          {uploadError && (
+            <p className="text-xs text-red-600 font-medium bg-red-50 px-3 py-2 rounded-lg">{uploadError}</p>
+          )}
+
+          {/* 이미지 뷰어 */}
+          <div className="bg-white rounded-xl ring-1 ring-zinc-200 shadow-sm p-4 flex flex-col items-center justify-center min-h-[400px]">
+            {viewTab === 'receipt' ? (
+              receiptUrl ? (
+                <img src={receiptUrl} alt="영수증" className="max-w-full max-h-[600px] object-contain rounded-lg" />
+              ) : (
+                <div className="text-zinc-400 flex flex-col items-center gap-3">
+                  <span className="text-5xl">🧾</span>
+                  <p className="font-medium text-sm">첨부된 영수증이 없습니다.</p>
+                  <button
+                    type="button"
+                    onClick={() => receiptInputRef.current?.click()}
+                    className="px-4 py-2 text-sm font-bold bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors"
+                  >
+                    📎 영수증 첨부
+                  </button>
+                </div>
+              )
             ) : (
-              <div className="text-zinc-400 flex flex-col items-center gap-3">
-                <span className="text-5xl">📄</span>
-                <p className="font-medium">첨부된 영수증이 없습니다.</p>
-              </div>
+              activityUrl ? (
+                <img src={activityUrl} alt="활동사진" className="max-w-full max-h-[600px] object-contain rounded-lg" />
+              ) : (
+                <div className="text-zinc-400 flex flex-col items-center gap-3">
+                  <span className="text-5xl">📷</span>
+                  <p className="font-medium text-sm">첨부된 활동사진이 없습니다.</p>
+                  <button
+                    type="button"
+                    onClick={() => activityInputRef.current?.click()}
+                    className="px-4 py-2 text-sm font-bold bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors"
+                  >
+                    📎 활동사진 첨부
+                  </button>
+                </div>
+              )
             )}
           </div>
         </div>

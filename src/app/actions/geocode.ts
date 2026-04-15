@@ -12,10 +12,10 @@ export interface PlaceResult {
 
 /**
  * 카카오 로컬 검색 API로 장소를 검색합니다.
- * 서버 액션 — KAKAO_MAP_API_KEY는 서버에서만 사용됩니다.
+ * 서버 액션 — KAKAO_REST_API_KEY (서버 전용, 클라이언트 미노출)
  */
 export async function searchPlaces(query: string): Promise<PlaceResult[]> {
-  const apiKey = process.env.KAKAO_MAP_API_KEY
+  const apiKey = process.env.KAKAO_REST_API_KEY
   if (!apiKey || !query.trim()) return []
 
   try {

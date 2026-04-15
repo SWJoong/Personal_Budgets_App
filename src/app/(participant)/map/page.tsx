@@ -30,7 +30,7 @@ export default async function ParticipantMapPage() {
     .limit(100)
 
   // NEXT_PUBLIC_ prefix ensures the key is available client-side too
-  const mapApiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY ?? process.env.KAKAO_MAP_API_KEY ?? ''
+  const mapApiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY ?? ''
 
   const mapTx = (transactions || []).map((t: any) => ({
     id: t.id,

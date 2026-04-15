@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { searchPlaces } from '@/app/actions/geocode'
 import type { PlaceResult } from '@/app/actions/geocode'
 
 interface PlaceSearchProps {
@@ -8,42 +9,6 @@ interface PlaceSearchProps {
   onClear: () => void
   selectedPlace: PlaceResult | null
   defaultQuery?: string
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KakaoWindow = Window & { kakao: any }
-
-function loadKakaoSDK(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const w = window as KakaoWindow
-    // Already loaded with services
-    if (w.kakao?.maps?.services) {
-      resolve()
-      return
-    }
-
-    const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY
-    if (!apiKey) {
-      reject(new Error('NEXT_PUBLIC_KAKAO_MAP_API_KEY not set'))
-      return
-    }
-
-    // Script already in DOM — wait for it to load
-    const existingScript = document.getElementById('kakao-map-sdk-services')
-    if (existingScript) {
-      existingScript.addEventListener('load', () => {
-        w.kakao.maps.load(() => resolve())
-      })
-      return
-    }
-
-    const script = document.createElement('script')
-    script.id = 'kakao-map-sdk-services'
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services&autoload=false`
-    script.onload = () => w.kakao.maps.load(() => resolve())
-    script.onerror = () => reject(new Error('Failed to load Kakao SDK'))
-    document.head.appendChild(script)
-  })
 }
 
 export default function PlaceSearch({
@@ -75,33 +40,12 @@ export default function PlaceSearch({
     setResults([])
 
     try {
-      await loadKakaoSDK()
-
-      const w = window as KakaoWindow
-      const ps = new w.kakao.maps.services.Places()
-      ps.keywordSearch(
-        query,
-        (data: any[], status: string) => {
-          if (status === w.kakao.maps.services.Status.OK) {
-            const mapped: PlaceResult[] = data.slice(0, 5).map((doc: any) => ({
-              id: doc.id,
-              place_name: doc.place_name,
-              address_name: doc.address_name,
-              road_address_name: doc.road_address_name,
-              category_name: doc.category_name,
-              lat: parseFloat(doc.y),
-              lng: parseFloat(doc.x),
-            }))
-            setResults(mapped)
-          } else {
-            setResults([])
-          }
-          setLoading(false)
-        },
-        { size: 5 }
-      )
+      const data = await searchPlaces(query)
+      setResults(data)
     } catch (e) {
       console.error('Place search failed:', e)
+      setResults([])
+    } finally {
       setLoading(false)
     }
   }

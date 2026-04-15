@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import type { MapTransaction } from '@/components/map/KakaoMap'
 import ImportResultModal from './ImportResultModal'
 import { updateTransactionStatus, deleteTransaction } from '@/app/actions/transaction'
+import * as XLSX from 'xlsx'
 
 const KakaoMap = dynamic(() => import('@/components/map/KakaoMap'), { ssr: false })
 
@@ -166,6 +167,68 @@ export default function TransactionTableClient({
     }
   }
 
+  function bulkExcel() {
+    const rows = transactions.filter(t => selected.has(t.id))
+    const wsData = [
+      ['날짜', '당사자', '분류', '활동 내역', '금액(원)', '상태', '결제수단', '메모'],
+      ...rows.map(t => [
+        t.date,
+        t.participant?.name || '',
+        t.category || '',
+        t.activity_name,
+        t.amount,
+        t.status === 'confirmed' ? '확정' : '대기',
+        t.payment_method || '',
+        t.memo || '',
+      ]),
+    ]
+    const ws = XLSX.utils.aoa_to_sheet(wsData)
+    // 열 너비 설정
+    ws['!cols'] = [{ wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 28 }, { wch: 12 }, { wch: 6 }, { wch: 10 }, { wch: 24 }]
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '거래내역')
+    XLSX.writeFile(wb, `거래내역_${new Date().toISOString().slice(0, 10)}.xlsx`)
+  }
+
+  function bulkPrint() {
+    const rows = transactions.filter(t => selected.has(t.id))
+    const totalAmt = rows.reduce((s, t) => s + t.amount, 0)
+    const tableRows = rows.map(t => `
+      <tr>
+        <td>${t.date}</td>
+        <td>${t.participant?.name || ''}</td>
+        <td>${t.category || '-'}</td>
+        <td>${t.activity_name}${t.memo ? `<br/><small>${t.memo}</small>` : ''}</td>
+        <td style="text-align:right">${t.amount.toLocaleString()}원</td>
+        <td>${t.status === 'confirmed' ? '확정' : '대기'}</td>
+        <td>${t.payment_method || '-'}</td>
+      </tr>`).join('')
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+      <title>거래내역</title>
+      <style>
+        body { font-family: sans-serif; font-size: 12px; margin: 20px; }
+        h2 { font-size: 16px; margin-bottom: 4px; }
+        p { color: #555; font-size: 11px; margin-bottom: 12px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 6px 8px; }
+        th { background: #f5f5f5; font-weight: bold; }
+        tfoot td { font-weight: bold; background: #f9f9f9; }
+        small { color: #888; }
+        @media print { body { margin: 0; } }
+      </style></head><body>
+      <h2>거래내역 (선택 ${rows.length}건)</h2>
+      <p>출력일: ${new Date().toLocaleDateString('ko-KR')}</p>
+      <table>
+        <thead><tr><th>날짜</th><th>당사자</th><th>분류</th><th>활동 내역</th><th>금액</th><th>상태</th><th>결제수단</th></tr></thead>
+        <tbody>${tableRows}</tbody>
+        <tfoot><tr><td colspan="4" style="text-align:right">합계</td><td style="text-align:right">${totalAmt.toLocaleString()}원</td><td colspan="2"></td></tr></tfoot>
+      </table>
+      <script>window.onload=()=>{window.print();}</script>
+      </body></html>`
+    const w = window.open('', '_blank', 'width=900,height=700')
+    if (w) { w.document.write(html); w.document.close() }
+  }
+
   const hasActiveFilters = Object.values(filters).some(v => v !== '')
   const fmt = (n: number) => new Intl.NumberFormat('ko-KR').format(n)
 
@@ -316,7 +379,7 @@ export default function TransactionTableClient({
 
           {/* 일괄 작업 바 */}
           {selected.size > 0 && (
-            <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 ring-1 ring-blue-200 rounded-xl print:hidden animate-fade-in-up">
+            <div className="flex flex-wrap items-center gap-2 px-4 py-3 bg-blue-50 ring-1 ring-blue-200 rounded-xl print:hidden">
               <span className="text-sm font-black text-blue-700">{selected.size}건 선택됨</span>
               <button
                 onClick={bulkConfirm}
@@ -324,6 +387,18 @@ export default function TransactionTableClient({
                 className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-black hover:bg-green-700 disabled:opacity-50 transition-colors"
               >
                 ✓ 일괄 확정
+              </button>
+              <button
+                onClick={bulkExcel}
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-black hover:bg-emerald-700 transition-colors"
+              >
+                📥 엑셀 저장
+              </button>
+              <button
+                onClick={bulkPrint}
+                className="px-3 py-1.5 rounded-lg bg-zinc-700 text-white text-xs font-black hover:bg-zinc-900 transition-colors"
+              >
+                🖨️ 인쇄
               </button>
               <button
                 onClick={bulkDeleteAll}

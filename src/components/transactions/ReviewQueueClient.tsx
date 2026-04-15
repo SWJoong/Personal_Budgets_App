@@ -2,27 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import { updateTransactionStatus, updateTransaction, deleteTransaction } from '@/app/actions/transaction'
+import { searchPlaces } from '@/app/actions/geocode'
 import type { PlaceResult } from '@/app/actions/geocode'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KakaoWindow = Window & { kakao: any }
-
-function loadKakaoSDK(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const w = window as KakaoWindow
-    if (w.kakao?.maps?.services) { resolve(); return }
-    const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY
-    if (!apiKey) { reject(new Error('NEXT_PUBLIC_KAKAO_MAP_API_KEY not set')); return }
-    const existing = document.getElementById('kakao-map-sdk-services')
-    if (existing) { existing.addEventListener('load', () => w.kakao.maps.load(() => resolve())); return }
-    const script = document.createElement('script')
-    script.id = 'kakao-map-sdk-services'
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services&autoload=false`
-    script.onload = () => w.kakao.maps.load(() => resolve())
-    script.onerror = () => reject(new Error('Failed to load Kakao SDK'))
-    document.head.appendChild(script)
-  })
-}
 
 interface FundingSource {
   id: string
@@ -105,28 +86,11 @@ export default function ReviewQueueClient({ transactions, allFundingSources }: P
     setPlaceSearching(true)
     setPlaceSearchResults([])
     try {
-      await loadKakaoSDK()
-      const w = window as KakaoWindow
-      const ps = new w.kakao.maps.services.Places()
-      ps.keywordSearch(
-        placeSearchQuery,
-        (data: any[], status: string) => {
-          if (status === w.kakao.maps.services.Status.OK) {
-            setPlaceSearchResults(data.slice(0, 5).map((doc: any) => ({
-              id: doc.id,
-              place_name: doc.place_name,
-              address_name: doc.address_name,
-              road_address_name: doc.road_address_name,
-              category_name: doc.category_name,
-              lat: parseFloat(doc.y),
-              lng: parseFloat(doc.x),
-            })))
-          }
-          setPlaceSearching(false)
-        },
-        { size: 5 }
-      )
+      const results = await searchPlaces(placeSearchQuery)
+      setPlaceSearchResults(results)
     } catch {
+      // ignore
+    } finally {
       setPlaceSearching(false)
     }
   }

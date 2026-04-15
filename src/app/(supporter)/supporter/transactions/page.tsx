@@ -121,7 +121,7 @@ export default async function TransactionsPage({
     .not('place_lat', 'is', null)
     .limit(500)
 
-  const mapApiKey = process.env.KAKAO_MAP_API_KEY ?? ''
+  const mapApiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY ?? ''
 
   // 요약 계산
   const totalCount = transactions?.length || 0

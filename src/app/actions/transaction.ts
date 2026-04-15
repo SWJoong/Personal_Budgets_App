@@ -312,3 +312,64 @@ export async function updateTransaction(
   revalidatePath('/calendar')
   return { success: true }
 }
+
+/**
+ * 거래에 영수증/활동사진 업로드 및 URL 저장
+ */
+export async function updateTransactionImages(
+  transactionId: string,
+  participantId: string,
+  formData: FormData
+): Promise<{ success?: boolean; error?: string; receipt_image_url?: string; activity_image_url?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.' }
+
+  const receiptFile = formData.get('receipt') as File | null
+  const activityFile = formData.get('activity_image') as File | null
+
+  const imageUpdates: { receipt_image_url?: string; activity_image_url?: string } = {}
+
+  if (receiptFile && receiptFile.size > 0) {
+    const fileExt = (receiptFile.name.split('.').pop() || 'jpg').toLowerCase()
+    const fileName = `${user.id}-${Date.now()}.${fileExt}`
+    const { error: uploadError } = await supabase.storage
+      .from('receipts')
+      .upload(fileName, receiptFile)
+    if (uploadError) {
+      return { error: `영수증 업로드 실패: ${uploadError.message}` }
+    }
+    const { data: { publicUrl } } = supabase.storage.from('receipts').getPublicUrl(fileName)
+    imageUpdates.receipt_image_url = publicUrl
+  }
+
+  if (activityFile && activityFile.size > 0) {
+    const fileExt = (activityFile.name.split('.').pop() || 'jpg').toLowerCase()
+    const fileName = `${participantId}/${Date.now()}-activity.${fileExt}`
+    const { error: uploadError } = await supabase.storage
+      .from('activity-photos')
+      .upload(fileName, activityFile)
+    if (uploadError) {
+      return { error: `활동사진 업로드 실패: ${uploadError.message}` }
+    }
+    const { data: { publicUrl } } = supabase.storage
+      .from('activity-photos')
+      .getPublicUrl(fileName)
+    imageUpdates.activity_image_url = publicUrl
+  }
+
+  if (Object.keys(imageUpdates).length === 0) {
+    return { error: '업로드할 파일이 없습니다.' }
+  }
+
+  const { error } = await supabase
+    .from('transactions')
+    .update(imageUpdates)
+    .eq('id', transactionId)
+
+  if (error) return { error: `저장 실패: ${error.message}` }
+
+  revalidatePath(`/supporter/transactions/${transactionId}`)
+  revalidatePath('/supporter/transactions')
+  return { success: true, ...imageUpdates }
+}

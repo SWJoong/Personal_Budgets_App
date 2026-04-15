@@ -4,59 +4,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createTransaction } from '@/app/actions/transaction'
 import { analyzeReceipt } from '@/app/actions/ocr'
+import { searchPlaces } from '@/app/actions/geocode'
 import type { PlaceResult } from '@/app/actions/geocode'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import SelfCheckFeedback from '@/components/ui/SelfCheckFeedback'
 import { speak } from '@/utils/tts'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KakaoWindow = Window & { kakao: any }
-
-function loadKakaoSDK(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const w = window as KakaoWindow
-    if (w.kakao?.maps?.services) { resolve(); return }
-    const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY
-    if (!apiKey) { reject(new Error('NEXT_PUBLIC_KAKAO_MAP_API_KEY not set')); return }
-    const existing = document.getElementById('kakao-map-sdk-services')
-    if (existing) { existing.addEventListener('load', () => w.kakao.maps.load(() => resolve())); return }
-    const script = document.createElement('script')
-    script.id = 'kakao-map-sdk-services'
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services&autoload=false`
-    script.onload = () => w.kakao.maps.load(() => resolve())
-    script.onerror = () => reject(new Error('Failed to load Kakao SDK'))
-    document.head.appendChild(script)
-  })
-}
-
-function searchFirstPlace(query: string): Promise<PlaceResult | null> {
-  return loadKakaoSDK().then(() => new Promise(resolve => {
-    const w = window as KakaoWindow
-    const ps = new w.kakao.maps.services.Places()
-    ps.keywordSearch(
-      query,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (data: any[], status: string) => {
-        if (status === w.kakao.maps.services.Status.OK && data.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const doc = data[0] as any
-          resolve({
-            id: doc.id,
-            place_name: doc.place_name,
-            address_name: doc.address_name,
-            road_address_name: doc.road_address_name,
-            category_name: doc.category_name,
-            lat: parseFloat(doc.y),
-            lng: parseFloat(doc.x),
-          })
-        } else {
-          resolve(null)
-        }
-      },
-      { size: 1 }
-    )
-  }))
-}
 
 interface FundingSource {
   id: string
@@ -112,8 +64,8 @@ export default function ReceiptUploadForm({
           // 주소(우선) 또는 상호명으로 카카오 장소 자동 검색
           const searchQuery = result.data.address || storeName
           if (searchQuery) {
-            searchFirstPlace(searchQuery).then(place => {
-              if (place) setAutoPlace(place)
+            searchPlaces(searchQuery).then(places => {
+              if (places.length > 0) setAutoPlace(places[0])
             }).catch(() => {})
           }
         }
