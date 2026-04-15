@@ -1,3 +1,5 @@
+import FaqButton from '@/components/feedback/FaqButton'
+
 export default function ParticipantLayout({
   children,
 }: {
@@ -9,6 +11,7 @@ export default function ParticipantLayout({
       <div className="w-full lg:max-w-[600px] min-h-dvh bg-background flex flex-col lg:shadow-[0_0_60px_-12px_rgba(0,0,0,0.18)]">
         {children}
       </div>
+      <FaqButton variant="participant" />
     </div>
   )
 }

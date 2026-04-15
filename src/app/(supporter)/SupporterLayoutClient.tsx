@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import NavigationProgress from '@/components/layout/NavigationProgress'
+import FaqButton from '@/components/feedback/FaqButton'
 
 const STORAGE_KEY = 'admin_sidebar_collapsed'
 
@@ -105,6 +106,8 @@ export function SupporterLayoutClient({
       >
         {children}
       </main>
+
+      <FaqButton variant="admin" />
     </div>
   )
 }
