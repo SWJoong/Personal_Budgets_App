@@ -29,9 +29,29 @@ export async function uploadDocument(formData: FormData) {
 
     const safeFileName = file.name.replace(/[^a-zA-Z0-9가-힣._-]/g, '_')
     const fileName = `${participantId}/${Date.now()}-${safeFileName}`
+    // file.type이 빈 문자열인 경우(일부 브라우저/OS의 xlsx 등) 확장자 기반으로 fallback
+    const ext = safeFileName.split('.').pop()?.toLowerCase() || ''
+    const mimeMap: Record<string, string> = {
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      xls:  'application/vnd.ms-excel',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      doc:  'application/msword',
+      pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      ppt:  'application/vnd.ms-powerpoint',
+      pdf:  'application/pdf',
+      csv:  'text/csv',
+      txt:  'text/plain',
+      png:  'image/png',
+      jpg:  'image/jpeg',
+      jpeg: 'image/jpeg',
+      webp: 'image/webp',
+      heic: 'image/heic',
+      heif: 'image/heif',
+    }
+    const contentType = file.type || mimeMap[ext] || 'application/octet-stream'
     const { error: uploadError } = await admin.storage
       .from('documents')
-      .upload(fileName, file, { upsert: true })
+      .upload(fileName, file, { upsert: true, contentType })
 
     if (uploadError) {
       if (uploadError.message.includes('bucket') || uploadError.message.includes('not found')) {
