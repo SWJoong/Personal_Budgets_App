@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from 'react'
-import { uploadDocument, deleteDocument } from '@/app/actions/document'
+import { uploadDocument, deleteDocument, getDocumentUploadUrl, saveDocumentRecord } from '@/app/actions/document'
+import { createClient } from '@/utils/supabase/client'
 import SisASection from '@/components/documents/SisASection'
 import type { SisAssessmentRow } from '@/app/actions/sisAssessment'
 
@@ -52,8 +53,14 @@ export default function DocumentManagerClient({
     e.preventDefault()
     if (fileError) return
 
-    const formData = new FormData(e.currentTarget)
+    const form = e.currentTarget
+    const formData = new FormData(form)
     const file = formData.get('file') as File | null
+    const participantId = formData.get('participant_id') as string
+    const title = formData.get('title') as string
+    const fileType = formData.get('file_type') as string
+    const externalUrl = formData.get('url') as string
+
     if (file && file.size > MAX_FILE_SIZE) {
       setFileError(`파일 용량이 너무 큽니다. (최대 20MB)`)
       return
@@ -61,13 +68,32 @@ export default function DocumentManagerClient({
 
     setLoading(true)
     try {
-      const result = await uploadDocument(formData)
-      if (result.success) {
-        alert('서류가 성공적으로 등록되었습니다.')
-        window.location.reload()
+      if (file && file.size > 0) {
+        // 파일 업로드: 브라우저 → Supabase Storage 직접 전송 (Vercel 4.5MB 제한 우회)
+        const urlResult = await getDocumentUploadUrl(participantId, file.name)
+        if ('error' in urlResult) throw new Error(urlResult.error)
+
+        const supabase = createClient()
+        const { error: uploadError } = await supabase.storage
+          .from('documents')
+          .uploadToSignedUrl(urlResult.path, urlResult.token, file, {
+            contentType: file.type || 'application/octet-stream',
+            upsert: true,
+          })
+        if (uploadError) throw new Error('파일 업로드 실패: ' + uploadError.message)
+
+        const saveResult = await saveDocumentRecord(participantId, title, fileType, urlResult.path)
+        if ('error' in saveResult) throw new Error(saveResult.error)
+      } else {
+        // URL만 등록하는 경우
+        const result = await uploadDocument(formData)
+        if (!result.success) throw new Error('저장 실패')
       }
+
+      alert('서류가 성공적으로 등록되었습니다.')
+      window.location.reload()
     } catch (error: any) {
-      alert(error.message)
+      alert(error.message || '저장 중 오류가 발생했습니다.')
     } finally {
       setLoading(false)
     }

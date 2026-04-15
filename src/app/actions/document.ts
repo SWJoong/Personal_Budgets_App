@@ -3,6 +3,59 @@
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+/**
+ * 클라이언트 직접 업로드용 서명 URL 발급
+ * 파일은 브라우저 → Supabase Storage로 직접 전송 (Vercel body limit 우회)
+ */
+export async function getDocumentUploadUrl(
+  participantId: string,
+  originalFileName: string,
+): Promise<{ signedUrl: string; token: string; path: string } | { error: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.' }
+
+  const admin = createAdminClient()
+  const safeFileName = originalFileName.replace(/[^a-zA-Z0-9가-힣._-]/g, '_')
+  const filePath = `${participantId}/${Date.now()}-${safeFileName}`
+
+  const { data, error } = await admin.storage
+    .from('documents')
+    .createSignedUploadUrl(filePath)
+
+  if (error) return { error: '업로드 URL 생성 실패: ' + error.message }
+  return { signedUrl: data.signedUrl, token: data.token, path: data.path }
+}
+
+/**
+ * 클라이언트 직접 업로드 완료 후 DB 레코드 저장
+ */
+export async function saveDocumentRecord(
+  participantId: string,
+  title: string,
+  fileType: string,
+  filePath: string,
+): Promise<{ success: boolean } | { error: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.' }
+
+  const admin = createAdminClient()
+  const { data: { publicUrl } } = admin.storage.from('documents').getPublicUrl(filePath)
+
+  const { error } = await admin.from('file_links').insert({
+    participant_id: participantId,
+    title,
+    url: publicUrl,
+    file_type: fileType,
+  })
+
+  if (error) return { error: 'DB 저장 실패: ' + error.message }
+
+  revalidatePath('/supporter/documents')
+  return { success: true }
+}
+
 export async function uploadDocument(formData: FormData) {
   // 인증 확인은 사용자 세션 클라이언트로
   const supabase = await createClient()
