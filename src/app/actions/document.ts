@@ -7,7 +7,7 @@ export async function uploadDocument(formData: FormData) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  if (!user) throw new Error('로그인이 필요합니다.')
 
   const participantId = formData.get('participant_id') as string
   const title = formData.get('title') as string
@@ -15,21 +15,28 @@ export async function uploadDocument(formData: FormData) {
   const file = formData.get('file') as File | null
   const externalUrl = formData.get('url') as string
 
-  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+  const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 MB
 
   let finalUrl = externalUrl
 
   if (file && file.size > 0) {
     if (file.size > MAX_FILE_SIZE) {
-      throw new Error(`파일 용량이 10MB를 초과합니다. (${(file.size / 1024 / 1024).toFixed(1)}MB)`)
+      throw new Error(`파일 용량이 20MB를 초과합니다. (${(file.size / 1024 / 1024).toFixed(1)}MB)`)
     }
 
-    const fileName = `${participantId}/${Math.random().toString(36).substring(2)}-${file.name}`
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9가-힣._-]/g, '_')
+    const fileName = `${participantId}/${Date.now()}-${safeFileName}`
     const { error: uploadError } = await supabase.storage
       .from('documents')
-      .upload(fileName, file)
+      .upload(fileName, file, { upsert: false })
 
-    if (uploadError) throw new Error('파일 업로드 실패: ' + uploadError.message)
+    if (uploadError) {
+      // Supabase storage 버킷 미존재 시 안내
+      if (uploadError.message.includes('bucket') || uploadError.message.includes('not found')) {
+        throw new Error('저장소 버킷이 준비되지 않았습니다. 관리자에게 문의하거나 Supabase Storage에서 "documents" 버킷을 생성해 주세요.')
+      }
+      throw new Error('파일 업로드 실패: ' + uploadError.message)
+    }
 
     const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(fileName)
     finalUrl = publicUrl

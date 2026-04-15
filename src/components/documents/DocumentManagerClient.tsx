@@ -36,12 +36,12 @@ export default function DocumentManagerClient({
   const [fileError, setFileError] = useState('')
   const [filterParticipantId, setFilterParticipantId] = useState(initialParticipantId || '')
 
-  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+  const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 MB
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file && file.size > MAX_FILE_SIZE) {
-      setFileError(`파일 용량이 너무 큽니다. (${(file.size / 1024 / 1024).toFixed(1)}MB → 최대 10MB)`)
+      setFileError(`파일 용량이 너무 큽니다. (${(file.size / 1024 / 1024).toFixed(1)}MB → 최대 20MB)`)
       e.target.value = ''
     } else {
       setFileError('')
@@ -55,7 +55,7 @@ export default function DocumentManagerClient({
     const formData = new FormData(e.currentTarget)
     const file = formData.get('file') as File | null
     if (file && file.size > MAX_FILE_SIZE) {
-      setFileError(`파일 용량이 너무 큽니다. (최대 10MB)`)
+      setFileError(`파일 용량이 너무 큽니다. (최대 20MB)`)
       return
     }
 
@@ -137,7 +137,7 @@ export default function DocumentManagerClient({
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between ml-1">
                     <span className="text-[10px] text-zinc-400 font-bold">파일 직접 업로드</span>
-                    <span className="text-[10px] text-zinc-400">최대 10MB</span>
+                    <span className="text-[10px] text-zinc-400">최대 20MB</span>
                   </div>
                   <input
                     name="file"
