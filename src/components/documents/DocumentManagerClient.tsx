@@ -216,7 +216,7 @@ export default function DocumentManagerClient({
                       </span>
                     </td>
                     <td className="px-6 py-4 text-xs text-zinc-400">
-                      {new Date(doc.created_at).toLocaleDateString()}
+                      {doc.created_at.slice(0, 10)}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button onClick={() => handleDelete(doc.id)} className="text-red-400 hover:text-red-600 text-sm font-bold transition-colors">삭제</button>
