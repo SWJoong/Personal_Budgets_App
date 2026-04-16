@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import HomeDashboard from '@/components/home/HomeDashboard'
 import { UIPreferences, DEFAULT_PREFERENCES } from '@/types/ui-preferences'
+import { getSignedImageUrls } from '@/app/actions/storage'
 
 export default async function Home() {
   // createClient()가 DEMO_MODE=true 시 자동으로 데모 유저와 실제 Supabase 데이터를 반환
@@ -89,7 +90,7 @@ export default async function Home() {
     .eq('participant_id', user.id)
     .order('date', { ascending: false })
     .limit(3)
-  recentTransactions = recentTxData.data || []
+  const rawRecent = recentTxData.data || []
 
   // 이번 달 일별 거래 내역
   const dailyTxData = await supabase
@@ -99,7 +100,24 @@ export default async function Home() {
     .gte('date', firstDayOfMonth)
     .lte('date', lastDayOfMonth)
     .order('date', { ascending: true })
-  dailyTransactions = dailyTxData.data || []
+  const rawDaily = dailyTxData.data || []
+
+  // 영수증·활동사진 signed URL 변환 (private 버킷)
+  const allForSigning = [
+    ...rawRecent.map((t: any) => ({ id: t.id, receiptUrl: t.receipt_image_url ?? null, activityUrl: t.activity_image_url ?? null })),
+    ...rawDaily.map((t: any) => ({ id: t.id, receiptUrl: t.receipt_image_url ?? null, activityUrl: t.activity_image_url ?? null })),
+  ]
+  const signedUrlMap = await getSignedImageUrls(allForSigning)
+  recentTransactions = rawRecent.map((t: any) => ({
+    ...t,
+    receipt_image_url: signedUrlMap[t.id]?.receipt ?? t.receipt_image_url,
+    activity_image_url: signedUrlMap[t.id]?.activity ?? t.activity_image_url,
+  }))
+  dailyTransactions = rawDaily.map((t: any) => ({
+    ...t,
+    receipt_image_url: signedUrlMap[t.id]?.receipt ?? t.receipt_image_url,
+    activity_image_url: signedUrlMap[t.id]?.activity ?? t.activity_image_url,
+  }))
 
   // 최근 6개월 월별 지출 집계 — 쿼리 1번으로 처리
   const totalMonthlyBudget = (participant.funding_sources || []).reduce(

@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import PreviewClient from './PreviewClient'
+import { getSignedImageUrls } from '@/app/actions/storage'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -59,13 +60,24 @@ export default async function ParticipantPreviewPage({ params }: PageProps) {
   const firstDayOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`
   const lastDayOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-${String(totalDaysInMonth).padStart(2, '0')}`
 
-  const { data: dailyTransactions } = await supabase
+  const { data: rawDailyTx } = await supabase
     .from('transactions')
-    .select('date, amount, activity_name, status, receipt_image_url')
+    .select('id, date, amount, activity_name, status, receipt_image_url')
     .eq('participant_id', id)
     .gte('date', firstDayOfMonth)
     .lte('date', lastDayOfMonth)
     .order('date', { ascending: true })
+  const signedDailyUrls = await getSignedImageUrls(
+    (rawDailyTx || []).map((t: any) => ({
+      id: t.id,
+      receiptUrl: t.receipt_image_url ?? null,
+      activityUrl: null,
+    }))
+  )
+  const dailyTransactions = (rawDailyTx || []).map((t: any) => ({
+    ...t,
+    receipt_image_url: signedDailyUrls[t.id]?.receipt ?? t.receipt_image_url,
+  }))
 
   // 최근 6개월 월별 지출 집계
   const monthlyTrend = []

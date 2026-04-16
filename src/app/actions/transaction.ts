@@ -343,6 +343,7 @@ export async function updateTransactionImages(
     if (uploadError) {
       return { error: `영수증 업로드 실패: ${uploadError.message}` }
     }
+    // DB에는 공개 URL 형식으로 저장 (나중에 signed URL 생성 시 경로 추출에 사용)
     const { data: { publicUrl } } = admin.storage.from('receipts').getPublicUrl(fileName)
     imageUpdates.receipt_image_url = publicUrl
   }
@@ -356,6 +357,7 @@ export async function updateTransactionImages(
     if (uploadError) {
       return { error: `활동사진 업로드 실패: ${uploadError.message}` }
     }
+    // DB에는 공개 URL 형식으로 저장 (나중에 signed URL 생성 시 경로 추출에 사용)
     const { data: { publicUrl } } = admin.storage
       .from('activity-photos')
       .getPublicUrl(fileName)
@@ -375,5 +377,28 @@ export async function updateTransactionImages(
 
   revalidatePath(`/supporter/transactions/${transactionId}`)
   revalidatePath('/supporter/transactions')
-  return { success: true, ...imageUpdates }
+
+  // 버킷이 private이므로 클라이언트에는 signed URL 반환
+  const SIGNED_URL_EXPIRES = 3600
+  const signedResult: { receipt_image_url?: string; activity_image_url?: string } = {}
+  if (imageUpdates.receipt_image_url) {
+    const path = imageUpdates.receipt_image_url.split('/object/public/receipts/')[1]
+    if (path) {
+      const { data } = await admin.storage.from('receipts').createSignedUrl(path, SIGNED_URL_EXPIRES)
+      signedResult.receipt_image_url = data?.signedUrl ?? imageUpdates.receipt_image_url
+    } else {
+      signedResult.receipt_image_url = imageUpdates.receipt_image_url
+    }
+  }
+  if (imageUpdates.activity_image_url) {
+    const path = imageUpdates.activity_image_url.split('/object/public/activity-photos/')[1]
+    if (path) {
+      const { data } = await admin.storage.from('activity-photos').createSignedUrl(path, SIGNED_URL_EXPIRES)
+      signedResult.activity_image_url = data?.signedUrl ?? imageUpdates.activity_image_url
+    } else {
+      signedResult.activity_image_url = imageUpdates.activity_image_url
+    }
+  }
+
+  return { success: true, ...signedResult }
 }

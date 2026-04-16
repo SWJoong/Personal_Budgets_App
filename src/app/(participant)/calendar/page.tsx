@@ -5,6 +5,7 @@ import TransactionCalendar from '@/components/transactions/TransactionCalendar'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import HelpButton from '@/components/help/HelpButton'
 import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
+import { getSignedImageUrls } from '@/app/actions/storage'
 
 export default async function CalendarPage() {
   const supabase = await createClient()
@@ -15,11 +16,25 @@ export default async function CalendarPage() {
   }
 
   // 당사자의 전체 사용 내역 조회
-  const { data: transactions } = await supabase
+  const { data: rawTransactions } = await supabase
     .from('transactions')
     .select('id, date, amount, activity_name, status, receipt_image_url, activity_image_url')
     .eq('participant_id', user.id)
     .order('date', { ascending: false })
+
+  // 영수증·활동사진 signed URL 변환 (private 버킷)
+  const signedUrls = await getSignedImageUrls(
+    (rawTransactions ?? []).map(t => ({
+      id: t.id,
+      receiptUrl: t.receipt_image_url ?? null,
+      activityUrl: t.activity_image_url ?? null,
+    }))
+  )
+  const transactions = (rawTransactions ?? []).map(t => ({
+    ...t,
+    receipt_image_url: signedUrls[t.id]?.receipt ?? t.receipt_image_url,
+    activity_image_url: signedUrls[t.id]?.activity ?? t.activity_image_url,
+  }))
 
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">

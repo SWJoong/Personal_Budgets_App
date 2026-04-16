@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import ParticipantMapClient from './ParticipantMapClient'
 import type { MapPlan } from '@/components/map/KakaoMap'
+import { getSignedImageUrls } from '@/app/actions/storage'
 
 export default async function ParticipantMapPage() {
   const supabase = await createClient()
@@ -32,6 +33,13 @@ export default async function ParticipantMapPage() {
   // NEXT_PUBLIC_ prefix ensures the key is available client-side too
   const mapApiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY ?? ''
 
+  const signedUrls = await getSignedImageUrls(
+    (transactions || []).map((t: any) => ({
+      id: t.id,
+      receiptUrl: t.receipt_image_url ?? null,
+      activityUrl: t.activity_image_url ?? null,
+    }))
+  )
   const mapTx = (transactions || []).map((t: any) => ({
     id: t.id,
     activity_name: t.activity_name,
@@ -41,8 +49,8 @@ export default async function ParticipantMapPage() {
     place_name: t.place_name,
     place_lat: t.place_lat,
     place_lng: t.place_lng,
-    activity_image_url: t.activity_image_url ?? null,
-    receipt_image_url: t.receipt_image_url ?? null,
+    activity_image_url: signedUrls[t.id]?.activity ?? t.activity_image_url ?? null,
+    receipt_image_url: signedUrls[t.id]?.receipt ?? t.receipt_image_url ?? null,
   }))
 
   const mapPlans: MapPlan[] = (plansWithLocation || []).map((p: any) => {

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ReviewQueueClient from '@/components/transactions/ReviewQueueClient'
 import AdminHelpButton from '@/components/help/AdminHelpButton'
+import { getSignedImageUrls } from '@/app/actions/storage'
 
 export default async function ReviewQueuePage() {
   const supabase = await createClient()
@@ -86,6 +87,15 @@ export default async function ReviewQueuePage() {
     place_lng: t.place_lng ?? null,
   }))
 
+  // 영수증 이미지 signed URL 변환 (버킷이 private일 때 필요)
+  const signedUrls = await getSignedImageUrls(
+    transactions.map(t => ({ id: t.id, receiptUrl: t.receipt_image_url, activityUrl: null }))
+  )
+  const transactionsWithSignedUrls = transactions.map(t => ({
+    ...t,
+    receipt_image_url: signedUrls[t.id]?.receipt ?? t.receipt_image_url,
+  }))
+
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground p-4 sm:p-8">
       <header className="flex items-center gap-3 mb-8">
@@ -113,7 +123,7 @@ export default async function ReviewQueuePage() {
 
       <main className="w-full max-w-2xl flex flex-col gap-4">
         <ReviewQueueClient
-          transactions={transactions}
+          transactions={transactionsWithSignedUrls}
           allFundingSources={allFundingSources}
         />
       </main>

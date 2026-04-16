@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import GalleryClient from './GalleryClient'
+import { getSignedImageUrls } from '@/app/actions/storage'
 
 function getRecentMonths(count: number) {
   const months = []
@@ -45,15 +46,23 @@ export default async function GalleryPage({
     .or('receipt_image_url.not.is.null,activity_image_url.not.is.null')
     .order('date', { ascending: false })
 
-  const items = (transactions || []).filter(
+  const rawItems = (transactions || []).filter(
     (t: any) => t.receipt_image_url || t.activity_image_url
-  ).map((t: any) => ({
+  )
+  const signedUrls = await getSignedImageUrls(
+    rawItems.map((t: any) => ({
+      id: t.id,
+      receiptUrl: t.receipt_image_url ?? null,
+      activityUrl: t.activity_image_url ?? null,
+    }))
+  )
+  const items = rawItems.map((t: any) => ({
     id: t.id,
     activity_name: t.activity_name,
     date: t.date,
     amount: t.amount,
-    receipt_image_url: t.receipt_image_url,
-    activity_image_url: t.activity_image_url,
+    receipt_image_url: signedUrls[t.id]?.receipt ?? t.receipt_image_url,
+    activity_image_url: signedUrls[t.id]?.activity ?? t.activity_image_url,
     category: t.category,
   }))
 
