@@ -26,10 +26,10 @@ export default async function ReceiptPage() {
     return (
       <div className="flex flex-col min-h-dvh bg-background text-foreground p-4">
          <header className="flex h-14 items-center gap-3 mb-6">
-          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
-          <h1 className="text-lg font-bold tracking-tight">
-            <EasyTerm formal="영수증 올리기" easy="물건 산 종이 사진 보내기" />
-          </h1>
+          <Link href="/" className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-800 transition-colors">
+            <span className="text-xl">←</span>
+            <span className="text-sm font-bold">아름드리꿈터</span>
+          </Link>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
           <span className="text-6xl">📋</span>
@@ -44,8 +44,10 @@ export default async function ReceiptPage() {
       <HelpAutoTrigger sectionKey="receipt" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
-          <h1 className="text-lg font-bold tracking-tight">영수증 올리기</h1>
+          <Link href="/" className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-800 transition-colors">
+            <span className="text-xl">←</span>
+            <span className="text-sm font-bold">아름드리꿈터</span>
+          </Link>
         </div>
         <HelpButton sectionKey="receipt" />
       </header>

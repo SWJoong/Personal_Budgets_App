@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import MoreMenuClient from '@/components/layout/MoreMenuClient'
 import NavDropdown from '@/components/layout/NavDropdown'
 import HelpButton from '@/components/help/HelpButton'
@@ -30,7 +31,10 @@ export default async function MorePage() {
     <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
       <HelpAutoTrigger sectionKey="more" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-        <h1 className="text-lg font-bold tracking-tight">더보기</h1>
+        <Link href="/" className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-800 transition-colors">
+          <span className="text-xl">←</span>
+          <span className="text-sm font-bold">아름드리꿈터</span>
+        </Link>
         <div className="flex items-center gap-2">
           <HelpButton sectionKey="more" />
           <NavDropdown />

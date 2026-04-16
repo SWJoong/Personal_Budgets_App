@@ -327,7 +327,7 @@ export default function HomeDashboard({
     <div className="flex flex-col min-h-dvh easy-read-bg text-foreground participant-view">
       <HelpAutoTrigger sectionKey="home" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/90 backdrop-blur-md border-b border-border">
-        <h1 className="text-lg font-bold tracking-tight text-foreground">아름드리꿈터</h1>
+        <Link href="/" className="text-lg font-bold tracking-tight text-foreground hover:opacity-70 transition-opacity">아름드리꿈터</Link>
         <div className="flex items-center gap-2">
           <div className="text-xs font-bold px-2.5 py-1 bg-primary/10 rounded-full text-primary whitespace-nowrap">
             {userName} 님

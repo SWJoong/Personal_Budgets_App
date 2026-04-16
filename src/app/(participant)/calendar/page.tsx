@@ -41,8 +41,10 @@ export default async function CalendarPage() {
       <HelpAutoTrigger sectionKey="calendar" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
-          <h1 className="text-lg font-bold tracking-tight">달력</h1>
+          <Link href="/" className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-800 transition-colors">
+            <span className="text-xl">←</span>
+            <span className="text-sm font-bold">아름드리꿈터</span>
+          </Link>
         </div>
         <div className="flex items-center gap-2">
         <div className="flex gap-3 text-[10px] font-bold">
