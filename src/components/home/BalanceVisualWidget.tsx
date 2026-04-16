@@ -798,23 +798,23 @@ export default function BalanceVisualWidget({
         <p className="text-sm font-bold text-zinc-700 leading-snug break-keep">{statusMessage}</p>
       </div>
 
-      {/* 영수증 / 활동사진 버튼 — 인라인 파일 업로드 */}
+      {/* 영수증 / 활동사진 버튼 — 정사각형 */}
       <div className="flex gap-3 px-5 py-3.5 border-t border-zinc-100">
         <button
           type="button"
           onClick={() => receiptInputRef.current?.click()}
-          className="flex-1 py-3 px-4 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center gap-2 hover:bg-blue-100 transition-all active:scale-[0.97] font-bold text-sm"
+          className="flex-1 aspect-square bg-blue-50 text-blue-600 rounded-2xl flex flex-col items-center justify-center gap-1.5 hover:bg-blue-100 transition-all active:scale-[0.97]"
         >
-          <span className="text-xl">📷</span>
-          <span>영수증 찍기</span>
+          <span className="text-3xl">📷</span>
+          <span className="text-xs font-bold">영수증 찍기</span>
         </button>
         <button
           type="button"
           onClick={() => activityInputRef.current?.click()}
-          className="flex-1 py-3 px-4 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center gap-2 hover:bg-purple-100 transition-all active:scale-[0.97] font-bold text-sm"
+          className="flex-1 aspect-square bg-purple-50 text-purple-600 rounded-2xl flex flex-col items-center justify-center gap-1.5 hover:bg-purple-100 transition-all active:scale-[0.97]"
         >
-          <span className="text-xl">🖼️</span>
-          <span>활동사진</span>
+          <span className="text-3xl">🖼️</span>
+          <span className="text-xs font-bold">활동사진</span>
         </button>
         {/* 숨겨진 파일 입력 */}
         <input
@@ -835,7 +835,7 @@ export default function BalanceVisualWidget({
         />
       </div>
 
-      {/* 인라인 업로드 시트 — 사진 측영 후 바로 정보 입력 */}
+      {/* 인라인 업로드 모달 — 화면 중앙 */}
       {uploadMode && (
         <>
           <div
@@ -843,11 +843,9 @@ export default function BalanceVisualWidget({
             onClick={closeUploadSheet}
             aria-hidden="true"
           />
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl animate-fade-in-up max-h-[90dvh] overflow-y-auto lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:max-w-[600px] lg:w-full">
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-zinc-200" />
-            </div>
-            <div className="px-5 pb-8 pt-2">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[500px] max-h-[90dvh] overflow-y-auto animate-fade-in-up">
+            <div className="px-5 pb-8 pt-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-black text-zinc-900">
                   {uploadMode === 'receipt' ? '🧂 영수증 등록' : '📸 활동 기록'}
@@ -857,7 +855,7 @@ export default function BalanceVisualWidget({
 
               {/* 사진 미리보기 */}
               {uploadPreview && (
-                <div className="relative aspect-video rounded-2xl overflow-hidden mb-4 ring-1 ring-zinc-200">
+                <div className="relative aspect-square rounded-2xl overflow-hidden mb-4 ring-1 ring-zinc-200">
                   <img src={uploadPreview} alt="미리보기" className="w-full h-full object-cover" />
                   {uploadAnalyzing && (
                     <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-sm">
@@ -871,7 +869,7 @@ export default function BalanceVisualWidget({
               {/* 두 번째 사진 추가 (영수증↔활동사진 동시 등록) */}
               <div className="mb-4">
                 {secondPreview ? (
-                  <div className="relative aspect-video rounded-2xl overflow-hidden ring-1 ring-zinc-200">
+                  <div className="relative aspect-square rounded-2xl overflow-hidden ring-1 ring-zinc-200">
                     <img src={secondPreview} alt="추가 사진" className="w-full h-full object-cover" />
                     <button
                       onClick={() => { setSecondFile(null); setSecondPreview(null) }}
@@ -946,6 +944,7 @@ export default function BalanceVisualWidget({
                 지원자 선생님이 확인하면 예산에 반영해요.
               </p>
             </div>
+          </div>
           </div>
         </>
       )}
