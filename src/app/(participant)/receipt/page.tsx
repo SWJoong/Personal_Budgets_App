@@ -5,6 +5,7 @@ import ReceiptUploadForm from '@/components/transactions/ReceiptUploadForm'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import HelpButton from '@/components/help/HelpButton'
 import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
+import NavDropdown from '@/components/layout/NavDropdown'
 
 export default async function ReceiptPage() {
   const supabase = await createClient()
@@ -40,7 +41,7 @@ export default async function ReceiptPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-24">
+    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
       <HelpAutoTrigger sectionKey="receipt" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
         <div className="flex items-center gap-2">
@@ -51,7 +52,10 @@ export default async function ReceiptPage() {
           <span className="text-zinc-300">·</span>
           <h1 className="text-sm font-black text-zinc-800">🧾 활동 기록하기</h1>
         </div>
-        <HelpButton sectionKey="receipt" />
+        <div className="flex items-center gap-2">
+          <HelpButton sectionKey="receipt" />
+          <NavDropdown />
+        </div>
       </header>
 
       <main className="flex-1 p-4 w-full">

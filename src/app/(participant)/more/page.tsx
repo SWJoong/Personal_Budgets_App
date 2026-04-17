@@ -28,7 +28,7 @@ export default async function MorePage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-24">
+    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
       <HelpAutoTrigger sectionKey="more" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
         <div className="flex items-center gap-2">

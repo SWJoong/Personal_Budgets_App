@@ -5,6 +5,7 @@ import TransactionCalendar from '@/components/transactions/TransactionCalendar'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import HelpButton from '@/components/help/HelpButton'
 import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
+import NavDropdown from '@/components/layout/NavDropdown'
 import { getSignedImageUrls } from '@/app/actions/storage'
 
 export default async function CalendarPage() {
@@ -37,7 +38,7 @@ export default async function CalendarPage() {
   }))
 
   return (
-    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-24">
+    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
       <HelpAutoTrigger sectionKey="calendar" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
         <div className="flex items-center gap-2">
@@ -49,21 +50,22 @@ export default async function CalendarPage() {
           <h1 className="text-sm font-black text-zinc-800">📅 달력</h1>
         </div>
         <div className="flex items-center gap-2">
-        <div className="flex gap-3 text-[10px] font-bold">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span className="text-zinc-500">
-              <EasyTerm formal="예산 반영됨" easy="돈에서 뺐어요" />
-            </span>
+          <div className="flex gap-3 text-[10px] font-bold">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <span className="text-zinc-500">
+                <EasyTerm formal="예산 반영됨" easy="돈에서 뺐어요" />
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+              <span className="text-zinc-500">
+                <EasyTerm formal="확인 대기중" easy="선생님이 확인 중" />
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-            <span className="text-zinc-500">
-              <EasyTerm formal="확인 대기중" easy="선생님이 확인 중" />
-            </span>
-          </div>
-        </div>
-        <HelpButton sectionKey="calendar" />
+          <HelpButton sectionKey="calendar" />
+          <NavDropdown />
         </div>
       </header>
 
