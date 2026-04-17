@@ -196,8 +196,8 @@ export default function BudgetTrendChart({ monthlyData }: Props) {
                     </p>
                     {txs.length > 0 ? (
                       <>
-                        <div className="flex flex-col gap-1.5 max-h-32 overflow-y-auto">
-                          {txs.slice(0, 7).map((tx, ti) => (
+                        <div className="flex flex-col gap-1.5">
+                          {txs.map((tx, ti) => (
                             <div key={tx.id} className="flex items-center gap-1.5">
                               <div
                                 className="w-1.5 h-1.5 rounded-full shrink-0"
@@ -212,9 +212,6 @@ export default function BudgetTrendChart({ monthlyData }: Props) {
                               </span>
                             </div>
                           ))}
-                          {txs.length > 7 && (
-                            <p className="text-[10px] text-zinc-500 text-right">+{txs.length - 7}건 더</p>
-                          )}
                         </div>
                         <div className="border-t border-zinc-700 mt-2 pt-2 flex justify-between items-center">
                           <span className="text-[10px] text-zinc-400">합계</span>
