@@ -14,6 +14,7 @@ import { saveUIPreferences } from '@/app/actions/preferences'
 import NavDropdown from '@/components/layout/NavDropdown'
 import HelpButton from '@/components/help/HelpButton'
 import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
+import ImageLightbox from '@/components/ui/ImageLightbox'
 
 interface FundingSource {
   id: string
@@ -69,6 +70,7 @@ export default function HomeDashboard({
   uiPreferences, latestEvaluation,
 }: HomeDashboardProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
   const [localPreferences, setLocalPreferences] = useState<UIPreferences>(
     uiPreferences ?? DEFAULT_PREFERENCES
   )
@@ -189,6 +191,23 @@ export default function HomeDashboard({
           </Link>
         )
 
+      case 'calendar_shortcut':
+        return (
+          <Link
+            href="/calendar"
+            className="group flex items-center gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-900 hover:bg-zinc-50 transition-all shadow-sm active:scale-[0.98]"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <span className="text-3xl">📅</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-zinc-800 text-base">달력 보기</p>
+              <p className="text-xs text-zinc-400 font-bold mt-0.5">이번 달 활동을 달력에서 확인하세요</p>
+            </div>
+            <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">→</span>
+          </Link>
+        )
+
       case 'recent_transactions':
         return (
           <section className="flex flex-col gap-3">
@@ -224,9 +243,12 @@ export default function HomeDashboard({
                 <div key={tx.id} className="p-4 rounded-xl bg-white ring-1 ring-zinc-200 flex justify-between items-center">
                   <div className="flex items-center gap-3">
                     {tx.receipt_image_url ? (
-                      <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 ring-1 ring-zinc-200">
+                      <button
+                        className="w-10 h-10 rounded-xl overflow-hidden shrink-0 ring-1 ring-zinc-200 cursor-zoom-in"
+                        onClick={() => setLightboxSrc(tx.receipt_image_url)}
+                      >
                         <img src={tx.receipt_image_url} alt="영수증" className="w-full h-full object-cover" />
-                      </div>
+                      </button>
                     ) : (
                       <div className="flex items-center gap-1.5">
                         <div className={`w-2 h-2 rounded-full ${tx.status === 'confirmed' ? 'bg-green-500' : 'bg-orange-400'}`} />
@@ -324,7 +346,7 @@ export default function HomeDashboard({
   }
 
   return (
-    <div className="flex flex-col min-h-dvh easy-read-bg text-foreground participant-view">
+    <div className="flex flex-col min-h-dvh easy-read-bg text-foreground participant-view pb-20">
       <HelpAutoTrigger sectionKey="home" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/90 backdrop-blur-md border-b border-border">
         <Link href="/" className="text-lg font-bold tracking-tight text-foreground hover:opacity-70 transition-opacity">아름드리꿈터</Link>
@@ -386,6 +408,10 @@ export default function HomeDashboard({
         onSave={handleSavePreferences}
         onClose={() => setIsSheetOpen(false)}
       />
+
+      {lightboxSrc && (
+        <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+      )}
     </div>
   )
 }

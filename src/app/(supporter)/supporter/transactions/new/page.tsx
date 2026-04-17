@@ -231,23 +231,25 @@ export default function NewTransactionPage() {
               </fieldset>
             </div>
 
-            {/* 활동 내용 */}
+            {/* 활동 내용 / 재원 출처 */}
             <fieldset className="flex flex-col gap-2">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">활동 내용 (품명)</label>
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
+                {isExpense ? '활동 내용 (품명)' : '재원 출처'}
+              </label>
               <input
                 type="text"
                 value={activityName}
                 onChange={(e) => setActivityName(e.target.value)}
-                placeholder="어디에 사용했나요?"
+                placeholder={isExpense ? '어디에 사용했나요?' : '재원 출처 (예: 바우처, 국고보조금)'}
                 className="p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-bold focus:ring-2 focus:ring-zinc-900 focus:outline-none"
                 required
               />
             </fieldset>
 
-            {/* 결제 장소 */}
+            {/* 결제 장소 / 세부 내용 */}
             <fieldset className="flex flex-col gap-2">
               <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
-                결제 장소 <span className="normal-case font-medium text-zinc-300">(선택)</span>
+                {isExpense ? '결제 장소' : '세부 내용'} <span className="normal-case font-medium text-zinc-300">(선택)</span>
               </label>
               <PlaceSearch
                 onSelect={setSelectedPlace}

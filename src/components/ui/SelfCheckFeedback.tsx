@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { saveFeedback } from '@/app/actions/feedback'
 
 interface Props {
   /** 피드백 질문 문구 */
@@ -9,24 +10,24 @@ interface Props {
   onComplete?: (response: 'positive' | 'negative') => void
   /** 컴팩트 모드 (인라인 표시) */
   compact?: boolean
+  /** DB 저장 맥락 ('receipt_upload', 'calendar', 'onboarding' 등) — 미입력 시 저장 안 함 */
+  context?: string
 }
 
-/**
- * SelfCheckFeedback — 자기결정 지원 피드백 모듈 (가이드라인 §5.2)
- *
- * 주요 프로세스 종료 시 당사자의 이해 여부와 선호도를 확인하는 디지털 점검표입니다.
- * 스마일/새드 페이스 아이콘을 통해 선호도를 데이터화합니다.
- */
 export default function SelfCheckFeedback({
   question = '이 과정이 쉬웠나요?',
   onComplete,
   compact = false,
+  context,
 }: Props) {
   const [response, setResponse] = useState<'positive' | 'negative' | null>(null)
 
-  function handleSelect(r: 'positive' | 'negative') {
+  async function handleSelect(r: 'positive' | 'negative') {
     setResponse(r)
     onComplete?.(r)
+    if (context) {
+      saveFeedback(context, r === 'positive' ? '😊' : '😔').catch(() => {})
+    }
   }
 
   if (response) {

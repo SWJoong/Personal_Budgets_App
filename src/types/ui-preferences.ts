@@ -3,6 +3,7 @@ export type BlockId =
   | 'monthly_trend'
   | 'recent_transactions'
   | 'plan_shortcut'
+  | 'calendar_shortcut'
   | 'evaluation_letter'
   | 'weekly_chart'
   | 'source_view'
@@ -20,6 +21,7 @@ export const OPTIONAL_BLOCKS: BlockId[] = [
   'monthly_trend',
   'recent_transactions',
   'plan_shortcut',
+  'calendar_shortcut',
   'evaluation_letter',
   'weekly_chart',
   'source_view',
@@ -32,6 +34,7 @@ export const BLOCK_METADATA: Record<BlockId, { icon: string; label: string; desc
   monthly_trend:       { icon: '📈', label: '월별 추이',      description: '최근 6개월 지출 그래프' },
   recent_transactions: { icon: '🕐', label: '최근 사용 내역', description: '최근 3건 사용 내역' },
   plan_shortcut:       { icon: '🤔', label: '계획 AI',        description: '오늘 활동 계획 세우기' },
+  calendar_shortcut:   { icon: '📅', label: '달력 바로가기',   description: '이번 달 활동을 달력에서 확인' },
   evaluation_letter:   { icon: '💌', label: '지원자 편지',    description: '지원자 선생님의 이달 편지' },
   weekly_chart:        { icon: '📉', label: '이번 주 지출',   description: '최근 7일 하루별 지출 막대 그래프' },
   source_view:         { icon: '💳', label: '재원별 보기',    description: '재원(돈의 종류)별 잔액 카드' },

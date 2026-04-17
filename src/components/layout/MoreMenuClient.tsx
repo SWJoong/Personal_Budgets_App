@@ -83,7 +83,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
         <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2">화면 설정</h3>
         <div className="bg-white rounded-[2rem] p-6 ring-1 ring-zinc-200 shadow-sm flex flex-col gap-6">
           <div className="flex flex-col gap-4">
-            <p className="text-sm font-bold text-zinc-600 mb-1">글자 크기를 조절할 수 있어요.</p>
+            <p className="text-sm font-bold text-zinc-600 mb-1">🔤 글자 크기를 조절할 수 있어요.</p>
             <div className="flex gap-2">
               {[
                 { id: 'normal', label: '가', size: '기본' },
@@ -111,7 +111,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
           {/* 고대비 모드 토글 */}
           <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-zinc-700">고대비 모드</span>
+              <span className="text-sm font-bold text-zinc-700">🌗 고대비 모드</span>
               <span className="text-xs text-zinc-400 font-medium">글씨와 배경의 대비를 높여요</span>
             </div>
             <button
@@ -132,7 +132,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
           {/* 쉬운 용어 모드 토글 */}
           <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-zinc-700">쉬운 말 모드</span>
+              <span className="text-sm font-bold text-zinc-700">💬 쉬운 말 모드</span>
               <span className="text-xs text-zinc-400 font-medium">쉬운 말로 바꿔요</span>
             </div>
             <button
@@ -153,7 +153,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
             {/* 노란 배경 모드 토글 (§4 난독증 배려) */}
             <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-zinc-700">노란 배경 모드</span>
+                <span className="text-sm font-bold text-zinc-700">🟡 노란 배경 모드</span>
                 <span className="text-xs text-zinc-400 font-medium">배경을 노란색으로 바꿔요 (난독증 배려)</span>
               </div>
               <button

@@ -172,8 +172,10 @@ export default function ReviewQueueClient({ transactions, allFundingSources }: P
     )
   }
 
+  const CATEGORIES = ['식비', '교통비', '여가활동', '생활용품', '의료비', '교육', '기타']
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="w-full max-w-2xl mx-auto flex flex-col gap-4">
       {/* 상단 일괄 확인 */}
       <div className="flex items-center justify-between">
         <p className="text-sm font-bold text-zinc-500">
@@ -244,12 +246,15 @@ export default function ReviewQueueClient({ transactions, allFundingSources }: P
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">카테고리</label>
-                    <input
-                      type="text"
+                    <select
                       value={editValues.category ?? ''}
                       onChange={e => setEditValues(v => ({ ...v, category: e.target.value }))}
                       className="px-3 py-2 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm font-bold outline-none focus:ring-zinc-900"
-                    />
+                    >
+                      {CATEGORIES.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
                   </div>
                   {sources.length > 1 && (
                     <div className="flex flex-col gap-1 col-span-2">

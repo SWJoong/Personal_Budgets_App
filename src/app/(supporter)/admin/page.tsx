@@ -294,6 +294,13 @@ export default async function AdminDashboardPage({
               <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">⚙️</span>
               <span className="text-base font-black text-zinc-800">설정</span>
             </Link>
+            <Link
+              href="/admin/feedback"
+              className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-900 hover:bg-zinc-50 transition-all shadow-sm active:scale-95"
+            >
+              <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">😊</span>
+              <span className="text-base font-black text-zinc-800">피드백</span>
+            </Link>
           </div>
         </section>
       </main>

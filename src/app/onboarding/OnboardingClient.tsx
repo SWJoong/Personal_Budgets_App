@@ -347,6 +347,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
             </h2>
             <SelfCheckFeedback
               question="앱 시작하기 설정이 쉬웠나요?"
+              context="onboarding"
               onComplete={() => {
                 router.push('/')
                 router.refresh()

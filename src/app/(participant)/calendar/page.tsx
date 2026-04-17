@@ -37,14 +37,16 @@ export default async function CalendarPage() {
   }))
 
   return (
-    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
+    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-24">
       <HelpAutoTrigger sectionKey="calendar" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-800 transition-colors">
             <span className="text-xl">←</span>
             <span className="text-sm font-bold">아름드리꿈터</span>
           </Link>
+          <span className="text-zinc-300">·</span>
+          <h1 className="text-sm font-black text-zinc-800">📅 달력</h1>
         </div>
         <div className="flex items-center gap-2">
         <div className="flex gap-3 text-[10px] font-bold">

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { EasyTerm } from '@/components/ui/EasyTerm'
+import ImageLightbox from '@/components/ui/ImageLightbox'
 
 interface DailyTransaction {
   date: string
@@ -33,6 +34,7 @@ export default function WeeklyChartBlock({ dailyTransactions, themeColor }: Prop
   const c = THEME[(themeColor as ThemeKey)] ?? THEME.zinc
   const today = new Date()
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
 
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today)
@@ -105,7 +107,8 @@ export default function WeeklyChartBlock({ dailyTransactions, themeColor }: Prop
                   <img
                     src={photo}
                     alt={day.label}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover cursor-zoom-in"
+                    onClick={e => { e.stopPropagation(); setLightboxSrc(photo) }}
                   />
                 ) : hasActivity ? (
                   <div
@@ -147,9 +150,12 @@ export default function WeeklyChartBlock({ dailyTransactions, themeColor }: Prop
                 return (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-zinc-50">
                     {thumb ? (
-                      <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 ring-1 ring-zinc-200">
+                      <button
+                        className="w-12 h-12 rounded-xl overflow-hidden shrink-0 ring-1 ring-zinc-200 cursor-zoom-in"
+                        onClick={() => setLightboxSrc(thumb)}
+                      >
                         <img src={thumb} alt="활동" className="w-full h-full object-cover" />
-                      </div>
+                      </button>
                     ) : (
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 ${
                         tx.status === 'confirmed' ? 'bg-green-50' : 'bg-orange-50'
@@ -177,6 +183,10 @@ export default function WeeklyChartBlock({ dailyTransactions, themeColor }: Prop
             </div>
           )}
         </div>
+      )}
+
+      {lightboxSrc && (
+        <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
       )}
     </section>
   )

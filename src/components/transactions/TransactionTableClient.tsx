@@ -64,6 +64,8 @@ export default function TransactionTableClient({
   const [activeTab, setActiveTab] = useState<'table' | 'map'>('table')
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [showImport, setShowImport] = useState(false)
+  const [mapFilters, setMapFilters] = useState({ participantName: '', category: '', status: '', dateFrom: '', dateTo: '' })
+  const [showMapFilters, setShowMapFilters] = useState(false)
   const [filters, setFilters] = useState({
     participant: currentFilters.participant || '',
     status: currentFilters.status || '',
@@ -263,14 +265,93 @@ export default function TransactionTableClient({
       </div>
 
       {/* ── 지도 탭 ── */}
-      {activeTab === 'map' && (
-        <div className="flex flex-col gap-3">
-          <p className="text-xs text-zinc-400 font-medium">
-            장소 정보가 등록된 거래를 지도에서 확인합니다. 같은 장소에 여러 건이 있으면 숫자 핀으로 묶어 표시합니다.
-          </p>
-          <KakaoMap apiKey={mapApiKey} transactions={mapTransactions} height="520px" />
-        </div>
-      )}
+      {activeTab === 'map' && (() => {
+        const filteredMapTx = mapTransactions.filter(t => {
+          if (mapFilters.participantName && !t.participant_name?.includes(mapFilters.participantName)) return false
+          if (mapFilters.status && t.status !== mapFilters.status) return false
+          if (mapFilters.dateFrom && t.date < mapFilters.dateFrom) return false
+          if (mapFilters.dateTo && t.date > mapFilters.dateTo) return false
+          return true
+        })
+        const mapParticipants = Array.from(new Set(mapTransactions.map(t => t.participant_name).filter(Boolean)))
+        return (
+          <div className="flex flex-col gap-3">
+            {/* 필터 토글 버튼 */}
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-zinc-400 font-medium">
+                📍 {filteredMapTx.length}개 거래 표시 중
+              </p>
+              <button
+                onClick={() => setShowMapFilters(v => !v)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-colors ${
+                  showMapFilters ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                }`}
+              >
+                🔍 필터 {showMapFilters ? '접기' : '펼치기'}
+              </button>
+            </div>
+
+            {/* 필터 패널 */}
+            {showMapFilters && (
+              <div className="bg-zinc-50 rounded-2xl p-4 flex flex-col gap-3 ring-1 ring-zinc-200">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {mapParticipants.length > 1 && (
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-black text-zinc-400 uppercase">당사자</label>
+                      <select
+                        value={mapFilters.participantName}
+                        onChange={e => setMapFilters(f => ({ ...f, participantName: e.target.value }))}
+                        className="px-3 py-2 rounded-xl bg-white ring-1 ring-zinc-200 text-sm font-bold outline-none"
+                      >
+                        <option value="">전체</option>
+                        {mapParticipants.map(n => <option key={n} value={n!}>{n}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase">상태</label>
+                    <select
+                      value={mapFilters.status}
+                      onChange={e => setMapFilters(f => ({ ...f, status: e.target.value }))}
+                      className="px-3 py-2 rounded-xl bg-white ring-1 ring-zinc-200 text-sm font-bold outline-none"
+                    >
+                      <option value="">전체</option>
+                      <option value="confirmed">확정</option>
+                      <option value="pending">대기</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase">시작 날짜</label>
+                    <input
+                      type="date"
+                      value={mapFilters.dateFrom}
+                      onChange={e => setMapFilters(f => ({ ...f, dateFrom: e.target.value }))}
+                      className="px-3 py-2 rounded-xl bg-white ring-1 ring-zinc-200 text-sm font-bold outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase">종료 날짜</label>
+                    <input
+                      type="date"
+                      value={mapFilters.dateTo}
+                      onChange={e => setMapFilters(f => ({ ...f, dateTo: e.target.value }))}
+                      className="px-3 py-2 rounded-xl bg-white ring-1 ring-zinc-200 text-sm font-bold outline-none"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMapFilters({ participantName: '', category: '', status: '', dateFrom: '', dateTo: '' })}
+                  className="self-start text-xs font-bold text-zinc-400 hover:text-zinc-700 transition-colors"
+                >
+                  필터 초기화
+                </button>
+              </div>
+            )}
+
+            <KakaoMap apiKey={mapApiKey} transactions={filteredMapTx} height="520px" />
+          </div>
+        )
+      })()}
 
       {/* ── 목록 탭 ── */}
       {activeTab === 'table' && (

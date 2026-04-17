@@ -299,6 +299,7 @@ export default function ReceiptUploadForm({
             <div className="w-full h-px bg-zinc-100 my-2" />
             <SelfCheckFeedback
               question="활동을 기록하기 쉬웠나요?"
+              context="receipt_upload"
               onComplete={() => {
                 setTimeout(() => {
                   router.push('/')

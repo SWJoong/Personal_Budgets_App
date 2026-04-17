@@ -5,6 +5,7 @@ import { formatCurrency } from '@/utils/budget-visuals'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import { speak } from '@/utils/tts'
 import SelfCheckFeedback from '@/components/ui/SelfCheckFeedback'
+import ImageLightbox from '@/components/ui/ImageLightbox'
 
 interface Transaction {
   id: string
@@ -23,6 +24,7 @@ interface Props {
 export default function TransactionCalendar({ transactions }: Props) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
@@ -119,9 +121,12 @@ export default function TransactionCalendar({ transactions }: Props) {
                 {/* 지출 표시 마커 및 썸네일 아이콘 */}
                 <div className="mt-auto mb-2 flex flex-col items-center gap-1 z-10">
                   {thumbnailUrl && (
-                    <div className="w-5 h-5 rounded-md overflow-hidden ring-1 ring-white/50 shadow-sm mt-1">
+                    <button
+                      className="w-5 h-5 rounded-md overflow-hidden ring-1 ring-white/50 shadow-sm mt-1 cursor-zoom-in"
+                      onClick={e => { e.stopPropagation(); setLightboxSrc(thumbnailUrl) }}
+                    >
                       <img src={thumbnailUrl} alt="영수증" className="w-full h-full object-cover" />
-                    </div>
+                    </button>
                   )}
                   {!thumbnailUrl && (hasConfirmed || hasPending) && (
                     <div className="flex gap-1 h-2 mt-2">
@@ -176,13 +181,16 @@ export default function TransactionCalendar({ transactions }: Props) {
               <div key={tx.id} className="bg-white rounded-3xl p-5 ring-1 ring-zinc-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-start sm:items-center gap-4">
                   {(tx.activity_image_url || tx.receipt_image_url) ? (
-                    <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-sm shrink-0">
+                    <button
+                      className="w-12 h-12 rounded-2xl overflow-hidden shadow-sm shrink-0 cursor-zoom-in"
+                      onClick={() => setLightboxSrc((tx.activity_image_url || tx.receipt_image_url)!)}
+                    >
                       <img
                         src={(tx.activity_image_url || tx.receipt_image_url)!}
                         alt="활동"
                         className="w-full h-full object-cover"
                       />
-                    </div>
+                    </button>
                   ) : (
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black shrink-0 ${
                       tx.status === 'confirmed' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-500'
@@ -210,11 +218,16 @@ export default function TransactionCalendar({ transactions }: Props) {
               <SelfCheckFeedback
                 question="내역을 확인하기 쉬웠나요?"
                 compact={true}
+                context="calendar"
               />
             </div>
           </div>
         )}
       </div>
+
+      {lightboxSrc && (
+        <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+      )}
     </div>
   )
 }
