@@ -95,7 +95,7 @@ export default async function Home() {
   // 이번 달 일별 거래 내역
   const dailyTxData = await supabase
     .from('transactions')
-    .select('date, amount, activity_name, status, receipt_image_url, activity_image_url')
+    .select('id, date, amount, activity_name, status, receipt_image_url, activity_image_url')
     .eq('participant_id', user.id)
     .gte('date', firstDayOfMonth)
     .lte('date', lastDayOfMonth)
