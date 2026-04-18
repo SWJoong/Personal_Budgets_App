@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { updateParticipant } from '@/app/actions/admin'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { saveUIPreferences } from '@/app/actions/preferences'
-import { UIPreferences, DEFAULT_PREFERENCES, OPTIONAL_BLOCKS, BLOCK_METADATA, BlockId } from '@/types/ui-preferences'
+import { UIPreferences, OPTIONAL_BLOCKS, BLOCK_METADATA, BlockId } from '@/types/ui-preferences'
 
 interface Participant {
   id: string
@@ -22,9 +22,11 @@ interface PreviewEditPanelProps {
   participant: Participant
   isVisible: boolean
   onSave: () => void
+  blockPrefs: UIPreferences
+  onBlockPrefsChange: (prefs: UIPreferences) => void
 }
 
-export default function PreviewEditPanel({ participant, isVisible, onSave }: PreviewEditPanelProps) {
+export default function PreviewEditPanel({ participant, isVisible, onSave, blockPrefs, onBlockPrefsChange }: PreviewEditPanelProps) {
   const [formData, setFormData] = useState({
     name: participant.name || '',
     email: participant.email || '',
@@ -35,9 +37,6 @@ export default function PreviewEditPanel({ participant, isVisible, onSave }: Pre
     alertThreshold: participant.alert_threshold || 0,
   })
   const [isSaving, setIsSaving] = useState(false)
-  const [blockPrefs, setBlockPrefs] = useState<UIPreferences>(
-    participant.ui_preferences ?? DEFAULT_PREFERENCES
-  )
   const [isSavingBlocks, setIsSavingBlocks] = useState(false)
 
   if (!isVisible) return null
@@ -182,7 +181,7 @@ export default function PreviewEditPanel({ participant, isVisible, onSave }: Pre
                         } else {
                           current.add(blockId)
                         }
-                        setBlockPrefs({ enabled_blocks: OPTIONAL_BLOCKS.filter(b => current.has(b)) })
+                        onBlockPrefsChange({ enabled_blocks: OPTIONAL_BLOCKS.filter(b => current.has(b)) })
                       }}
                       className="w-4 h-4 accent-blue-600"
                     />
@@ -200,7 +199,7 @@ export default function PreviewEditPanel({ participant, isVisible, onSave }: Pre
                 setIsSavingBlocks(true)
                 try {
                   await saveUIPreferences(participant.id, blockPrefs)
-                  alert('블록 설정이 저장되었습니다!')
+                  // 저장 후 미리보기 즉시 반영 (blockPrefs는 이미 prop으로 전달됨)
                 } catch {
                   alert('저장 중 오류가 발생했습니다.')
                 } finally {
@@ -210,7 +209,7 @@ export default function PreviewEditPanel({ participant, isVisible, onSave }: Pre
               disabled={isSavingBlocks}
               className="w-full mt-3 px-4 py-2.5 bg-zinc-900 text-white font-bold rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-50 text-sm"
             >
-              {isSavingBlocks ? '저장 중...' : '블록 설정 저장'}
+              {isSavingBlocks ? '저장 중...' : '✅ 블록 설정 저장'}
             </button>
           </div>
         </div>

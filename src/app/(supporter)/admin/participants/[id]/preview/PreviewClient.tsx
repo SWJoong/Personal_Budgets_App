@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import HomeDashboard from '@/components/home/HomeDashboard'
 import PreviewBanner from '@/components/admin/PreviewBanner'
 import PreviewEditPanel from '@/components/admin/PreviewEditPanel'
+import { UIPreferences, DEFAULT_PREFERENCES } from '@/types/ui-preferences'
 
 interface PreviewClientProps {
   participant: any
@@ -32,6 +33,14 @@ export default function PreviewClient({
   const [isEditMode, setIsEditMode] = useState(false)
   const router = useRouter()
 
+  // 블록 설정 공유 상태 — participant.ui_preferences로 초기화
+  // 관리자가 체크박스를 변경하면 즉시 미리보기에 반영됨
+  const rawPrefs = participant.ui_preferences as any
+  const initialPrefs: UIPreferences = rawPrefs?.enabled_blocks
+    ? { enabled_blocks: rawPrefs.enabled_blocks }
+    : DEFAULT_PREFERENCES
+  const [blockPrefs, setBlockPrefs] = useState<UIPreferences>(initialPrefs)
+
   const handleSave = () => {
     router.refresh()
   }
@@ -45,11 +54,13 @@ export default function PreviewClient({
         onEditModeToggle={setIsEditMode}
       />
 
-      {/* 편집 패널 */}
+      {/* 편집 패널 — blockPrefs 공유 */}
       <PreviewEditPanel
         participant={participant}
         isVisible={isEditMode}
         onSave={handleSave}
+        blockPrefs={blockPrefs}
+        onBlockPrefsChange={setBlockPrefs}
       />
 
       {/* 폰 프레임 컨테이너 */}
@@ -60,7 +71,7 @@ export default function PreviewClient({
             {/* 노치 */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 bg-zinc-800 rounded-b-2xl z-40 pointer-events-none" />
 
-            {/* 실제 당사자 앱 렌더링 */}
+            {/* 실제 당사자 앱 렌더링 — blockPrefs 반영 */}
             <div className="pt-7">
               <HomeDashboard
                 participant={participant}
@@ -72,6 +83,7 @@ export default function PreviewClient({
                 userName={participant.name || ''}
                 dailyTransactions={dailyTransactions || []}
                 monthlyTrend={monthlyTrend}
+                uiPreferences={blockPrefs}
               />
             </div>
           </div>

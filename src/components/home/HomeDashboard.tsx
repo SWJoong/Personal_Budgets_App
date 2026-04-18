@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { formatCurrency, getBudgetVisualInfo } from '@/utils/budget-visuals'
 import { speak } from '@/utils/tts'
 import Link from 'next/link'
@@ -74,6 +74,11 @@ export default function HomeDashboard({
   const [localPreferences, setLocalPreferences] = useState<UIPreferences>(
     uiPreferences ?? DEFAULT_PREFERENCES
   )
+
+  // 미리보기 등 외부에서 uiPreferences prop이 바뀌면 즉시 동기화
+  useEffect(() => {
+    setLocalPreferences(uiPreferences ?? DEFAULT_PREFERENCES)
+  }, [uiPreferences])
 
   async function handleSavePreferences(newPrefs: UIPreferences) {
     setLocalPreferences(newPrefs)
