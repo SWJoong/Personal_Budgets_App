@@ -14,24 +14,45 @@ const NAV_ITEMS = [
 
 export default function NavDropdown() {
   const [isOpen, setIsOpen] = useState(false)
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
   const pathname = usePathname()
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  const openMenu = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setMenuPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      })
+    }
+    setIsOpen(true)
+  }
 
   useEffect(() => {
     if (!isOpen) return
     const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
-      }
+      if (
+        buttonRef.current?.contains(e.target as Node) ||
+        menuRef.current?.contains(e.target as Node)
+      ) return
+      setIsOpen(false)
     }
+    const handleResize = () => setIsOpen(false)
     document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    window.addEventListener('resize', handleResize)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      window.removeEventListener('resize', handleResize)
+    }
   }, [isOpen])
 
   return (
-    <div ref={menuRef} className="relative">
+    <div>
       <button
-        onClick={() => setIsOpen(prev => !prev)}
+        ref={buttonRef}
+        onClick={() => isOpen ? setIsOpen(false) : openMenu()}
         className="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-all active:scale-95"
         aria-label="메뉴 열기"
         aria-expanded={isOpen}
@@ -44,7 +65,9 @@ export default function NavDropdown() {
 
       {isOpen && (
         <div
-          className="absolute right-0 top-12 w-52 bg-white rounded-2xl shadow-2xl ring-1 ring-zinc-100 overflow-hidden z-[60] animate-fade-in-down"
+          ref={menuRef}
+          className="fixed w-52 bg-white rounded-2xl shadow-2xl ring-1 ring-zinc-100 overflow-hidden z-[9000] animate-fade-in-down"
+          style={{ top: menuPos.top, right: menuPos.right }}
           role="listbox"
           aria-label="페이지 이동"
         >

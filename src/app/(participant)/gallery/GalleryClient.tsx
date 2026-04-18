@@ -110,7 +110,7 @@ export default function GalleryClient({ items, currentMonth, months }: Props) {
       {/* 라이트박스 */}
       {lightbox && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4"
+          className="fixed inset-0 z-[9000] bg-black/90 flex flex-col items-center justify-center p-4"
           onClick={() => setLightbox(null)}
         >
           <img

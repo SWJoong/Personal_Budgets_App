@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 interface Props {
   src: string
@@ -17,9 +18,10 @@ export default function ImageLightbox({ src, alt, onClose }: Props) {
     return () => document.removeEventListener('keydown', handleKey)
   }, [onClose])
 
-  return (
+  // createPortal로 document.body에 직접 렌더링 → 부모 stacking context 탈출
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9000] bg-black/90 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <button
@@ -35,6 +37,7 @@ export default function ImageLightbox({ src, alt, onClose }: Props) {
         className="max-w-[90vw] max-h-[90dvh] object-contain rounded-xl shadow-2xl"
         onClick={e => e.stopPropagation()}
       />
-    </div>
+    </div>,
+    document.body
   )
 }
