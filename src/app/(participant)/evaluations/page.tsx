@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import EvalLetterCard from '@/components/evaluations/EvalLetterCard'
 import { EasyTerm } from '@/components/ui/EasyTerm'
+import NavDropdown from '@/components/layout/NavDropdown'
 
 export default async function ParticipantEvaluationsPage() {
   const supabase = await createClient()
@@ -19,12 +20,15 @@ export default async function ParticipantEvaluationsPage() {
     .order('month', { ascending: false })
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground pb-24">
-      <header className="flex h-16 items-center gap-3 px-6 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/more" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl">←</Link>
-        <h1 className="text-xl font-bold tracking-tight">
-          <EasyTerm formal="지원자 선생님의 편지" easy="선생님이 써준 편지" />
-        </h1>
+    <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground pb-10">
+      <header className="flex h-16 items-center justify-between px-6 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
+        <div className="flex items-center gap-3">
+          <Link href="/more" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl">←</Link>
+          <h1 className="text-xl font-bold tracking-tight">
+            <EasyTerm formal="지원자 선생님의 편지" easy="선생님이 써준 편지" />
+          </h1>
+        </div>
+        <NavDropdown />
       </header>
 
       <main className="flex-1 p-6 max-w-lg mx-auto w-full flex flex-col gap-6">

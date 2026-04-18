@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { speak } from '@/utils/tts'
+import NavDropdown from '@/components/layout/NavDropdown'
 
 const steps = [
   {
@@ -33,10 +34,13 @@ const steps = [
 
 export default function GuidePageClient() {
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground pb-24">
-      <header className="flex h-16 items-center gap-3 px-6 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl">←</Link>
-        <h1 className="text-xl font-bold tracking-tight">앱 사용 설명서</h1>
+    <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground pb-10">
+      <header className="flex h-16 items-center justify-between px-6 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl">←</Link>
+          <h1 className="text-xl font-bold tracking-tight">앱 사용 설명서</h1>
+        </div>
+        <NavDropdown />
       </header>
 
       <main className="flex-1 p-6 max-w-lg mx-auto w-full flex flex-col gap-8">

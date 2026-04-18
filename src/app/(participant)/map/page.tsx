@@ -5,6 +5,7 @@ import { EasyTerm } from '@/components/ui/EasyTerm'
 import ParticipantMapClient from './ParticipantMapClient'
 import type { MapPlan } from '@/components/map/KakaoMap'
 import { getSignedImageUrls } from '@/app/actions/storage'
+import NavDropdown from '@/components/layout/NavDropdown'
 
 export default async function ParticipantMapPage() {
   const supabase = await createClient()
@@ -79,7 +80,10 @@ export default async function ParticipantMapPage() {
             <EasyTerm formal="사용 장소 지도" easy="어디서 썼나요?" />
           </h1>
         </div>
-        <span className="text-xs font-bold text-zinc-400">📍 {totalLocations}개 장소</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-zinc-400">📍 {totalLocations}개 장소</span>
+          <NavDropdown />
+        </div>
       </header>
 
       <main className="flex-1 p-4 flex flex-col gap-4">
