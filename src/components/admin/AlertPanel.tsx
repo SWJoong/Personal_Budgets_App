@@ -13,11 +13,19 @@ export default async function AlertPanel() {
   const supabase = await createClient()
   const alerts: Alert[] = []
 
-  // 1. 잔액 경고 — current_month_balance / monthly_budget < alert_threshold
-  const { data: participants } = await supabase
-    .from('participants')
-    .select('id, name, alert_threshold, funding_sources(monthly_budget, current_month_balance)')
+  // 3개 독립 쿼리 병렬 실행 (순차 대기 → 동시 대기)
+  const currentMonth = new Date().toISOString().slice(0, 7)
+  const [
+    { data: participants },
+    { data: pendingTxs },
+    { data: evaluations },
+  ] = await Promise.all([
+    supabase.from('participants').select('id, name, alert_threshold, funding_sources(monthly_budget, current_month_balance)'),
+    supabase.from('transactions').select('participant_id, participants!transactions_participant_id_fkey(name)').eq('status', 'pending'),
+    supabase.from('evaluations').select('participant_id').eq('month', currentMonth),
+  ])
 
+  // 1. 잔액 경고 — current_month_balance / monthly_budget < alert_threshold
   for (const p of participants ?? []) {
     const threshold = (p as any).alert_threshold ?? 20
     const sources: any[] = (p as any).funding_sources ?? []
@@ -38,11 +46,6 @@ export default async function AlertPanel() {
   }
 
   // 2. 미확인 영수증
-  const { data: pendingTxs } = await supabase
-    .from('transactions')
-    .select('participant_id, participants!transactions_participant_id_fkey(name)')
-    .eq('status', 'pending')
-
   const pendingMap = new Map<string, { name: string; count: number }>()
   for (const tx of pendingTxs ?? []) {
     const pid = (tx as any).participant_id
@@ -61,12 +64,6 @@ export default async function AlertPanel() {
   }
 
   // 3. 이번 달 평가 미작성
-  const currentMonth = new Date().toISOString().slice(0, 7)
-  const { data: evaluations } = await supabase
-    .from('evaluations')
-    .select('participant_id')
-    .eq('month', currentMonth)
-
   const evaluatedIds = new Set((evaluations ?? []).map((e: any) => e.participant_id))
 
   for (const p of participants ?? []) {

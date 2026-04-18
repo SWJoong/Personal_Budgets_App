@@ -19,32 +19,17 @@ export default async function SettlementSummary() {
 
   const ids = participants.map(p => p.id)
 
-  // 이번 달 거래 (pending/confirmed 수)
-  const { data: transactions } = await supabase
-    .from('transactions')
-    .select('participant_id, status')
-    .in('participant_id', ids)
-    .gte('date', firstDay)
-    .lt('date', nextMonthFirst)
-
-  // 이번 달 평가 (작성 여부 + 발행 여부)
-  const { data: evaluations } = await supabase
-    .from('evaluations')
-    .select('participant_id, published_at')
-    .in('participant_id', ids)
-    .eq('month', currentMonth)
-
-  // 전체 서류 수 (file_links 테이블이 없을 수도 있음)
-  let files: any[] | null = null
-  try {
-    const { data } = await supabase
-      .from('file_links')
-      .select('participant_id')
-      .in('participant_id', ids)
-    files = data
-  } catch {
-    files = null
-  }
+  // 3개 독립 쿼리 병렬 실행 (순차 대기 → 동시 대기)
+  // file_links는 테이블이 없을 수 있으므로 .catch()로 개별 처리
+  const [
+    { data: transactions },
+    { data: evaluations },
+    { data: files },
+  ] = await Promise.all([
+    supabase.from('transactions').select('participant_id, status').in('participant_id', ids).gte('date', firstDay).lt('date', nextMonthFirst),
+    supabase.from('evaluations').select('participant_id, published_at').in('participant_id', ids).eq('month', currentMonth),
+    supabase.from('file_links').select('participant_id').in('participant_id', ids).then(r => r, () => ({ data: null as any[] | null })),
+  ])
 
   const summary = participants.map(p => {
     const ptxs = (transactions || []).filter((t: any) => t.participant_id === p.id)

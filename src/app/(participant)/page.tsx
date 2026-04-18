@@ -84,22 +84,14 @@ export default async function Home() {
     : null
   const effectivePrefs = uiPreferences ?? DEFAULT_PREFERENCES
 
-  const recentTxData = await supabase
-    .from('transactions')
-    .select('*')
-    .eq('participant_id', user.id)
-    .order('date', { ascending: false })
-    .limit(3)
+  // 3개 독립 쿼리 병렬 실행 (순차 대기 → 동시 대기)
+  const sixMonthsAgo = new Date(year, month - 5, 1).toISOString().split('T')[0]
+  const [recentTxData, dailyTxData, { data: allMonthTxs }] = await Promise.all([
+    supabase.from('transactions').select('*').eq('participant_id', user.id).order('date', { ascending: false }).limit(3),
+    supabase.from('transactions').select('id, date, amount, activity_name, status, receipt_image_url, activity_image_url').eq('participant_id', user.id).gte('date', firstDayOfMonth).lte('date', lastDayOfMonth).order('date', { ascending: true }),
+    supabase.from('transactions').select('id, amount, date, activity_name, category').eq('participant_id', user.id).gte('date', sixMonthsAgo).lte('date', lastDayOfMonth).order('date', { ascending: true }),
+  ])
   const rawRecent = recentTxData.data || []
-
-  // 이번 달 일별 거래 내역
-  const dailyTxData = await supabase
-    .from('transactions')
-    .select('id, date, amount, activity_name, status, receipt_image_url, activity_image_url')
-    .eq('participant_id', user.id)
-    .gte('date', firstDayOfMonth)
-    .lte('date', lastDayOfMonth)
-    .order('date', { ascending: true })
   const rawDaily = dailyTxData.data || []
 
   // 영수증·활동사진 signed URL 변환 (private 버킷)
@@ -119,19 +111,10 @@ export default async function Home() {
     activity_image_url: signedUrlMap[t.id]?.activity ?? t.activity_image_url,
   }))
 
-  // 최근 6개월 월별 지출 집계 — 쿼리 1번으로 처리
+  // 최근 6개월 월별 지출 집계 — JS 그룹핑 (쿼리는 위 Promise.all에서 실행됨)
   const totalMonthlyBudget = (participant.funding_sources || []).reduce(
     (acc: number, fs: any) => acc + Number(fs.monthly_budget), 0
   ) || participant.monthly_budget_default || 0
-
-  const sixMonthsAgo = new Date(year, month - 5, 1).toISOString().split('T')[0]
-  const { data: allMonthTxs } = await supabase
-    .from('transactions')
-    .select('id, amount, date, activity_name, category')
-    .eq('participant_id', user.id)
-    .gte('date', sixMonthsAgo)
-    .lte('date', lastDayOfMonth)
-    .order('date', { ascending: true })
 
   for (let i = 5; i >= 0; i--) {
     const d = new Date(year, month - i, 1)
