@@ -34,7 +34,7 @@ export default async function SupporterPage() {
 
   const { data: participants } = await query.order('created_at', { ascending: false })
 
-  // 오늘 날짜 기준 확인할 항목 수 (임시 반영 사용 내역)
+  // pending 카운트: 담당 당사자 범위 내에서 조회
   const participantIds = (participants || []).map((p: any) => p.id)
   let pendingCount = 0
   if (participantIds.length > 0) {

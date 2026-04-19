@@ -1,4 +1,4 @@
-import FaqButton from '@/components/feedback/FaqButton'
+import FaqButton from '@/components/ui/FaqButton'
 
 export default function ParticipantLayout({
   children,

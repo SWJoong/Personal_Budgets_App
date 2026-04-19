@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AccessibilityProvider } from "@/hooks/useAccessibility";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "아름드리꿈터 개인예산 관리",
@@ -26,6 +28,8 @@ export default function RootLayout({
         <AccessibilityProvider>
           {children}
         </AccessibilityProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

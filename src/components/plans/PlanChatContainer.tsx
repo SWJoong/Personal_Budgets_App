@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { suggestActivityOptions, suggestMethodOptions, savePlan } from '@/app/actions/plan'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { speak } from '@/utils/tts'
-import WaterCupPlanPreview from '@/components/charts/WaterCupPlanPreview'
+import WaterCupPlanPreview from '@/components/home/WaterCupPlanPreview'
 import PlaceSearch from '@/components/map/PlaceSearch'
 import type { PlaceResult } from '@/app/actions/geocode'
 

@@ -2,10 +2,9 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense } from 'react'
-import ParticipantPreviewCard from '@/components/admin/ParticipantPreviewCard'
 import AlertPanel from '@/components/admin/AlertPanel'
-import SettlementSummary from '@/components/admin/SettlementSummary'
 import AdminHelpButton from '@/components/help/AdminHelpButton'
+import AdminParticipantBoard from '@/components/admin/AdminParticipantBoard'
 
 export default async function AdminDashboardPage({
   searchParams,
@@ -39,52 +38,6 @@ export default async function AdminDashboardPage({
     .select('id, name, email')
     .eq('role', 'supporter')
     .order('name', { ascending: true })
-
-  // 미리보기 참가자 목록 결정
-  let previewParticipantsQuery = supabase
-    .from('participants')
-    .select('*, funding_sources (*)')
-    .order('name', { ascending: true })
-
-  if (isSuppoterView && selectedSupporterId) {
-    previewParticipantsQuery = previewParticipantsQuery.eq('assigned_supporter_id', selectedSupporterId)
-  } else if (!isSuppoterView) {
-    // 관리자 뷰: seed.sql 첫 4명 데모 참가자
-    const targetParticipantIds = [
-      '33333333-3333-3333-3333-333333333301',
-      '33333333-3333-3333-3333-333333333302',
-      '33333333-3333-3333-3333-333333333303',
-      '33333333-3333-3333-3333-333333333304',
-    ]
-    previewParticipantsQuery = previewParticipantsQuery.in('id', targetParticipantIds)
-  }
-
-  const previewData = await previewParticipantsQuery
-  const previewParticipants: any[] = previewData.data || []
-
-  // 통계: 실무자 뷰면 해당 supporter 배정 당사자만, 관리자 뷰면 전체
-  let statsQuery = supabase
-    .from('participants')
-    .select('id, monthly_budget_default, funding_sources(monthly_budget, current_month_balance)')
-
-  if (isSuppoterView && selectedSupporterId) {
-    statsQuery = statsQuery.eq('assigned_supporter_id', selectedSupporterId)
-  }
-
-  const { data: allParticipants } = await statsQuery
-
-  const totalParticipants = allParticipants?.length || 0
-  const totalMonthlyBudget = allParticipants?.reduce((sum: number, p: any) => {
-    const fsBudget = p.funding_sources?.reduce((acc: number, fs: any) => acc + Number(fs.monthly_budget), 0) || 0
-    return sum + (fsBudget || p.monthly_budget_default || 0)
-  }, 0) || 0
-
-  const totalMonthlyBalance = allParticipants?.reduce((sum: number, p: any) => {
-    const fsBalance = p.funding_sources?.reduce((acc: number, fs: any) => acc + Number(fs.current_month_balance), 0) || 0
-    return sum + fsBalance
-  }, 0) || 0
-
-  const totalMonthlySpent = totalMonthlyBudget - totalMonthlyBalance
 
   const selectedSupporterName = (supporters || []).find((s: any) => s.id === selectedSupporterId)?.name || ''
 
@@ -184,89 +137,9 @@ export default async function AdminDashboardPage({
           <AlertPanel />
         </Suspense>
 
-        {/* 전체 통계 카드 */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm">
-            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">전체 당사자</span>
-            <p className="text-3xl font-black text-zinc-900 mt-1">{totalParticipants}명</p>
-          </div>
-          <div className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm">
-            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">이번 달 전체 예산</span>
-            <p className="text-3xl font-black text-blue-600 mt-1">
-              {(totalMonthlyBudget / 10000).toFixed(0)}만원
-            </p>
-          </div>
-          <div className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm">
-            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">이번 달 사용액</span>
-            <p className="text-3xl font-black text-orange-600 mt-1">
-              {(totalMonthlySpent / 10000).toFixed(0)}만원
-            </p>
-          </div>
-        </section>
-
-        {/* 미리보기 섹션 */}
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-black text-zinc-900">
-                {isSuppoterView && selectedSupporterName ? `${selectedSupporterName}의 담당 당사자` : '당사자 화면 미리보기'}
-              </h2>
-              <p className="text-xs text-zinc-500 font-medium mt-0.5">
-                {isSuppoterView && selectedSupporterName
-                  ? '선택한 실무자에게 배정된 당사자만 표시됩니다'
-                  : '참가자들이 보는 화면을 미리 확인할 수 있습니다'}
-              </p>
-            </div>
-            <Link
-              href="/admin/participants"
-              className="text-xs font-bold text-zinc-400 hover:text-zinc-600 transition-colors"
-            >
-              전체 보기 →
-            </Link>
-          </div>
-
-          {previewParticipants && previewParticipants.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {previewParticipants.map((participant) => (
-                <ParticipantPreviewCard
-                  key={participant.id}
-                  participant={participant}
-                  href={`/admin/participants/${participant.id}`}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="p-8 rounded-2xl bg-zinc-50 border-2 border-dashed border-zinc-200 text-center">
-              <p className="text-sm font-bold text-zinc-400">
-                {isSuppoterView ? '이 실무자에게 배정된 당사자가 없습니다.' : '미리보기 대상 참가자가 없습니다.'}
-              </p>
-              {!isSuppoterView && (
-                <p className="text-xs text-zinc-400 mt-1">
-                  seed.sql을 실행하여 데모 데이터를 생성하세요.
-                </p>
-              )}
-            </div>
-          )}
-        </section>
-
-        {/* 월간 정산 체크리스트 */}
-        <Suspense fallback={
-          <div className="rounded-2xl bg-white ring-1 ring-zinc-200 overflow-hidden animate-pulse">
-            <div className="px-5 py-3 bg-zinc-50 border-b border-zinc-200 flex justify-between">
-              <div className="h-5 w-40 bg-zinc-200 rounded" />
-              <div className="h-4 w-16 bg-zinc-200 rounded" />
-            </div>
-            {[0, 1, 2, 3].map(i => (
-              <div key={i} className="grid grid-cols-[1fr_140px_100px_80px] px-5 py-3.5 border-b border-zinc-100 last:border-0 gap-4">
-                <div className="h-4 w-20 bg-zinc-200 rounded" />
-                <div className="h-6 w-24 bg-zinc-100 rounded-full mx-auto" />
-                <div className="h-4 w-12 bg-zinc-100 rounded mx-auto" />
-                <div className="h-4 w-8 bg-zinc-100 rounded mx-auto" />
-              </div>
-            ))}
-          </div>
-        }>
-          <SettlementSummary />
+        {/* 당사자별 통합 현황 */}
+        <Suspense fallback={<div className="rounded-2xl bg-zinc-50 animate-pulse h-64" />}>
+          <AdminParticipantBoard />
         </Suspense>
 
         {/* 빠른 실행 */}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import ImageLightbox from '@/components/ui/ImageLightbox'
@@ -151,10 +152,10 @@ export default function WeeklyChartBlock({ dailyTransactions, themeColor }: Prop
                   <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-zinc-50">
                     {thumb ? (
                       <button
-                        className="w-12 h-12 rounded-xl overflow-hidden shrink-0 ring-1 ring-zinc-200 cursor-zoom-in"
+                        className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 ring-1 ring-zinc-200 cursor-zoom-in"
                         onClick={() => setLightboxSrc(thumb)}
                       >
-                        <img src={thumb} alt="활동" className="w-full h-full object-cover" />
+                        <Image src={thumb} alt="활동" fill sizes="48px" className="object-cover" />
                       </button>
                     ) : (
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 ${

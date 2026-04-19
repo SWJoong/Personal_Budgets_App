@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import { speak } from '@/utils/tts'
@@ -125,7 +126,7 @@ export default function TransactionCalendar({ transactions }: Props) {
                       className="w-5 h-5 rounded-md overflow-hidden ring-1 ring-white/50 shadow-sm mt-1 cursor-zoom-in"
                       onClick={e => { e.stopPropagation(); setLightboxSrc(thumbnailUrl) }}
                     >
-                      <img src={thumbnailUrl} alt="영수증" className="w-full h-full object-cover" />
+                      <Image src={thumbnailUrl} alt="영수증" fill sizes="20px" className="object-cover" />
                     </button>
                   )}
                   {!thumbnailUrl && (hasConfirmed || hasPending) && (

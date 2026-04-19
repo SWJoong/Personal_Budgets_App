@@ -1,5 +1,7 @@
 'use server'
 
+import { withTiming } from '@/utils/api-logger'
+
 export interface PlaceResult {
   id: string
   place_name: string
@@ -20,10 +22,10 @@ export async function searchPlaces(query: string): Promise<PlaceResult[]> {
 
   try {
     const url = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(query)}&size=5`
-    const res = await fetch(url, {
+    const res = await withTiming('Kakao LocalSearch', () => fetch(url, {
       headers: { Authorization: `KakaoAK ${apiKey}` },
       next: { revalidate: 0 },
-    })
+    }))
 
     if (!res.ok) {
       console.error('Kakao Local Search error:', res.status, await res.text())

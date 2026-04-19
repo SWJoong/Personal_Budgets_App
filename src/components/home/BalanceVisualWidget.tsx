@@ -86,9 +86,10 @@ function PizzaChart({ percentage }: { percentage: number }) {
 
         {/* 중앙 레이블 */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-2xl shadow-sm border border-white/60 text-center">
-            <span className="text-[10px] text-zinc-500 block leading-tight">남은 피자</span>
-            <span className="text-lg font-black text-zinc-900 leading-tight">{percentage}<EasyTerm formal="%" easy="퍼센트" /></span>
+          <div className="bg-white/95 backdrop-blur-sm px-4 py-2 rounded-2xl shadow-md border border-white/80 text-center">
+            <span className="text-xs font-bold text-zinc-500 block leading-tight">남은 돈</span>
+            <span className="text-2xl font-black text-zinc-900 leading-none">{percentage}</span>
+            <span className="text-sm font-bold text-zinc-600 block leading-tight"><EasyTerm formal="%" easy="퍼센트" /></span>
           </div>
         </div>
       </div>
@@ -662,10 +663,10 @@ export default function BalanceVisualWidget({
   const c = THEME[(themeColor as ThemeKey)] ?? THEME.zinc
 
   const STYLE_OPTIONS = [
-    { key: 'pie'   as WidgetStyle, label: '🍕', title: '피자 그래프' },
-    { key: 'water' as WidgetStyle, label: '🥤', title: '물컵 그래프' },
-    { key: 'emoji' as WidgetStyle, label: '✨', title: '이모지' },
-    { key: 'text'  as WidgetStyle, label: '🔢', title: '숫자 표시' },
+    { key: 'pie'   as WidgetStyle, label: '🍕', title: '피자 그래프', short: '피자' },
+    { key: 'water' as WidgetStyle, label: '🥤', title: '물컵 그래프', short: '물컵' },
+    { key: 'emoji' as WidgetStyle, label: '✨', title: '이모지',      short: '이모지' },
+    { key: 'text'  as WidgetStyle, label: '🔢', title: '숫자 표시',   short: '숫자' },
   ]
 
   return (
@@ -689,12 +690,17 @@ export default function BalanceVisualWidget({
               🔊
             </button>
           </div>
-          <p className="text-xs text-zinc-400 font-bold mt-0.5 flex items-center gap-2">
-            <span>{remainingDays}일 남음 · {displayPct}<EasyTerm formal="%" easy="퍼센트" /></span>
+          <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-100 text-xs font-bold text-zinc-600">
+              📅 {remainingDays}일 남음
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-100 text-xs font-bold text-zinc-600">
+              💰 {displayPct}<EasyTerm formal="%" easy="퍼센트" /> 남음
+            </span>
             {pendingDeduction > 0 && (
-              <span className="text-orange-500">⏳ 반영 중</span>
+              <span className="text-orange-500 text-xs font-bold">⏳ 반영 중</span>
             )}
-          </p>
+          </div>
         </div>
 
         {/* 차트 스타일 전환 */}
@@ -706,13 +712,16 @@ export default function BalanceVisualWidget({
               aria-label={opt.title}
               aria-pressed={style === opt.key}
               title={opt.title}
-              className={`w-10 h-10 rounded-lg text-lg transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center w-10 min-h-[52px] rounded-lg transition-all duration-200 gap-0.5 ${
                 style === opt.key
                   ? 'bg-white shadow-sm scale-105'
                   : 'hover:bg-zinc-200 active:scale-95'
               }`}
             >
-              {opt.label}
+              <span className="text-lg leading-none">{opt.label}</span>
+              <span className={`text-[9px] font-bold leading-none ${style === opt.key ? 'text-zinc-700' : 'text-zinc-400'}`}>
+                {opt.short}
+              </span>
             </button>
           ))}
         </div>
@@ -772,7 +781,7 @@ export default function BalanceVisualWidget({
             step={1000}
             value={simAmount}
             onChange={e => setSimAmount(e.target.value)}
-            placeholder="얼마나 쓸 건가요? (직접 입력)"
+            placeholder="금액을 써요"
             className="flex-1 bg-transparent outline-none text-sm font-bold text-zinc-700 placeholder:text-zinc-300 placeholder:font-medium min-w-0"
           />
           <span className="text-sm font-bold text-zinc-400 shrink-0">원</span>
@@ -898,7 +907,7 @@ export default function BalanceVisualWidget({
                   type="text"
                   value={uploadDescription}
                   onChange={(e) => setUploadDescription(e.target.value)}
-                  placeholder={uploadAnalyzing ? 'AI가 분석 중...' : '무엇을 했나요? (예: 편의점 간식)'}
+                  placeholder={uploadAnalyzing ? '사진 읽는 중...' : '무엇을 했나요? (예: 편의점 간식)'}
                   className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold transition-all"
                   required
                 />
@@ -937,7 +946,7 @@ export default function BalanceVisualWidget({
                 onClick={handleInlineSubmit}
                 className="w-full mt-4 py-4 rounded-2xl bg-zinc-900 text-white font-black text-base active:scale-[0.98] transition-all disabled:bg-zinc-300"
               >
-                {uploadSubmitting ? '등록 중...' : uploadAnalyzing ? 'AI 분석 중...' : '활동 기록하기'}
+                {uploadSubmitting ? '등록 중...' : uploadAnalyzing ? '사진 읽는 중...' : '활동 기록하기'}
               </button>
 
               <p className="text-center text-zinc-400 text-xs font-medium mt-2">

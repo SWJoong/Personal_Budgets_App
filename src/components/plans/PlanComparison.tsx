@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { formatCurrency } from '@/utils/budget-visuals'
-import WaterCupPlanPreview from '@/components/charts/WaterCupPlanPreview'
+import WaterCupPlanPreview from '@/components/home/WaterCupPlanPreview'
 import { savePlan } from '@/app/actions/plan'
 
 interface PlanOption {

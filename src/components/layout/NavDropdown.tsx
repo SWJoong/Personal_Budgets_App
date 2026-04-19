@@ -9,6 +9,8 @@ const NAV_ITEMS = [
   { href: '/receipt',  icon: '🧾', label: '영수증' },
   { href: '/calendar', icon: '📅', label: '달력' },
   { href: '/plan',     icon: '🤔', label: '오늘 계획' },
+  { href: '/gallery',  icon: '📸', label: '사진 모아보기' },
+  { href: '/map',      icon: '🗺️', label: '사용 장소 지도' },
   { href: '/more',     icon: '⚙️',  label: '더보기' },
 ]
 

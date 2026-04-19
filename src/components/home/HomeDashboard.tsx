@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { formatCurrency, getBudgetVisualInfo } from '@/utils/budget-visuals'
 import { speak } from '@/utils/tts'
 import Link from 'next/link'
@@ -13,6 +14,7 @@ import { UIPreferences, DEFAULT_PREFERENCES, BlockId } from '@/types/ui-preferen
 import { saveUIPreferences } from '@/app/actions/preferences'
 import NavDropdown from '@/components/layout/NavDropdown'
 import HelpButton from '@/components/help/HelpButton'
+import EasyModeOnboarding from './EasyModeOnboarding'
 import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
 import ImageLightbox from '@/components/ui/ImageLightbox'
 
@@ -249,10 +251,10 @@ export default function HomeDashboard({
                   <div className="flex items-center gap-3">
                     {tx.receipt_image_url ? (
                       <button
-                        className="w-10 h-10 rounded-xl overflow-hidden shrink-0 ring-1 ring-zinc-200 cursor-zoom-in"
+                        className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 ring-1 ring-zinc-200 cursor-zoom-in"
                         onClick={() => setLightboxSrc(tx.receipt_image_url)}
                       >
-                        <img src={tx.receipt_image_url} alt="영수증" className="w-full h-full object-cover" />
+                        <Image src={tx.receipt_image_url} alt="영수증" fill sizes="40px" className="object-cover" />
                       </button>
                     ) : (
                       <div className="flex items-center gap-1.5">
@@ -417,6 +419,9 @@ export default function HomeDashboard({
       {lightboxSrc && (
         <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
       )}
+
+      {/* 첫 사용 시 쉬운 말 모드 선택 온보딩 */}
+      <EasyModeOnboarding />
     </div>
   )
 }

@@ -124,7 +124,7 @@ export default function FaqButton({ variant = 'participant' }: Props) {
         <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-[11px] font-black flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
           Q
         </span>
-        <span className="text-xs font-bold whitespace-nowrap">피드백</span>
+        <span className="text-xs font-bold whitespace-nowrap">궁금한 점</span>
       </button>
 
       {open && <FaqModal onClose={() => setOpen(false)} />}

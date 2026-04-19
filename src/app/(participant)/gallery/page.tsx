@@ -70,7 +70,7 @@ export default async function GalleryPage({
     <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
         <div className="flex items-center gap-3">
-          <Link href="/more" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
+          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
           <h1 className="text-lg font-bold tracking-tight">
             <EasyTerm formal="사진 모아보기" easy="내 사진들 보기" />
           </h1>

@@ -1,8 +1,7 @@
 'use server'
 
-/**
- * 영수증 이미지를 분석하여 데이터를 추출하는 서버 액션
- */
+import { withTiming } from '@/utils/api-logger'
+
 export async function analyzeReceipt(base64Image: string) {
   const apiKey = process.env.OPENAI_API_KEY;
 
@@ -12,7 +11,7 @@ export async function analyzeReceipt(base64Image: string) {
   }
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await withTiming('OpenAI OCR', () => fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,7 +43,7 @@ export async function analyzeReceipt(base64Image: string) {
         response_format: { type: "json_object" },
         max_tokens: 300
       })
-    });
+    }));
 
     const data = await response.json();
     

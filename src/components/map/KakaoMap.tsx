@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
+import Script from 'next/script'
 import { formatCurrency } from '@/utils/budget-visuals'
 
 export interface MapTransaction {
@@ -53,6 +54,7 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
   const mapRef = useRef<kakao.maps.Map | null>(null)
   const markersRef = useRef<kakao.maps.Marker[]>([])
   const infoWindowRef = useRef<kakao.maps.InfoWindow | null>(null)
+  const [sdkReady, setSdkReady] = useState(false)
 
   const validTx = transactions.filter(
     (t) => t.place_lat !== null && t.place_lng !== null
@@ -271,61 +273,31 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
     drawMarkers()
   }, [drawMarkers])
 
-  // SDK 로드 및 지도 초기화 (중복 로드 방지)
+  // SDK가 준비되면 지도 초기화
   useEffect(() => {
+    if (!sdkReady) return
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any
-
-    function onSDKLoad() {
-      if (!w.kakao?.maps) return
-      w.kakao.maps.load(initMap)
-    }
-
-    // 이미 초기화된 경우
     if (w.kakao?.maps) {
       w.kakao.maps.load(initMap)
-      return
     }
-
-    const key = apiKey || process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY
-    if (!key) return
-
-    // kakao-map-sdk-services 스크립트가 이미 있으면 그 로드 이벤트 재사용
-    const servicesScript = document.getElementById('kakao-map-sdk-services')
-    if (servicesScript) {
-      if (w.kakao) {
-        onSDKLoad()
-      } else {
-        servicesScript.addEventListener('load', onSDKLoad, { once: true })
-      }
-      return
-    }
-
-    // 기존 기본 SDK 스크립트가 이미 있으면 재사용
-    const existingScript = document.getElementById('kakao-map-sdk')
-    if (existingScript) {
-      if (w.kakao) {
-        onSDKLoad()
-      } else {
-        existingScript.addEventListener('load', onSDKLoad, { once: true })
-      }
-      return
-    }
-
-    // 새로 로드
-    const script = document.createElement('script')
-    script.id = 'kakao-map-sdk'
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&autoload=false`
-    script.onload = onSDKLoad
-    document.head.appendChild(script)
-  }, [apiKey, initMap])
+  }, [sdkReady, initMap])
 
   // transactions 변경 시 마커 재렌더
   useEffect(() => {
     if (mapRef.current) drawMarkers()
   }, [drawMarkers])
 
+  const sdkSrc = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey || process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY}&autoload=false`
+
   return (
+    <>
+    <Script
+      id="kakao-map-sdk"
+      src={sdkSrc}
+      strategy="lazyOnload"
+      onLoad={() => setSdkReady(true)}
+    />
     <div className="relative w-full rounded-2xl overflow-hidden ring-1 ring-zinc-200">
       <div ref={mapContainerRef} style={{ width: '100%', height }} />
       {validTx.length === 0 && validPlans.length === 0 && (
@@ -341,5 +313,6 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
         </div>
       )}
     </div>
+    </>
   )
 }

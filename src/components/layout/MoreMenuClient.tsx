@@ -111,7 +111,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
           {/* 고대비 모드 토글 */}
           <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-zinc-700">🌗 고대비 모드</span>
+              <span className="text-sm font-bold text-zinc-700">🌗 글씨가 더 잘 보여요</span>
               <span className="text-xs text-zinc-400 font-medium">글씨와 배경의 대비를 높여요</span>
             </div>
             <button
@@ -121,7 +121,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
               }`}
               role="switch"
               aria-checked={highContrast}
-              aria-label="고대비 모드 전환"
+              aria-label="글씨 더 잘 보이기 전환"
             >
               <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
                 highContrast ? 'left-7' : 'left-1'

@@ -188,18 +188,20 @@ export async function createParticipant(formData: {
 
     const newParticipantId = participant.id
 
-    // 2. 재원 등록
-    for (const fs of formData.fundingSources) {
+    // 2. 재원 등록 (배치 INSERT)
+    if (formData.fundingSources.length > 0) {
       const { error: fsError } = await supabase
         .from('funding_sources')
-        .insert({
-          participant_id: newParticipantId,
-          name: fs.name,
-          monthly_budget: fs.monthlyBudget,
-          yearly_budget: fs.yearlyBudget,
-          current_month_balance: fs.monthlyBudget,
-          current_year_balance: fs.yearlyBudget,
-        })
+        .insert(
+          formData.fundingSources.map((fs: any) => ({
+            participant_id: newParticipantId,
+            name: fs.name,
+            monthly_budget: fs.monthlyBudget,
+            yearly_budget: fs.yearlyBudget,
+            current_month_balance: fs.monthlyBudget,
+            current_year_balance: fs.yearlyBudget,
+          }))
+        )
 
       if (fsError) {
         return { error: `재원 등록 실패: ${fsError.message}` }

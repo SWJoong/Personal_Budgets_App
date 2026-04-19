@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import NavigationProgress from '@/components/layout/NavigationProgress'
-import FaqButton from '@/components/feedback/FaqButton'
+import FaqButton from '@/components/ui/FaqButton'
 
 const STORAGE_KEY = 'admin_sidebar_collapsed'
 
