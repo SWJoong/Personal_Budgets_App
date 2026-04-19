@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import GalleryClient from './GalleryClient'
 import { getSignedImageUrls } from '@/app/actions/storage'
+import NavDropdown from '@/components/layout/NavDropdown'
 
 function getRecentMonths(count: number) {
   const months = []
@@ -74,6 +75,9 @@ export default async function GalleryPage({
           <h1 className="text-lg font-bold tracking-tight">
             <EasyTerm formal="사진 모아보기" easy="내 사진들 보기" />
           </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <NavDropdown />
         </div>
       </header>
 

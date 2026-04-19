@@ -273,6 +273,16 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
     drawMarkers()
   }, [drawMarkers])
 
+  // 컴포넌트 마운트 시 SDK가 이미 로드되어 있으면 즉시 ready 처리
+  // (Next.js Script onLoad 는 동일 src 가 이미 DOM 에 있으면 재발화하지 않음)
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any
+    if (w.kakao?.maps) {
+      setSdkReady(true)
+    }
+  }, [])
+
   // SDK가 준비되면 지도 초기화
   useEffect(() => {
     if (!sdkReady) return
@@ -295,8 +305,9 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
     <Script
       id="kakao-map-sdk"
       src={sdkSrc}
-      strategy="lazyOnload"
+      strategy="afterInteractive"
       onLoad={() => setSdkReady(true)}
+      onReady={() => setSdkReady(true)}
     />
     <div className="relative w-full rounded-2xl overflow-hidden ring-1 ring-zinc-200">
       <div ref={mapContainerRef} style={{ width: '100%', height }} />
