@@ -13,6 +13,7 @@ import {
   type EmojiEntry,
 } from '@/utils/emojiCatalog'
 import CashViz from './BalanceCashViz'
+import MonthlyPlanMiniProgress from './MonthlyPlanMiniProgress'
 
 type WidgetStyle = 'pie' | 'water' | 'emoji' | 'text' | 'cash'
 
@@ -39,6 +40,8 @@ interface Props {
   remainingDays: number
   participantId?: string
   fundingSources?: { id: string; name: string }[]
+  monthlyPlanProgress?: import('@/app/actions/monthlyPlan').MonthlyPlanProgress[]
+  currentMonth?: string
 }
 
 // ── 피자 그래프 ────────────────────────────────────────────────
@@ -502,6 +505,8 @@ export default function BalanceVisualWidget({
   remainingDays,
   participantId,
   fundingSources = [],
+  monthlyPlanProgress = [],
+  currentMonth,
 }: Props) {
   const router = useRouter()
   const [style, setStyle] = useState<WidgetStyle>('pie')
@@ -895,6 +900,15 @@ export default function BalanceVisualWidget({
         <span className="text-2xl shrink-0">{icon}</span>
         <p className="text-sm font-bold text-zinc-700 leading-snug break-keep">{statusMessage}</p>
       </div>
+
+      {/* 이번 달 계획 진행 (있을 때만) */}
+      {participantId && currentMonth && monthlyPlanProgress.length > 0 && (
+        <MonthlyPlanMiniProgress
+          participantId={participantId}
+          month={currentMonth}
+          plans={monthlyPlanProgress}
+        />
+      )}
 
       {/* 영수증 / 활동사진 버튼 — 정사각형 */}
       <div className="flex gap-3 px-5 py-3.5 border-t border-zinc-100">

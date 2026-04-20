@@ -65,6 +65,7 @@ export async function createTransaction(formData: FormData) {
   const place_name = (formData.get('place_name') as string) || null
   const place_lat = formData.get('place_lat') ? Number(formData.get('place_lat')) : null
   const place_lng = formData.get('place_lng') ? Number(formData.get('place_lng')) : null
+  const monthly_plan_id = (formData.get('monthly_plan_id') as string) || null
 
   const amount = is_expense ? rawAmount : -Math.abs(rawAmount)
 
@@ -122,6 +123,7 @@ export async function createTransaction(formData: FormData) {
     place_name,
     place_lat,
     place_lng,
+    monthly_plan_id,
   })
 
   if (error) {
@@ -190,6 +192,7 @@ export async function updateTransactionDetail(
     place_name?: string | null
     place_lat?: number | null
     place_lng?: number | null
+    monthly_plan_id?: string | null
   },
   oldStatus: 'pending' | 'confirmed',
   oldAmount: number,
@@ -291,6 +294,7 @@ export async function updateTransaction(
     place_name?: string | null
     place_lat?: number | null
     place_lng?: number | null
+    monthly_plan_id?: string | null
   }
 ) {
   const supabase = await createClient()
@@ -402,3 +406,25 @@ export async function updateTransactionImages(
 
   return { success: true, ...signedResult }
 }
+
+/**
+ * 특정 당사자의 특정 월(거래 날짜 기준) 월별 계획 목록을 반환.
+ * 거래 등록/편집의 계획 드롭다운에서 사용.
+ */
+export async function getMonthlyPlansForDate(
+  participantId: string,
+  date: string
+): Promise<{ id: string; order_index: number; title: string }[]> {
+  if (!participantId || !date) return []
+  const supabase = await createClient()
+  const d = new Date(date)
+  const monthStart = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+  const { data } = await supabase
+    .from('monthly_plans')
+    .select('id, order_index, title')
+    .eq('participant_id', participantId)
+    .eq('month', monthStart)
+    .order('order_index', { ascending: true })
+  return (data || []) as { id: string; order_index: number; title: string }[]
+}
+

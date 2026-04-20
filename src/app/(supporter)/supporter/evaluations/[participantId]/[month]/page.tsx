@@ -2,7 +2,9 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import EvaluationPageClient from '@/components/evaluations/EvaluationPageClient'
+import MonthlyPlanProgressTable from '@/components/evaluations/MonthlyPlanProgressTable'
 import { getEvalTemplateSetting } from '@/app/actions/evalTemplates'
+import { getMonthlyPlanProgress } from '@/app/actions/monthlyPlan'
 import { type EvalTemplateId } from '@/types/eval-templates'
 
 interface Props {
@@ -52,6 +54,9 @@ export default async function EvaluationDetailPage({ params }: Props) {
   // 기관 평가 양식 기본 설정 (custom_fields 등 참조용)
   const evalSetting = await getEvalTemplateSetting()
 
+  // 월별 계획 진행률
+  const planProgress = await getMonthlyPlanProgress(participantId, month)
+
   // 이미 저장된 평가가 있으면 해당 양식 우선, 없으면 기관 기본값
   const initialTemplateId: EvalTemplateId =
     (existingEvaluation?.evaluation_template as EvalTemplateId | undefined) ?? evalSetting.active
@@ -60,13 +65,30 @@ export default async function EvaluationDetailPage({ params }: Props) {
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 p-8 pb-20">
-      <header className="mb-8 flex items-center gap-4">
-        <Link href="/supporter/evaluations" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl font-bold">←</Link>
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-900">{participant.name} 님 월별 평가</h1>
-          <p className="text-zinc-500 mt-1">{displayMonth} 활동 기록 및 분석</p>
+      <header className="mb-8 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link href="/supporter/evaluations" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl font-bold">←</Link>
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900">{participant.name} 님 월별 평가</h1>
+            <p className="text-zinc-500 mt-1">{displayMonth} 활동 기록 및 분석</p>
+          </div>
         </div>
+        <Link
+          href={`/supporter/evaluations/${participantId}/${month}/plans`}
+          className="px-4 py-2 rounded-xl bg-zinc-900 text-white font-bold text-sm hover:bg-zinc-800 transition-colors print:hidden"
+        >
+          📋 월별 계획 편집
+        </Link>
       </header>
+
+      <section className="max-w-5xl mb-6">
+        <MonthlyPlanProgressTable
+          participantId={participantId}
+          month={month}
+          plans={planProgress}
+          editable
+        />
+      </section>
 
       <main className="max-w-5xl flex flex-col lg:flex-row gap-8">
         {/* 좌측: 당월 활동 요약 (참고용) */}

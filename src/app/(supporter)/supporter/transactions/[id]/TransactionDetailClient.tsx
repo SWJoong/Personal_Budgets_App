@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatCurrency } from '@/utils/budget-visuals'
-import { updateTransactionDetail, deleteTransactionWithBalance, updateTransactionImages } from '@/app/actions/transaction'
+import { updateTransactionDetail, deleteTransactionWithBalance, updateTransactionImages, getMonthlyPlansForDate } from '@/app/actions/transaction'
 import PlaceSearch from '@/components/map/PlaceSearch'
 import type { PlaceResult } from '@/app/actions/geocode'
 
@@ -26,6 +26,7 @@ interface Tx {
   place_name?: string | null
   place_lat?: number | null
   place_lng?: number | null
+  monthly_plan_id?: string | null
 }
 
 export default function TransactionDetailClient({ tx }: { tx: Tx }) {
@@ -42,6 +43,18 @@ export default function TransactionDetailClient({ tx }: { tx: Tx }) {
   const [date, setDate] = useState(tx.date)
   const [paymentMethod, setPaymentMethod] = useState(tx.payment_method || '')
   const [status, setStatus] = useState<'pending' | 'confirmed'>(tx.status)
+  const [monthlyPlanId, setMonthlyPlanId] = useState<string>(tx.monthly_plan_id || '')
+  const [monthlyPlans, setMonthlyPlans] = useState<{ id: string; order_index: number; title: string }[]>([])
+
+  useEffect(() => {
+    if (!tx.participant_id || !date) return
+    let cancelled = false
+    getMonthlyPlansForDate(tx.participant_id, date).then(list => {
+      if (cancelled) return
+      setMonthlyPlans(list)
+    })
+    return () => { cancelled = true }
+  }, [tx.participant_id, date])
 
   // 결제 장소
   const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(
@@ -113,6 +126,7 @@ export default function TransactionDetailClient({ tx }: { tx: Tx }) {
           place_name: selectedPlace?.place_name ?? null,
           place_lat: selectedPlace?.lat ?? null,
           place_lng: selectedPlace?.lng ?? null,
+          monthly_plan_id: monthlyPlanId || null,
         },
         tx.status,
         Math.abs(tx.amount),
@@ -374,6 +388,25 @@ export default function TransactionDetailClient({ tx }: { tx: Tx }) {
                 <label className="text-xs font-black text-zinc-500">메모</label>
                 <textarea value={memo} onChange={e => setMemo(e.target.value)} rows={2}
                   className="p-3 rounded-lg bg-zinc-50 ring-1 ring-zinc-200 text-zinc-900 font-medium focus:ring-zinc-400 focus:outline-none resize-none" />
+              </fieldset>
+
+              <fieldset className="flex flex-col gap-2">
+                <label className="text-xs font-black text-zinc-500">
+                  월별 계획 연결 <span className="font-medium text-zinc-300">(선택)</span>
+                </label>
+                <select
+                  value={monthlyPlanId}
+                  onChange={e => setMonthlyPlanId(e.target.value)}
+                  className="p-3 rounded-lg bg-zinc-50 ring-1 ring-zinc-200 text-zinc-900 font-bold focus:ring-zinc-400 focus:outline-none"
+                >
+                  <option value="">계획 없음 (자유 지출)</option>
+                  {monthlyPlans.map(p => (
+                    <option key={p.id} value={p.id}>{p.order_index}. {p.title}</option>
+                  ))}
+                </select>
+                {monthlyPlans.length === 0 && (
+                  <p className="text-[10px] text-zinc-400">이 달에 등록된 월별 계획이 없어요.</p>
+                )}
               </fieldset>
 
               <div className="h-px bg-zinc-200 my-2" />

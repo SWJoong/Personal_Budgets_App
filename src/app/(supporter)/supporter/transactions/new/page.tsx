@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { createTransaction, getParticipantsWithFundingSources } from '@/app/actions/transaction'
+import { createTransaction, getParticipantsWithFundingSources, getMonthlyPlansForDate } from '@/app/actions/transaction'
 import type { ParticipantWithFundingSources } from '@/app/actions/transaction'
 import PlaceSearch from '@/components/map/PlaceSearch'
 import type { PlaceResult } from '@/app/actions/geocode'
@@ -29,12 +29,31 @@ export default function NewTransactionPage() {
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
   const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null)
+  const [monthlyPlans, setMonthlyPlans] = useState<{ id: string; order_index: number; title: string }[]>([])
+  const [selectedMonthlyPlan, setSelectedMonthlyPlan] = useState('')
 
   const categories = ['식비', '교통비', '여가활동', '생활용품', '의료비', '교육', '기타']
 
   useEffect(() => {
     loadParticipants()
   }, [])
+
+  useEffect(() => {
+    if (!selectedParticipant || !date) {
+      setMonthlyPlans([])
+      setSelectedMonthlyPlan('')
+      return
+    }
+    let cancelled = false
+    getMonthlyPlansForDate(selectedParticipant, date).then(list => {
+      if (cancelled) return
+      setMonthlyPlans(list)
+      if (!list.find(p => p.id === selectedMonthlyPlan)) {
+        setSelectedMonthlyPlan('')
+      }
+    })
+    return () => { cancelled = true }
+  }, [selectedParticipant, date])
 
   async function loadParticipants() {
     setLoading(true)
@@ -95,6 +114,10 @@ export default function NewTransactionPage() {
         formData.append('place_name', selectedPlace.place_name)
         formData.append('place_lat', String(selectedPlace.lat))
         formData.append('place_lng', String(selectedPlace.lng))
+      }
+
+      if (selectedMonthlyPlan) {
+        formData.append('monthly_plan_id', selectedMonthlyPlan)
       }
 
       if (receiptFile) {
@@ -194,6 +217,26 @@ export default function NewTransactionPage() {
                     <option key={fs.id} value={fs.id}>{fs.name}</option>
                   ))}
                 </select>
+              </fieldset>
+
+              <fieldset className={`flex flex-col gap-2 transition-all ${!selectedParticipant ? 'opacity-30 pointer-events-none' : ''}`}>
+                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
+                  월별 계획 연결 <span className="normal-case font-medium text-zinc-300">(선택)</span>
+                </label>
+                <select
+                  value={selectedMonthlyPlan}
+                  onChange={(e) => setSelectedMonthlyPlan(e.target.value)}
+                  className="p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-bold focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all appearance-none"
+                  disabled={!selectedParticipant}
+                >
+                  <option value="">계획 없음 (자유 지출)</option>
+                  {monthlyPlans.map(p => (
+                    <option key={p.id} value={p.id}>{p.order_index}. {p.title}</option>
+                  ))}
+                </select>
+                {selectedParticipant && monthlyPlans.length === 0 && (
+                  <p className="text-[10px] text-zinc-400 ml-1">이 달에 등록된 월별 계획이 없어요.</p>
+                )}
               </fieldset>
             </div>
 

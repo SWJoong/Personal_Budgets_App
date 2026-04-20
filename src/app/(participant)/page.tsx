@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import HomeDashboard from '@/components/home/HomeDashboard'
 import { UIPreferences, DEFAULT_PREFERENCES } from '@/types/ui-preferences'
 import { getSignedImageUrls } from '@/app/actions/storage'
+import { getMonthlyPlanProgress } from '@/app/actions/monthlyPlan'
 
 export default async function Home() {
   // createClient()가 DEMO_MODE=true 시 자동으로 데모 유저와 실제 Supabase 데이터를 반환
@@ -135,6 +136,10 @@ export default async function Home() {
     })
   }
 
+  // 이번 달 월별 계획 진행률 (month 는 0-indexed 이므로 +1)
+  const currentMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`
+  const monthlyPlanProgress = await getMonthlyPlanProgress(user.id, currentMonth)
+
   // 지원자 편지 블록이 활성화된 경우에만 최근 발행된 평가 조회
   let latestEvaluation: { month: string; easy_summary: string | null; next_step: string | null } | null = null
   if (effectivePrefs.enabled_blocks.includes('evaluation_letter')) {
@@ -162,6 +167,8 @@ export default async function Home() {
       monthlyTrend={monthlyTrend}
       uiPreferences={uiPreferences}
       latestEvaluation={latestEvaluation}
+      monthlyPlanProgress={monthlyPlanProgress}
+      currentMonth={currentMonth}
     />
   );
 }

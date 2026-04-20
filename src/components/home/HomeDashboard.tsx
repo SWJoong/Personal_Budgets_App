@@ -63,6 +63,8 @@ interface HomeDashboardProps {
   monthlyTrend?: MonthlyData[]
   uiPreferences?: UIPreferences | null
   latestEvaluation?: { month: string; easy_summary: string | null; next_step: string | null } | null
+  monthlyPlanProgress?: import('@/app/actions/monthlyPlan').MonthlyPlanProgress[]
+  currentMonth?: string
 }
 
 export default function HomeDashboard({
@@ -70,6 +72,7 @@ export default function HomeDashboard({
   remainingDays, totalDaysInMonth, userName,
   dailyTransactions = [], monthlyTrend = [],
   uiPreferences, latestEvaluation,
+  monthlyPlanProgress = [], currentMonth,
 }: HomeDashboardProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
@@ -379,6 +382,8 @@ export default function HomeDashboard({
             remainingDays={remainingDays}
             participantId={participantId}
             fundingSources={fundingSources}
+            monthlyPlanProgress={monthlyPlanProgress}
+            currentMonth={currentMonth}
           />
         </div>
 

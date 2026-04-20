@@ -34,8 +34,9 @@ interface TransactionTableClientProps {
   currentFilters: {
     participant?: string; status?: string; category?: string
     paymentMethod?: string; dateFrom?: string; dateTo?: string
-    sort?: string; keyword?: string
+    sort?: string; keyword?: string; plan?: string
   }
+  planOptions?: { id: string; label: string }[]
   mapApiKey?: string
   mapTransactions?: MapTransaction[]
 }
@@ -58,6 +59,7 @@ function parseSortParam(sort: string): { field: SortField; dir: SortDir } {
 export default function TransactionTableClient({
   transactions, participants, participantFundingSources = {},
   categories, paymentMethods, currentFilters,
+  planOptions = [],
   mapApiKey = '', mapTransactions = [],
 }: TransactionTableClientProps) {
   const router = useRouter()
@@ -75,6 +77,7 @@ export default function TransactionTableClient({
     dateTo: currentFilters.dateTo || '',
     sort: currentFilters.sort || '',
     keyword: currentFilters.keyword || '',
+    plan: currentFilters.plan || '',
   })
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkLoading, setBulkLoading] = useState(false)
@@ -89,7 +92,7 @@ export default function TransactionTableClient({
   }
 
   const clearFilters = () => {
-    setFilters({ participant: '', status: '', category: '', paymentMethod: '', dateFrom: '', dateTo: '', sort: '', keyword: '' })
+    setFilters({ participant: '', status: '', category: '', paymentMethod: '', dateFrom: '', dateTo: '', sort: '', keyword: '', plan: '' })
     router.push('/supporter/transactions')
   }
 
@@ -446,6 +449,24 @@ export default function TransactionTableClient({
                     <label className="block text-xs font-bold text-zinc-500 mb-1">종료 날짜</label>
                     <input type="date" value={filters.dateTo} onChange={e => setFilters({ ...filters, dateTo: e.target.value })}
                       className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div className={!filters.participant ? 'opacity-50' : ''}>
+                    <label className="block text-xs font-bold text-zinc-500 mb-1">월별 계획</label>
+                    <select
+                      value={filters.plan}
+                      onChange={e => setFilters({ ...filters, plan: e.target.value })}
+                      disabled={!filters.participant}
+                      className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-50"
+                    >
+                      <option value="">전체</option>
+                      <option value="none">계획 없음 (자유 지출)</option>
+                      {planOptions.map(p => (
+                        <option key={p.id} value={p.id}>{p.label}</option>
+                      ))}
+                    </select>
+                    {!filters.participant && (
+                      <p className="text-[10px] text-zinc-400 mt-1">당사자를 먼저 선택하세요.</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2 mt-4">

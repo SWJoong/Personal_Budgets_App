@@ -30,7 +30,8 @@ export default async function TransactionDetailPage({ params }: PageProps) {
     .select(`
       *,
       participant:participants!transactions_participant_id_fkey ( name ),
-      funding_source:funding_sources!transactions_funding_source_id_fkey ( name )
+      funding_source:funding_sources!transactions_funding_source_id_fkey ( name ),
+      monthly_plan:monthly_plans!transactions_monthly_plan_id_fkey ( id, title, order_index )
     `)
     .eq('id', id)
     .single()

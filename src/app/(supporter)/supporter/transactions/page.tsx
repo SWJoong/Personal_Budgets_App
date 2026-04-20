@@ -18,6 +18,7 @@ export default async function TransactionsPage({
     dateTo?: string
     sort?: string
     keyword?: string
+    plan?: string
   }>
 }) {
   const params = await searchParams
@@ -83,6 +84,13 @@ export default async function TransactionsPage({
   if (params.keyword) {
     txQuery = txQuery.or(`activity_name.ilike.%${params.keyword}%,memo.ilike.%${params.keyword}%`)
   }
+  if (params.plan) {
+    if (params.plan === 'none') {
+      txQuery = txQuery.is('monthly_plan_id', null)
+    } else {
+      txQuery = txQuery.eq('monthly_plan_id', params.plan)
+    }
+  }
 
   // 정렬
   if (params.sort === 'amount_asc') {
@@ -114,6 +122,22 @@ export default async function TransactionsPage({
   }
 
   const { data: transactions } = await txQuery
+
+  // 계획 필터 드롭다운 옵션 — 선택된 당사자가 있으면 해당 당사자 계획만, 없으면 비움
+  let planOptions: { id: string; label: string }[] = []
+  if (params.participant) {
+    const { data: planRows } = await supabase
+      .from('monthly_plans')
+      .select('id, month, order_index, title')
+      .eq('participant_id', params.participant)
+      .order('month', { ascending: false })
+      .order('order_index', { ascending: true })
+      .limit(100)
+    planOptions = (planRows || []).map((p: any) => ({
+      id: p.id,
+      label: `${p.month?.slice(0, 7)} · ${p.order_index}. ${p.title}`,
+    }))
+  }
 
   // 지도용 — place 정보 포함된 전체 거래 (필터 무관)
   const { data: allLocatedTx } = await supabase
@@ -193,6 +217,7 @@ export default async function TransactionsPage({
           categories={categories}
           paymentMethods={paymentMethods}
           currentFilters={params}
+          planOptions={planOptions}
           mapApiKey={mapApiKey}
           mapTransactions={(allLocatedTx || []).map((t: any) => ({
             id: t.id,
