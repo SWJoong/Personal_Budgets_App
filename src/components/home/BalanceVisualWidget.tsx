@@ -12,8 +12,9 @@ import {
   GROUP_LABELS, GROUP_ORDER,
   type EmojiEntry,
 } from '@/utils/emojiCatalog'
+import CashViz from './BalanceCashViz'
 
-type WidgetStyle = 'pie' | 'water' | 'emoji' | 'text'
+type WidgetStyle = 'pie' | 'water' | 'emoji' | 'text' | 'cash'
 
 const DEFAULT_EMOJI_FAVORITES = ['🍎', '🍪', '⭐', '🐥', '🌸', '🎈', '🍋', '🍩', '🦊', '🎀']
 
@@ -41,9 +42,25 @@ interface Props {
 }
 
 // ── 피자 그래프 ────────────────────────────────────────────────
-function PizzaChart({ percentage }: { percentage: number }) {
+function PizzaChart({
+  percentage,
+  displayBalance,
+  pendingPct = 0,
+}: {
+  percentage: number
+  displayBalance: number
+  pendingPct?: number
+}) {
   const circumference = 2 * Math.PI * 25
   const offset = circumference - circumference * Math.max(0, Math.min(1, percentage / 100))
+
+  // pending 호: 현재 잔액 호 직전 구간을 점선으로 표시 (빠질 예정 영역)
+  const pendingClamped = Math.max(0, Math.min(100 - percentage, pendingPct))
+  const pendingArcLen = circumference * (pendingClamped / 100)
+  const pendingDashOffset = circumference - circumference * (percentage / 100) - pendingArcLen
+
+  const balanceText = formatCurrency(displayBalance)
+  const longText = balanceText.length >= 7
 
   return (
     <div className="flex items-center justify-center py-5">
@@ -82,14 +99,41 @@ function PizzaChart({ percentage }: { percentage: number }) {
             <path d="M 60 60 Q 62 58 65 60 Q 62 62 60 60" fill="#22c55e" />
             <path d="M 30 50 Q 32 48 35 50 Q 32 52 30 50" fill="#22c55e" />
           </g>
+
+          {/* pending 점선 호 — 곧 빠질 구간 */}
+          {pendingClamped > 0 && (
+            <circle
+              cx="50" cy="50" r="25"
+              fill="none"
+              stroke="#fb923c"
+              strokeWidth="50"
+              strokeDasharray={`${pendingArcLen} ${circumference}`}
+              strokeDashoffset={pendingDashOffset}
+              opacity="0.5"
+              mask="url(#pending-dash-bvw)"
+              style={{ transition: 'stroke-dashoffset 0.7s ease-out' }}
+            />
+          )}
+          <mask id="pending-dash-bvw">
+            <rect width="100" height="100" fill="black" />
+            <circle
+              cx="50" cy="50" r="25"
+              fill="none" stroke="white" strokeWidth="50"
+              strokeDasharray="3 2"
+            />
+          </mask>
         </svg>
 
-        {/* 중앙 레이블 */}
+        {/* 중앙 레이블 — 금액 */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="bg-white/95 backdrop-blur-sm px-4 py-2 rounded-2xl shadow-md border border-white/80 text-center">
-            <span className="text-xs font-bold text-zinc-500 block leading-tight">남은 돈</span>
-            <span className="text-2xl font-black text-zinc-900 leading-none">{percentage}</span>
-            <span className="text-sm font-bold text-zinc-600 block leading-tight"><EasyTerm formal="%" easy="퍼센트" /></span>
+          <div className="bg-white/95 backdrop-blur-sm px-3 py-2 rounded-2xl shadow-md border border-white/80 text-center max-w-[85%]">
+            <span className="text-[10px] font-bold text-zinc-500 block leading-tight">
+              <EasyTerm formal="잔액" easy="남은 돈" />
+            </span>
+            <span className={`${longText ? 'text-base' : 'text-xl'} font-black text-zinc-900 leading-tight block`}>
+              {balanceText}
+            </span>
+            <span className="text-[10px] font-bold text-zinc-600 block leading-tight">원</span>
           </div>
         </div>
       </div>
@@ -98,12 +142,24 @@ function PizzaChart({ percentage }: { percentage: number }) {
 }
 
 // ── 물컵 그래프 ───────────────────────────────────────────────
-function WaterViz({ percentage, currentBalance }: { percentage: number; currentBalance: number }) {
+function WaterViz({
+  percentage,
+  currentBalance,
+  pendingPct = 0,
+}: {
+  percentage: number
+  currentBalance: number
+  pendingPct?: number
+}) {
   const isLow = percentage < 25
   const waterColor = isLow ? '#f87171' : '#3b82f6'
   const waveBg   = isLow ? 'bg-red-400'  : 'bg-blue-400'
   const cupBorder = isLow ? 'border-red-200' : 'border-blue-200'
   const fillH = Math.max(5, percentage)
+  const pendingClamped = Math.max(0, Math.min(pendingPct, 100 - fillH))
+
+  const balanceText = formatCurrency(currentBalance)
+  const longText = balanceText.length >= 7
 
   return (
     <div className="flex flex-col items-center justify-center w-full py-4 pb-5 gap-3">
@@ -122,6 +178,17 @@ function WaterViz({ percentage, currentBalance }: { percentage: number; currentB
           <div className="absolute top-0 left-3 right-3 h-2 bg-white/30 -translate-y-1/2 rounded-[50%]" />
         </div>
 
+        {/* pending 점선 영역 — 곧 빠질 물 */}
+        {pendingClamped > 0 && (
+          <div
+            className="absolute left-0 right-0 border-t-2 border-b-2 border-dashed border-orange-400/70 bg-orange-200/30 transition-all duration-700 ease-out"
+            style={{
+              bottom: `${fillH}%`,
+              height: `${pendingClamped}%`,
+            }}
+          />
+        )}
+
         {/* 눈금선 */}
         <div className="absolute bottom-1/4 left-0 w-3 h-px bg-blue-200/80" />
         <div className="absolute bottom-2/4 left-0 w-5 h-px bg-blue-200/80" />
@@ -130,11 +197,14 @@ function WaterViz({ percentage, currentBalance }: { percentage: number; currentB
         {/* 컵 손잡이 */}
         <div className={`absolute -right-3 top-6 h-12 w-4 border-4 ${cupBorder} rounded-r-full`} />
 
-        {/* 퍼센트 */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-black text-white drop-shadow-md select-none">
-            {percentage}<EasyTerm formal="%" easy="퍼센트" />
-          </span>
+        {/* 중앙 레이블 — 금액 */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-2">
+          <div className="bg-white/90 backdrop-blur-sm px-2 py-1.5 rounded-xl shadow-sm text-center">
+            <span className={`${longText ? 'text-sm' : 'text-base'} font-black text-zinc-900 leading-none block`}>
+              {balanceText}
+            </span>
+            <span className="text-[9px] font-bold text-zinc-500 block leading-tight">원</span>
+          </div>
         </div>
       </div>
 
@@ -479,7 +549,7 @@ export default function BalanceVisualWidget({
     // 구버전 'pouch' → 새 버전 'pie'로 마이그레이션
     const s = raw === 'pouch' ? 'pie' : (raw as WidgetStyle | null)
     const e = localStorage.getItem('balance-widget-emoji')
-    if (s && ['pie', 'water', 'emoji'].includes(s)) setStyle(s)
+    if (s && ['pie', 'water', 'cash', 'emoji', 'text'].includes(s)) setStyle(s)
     if (e) setSelectedEmoji(e)
   }, [])
 
@@ -665,6 +735,7 @@ export default function BalanceVisualWidget({
   const STYLE_OPTIONS = [
     { key: 'pie'   as WidgetStyle, label: '🍕', title: '피자 그래프', short: '피자' },
     { key: 'water' as WidgetStyle, label: '🥤', title: '물컵 그래프', short: '물컵' },
+    { key: 'cash'  as WidgetStyle, label: '💵', title: '지폐·동전',   short: '현금' },
     { key: 'emoji' as WidgetStyle, label: '✨', title: '이모지',      short: '이모지' },
     { key: 'text'  as WidgetStyle, label: '🔢', title: '숫자 표시',   short: '숫자' },
   ]
@@ -755,8 +826,26 @@ export default function BalanceVisualWidget({
 
       {/* 시각화 영역 — §4: 무광택 단색 */}
       <div style={{ background: c.light }}>
-        {style === 'pie'   && <PizzaChart percentage={activePct} />}
-        {style === 'water' && <WaterViz percentage={activePct} currentBalance={simValue > 0 ? simBalance : displayBalance} />}
+        {style === 'pie'   && (
+          <PizzaChart
+            percentage={activePct}
+            displayBalance={simValue > 0 ? simBalance : displayBalance}
+            pendingPct={simValue > 0 ? 0 : (totalBudget > 0 ? Math.round((pendingDeduction / totalBudget) * 100) : 0)}
+          />
+        )}
+        {style === 'water' && (
+          <WaterViz
+            percentage={activePct}
+            currentBalance={simValue > 0 ? simBalance : displayBalance}
+            pendingPct={simValue > 0 ? 0 : (totalBudget > 0 ? Math.round((pendingDeduction / totalBudget) * 100) : 0)}
+          />
+        )}
+        {style === 'cash' && (
+          <CashViz
+            displayBalance={simValue > 0 ? simBalance : displayBalance}
+            pendingDeduction={simValue > 0 ? 0 : pendingDeduction}
+          />
+        )}
         {style === 'emoji' && (
           <EmojiViz
             percentage={activePct}
