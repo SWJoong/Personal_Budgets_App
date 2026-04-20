@@ -849,6 +849,7 @@ export default function BalanceVisualWidget({
           <CashViz
             displayBalance={simValue > 0 ? simBalance : displayBalance}
             pendingDeduction={simValue > 0 ? 0 : pendingDeduction}
+            totalBudget={totalBudget}
           />
         )}
         {style === 'emoji' && (
