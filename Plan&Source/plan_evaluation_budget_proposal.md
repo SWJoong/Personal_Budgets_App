@@ -21,6 +21,7 @@
 | C | Server Actions 3개 (supportGoal, goalEvaluation, budgetLineItem) | ✅ 완료 | `3c9632d` |
 | C | FE 컴포넌트 (SupportGoalsForm, BudgetLineItemsTable, GoalEvaluationCards) | ✅ 완료 | `b2ceb98` |
 | C | 당사자 `/my-plan` 읽기 전용 + monthly_plans support_goal 드롭다운 | ✅ 완료 | `d628b7a` |
+| F-1 | 평가 페이지 인라인 미리보기 (자동 redirect 제거, 드롭다운→searchParams 방식) | ✅ 완료 | — |
 
 > [!NOTE]
 > **v2 최종 점검 수정 사항 (2026-04-21)**
