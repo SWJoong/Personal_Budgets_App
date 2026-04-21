@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { formatCurrency } from '@/utils/budget-visuals'
 import TransactionTableClient from '@/components/transactions/TransactionTableClient'
 import AdminHelpButton from '@/components/help/AdminHelpButton'
-import { getSignedImageUrls } from '@/app/actions/storage'
 
 export default async function TransactionsPage({
   searchParams
@@ -139,24 +138,6 @@ export default async function TransactionsPage({
     }))
   }
 
-  // 지도용 — place 정보 포함된 전체 거래 (필터 무관)
-  const { data: allLocatedTx } = await supabase
-    .from('transactions')
-    .select('id, activity_name, amount, date, status, place_name, place_lat, place_lng, activity_image_url, receipt_image_url, participant:participants!transactions_participant_id_fkey ( name )')
-    .not('place_lat', 'is', null)
-    .limit(500)
-
-  const mapApiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY ?? ''
-
-  // 지도 거래 이미지 signed URL 변환 (private 버킷)
-  const signedMapUrls = await getSignedImageUrls(
-    (allLocatedTx || []).map((t: any) => ({
-      id: t.id,
-      receiptUrl: t.receipt_image_url ?? null,
-      activityUrl: t.activity_image_url ?? null,
-    }))
-  )
-
   // 요약 계산
   const totalCount = transactions?.length || 0
   const pendingCount = transactions?.filter((t: any) => t.status === 'pending').length || 0
@@ -218,20 +199,6 @@ export default async function TransactionsPage({
           paymentMethods={paymentMethods}
           currentFilters={params}
           planOptions={planOptions}
-          mapApiKey={mapApiKey}
-          mapTransactions={(allLocatedTx || []).map((t: any) => ({
-            id: t.id,
-            activity_name: t.activity_name,
-            amount: t.amount,
-            date: t.date,
-            status: t.status,
-            place_name: t.place_name,
-            place_lat: t.place_lat,
-            place_lng: t.place_lng,
-            activity_image_url: signedMapUrls[t.id]?.activity ?? t.activity_image_url ?? null,
-            receipt_image_url: signedMapUrls[t.id]?.receipt ?? t.receipt_image_url ?? null,
-            participant_name: t.participant?.name,
-          }))}
         />
       </main>
     </div>

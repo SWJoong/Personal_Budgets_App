@@ -29,14 +29,16 @@ const menuItems: MenuItem[] = [
     href: '/admin/participants',
     icon: '👥',
     sub: [
-      { name: '➕ 당사자 등록', href: '/admin/participants/new' },
-      { name: '📋 전체 목록',   href: '/admin/participants' },
+      { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
+      { name: '📋 전체 목록',      href: '/admin/participants' },
+      { name: '📊 통합 현황',      href: '/supporter/participants' },
     ],
   },
   { name: '영수증 검토 대기', href: '/supporter/review',       icon: '🧾' },
   { name: '회계/거래장부',    href: '/supporter/transactions', icon: '📒' },
   { name: '증빙/서류 보관함', href: '/supporter/documents',    icon: '📁' },
   { name: '계획과 평가',      href: '/supporter/evaluations',  icon: '📋' },
+  { name: '활동 지도',        href: '/supporter/map',          icon: '🗺️' },
   { name: '시스템 설정',      href: '/admin/settings',         icon: '⚙️' },
 ]
 

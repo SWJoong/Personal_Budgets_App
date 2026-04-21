@@ -74,6 +74,7 @@ export default function MonthlyPlanProgressTable({
             <tr className="text-left text-[10px] font-black text-zinc-400 uppercase tracking-widest border-b border-zinc-200">
               <th className="py-2 pr-3">#</th>
               <th className="py-2 pr-3">계획</th>
+              <th className="py-2 pr-3">연결 목표</th>
               <th className="py-2 pr-3">재원</th>
               <th className="py-2 pr-3 text-right">예산</th>
               <th className="py-2 pr-3 text-right">사용</th>
@@ -96,6 +97,11 @@ export default function MonthlyPlanProgressTable({
                     {p.description && (
                       <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{p.description}</p>
                     )}
+                  </td>
+                  <td className="py-3 pr-3 text-xs">
+                    {p.support_goal
+                      ? <span className="px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 font-semibold whitespace-nowrap">{p.support_goal.support_area}</span>
+                      : <span className="text-zinc-400">—</span>}
                   </td>
                   <td className="py-3 pr-3 text-xs text-zinc-600">
                     {p.funding_source?.name ?? '—'}
@@ -134,7 +140,7 @@ export default function MonthlyPlanProgressTable({
           </tbody>
           <tfoot>
             <tr className="font-black text-zinc-900 border-t-2 border-zinc-300">
-              <td className="py-3 pr-3" colSpan={3}>합계</td>
+              <td className="py-3 pr-3" colSpan={4}>합계</td>
               <td className="py-3 pr-3 text-right whitespace-nowrap">{formatCurrency(totals.budget)}원</td>
               <td className="py-3 pr-3 text-right whitespace-nowrap">{formatCurrency(totals.confirmed)}원</td>
               <td className="py-3 pr-3 text-right whitespace-nowrap text-orange-600">

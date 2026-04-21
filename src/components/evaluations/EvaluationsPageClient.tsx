@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { getRecentMonths } from '@/utils/date'
 
 interface Participant {
   id: string
@@ -13,18 +14,6 @@ interface Props {
   initialParticipantId?: string
 }
 
-function getRecentMonths(count: number): { value: string; label: string }[] {
-  const months = []
-  const now = new Date()
-  for (let i = 0; i < count; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const value = d.toISOString().slice(0, 10) // YYYY-MM-01 format
-    const label = `${d.getFullYear()}년 ${d.getMonth() + 1}월`
-    months.push({ value, label })
-  }
-  return months
-}
-
 export default function EvaluationsPageClient({ participants, initialParticipantId }: Props) {
   const router = useRouter()
   const months = getRecentMonths(6)
@@ -33,6 +22,15 @@ export default function EvaluationsPageClient({ participants, initialParticipant
     initialParticipantId || (participants[0]?.id ?? '')
   )
   const [selectedMonth, setSelectedMonth] = useState(months[0]?.value ?? '')
+
+  // F-1: 당사자가 있으면 마운트 시 자동 이동
+  useEffect(() => {
+    const pid = initialParticipantId || participants[0]?.id
+    const m = months[0]?.value
+    if (pid && m) {
+      router.push(`/supporter/evaluations/${pid}/${m}`)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleLoad() {
     if (!selectedParticipantId || !selectedMonth) return

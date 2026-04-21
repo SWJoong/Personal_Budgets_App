@@ -9,6 +9,7 @@ import { getMonthlyPlanProgress } from '@/app/actions/monthlyPlan'
 import { getSupportGoals } from '@/app/actions/supportGoal'
 import { getGoalEvaluations } from '@/app/actions/goalEvaluation'
 import { type EvalTemplateId } from '@/types/eval-templates'
+import { parseMonth } from '@/utils/date'
 
 interface Props {
   params: Promise<{ participantId: string; month: string }>
@@ -31,9 +32,7 @@ export default async function EvaluationDetailPage({ params }: Props) {
   if (!participant) redirect('/supporter/evaluations')
 
   // 해당 월의 거래 내역 요약 정보 조회 (평가 참고용)
-  const startDate = month
-  const nextMonth = new Date(new Date(month).getFullYear(), new Date(month).getMonth() + 1, 1)
-  const endDate = nextMonth.toISOString().split('T')[0]
+  const { startDate, endDate, display: displayMonth } = parseMonth(month)
 
   const { data: transactions } = await supabase
     .from('transactions')
@@ -77,8 +76,6 @@ export default async function EvaluationDetailPage({ params }: Props) {
   // 이미 저장된 평가가 있으면 해당 양식 우선, 없으면 기관 기본값
   const initialTemplateId: EvalTemplateId =
     (existingEvaluation?.evaluation_template as EvalTemplateId | undefined) ?? evalSetting.active
-
-  const displayMonth = `${new Date(month).getFullYear()}년 ${new Date(month).getMonth() + 1}월`
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 p-8 pb-20">
@@ -151,19 +148,21 @@ export default async function EvaluationDetailPage({ params }: Props) {
             </div>
             
             <div className="mt-6 pt-6 border-t border-zinc-100 flex flex-col gap-2">
-              <p className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">주요 활동 내역</p>
-              {transactions && transactions.length > 0 ? (
-                <ul className="flex flex-col gap-2">
-                  {transactions.slice(0, 5).map((t: any) => (
-                    <li key={t.id} className="text-xs flex justify-between text-zinc-600">
-                      <span className="truncate max-w-[120px]">{t.activity_name}</span>
-                      <span className="font-bold">{Number(t.amount).toLocaleString()}원</span>
-                    </li>
+              <p className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">계획별 활동 현황</p>
+              {planProgress.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {planProgress.map(plan => (
+                    <div key={plan.id} className="text-xs border-b border-zinc-100 pb-2 last:border-0">
+                      <div className="font-bold text-zinc-700 truncate mb-0.5">{plan.title}</div>
+                      <div className="flex justify-between text-zinc-500">
+                        <span>{plan.tx_count}건 실행</span>
+                        <span className="font-semibold">{plan.spent_confirmed.toLocaleString()}원</span>
+                      </div>
+                    </div>
                   ))}
-                  {transactions.length > 5 && <li className="text-[10px] text-zinc-400 text-center mt-1">... 외 {transactions.length - 5}건</li>}
-                </ul>
+                </div>
               ) : (
-                <p className="text-xs text-zinc-400 italic py-2 text-center">활동 내역이 없습니다.</p>
+                <p className="text-xs text-zinc-400 italic py-2 text-center">월별 계획이 없습니다.</p>
               )}
             </div>
           </section>

@@ -640,3 +640,551 @@ erDiagram
 - [ ] UX 위반 5건 디자인 명세 업데이트 (UX/UI)
 
 **위 체크리스트 완료 후 Phase C 정식 착수**
+
+---
+---
+
+# Phase F: 월별 평가 UX 개선 + 관리자 화면 재구성 (v3 — 2026-04-22)
+
+> **요청자**: 사용자 (현장 피드백 기반)
+> **대상 팀**: Claude Code 에이전트 팀 (PM, BE, FE, PL, QA, UX/UI, DevOps)
+> **참조 Skills**: `.claude/skills/` (pm, pl, frontend, backend, qa, ux-ui, devops)
+> **구현 참조**: 기존 제안서 v2 §1~부록B 전체
+
+---
+
+## F-0. 요청 사항 요약 및 이슈 분류
+
+| # | 이슈 | 유형 | 심각도 | 영향 페이지 |
+|:---:|:---|:---:|:---:|:---|
+| F-1 | 평가 페이지 진입 시 기본 당사자 데이터 미표시 (불러오기 버튼 필요) | UX 버그 | 🟡 P1 | `/supporter/evaluations` |
+| F-2 | 4월 선택 시 3월 평가 출력 — 계획 월 매칭 오류 | 로직 버그 | 🔴 P0 | `/supporter/evaluations/[participantId]/[month]` |
+| F-3 | 거래장부에서 계획 매칭한 거래가 평가 화면에서 확인 안 됨 | 기능 누락 | 🟡 P1 | 평가 상세 + 거래장부 |
+| F-4 | 지원 목표 ↔ 월별 계획이 평가에서 짝지어 보이지 않음 | 기능 누락 | 🟡 P1 | 평가 상세 |
+| F-5 | 계획별 실행 평가 불가 — 현재 월별 전체 활동 평가만 가능 | 구조 결함 | 🔴 P0 | 평가 상세 + GoalEvaluationCards |
+| F-6 | 거래장부 내 지도 기능 → 별도 페이지로 분리 | 구조 개선 | 🟢 P2 | `/supporter/transactions` → `/supporter/map` |
+| F-7 | 관리자 당사자별 통합 대시보드 신규 | 신규 기능 | 🟡 P1 | `/supporter/participants/[id]` (신규) |
+
+---
+
+## F-1. 평가 페이지 기본 선택 자동 표시
+
+### 현재 문제
+[EvaluationsPageClient.tsx](file:///root/workspace/my-project/Personal_Budgets_App/src/components/evaluations/EvaluationsPageClient.tsx) (line 28~40)
+
+- 첫 번째 당사자 + 이번 달이 `useState`로 기본 선택되지만, **"불러오기" 버튼을 누르기 전까지 평가 내용이 비어 있음**
+- 사용자는 페이지 진입 시 바로 평가 내용을 보고 싶어함
+
+### 수정 방향
+
+| 구분 | 변경 |
+|:---|:---|
+| **FE** | `EvaluationsPageClient`에서 `useEffect`로 초기 로드 시 자동 redirect |
+| **방법 A (권장)** | 서버 측에서 첫 번째 당사자+현재 월로 자동 redirect → `evaluations/[participantId]/[month]` 상세 페이지로 즉시 이동 |
+| **방법 B** | 클라이언트에서 `useEffect(()=>handleLoad(), [])` 호출 — 깜빡임 발생 가능 |
+
+#### 수정 대상 파일
+
+##### [MODIFY] [evaluations/page.tsx](file:///root/workspace/my-project/Personal_Budgets_App/src/app/(supporter)/supporter/evaluations/page.tsx)
+
+```
+// 서버 컴포넌트에서: participant_id 미지정 시 첫 번째 당사자 + 현재 월로 redirect
+if (!params.participant_id && participants && participants.length > 0) {
+  const now = new Date()
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
+  redirect(`/supporter/evaluations/${participants[0].id}/${currentMonth}`)
+}
+```
+
+- 이렇게 하면 "불러오기" 없이 **진입 즉시** 첫 당사자의 현재 월 평가가 표시
+- `EvaluationsPageClient`의 "불러오기" UI는 **"다른 당사자/월 전환"** 용도로 유지
+
+---
+
+## F-2. 계획 월 매칭 오류 (P0)
+
+### 현재 문제
+[evaluations/[participantId]/[month]/page.tsx](file:///root/workspace/my-project/Personal_Budgets_App/src/app/(supporter)/supporter/evaluations/%5BparticipantId%5D/%5Bmonth%5D/page.tsx) (line 34~36)
+
+```typescript
+const startDate = month  // "2026-04-01"
+const nextMonth = new Date(new Date(month).getFullYear(), new Date(month).getMonth() + 1, 1)
+```
+
+- `month` 파라미터 형식이 `YYYY-MM-01` (날짜 포함)인데, URL에서 `YYYY-MM` 형식으로 올 수도 있음
+- **시간대(timezone) 문제**: `new Date('2026-04')` 는 UTC 기준으로 파싱되어 KST 기준 3월 31일이 될 수 있음
+
+### 수정 방향
+
+| 구분 | 변경 |
+|:---|:---|
+| **BE/FE** | 월 파라미터 정규화 함수 추가 |
+| **핵심** | `new Date()` 대신 **문자열 파싱**으로 시간대 무관 처리 |
+
+#### 수정 코드
+
+```typescript
+// utils/date.ts (신규 또는 기존에 추가)
+export function normalizeMonth(month: string): { startDate: string; endDate: string; display: string } {
+  // "2026-04", "2026-04-01", "2026-4" 모두 처리
+  const parts = month.split('-')
+  const year = parseInt(parts[0], 10)
+  const m = parseInt(parts[1], 10)
+  
+  const startDate = `${year}-${String(m).padStart(2, '0')}-01`
+  const nextYear = m === 12 ? year + 1 : year
+  const nextM = m === 12 ? 1 : m + 1
+  const endDate = `${nextYear}-${String(nextM).padStart(2, '0')}-01`
+  const display = `${year}년 ${m}월`
+  
+  return { startDate, endDate, display }
+}
+```
+
+##### [MODIFY] [evaluations/[participantId]/[month]/page.tsx](file:///root/workspace/my-project/Personal_Budgets_App/src/app/(supporter)/supporter/evaluations/%5BparticipantId%5D/%5Bmonth%5D/page.tsx)
+
+```diff
+- const startDate = month
+- const nextMonth = new Date(new Date(month).getFullYear(), new Date(month).getMonth() + 1, 1)
+- const endDate = nextMonth.toISOString().split('T')[0]
++ import { normalizeMonth } from '@/utils/date'
++ const { startDate, endDate, display: displayMonth } = normalizeMonth(month)
+```
+
+> [!CAUTION]
+> 이것은 **P0 버그**입니다. 4월을 선택했는데 3월 데이터가 나오는 것은 시간대 파싱 이슈일 가능성이 높습니다.
+
+---
+
+## F-3. 거래-계획-평가 간 연계 표시
+
+### 현재 문제
+- 거래장부에서 `monthly_plan_id`로 계획에 매칭한 거래가 있지만
+- 평가 상세 페이지에서는 **월 기준 전체 거래**만 표시 (활동 요약 섹션, line 155~164)
+- 어떤 계획에 연결된 거래인지 구분 안 됨
+
+### 수정 방향
+
+#### [MODIFY] 평가 상세 페이지 — 계획별 거래 그룹핑
+
+`evaluations/[participantId]/[month]/page.tsx` 좌측 "활동 요약" 섹션을:
+
+**Before (현재)**:
+```
+- 총 지출 금액: 150,000원
+- 확정된 활동 건수: 5건
+- 주요 활동 내역:
+  볼링 10,000원
+  댄스 160,000원
+  ...
+```
+
+**After (개선)**:
+```
+계획 1: 볼링 활동 (지원목표: 평생학습)
+  ├ 04-05 볼링 이용료  10,000원  ✅
+  ├ 04-12 볼링 이용료  10,000원  ✅
+  └ 소계: 20,000원 / 예산 40,000원 (50%)
+
+계획 2: 댄스 수강 (지원목표: 사회 활동)
+  ├ 04-01 댄스수강료  160,000원  ✅
+  └ 소계: 160,000원 / 예산 160,000원 (100%)
+
+기타 (계획 외 지출)
+  ├ 04-20 간식 구매    5,000원  ✅
+  └ 소계: 5,000원
+```
+
+#### 구현
+
+```typescript
+// 기존 transactions 쿼리에 monthly_plan JOIN 추가
+const { data: transactions } = await supabase
+  .from('transactions')
+  .select('*, monthly_plan:monthly_plans(id, title, order_index, planned_budget, support_goal:support_goals(id, support_area))')
+  .eq('participant_id', participantId)
+  .gte('date', startDate)
+  .lt('date', endDate)
+  .eq('status', 'confirmed')
+
+// 그룹핑: monthly_plan_id 기준
+const grouped = groupTransactionsByPlan(transactions)
+```
+
+##### [NEW] `src/components/evaluations/PlanGroupedTransactions.tsx`
+
+계획별로 그룹핑하여 보여주는 클라이언트 컴포넌트:
+- 각 그룹에 계획 제목 + 연결된 지원목표 표시
+- 소계 + 예산 대비 진행률 게이지
+- `monthly_plan_id = NULL` 거래는 "기타 (계획 외)" 섹션으로 분류
+
+---
+
+## F-4. 지원 목표 ↔ 월별 계획 짝 맞추기
+
+### 현재 문제
+- `MonthlyPlanProgressTable`(line 82~83)에 "목표/실제" 컬럼이 있지만 **support_goal 이름이 직접 표시되지 않음**
+- 목표별 평가(`GoalEvaluationCards`)와 계획별 진행률이 **분리된 섹션**으로 보여져 연결이 안 느껴짐
+
+### 수정 방향
+
+#### [MODIFY] MonthlyPlanProgressTable — 지원목표 컬럼 추가
+
+```diff
+ <thead>
+   <tr>
+     <th>#</th>
+     <th>계획</th>
++    <th>지원 목표</th>
+     <th>재원</th>
+     <th>예산</th>
+     ...
+```
+
+- `MonthlyPlanProgress` 타입에 `support_goal?: { id: string; support_area: string }` 추가
+- `getMonthlyPlanProgress` 쿼리에 `support_goal:support_goals(id, support_area)` JOIN 추가
+
+#### [MODIFY] 평가 상세 레이아웃 — 목표 기준 통합 뷰
+
+현재 레이아웃:
+```
+[월별 계획 진행률 테이블]
+[목표별 평가 (4+1)]
+[활동 요약 | 평가 폼]  ← 연결 안 됨
+```
+
+개선 레이아웃:
+```
+[지원 목표 #1: 평생학습 활동]
+  ├ 월별 계획: 볼링 (40,000원, 50% 진행)
+  ├ 연결된 거래: 2건 / 20,000원
+  └ 4+1 평가: [작성/편집]
+
+[지원 목표 #2: 사회 활동]  
+  ├ 월별 계획: 댄스 (160,000원, 100%)
+  ├ 연결된 거래: 1건 / 160,000원
+  └ 4+1 평가: [작성/편집]
+
+[기타 활동] (목표 미연결)
+  └ 거래: 1건 / 5,000원
+```
+
+##### [NEW] `src/components/evaluations/GoalIntegratedView.tsx`
+
+하나의 지원목표 아래에:
+1. 연결된 `monthly_plans` (진행률 게이지)
+2. 연결된 `transactions` (목록)
+3. `goal_evaluations` (4+1 평가 카드)
+
+를 통합 표시하는 컴포넌트
+
+---
+
+## F-5. 계획별 실행 과정 평가 (P0)
+
+### 현재 문제
+- 현재 `EvaluationPageClient`는 **월 전체**에 대한 자유 텍스트 평가 작성
+- 각 계획(목표)별로 "무엇을 시도했는지, 달성했는지" 기록하는 구조가 아님
+- `GoalEvaluationCards`가 존재하지만 **평가 저장 후에만** 나타남 (line 119: `existingEvaluation &&`)
+
+### 수정 방향
+
+| 구분 | 변경 |
+|:---|:---|
+| **FE** | `GoalEvaluationCards`를 평가 미저장 상태에서도 표시 (임시 evaluation_id 사용) |
+| **FE** | 월별 종합 평가 + 계획별 세부 평가를 **동시 저장** (트랜잭션) |
+| **BE** | `upsertEvaluation` Server Action에서 `goal_evaluations`도 함께 upsert |
+| **UX** | 평가 작성 흐름: "계획별 실행 기록" → "종합 의견" → "AI 분석" 순서 |
+
+#### [MODIFY] 평가 상세 페이지 흐름 변경
+
+```
+Before:
+1. [계획 진행률 테이블] (읽기전용)
+2. [목표별 4+1 평가] (평가 저장 후에만 노출)
+3. [활동 요약 | 평가 폼]
+
+After:
+1. [목표별 통합 뷰] (F-4 GoalIntegratedView)
+   각 목표 아래 4+1 평가 입력 필드 포함
+2. [종합 평가 폼] (기존 EvaluationPageClient)
+   "계획별 기록을 바탕으로 종합 의견을 작성해 주세요"
+3. [AI 분석 요청] 버튼
+```
+
+##### [MODIFY] `upsertEvaluation` Server Action
+
+```typescript
+// 기존: 평가만 저장
+// 변경: 평가 + 목표별 평가 동시 저장
+
+export async function upsertEvaluation(
+  participantId: string,
+  month: string,
+  content: EvaluationContent,
+  goalEvaluations?: GoalEvaluationInput[]  // 신규 파라미터
+) {
+  // 1. evaluations upsert
+  // 2. goalEvaluations가 있으면 각각 upsert (트랜잭션)
+}
+```
+
+---
+
+## F-6. 지도 기능 별도 페이지 분리
+
+### 현재 상태
+[TransactionTableClient.tsx](file:///root/workspace/my-project/Personal_Budgets_App/src/components/transactions/TransactionTableClient.tsx) (line 252~357)
+
+- 거래장부 페이지 내에서 `table` / `map` 탭으로 전환
+- 지도 탭 진입 시 전체 거래(500건) + KakaoMap API 로드 → 페이지 무거워짐
+
+### 수정 방향
+
+| 구분 | 변경 |
+|:---|:---|
+| **FE** | `/supporter/map` 독립 페이지 생성 |
+| **FE** | TransactionTableClient에서 지도 관련 코드 제거, 지도 버튼만 링크로 유지 |
+| **사이드바** | AdminSidebar에 `🗺️ 활동 지도` 메뉴 추가 |
+
+#### [NEW] `src/app/(supporter)/supporter/map/page.tsx`
+
+기존 TransactionTableClient 내 지도 탭 로직을 독립 페이지로 이동:
+- 전체 거래 위치 데이터 (활동사진 signed URL 포함)
+- 필터 (당사자, 상태, 날짜)
+- KakaoMap 전체 화면
+
+#### [MODIFY] TransactionTableClient.tsx
+
+```diff
+- const [activeTab, setActiveTab] = useState<'table' | 'map'>('table')
++ // 지도 탭 제거, 링크로 대체
+
+- {/* 탭 토글 */}
+- <div className="flex gap-2">
+-   {(['table', 'map'] as const).map(tab => ...)}
+- </div>
++ {/* 지도 바로가기 */}
++ <Link href="/supporter/map" className="...">🗺️ 활동 지도 보기</Link>
+```
+
+#### [MODIFY] AdminSidebar.tsx
+
+```diff
+ const menuItems: MenuItem[] = [
+   { name: '관리자 대시보드', href: '/admin', icon: '📊' },
+   ...
+   { name: '회계/거래장부',    href: '/supporter/transactions', icon: '📒' },
++  { name: '활동 지도',        href: '/supporter/map',          icon: '🗺️' },
+   { name: '증빙/서류 보관함', href: '/supporter/documents',    icon: '📁' },
+   ...
+ ]
+```
+
+### 피드백 확인 → 설정 이동
+
+현재 `SelfCheckFeedback` 컴포넌트가 거래 등록 후 표시되는 피드백. 이를 "빠른 설정" 또는 "시스템 설정"에서 on/off 토글 가능하도록:
+
+#### [MODIFY] `/admin/settings` 페이지
+
+- "자기결정 피드백 표시" 토글 추가 (기관 설정으로 관리)
+
+#### [MODIFY] `SelfCheckFeedback` 컴포넌트
+
+- 기관 설정에서 비활성화 시 렌더링 스킵
+
+---
+
+## F-7. 당사자별 통합 대시보드 (신규 핵심 기능)
+
+### 요구사항
+> "당사자별 대시보드를 별도로 제작해서 **한 페이지 안에서** 앱 미리보기, 재원 설정, 거래내역, 자산 맵핑, 증빙/서류 보관함, 계획과 평가를 모두 관리할 수 있도록"
+
+### 현재 상태
+- 관리자 대시보드(`/supporter/page.tsx`)는 **모든 당사자 목록** 표시만 담당
+- 당사자 클릭 시 `/admin/participants/[id]` → 기본 정보만 표시
+- 거래/계획/평가/서류는 각각 **다른 메뉴**에서 당사자를 선택해야 함
+
+### 설계
+
+#### [NEW] `/supporter/participants/[id]/page.tsx` — 당사자 통합 관리
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  👤 홍길동 님 — 통합 관리                     [앱 미리보기] │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  📊 잔액 요약          💰 재원 설정                       │
+│  ┌─────────────┐     ┌──────────────────────┐          │
+│  │ 이번달 잔액   │     │ 재원1: 아산재단       │          │
+│  │ 350,000원    │     │  월예산: 200,000원    │          │
+│  │ 62% ████░░  │     │ 재원2: 자부담         │          │
+│  └─────────────┘     │  월예산: 100,000원    │          │
+│                       └──────────────────────┘          │
+│─────────────────────────────────────────────────────────│
+│                                                         │
+│  📋 월별 계획 & 평가 (탭: 4월 | 3월 | 2월)               │
+│  ┌──────────────────────────────────────────────┐      │
+│  │ 목표1: 평생학습  계획: 볼링  50%  [평가 작성]  │      │
+│  │ 목표2: 사회활동  계획: 댄스  100% [평가 완료]  │      │
+│  └──────────────────────────────────────────────┘      │
+│                                                         │
+│  📒 최근 거래내역 (최근 20건)              [전체 보기 →]   │
+│  ┌──────────────────────────────────────────────┐      │
+│  │ 04-12 볼링  10,000원  ✅   계획: 볼링 활동    │      │
+│  │ 04-05 볼링  10,000원  ✅   계획: 볼링 활동    │      │
+│  │ 04-01 댄스  160,000원 ✅   계획: 댄스 수강    │      │
+│  └──────────────────────────────────────────────┘      │
+│                                                         │
+│  📁 증빙/서류                             [전체 보기 →]   │
+│  ┌──────────────────────────────────────────────┐      │
+│  │ 이용계획서(보건복지부형)  2026  [편집]          │      │
+│  │ 이용계획서(서울형)       2026  [편집]          │      │
+│  │ 영수증/활동사진         12건  [보기]          │      │
+│  └──────────────────────────────────────────────┘      │
+│                                                         │
+│  🗺️ 활동 지도 (이 당사자 거래만)            [전체 보기 →]   │
+│  ┌──────────────────────────────────────────────┐      │
+│  │         [지도 미니맵 미리보기]                  │      │
+│  └──────────────────────────────────────────────┘      │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### 구성 섹션 (6개 카드)
+
+| # | 섹션 | 데이터 소스 | 기능 |
+|:---:|:---|:---|:---|
+| 1 | 잔액 요약 | `funding_sources` | 미니 잔액 위젯 (BalanceVisualWidget 축약) |
+| 2 | 재원 설정 | `funding_sources` | 월예산·연예산 인라인 편집 |
+| 3 | 월별 계획 & 평가 | `monthly_plans` + `evaluations` + `support_goals` | 탭으로 월 전환, 목표별 진행률 + 평가 바로가기 |
+| 4 | 최근 거래내역 | `transactions` (최근 20건) | 테이블 미리보기 + 전체보기 링크 |
+| 5 | 증빙/서류 | `care_plans` + `transactions.receipt_image_url` | 이용계획서 편집 + 영수증 갤러리 |
+| 6 | 활동 지도 | `transactions` (이 당사자만) | 미니맵 + 전체보기 링크 |
+
+#### 앱 미리보기 버튼
+
+- 당사자 관점의 홈 화면을 관리자가 미리 볼 수 있는 기능
+- `/supporter/participants/[id]/preview` → 당사자 홈 페이지를 읽기전용으로 렌더링
+
+#### [MODIFY] AdminSidebar.tsx — 메뉴 추가
+
+```diff
+ const menuItems: MenuItem[] = [
+   { name: '관리자 대시보드', href: '/admin', icon: '📊' },
+   {
+     name: '당사자 관리',
+     href: '/admin/participants',
+     icon: '👥',
+     sub: [
+       { name: '➕ 당사자 등록', href: '/admin/participants/new' },
+       { name: '📋 전체 목록',   href: '/admin/participants' },
+     ],
+   },
++  {
++    name: '당사자별 대시보드',
++    href: '/supporter/participants',
++    icon: '🧑‍💼',
++  },
+   ...
+ ]
+```
+
+#### [MODIFY] 관리자 대시보드 당사자 카드 링크
+
+현재 `/admin/participants/${p.id}` → **`/supporter/participants/${p.id}`** 로 변경
+(기본 정보 페이지 대신 통합 대시보드로 이동)
+
+---
+
+## F-8. 파일 변경 총괄
+
+### 신규 파일 (7개)
+
+| 파일 | 용도 | 담당 |
+|:---|:---|:---:|
+| `src/utils/date.ts` | 월 파라미터 정규화 유틸 | BE |
+| `src/components/evaluations/PlanGroupedTransactions.tsx` | 계획별 거래 그룹 표시 | FE |
+| `src/components/evaluations/GoalIntegratedView.tsx` | 목표별 통합 평가 뷰 | FE |
+| `src/app/(supporter)/supporter/map/page.tsx` | 독립 활동 지도 페이지 | FE |
+| `src/app/(supporter)/supporter/participants/page.tsx` | 당사자 목록 (대시보드 진입) | FE |
+| `src/app/(supporter)/supporter/participants/[id]/page.tsx` | 당사자 통합 대시보드 | FE |
+| `src/app/(supporter)/supporter/participants/[id]/preview/page.tsx` | 앱 미리보기 | FE |
+
+### 수정 파일 (8개)
+
+| 파일 | 변경 | 담당 |
+|:---|:---|:---:|
+| `evaluations/page.tsx` | 기본 당사자 자동 redirect | FE |
+| `evaluations/[participantId]/[month]/page.tsx` | 월 매칭 수정 + 목표별 통합 레이아웃 | FE/BE |
+| `MonthlyPlanProgressTable.tsx` | support_goal 컬럼 추가 | FE |
+| `TransactionTableClient.tsx` | 지도 탭 제거 → 링크로 대체 | FE |
+| `AdminSidebar.tsx` | 활동 지도 + 당사자별 대시보드 메뉴 추가 | FE |
+| `supporter/page.tsx` | 당사자 카드 링크 변경 | FE |
+| `monthlyPlan.ts` (Server Action) | support_goal JOIN 추가 | BE |
+| `evaluation.ts` (Server Action) | goalEvaluations 동시 저장 | BE |
+
+---
+
+## F-9. 에이전트 팀 실행 지시
+
+> [!IMPORTANT]
+> `.claude/skills/` 디렉터리의 각 역할별 SKILL.md를 참조하여 구현하세요.
+
+### 실행 순서
+
+```
+Phase F-0 (선행 — 0.5일)
+├─ BE: src/utils/date.ts 생성 (normalizeMonth)
+├─ BE: monthlyPlan.ts에 support_goal JOIN 추가
+└─ FE: F-2 월 매칭 버그 수정 (P0)
+
+Phase F-1 (핵심 — 3일)
+├─ FE: F-1 평가 기본 선택 자동 redirect
+├─ FE: F-3 PlanGroupedTransactions 컴포넌트
+├─ FE: F-4 GoalIntegratedView 컴포넌트
+├─ FE: F-5 평가 상세 레이아웃 변경
+└─ BE: evaluation.ts goalEvaluations 동시 저장
+
+Phase F-2 (구조 개선 — 2일)
+├─ FE: F-6 /supporter/map 독립 페이지
+├─ FE: TransactionTableClient 지도 탭 제거
+├─ FE: AdminSidebar 메뉴 추가
+└─ FE: 피드백 확인 → 설정 이동
+
+Phase F-3 (신규 기능 — 4일)
+├─ FE: F-7 당사자별 통합 대시보드
+├─ FE: 당사자 목록 페이지 (/supporter/participants)
+├─ FE: 앱 미리보기 (/supporter/participants/[id]/preview)
+└─ FE: 관리자 대시보드 링크 변경
+
+Phase F-QA (검증 — 2일)
+├─ QA: F-2 월 매칭 정상 동작 (KST 기준 4월→4월 확인)
+├─ QA: F-5 계획별 평가 저장 + 조회 검증
+├─ QA: F-7 통합 대시보드 전체 섹션 E2E
+└─ QA: 사이드바 메뉴 네비게이션 전체 검증
+```
+
+### 총 공수: ~11.5일
+
+| 역할 | 공수 |
+|:---:|:---:|
+| BE | 1.5일 |
+| FE | 7일 |
+| QA | 2일 |
+| UX/UI | 1일 |
+
+---
+
+## F-10. Claude Code 에이전트 팀 실행 요청 메시지
+
+아래 메시지를 Claude Code에 전달하세요:
+
+```
+제안서 /Plan&Source/plan_evaluation_budget_proposal.md 의 "Phase F" 섹션을 참조해 구현을 진행해주세요.
+
+1. .claude/skills/ 디렉터리의 역할별 SKILL.md를 활용하세요
+2. Phase F-0 부터 순서대로 착수합니다
+3. 특히 F-2 (월 매칭 P0 버그)를 최우선 수정하세요
+4. 진행 상황은 제안서 상단 "진행 현황" 표에 업데이트하세요
+5. 각 Phase 완료 시 npm run build 로 빌드 검증하세요
+```
