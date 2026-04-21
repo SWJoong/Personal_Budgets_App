@@ -17,9 +17,10 @@
 | B | v3.7.4 monthly_plans 체계 (migration 23 + CRUD + 위젯 연동) | ✅ 완료 | `27ca29e` |
 | 0 | Vitest + @testing-library 설치 + CI `npm test` 추가 | ✅ 완료 | `cea7d51` |
 | 0 | 스테이징 Supabase 환경 구성 | ⚠️ 수동 필요 | — |
-| C | Migration 24~27 SQL 생성 (support_goals, goal_evaluations, budget_line_items, monthly_plans 확장) | 🔄 진행 중 | 커밋 예정 |
-| C | Server Actions 3개 (supportGoal, goalEvaluation, budgetLineItem) | 🔄 진행 중 | 커밋 예정 |
-| C | FE 컴포넌트 (SupportGoalsForm, BudgetLineItemsTable, GoalEvaluationCards) | ⏳ 대기 | — |
+| C | Migration 24~27 SQL 생성 (support_goals, goal_evaluations, budget_line_items, monthly_plans 확장) | ✅ 완료 | `3c9632d` |
+| C | Server Actions 3개 (supportGoal, goalEvaluation, budgetLineItem) | ✅ 완료 | `3c9632d` |
+| C | FE 컴포넌트 (SupportGoalsForm, BudgetLineItemsTable, GoalEvaluationCards) | ✅ 완료 | `b2ceb98` |
+| C | 당사자 `/my-plan` 읽기 전용 + monthly_plans support_goal 드롭다운 | ⏳ 대기 | — |
 
 > [!NOTE]
 > **v2 최종 점검 수정 사항 (2026-04-21)**
