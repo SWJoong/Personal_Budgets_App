@@ -20,7 +20,7 @@
 | C | Migration 24~27 SQL 생성 (support_goals, goal_evaluations, budget_line_items, monthly_plans 확장) | ✅ 완료 | `3c9632d` |
 | C | Server Actions 3개 (supportGoal, goalEvaluation, budgetLineItem) | ✅ 완료 | `3c9632d` |
 | C | FE 컴포넌트 (SupportGoalsForm, BudgetLineItemsTable, GoalEvaluationCards) | ✅ 완료 | `b2ceb98` |
-| C | 당사자 `/my-plan` 읽기 전용 + monthly_plans support_goal 드롭다운 | ⏳ 대기 | — |
+| C | 당사자 `/my-plan` 읽기 전용 + monthly_plans support_goal 드롭다운 | ✅ 완료 | `d628b7a` |
 
 > [!NOTE]
 > **v2 최종 점검 수정 사항 (2026-04-21)**
