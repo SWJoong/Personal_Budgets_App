@@ -4,6 +4,17 @@
 -- ============================================================
 
 -- ────────────────────────────────────────────────────────────
+-- 0. set_updated_at 함수 (없으면 생성)
+-- ────────────────────────────────────────────────────────────
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = TIMEZONE('utc', NOW());
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ────────────────────────────────────────────────────────────
 -- 1. support_goals 테이블
 -- ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.support_goals (
