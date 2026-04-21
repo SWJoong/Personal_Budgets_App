@@ -29,6 +29,19 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
       <section className="flex flex-col gap-4">
         <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2">나의 기록</h3>
         <Link
+          href="/my-plan"
+          className="flex items-center justify-between p-6 rounded-[2rem] bg-violet-600 text-white shadow-xl hover:bg-violet-700 transition-all active:scale-[0.98] group"
+        >
+          <div className="flex items-center gap-4">
+            <span className="text-3xl group-hover:scale-110 transition-transform">🎯</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-black">내 목표 보기</span>
+              <span className="text-xs font-bold text-violet-200">올해 나의 지원 목표 확인하기</span>
+            </div>
+          </div>
+          <span className="text-2xl">→</span>
+        </Link>
+        <Link
           href="/evaluations"
           className="flex items-center justify-between p-6 rounded-[2rem] bg-zinc-900 text-white shadow-xl hover:bg-zinc-800 transition-all active:scale-[0.98] group"
         >

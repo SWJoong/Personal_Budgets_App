@@ -11,6 +11,7 @@ export interface MonthlyPlanInput {
   title: string
   description?: string | null
   funding_source_id?: string | null
+  support_goal_id?: string | null
   planned_budget: number
   target_count?: number | null
   scheduled_dates?: string[] | null   // ['YYYY-MM-DD', ...]
@@ -24,10 +25,12 @@ export interface MonthlyPlan {
   title: string
   description: string | null
   funding_source_id: string | null
+  support_goal_id: string | null
   planned_budget: number
   target_count: number | null
   scheduled_dates: string[] | null
   funding_source?: { id: string; name: string } | null
+  support_goal?: { id: string; support_area: string } | null
 }
 
 export interface MonthlyPlanProgress extends MonthlyPlan {
@@ -65,7 +68,7 @@ export async function getMonthlyPlans(
   const m = normalizeMonth(month)
   const { data } = await supabase
     .from('monthly_plans')
-    .select('id, participant_id, month, order_index, title, description, funding_source_id, planned_budget, target_count, scheduled_dates, funding_source:funding_sources ( id, name )')
+    .select('id, participant_id, month, order_index, title, description, funding_source_id, support_goal_id, planned_budget, target_count, scheduled_dates, funding_source:funding_sources ( id, name ), support_goal:support_goals ( id, support_area )')
     .eq('participant_id', participantId)
     .eq('month', m)
     .order('order_index', { ascending: true })
@@ -73,6 +76,7 @@ export async function getMonthlyPlans(
   return (data || []).map((p: any) => ({
     ...p,
     funding_source: Array.isArray(p.funding_source) ? p.funding_source[0] ?? null : p.funding_source ?? null,
+    support_goal: Array.isArray(p.support_goal) ? p.support_goal[0] ?? null : p.support_goal ?? null,
   })) as MonthlyPlan[]
 }
 
@@ -135,6 +139,7 @@ export async function upsertMonthlyPlan(input: MonthlyPlanInput) {
     title: input.title.trim(),
     description: input.description?.trim() || null,
     funding_source_id: input.funding_source_id || null,
+    support_goal_id: input.support_goal_id || null,
     planned_budget: Number(input.planned_budget) || 0,
     target_count: input.target_count ?? null,
     scheduled_dates: input.scheduled_dates?.length ? input.scheduled_dates : [],

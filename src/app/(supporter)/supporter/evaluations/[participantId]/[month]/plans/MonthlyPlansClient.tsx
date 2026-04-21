@@ -13,6 +13,7 @@ interface Props {
   month: string                         // 'YYYY-MM-01'
   initialPlans: MonthlyPlan[]
   fundingSources: { id: string; name: string }[]
+  supportGoals?: { id: string; support_area: string; order_index: number }[]
 }
 
 interface Draft {
@@ -21,6 +22,7 @@ interface Draft {
   title: string
   description: string
   funding_source_id: string
+  support_goal_id: string
   planned_budget: string
   target_count: string
   scheduled_dates: string                // 쉼표로 구분된 'YYYY-MM-DD'
@@ -34,6 +36,7 @@ function toDraft(p?: MonthlyPlan, order_index = 1): Draft {
     title: p?.title ?? '',
     description: p?.description ?? '',
     funding_source_id: p?.funding_source_id ?? '',
+    support_goal_id: p?.support_goal_id ?? '',
     planned_budget: p ? String(p.planned_budget ?? '') : '',
     target_count: p?.target_count != null ? String(p.target_count) : '',
     scheduled_dates: (p?.scheduled_dates || []).join(', '),
@@ -46,6 +49,7 @@ export default function MonthlyPlansClient({
   month,
   initialPlans,
   fundingSources,
+  supportGoals = [],
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -107,6 +111,7 @@ export default function MonthlyPlansClient({
         title: d.title,
         description: d.description || null,
         funding_source_id: d.funding_source_id || null,
+        support_goal_id: d.support_goal_id || null,
         planned_budget: Number(d.planned_budget) || 0,
         target_count: d.target_count ? Number(d.target_count) : null,
         scheduled_dates: scheduled.length ? scheduled : null,
@@ -259,6 +264,22 @@ export default function MonthlyPlansClient({
                   ))}
                 </select>
               </fieldset>
+
+              {supportGoals.length > 0 && (
+                <fieldset className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">연간 지원 목표 연결</label>
+                  <select
+                    value={d.support_goal_id}
+                    onChange={(e) => updateDraft(idx, { support_goal_id: e.target.value })}
+                    className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-bold focus:ring-2 focus:ring-zinc-900 focus:outline-none"
+                  >
+                    <option value="">연결 안 함</option>
+                    {supportGoals.map(g => (
+                      <option key={g.id} value={g.id}>{g.order_index}. {g.support_area}</option>
+                    ))}
+                  </select>
+                </fieldset>
+              )}
 
               <fieldset className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">계획 예산 (원)</label>
