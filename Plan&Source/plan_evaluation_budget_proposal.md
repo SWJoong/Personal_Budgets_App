@@ -13,9 +13,10 @@
 | Phase | 내용 | 상태 | 커밋 |
 |:---:|:---|:---:|:---|
 | A | v3.7.3 잔액 위젯 개선 (피자/물컵 중앙 금액, pending 점선) | ✅ 완료 | `a9d741f` |
-| A | CashViz 지폐 간격 확대 + "이미 쓴 돈" 섹션 가시성 강화 | ✅ 완료 | 미커밋 → 커밋 예정 |
+| A | CashViz 지폐 간격 확대 + "이미 쓴 돈" 섹션 가시성 강화 | ✅ 완료 | `e81c78a` |
 | B | v3.7.4 monthly_plans 체계 (migration 23 + CRUD + 위젯 연동) | ✅ 완료 | `27ca29e` |
-| 0 | Phase 0 선행 작업 (Vitest, 스테이징 환경) | ❌ 미착수 | — |
+| 0 | Vitest + @testing-library 설치 + CI `npm test` 추가 | ✅ 완료 | 커밋 예정 |
+| 0 | 스테이징 Supabase 환경 구성 | ⚠️ 수동 필요 | — |
 | C | v3.8.0 support_goals + goal_evaluations + budget_line_items | ⏳ 대기 | — |
 
 > [!NOTE]
