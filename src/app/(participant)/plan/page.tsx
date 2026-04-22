@@ -89,7 +89,7 @@ export default async function PlanPage() {
                       {selectedOption && (
                         <p className="font-black text-zinc-800 text-sm">{formatCurrency(selectedOption.cost)}원</p>
                       )}
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">계획됨</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">계획했어요</span>
                     </div>
                   </div>
                 )

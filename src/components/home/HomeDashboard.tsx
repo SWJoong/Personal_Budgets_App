@@ -197,7 +197,7 @@ export default function HomeDashboard({
               <p className="font-black text-zinc-800 text-base">오늘 계획 AI</p>
               <p className="text-xs text-zinc-400 font-bold mt-0.5">오늘 활동을 미리 계획해요</p>
             </div>
-            <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">→</span>
+            <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">▸</span>
           </Link>
         )
 
@@ -214,7 +214,7 @@ export default function HomeDashboard({
               <p className="font-black text-zinc-800 text-base">달력 보기</p>
               <p className="text-xs text-zinc-400 font-bold mt-0.5">이번 달 활동을 달력에서 확인하세요</p>
             </div>
-            <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">→</span>
+            <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">▸</span>
           </Link>
         )
 
@@ -240,13 +240,13 @@ export default function HomeDashboard({
                 )}
               </div>
               <Link href="/calendar" className="text-xs font-bold text-zinc-400 hover:text-zinc-600 transition-colors">
-                전체 보기 →
+                전체 보기
               </Link>
             </div>
 
             {recentTransactions.length === 0 ? (
               <div className="p-5 rounded-2xl bg-zinc-50 border border-zinc-200 text-center text-zinc-400 text-sm font-medium">
-                아직 사용 내역이 없습니다.
+                아직 쓴 적이 없어요.
               </div>
             ) : (
               recentTransactions.map((tx: any) => (
@@ -267,7 +267,7 @@ export default function HomeDashboard({
                     )}
                     <div>
                       <p className="font-bold text-zinc-800 text-sm">{tx.activity_name}</p>
-                      <p className="text-xs text-zinc-400">{tx.date} · {tx.category || '미분류'}</p>
+                      <p className="text-xs text-zinc-400">{tx.date} · {tx.category || '종류 없음'}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -296,9 +296,9 @@ export default function HomeDashboard({
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-black text-zinc-800 text-base">활동 지도</p>
-              <p className="text-xs text-zinc-400 font-bold mt-0.5">거래 장소를 지도에서 확인해요</p>
+              <p className="text-xs text-zinc-400 font-bold mt-0.5">돈을 쓴 곳을 지도에서 봐요</p>
             </div>
-            <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">→</span>
+            <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">▸</span>
           </Link>
         )
 
@@ -315,7 +315,7 @@ export default function HomeDashboard({
               <p className="font-black text-zinc-800 text-base">활동 사진</p>
               <p className="text-xs text-zinc-400 font-bold mt-0.5">활동 사진을 모아볼 수 있어요</p>
             </div>
-            <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">→</span>
+            <span className="text-zinc-300 group-hover:text-zinc-600 transition-colors text-lg">▸</span>
           </Link>
         )
 

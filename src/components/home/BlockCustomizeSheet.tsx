@@ -197,14 +197,14 @@ export default function BlockCustomizeSheet({
           className="px-6 pb-10 pt-3 max-h-[80vh] overflow-y-auto"
           style={{ paddingBottom: 'max(2.5rem, env(safe-area-inset-bottom) + 0.5rem)' }}
         >
-          <h2 className="text-lg font-black text-zinc-900 mb-1">화면 구성 편집</h2>
+          <h2 className="text-lg font-black text-zinc-900 mb-1">화면 꾸미기</h2>
           <p className="text-sm text-zinc-400 mb-6">
             보고 싶은 정보를 선택하고 순서를 바꿀 수 있어요
           </p>
 
           {/* 필수 블록 */}
           <div className="mb-4">
-            <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">항상 표시</p>
+            <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">항상 보여요</p>
             <div className="flex flex-col gap-2">
               {REQUIRED_BLOCKS.map(blockId => (
                 <div key={blockId} className="flex items-center gap-4 p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-100">
@@ -227,7 +227,7 @@ export default function BlockCustomizeSheet({
           {enabledBlocks.length > 0 && (
             <div className="mb-4">
               <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">
-                표시 중 — 핸들을 잡고 위아래로 드래그해요
+                보이는 중 — 줄무늬를 잡고 위아래로 끌어요
               </p>
               <div ref={enabledListRef} className="flex flex-col gap-2">
                 {enabledBlocks.map((block) => {
@@ -299,7 +299,7 @@ export default function BlockCustomizeSheet({
           {/* OFF 블록 */}
           {disabledBlocks.length > 0 && (
             <div>
-              <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">숨김</p>
+              <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">안 보이는 것들</p>
               <div className="flex flex-col gap-2">
                 {disabledBlocks.map(block => {
                   const meta = BLOCK_METADATA[block.id]

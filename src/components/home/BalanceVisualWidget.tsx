@@ -717,19 +717,19 @@ export default function BalanceVisualWidget({
       }
       const result = await createTransaction(formData)
       if (result.success) {
-        setUploadToast('활동이 등록되었습니다! ✅')
+        setUploadToast('활동을 기록했어요! ✅')
         setTimeout(() => {
           closeUploadSheet()
           router.refresh()
         }, 1200)
       } else {
         if (amountNum > 0) setPendingDeduction(prev => Math.max(0, prev - amountNum))
-        setUploadToast('등록 실패. 다시 시도해 주세요.')
+        setUploadToast('기록이 안 되었어요. 다시 눌러 주세요.')
       }
     } catch (err) {
       console.error('handleInlineSubmit 오류:', err)
       if (amountNum > 0) setPendingDeduction(prev => Math.max(0, prev - amountNum))
-      setUploadToast('등록 실패. 다시 시도해 주세요.')
+      setUploadToast('기록이 안 되었어요. 다시 눌러 주세요.')
     } finally {
       setUploadSubmitting(false)
     }
@@ -961,7 +961,7 @@ export default function BalanceVisualWidget({
             <div className="px-5 pb-8 pt-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-black text-zinc-900">
-                  {uploadMode === 'receipt' ? '🧂 영수증 등록' : '📸 활동 기록'}
+                  {uploadMode === 'receipt' ? '🧂 영수증 기록하기' : '📸 활동 기록'}
                 </h2>
                 <button onClick={closeUploadSheet} className="text-zinc-400 hover:text-zinc-600 text-lg font-bold">✕</button>
               </div>
@@ -1011,7 +1011,7 @@ export default function BalanceVisualWidget({
                   type="text"
                   value={uploadDescription}
                   onChange={(e) => setUploadDescription(e.target.value)}
-                  placeholder={uploadAnalyzing ? '사진 읽는 중...' : '무엇을 했나요? (예: 편의점 간식)'}
+                  placeholder={uploadAnalyzing ? '사진 읽는 중...' : '무엇을 했나요? 편의점 간식처럼 적어 주세요'}
                   className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold transition-all"
                   required
                 />
@@ -1050,7 +1050,7 @@ export default function BalanceVisualWidget({
                 onClick={handleInlineSubmit}
                 className="w-full mt-4 py-4 rounded-2xl bg-zinc-900 text-white font-black text-base active:scale-[0.98] transition-all disabled:bg-zinc-300"
               >
-                {uploadSubmitting ? '등록 중...' : uploadAnalyzing ? '사진 읽는 중...' : '활동 기록하기'}
+                {uploadSubmitting ? '기록하는 중...' : uploadAnalyzing ? '사진 읽는 중...' : '활동 기록하기'}
               </button>
 
               <p className="text-center text-zinc-400 text-xs font-medium mt-2">

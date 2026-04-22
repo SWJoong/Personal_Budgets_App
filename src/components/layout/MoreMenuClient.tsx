@@ -39,7 +39,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
               <span className="text-xs font-bold text-violet-200">올해 나의 지원 목표 확인하기</span>
             </div>
           </div>
-          <span className="text-2xl">→</span>
+          <span className="text-2xl">▸</span>
         </Link>
         <Link
           href="/evaluations"
@@ -52,7 +52,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
               <span className="text-xs font-bold text-zinc-400">나의 한 달 활동 이야기 보기</span>
             </div>
           </div>
-          <span className="text-2xl">→</span>
+          <span className="text-2xl">▸</span>
         </Link>
       </section>
 
@@ -167,7 +167,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
             <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-zinc-700">🟡 노란 배경 모드</span>
-                <span className="text-xs text-zinc-400 font-medium">배경을 노란색으로 바꿔요 (난독증 배려)</span>
+                <span className="text-xs text-zinc-400 font-medium">글 읽기 어려운 분을 위해 배경을 노란색으로 바꿔요</span>
               </div>
               <button
                 onClick={() => setYellowBg(!yellowBg)}
@@ -226,7 +226,7 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
           onClick={handleLogout}
           className="w-full p-5 rounded-[2rem] bg-red-50 text-red-600 font-black text-center ring-1 ring-red-100 hover:bg-red-100 transition-all active:scale-95"
         >
-          안전하게 로그아웃
+          안전하게 나가기
         </button>
       </section>
     </div>

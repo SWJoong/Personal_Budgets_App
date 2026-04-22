@@ -53,7 +53,7 @@ export default async function MorePage() {
           </div>
           <div className="flex flex-col">
             <span className="text-xl font-black text-zinc-900">{profile?.name} 님</span>
-            <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{profile?.role}</span>
+            <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{profile?.role === 'participant' ? '당사자' : profile?.role === 'supporter' ? '지원자' : profile?.role}</span>
           </div>
         </section>
 
@@ -61,7 +61,7 @@ export default async function MorePage() {
         <MoreMenuClient fileLinks={fileLinks || []} />
         
         <div className="text-center py-4">
-          <p className="text-[10px] font-bold text-zinc-300 uppercase tracking-[0.3em]">아름드리꿈터 개인예산 관리 v1.0</p>
+          <p className="text-[10px] font-bold text-zinc-300 uppercase tracking-[0.3em]">아름드리꿈터 개인예산</p>
         </div>
       </main>
     </div>

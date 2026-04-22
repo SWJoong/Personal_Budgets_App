@@ -30,16 +30,16 @@ export const OPTIONAL_BLOCKS: BlockId[] = [
 ]
 
 export const BLOCK_METADATA: Record<BlockId, { icon: string; label: string; description: string }> = {
-  yearly_balance:      { icon: '📊', label: '올해 잔액',      description: '연간 예산 남은 금액' },
-  monthly_trend:       { icon: '📈', label: '월별 추이',      description: '최근 6개월 지출 그래프' },
-  recent_transactions: { icon: '🕐', label: '최근 사용 내역', description: '최근 3건 사용 내역' },
-  plan_shortcut:       { icon: '🤔', label: '계획 AI',        description: '오늘 활동 계획 세우기' },
+  yearly_balance:      { icon: '📊', label: '올해 남은 돈',    description: '1년 동안 남은 돈' },
+  monthly_trend:       { icon: '📈', label: '달마다 쓴 돈',    description: '최근 6달 동안 쓴 돈 그림' },
+  recent_transactions: { icon: '🕐', label: '최근에 쓴 돈',    description: '최근 3번 쓴 돈 목록' },
+  plan_shortcut:       { icon: '🤔', label: '오늘 계획',       description: '오늘 활동 계획 세우기' },
   calendar_shortcut:   { icon: '📅', label: '달력 바로가기',   description: '이번 달 활동을 달력에서 확인' },
-  evaluation_letter:   { icon: '💌', label: '지원자 편지',    description: '지원자 선생님의 이달 편지' },
-  weekly_chart:        { icon: '📉', label: '이번 주 지출',   description: '최근 7일 하루별 지출 막대 그래프' },
-  source_view:         { icon: '💳', label: '재원별 보기',    description: '재원(돈의 종류)별 잔액 카드' },
-  map_widget:          { icon: '🗺️', label: '활동 지도',      description: '거래 장소를 지도에서 확인' },
-  activity_gallery:    { icon: '🖼️', label: '활동 사진',      description: '활동 사진 모아보기' },
+  evaluation_letter:   { icon: '💌', label: '선생님 편지',     description: '선생님이 이번 달에 써준 편지' },
+  weekly_chart:        { icon: '📉', label: '이번 주 쓴 돈',   description: '최근 7일 하루마다 쓴 돈' },
+  source_view:         { icon: '💳', label: '돈 종류별 보기',  description: '돈 종류별 남은 돈' },
+  map_widget:          { icon: '🗺️', label: '활동 지도',       description: '돈을 쓴 곳을 지도에서 봐요' },
+  activity_gallery:    { icon: '🖼️', label: '활동 사진',       description: '활동 사진 모아보기' },
 }
 
 export const DEFAULT_PREFERENCES: UIPreferences = {
