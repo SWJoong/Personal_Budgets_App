@@ -1189,3 +1189,420 @@ Phase F-QA (검증 — 2일)
 4. 진행 상황은 제안서 상단 "진행 현황" 표에 업데이트하세요
 5. 각 Phase 완료 시 npm run build 로 빌드 검증하세요
 ```
+
+---
+
+# Phase G — 현장 피드백 2차 개선 (2026-04-22)
+
+> **SKILL 에이전트 팀 분석 기반**: PM · DevOps · BE · PL · FE · UX/UI · QA 7개 역할 병렬 검토 결과
+
+---
+
+## G-0. 진행 현황 업데이트
+
+| Phase | 내용 | 상태 |
+|:---:|:---|:---:|
+| G-1 | ERD 개선 (인덱스 추가) | ⬜ 계획 |
+| G-2 | 404 버그 수정 (월별계획 뒤로가기) | ⬜ 계획 |
+| G-3 | 전월 복사 기능 (월별계획 + 평가) | ⬜ 계획 |
+| G-4 | 이용계획서 선택란 지원목표·월별계획 반영 | ⬜ 계획 |
+
+---
+
+## G-1. Supabase 테이블 ERD 현황 및 개선점
+
+### 1-1. 현재 테이블 맵 (Migration 01~28 기준)
+
+| 테이블 | 핵심 컬럼 | FK | RLS |
+|:---|:---|:---|:---:|
+| profiles | id, role, name | auth.users | ✅ |
+| participants | id, assigned_supporter_id, ui_preferences | profiles | ✅ |
+| funding_sources | id, participant_id, monthly_budget, current_month_balance, current_year_balance | participants | ✅ |
+| transactions | id, participant_id, funding_source_id, monthly_plan_id, date, amount, status, place_lat/lng | participants, funding_sources, monthly_plans | ✅ |
+| plans | id, participant_id, date, details (JSONB) | participants | ✅ |
+| evaluations | id, participant_id, month(DATE), tried, learned, pleased, concerned, next_step, evaluation_template, template_data(JSONB), ai_analysis, easy_summary | participants | ✅ |
+| care_plans | id, participant_id, plan_type('mohw_plan'\|'seoul_plan'), plan_year, content(JSONB), creator_id | participants, profiles | ✅ |
+| sis_assessments | id, participant_id, raw/std 점수, total_std, index_score | participants | ✅ |
+| system_settings | key(PK), value(JSONB) | — | ✅ |
+| file_links | id, participant_id, file_url | participants | ✅ |
+| participant_feedback | id, participant_id, context, response(emoji) | participants | ✅ |
+| monthly_plans | id, participant_id, month(DATE), order_index(1-6), title, planned_budget, support_goal_id, funding_source_id, scheduled_dates[], activity_photos[], staff_notes | participants, support_goals, funding_sources | ✅ |
+| support_goals | id, care_plan_id, participant_id, order_index(1-10), support_area, is_to_goal, is_for_whom, outcome_goal, strategy, eval_tool, eval_target, is_active, creator_id | care_plans, participants, profiles | ✅ |
+| goal_evaluations | id, evaluation_id, support_goal_id, tried, achievement, learned, satisfied, dissatisfied, next_plan, target_value, actual_value, creator_id | evaluations, support_goals, profiles | ✅ |
+| budget_line_items | id, care_plan_id, funding_source_id, support_goal_id, item_name, unit_cost, quantity, total_amount(GENERATED), creator_id | care_plans, funding_sources, support_goals, profiles | ✅ |
+
+### 1-2. 역할별 개선 의견
+
+**BE 관점:**
+- `care_plans(participant_id)` 단독 인덱스 누락 → 연간 care_plan 조회 시 성능 저하 가능
+- `monthly_plans(participant_id, month)` 복합 인덱스는 Migration 23에서 생성 확인 ✅
+- `evaluations(participant_id, month)` UNIQUE 제약은 있으나 인덱스로 중복 생성 여부 확인 필요
+- FK CASCADE 정책: care_plans→support_goals CASCADE ✅, budget_line_items→support_goals RESTRICT ✅
+
+**PL 관점:**
+- `care_plans.plan_type` TEXT 유지 (ENUM 변환 비용 > 이득). 'integrated' 타입 확장 불필요 — support_goals는 이미 care_plan_id FK로 독립적
+- JSONB content 스키마 문서화 필요 (MohwPlanContent | SeoulPlanContent 타입 파일 정리)
+
+**DevOps 관점:**
+- Migration 29 (인덱스 추가) 멱등성 보장: `CREATE INDEX IF NOT EXISTS`
+- 롤백: `DROP INDEX IF EXISTS` 1줄로 무해
+
+### 1-3. 구현 계획
+
+**Migration 29: `29_care_plans_index.sql`** (수동 실행)
+```sql
+-- care_plans 단독 인덱스 (participant_id 기반 조회 가속)
+CREATE INDEX IF NOT EXISTS idx_care_plans_participant_id
+  ON public.care_plans (participant_id);
+
+-- evaluations 복합 인덱스 확인 (없으면 생성)
+CREATE INDEX IF NOT EXISTS idx_evaluations_participant_month
+  ON public.evaluations (participant_id, month DESC);
+```
+
+### 1-4. QA 체크리스트
+- [ ] Migration 29 실행 전/후 `EXPLAIN ANALYZE SELECT * FROM care_plans WHERE participant_id = $1` 실행 시간 비교
+- [ ] `CREATE INDEX` 실행 시 Lock 여부 확인 (운영 중 `CONCURRENTLY` 옵션 권장)
+- [ ] 기존 쿼리 결과 값 변화 없음 (순서·집계 일치)
+
+**공수**: S (0.5일)
+
+---
+
+## G-2. 월별계획 저장 후 뒤로가기 404 버그 수정
+
+### 2-1. 근본 원인 분석
+
+**버그 1 (Primary):** `revalidatePath` 형식 불일치
+```typescript
+// src/app/actions/monthlyPlan.ts:168-169 (현재 — 버그)
+revalidatePath(`/supporter/evaluations/${input.participant_id}/${m.slice(0, 7)}`)
+// 결과: /supporter/evaluations/xxx/2026-04 를 revalidate
+// 실제 URL: /supporter/evaluations/xxx/2026-04-01 → 캐시 미스 → 404
+```
+
+**버그 2 (Secondary):** 뒤로가기 링크 raw month 사용
+```typescript
+// src/app/(supporter)/supporter/evaluations/[participantId]/[month]/plans/page.tsx:63 (현재 — 버그)
+href={`/supporter/evaluations/${participantId}/${month}`}
+// month가 'YYYY-MM' 형식으로 들어오면 평가 페이지 라우트와 불일치
+```
+
+**버그 3 (Secondary):** displayMonth timezone 버그 (plans/page.tsx L61)
+```typescript
+const d = new Date(normalizedMonth)  // UTC 파싱 → KST에서 이전 날
+```
+
+### 2-2. 역할별 의견
+
+| 역할 | 판단 | 비고 |
+|:---:|:---|:---|
+| PM | 🔴 Critical — 월별계획 편집 후 이탈이 불가능 | 즉시 수정 필요 |
+| BE | revalidatePath를 YYYY-MM-01 형식으로 통일 | `m` 변수가 이미 normalizeMonth 거쳐 YYYY-MM-01 → `m` 그대로 사용 |
+| FE | 뒤로가기 href에 normalizedMonth 사용, displayMonth에 parseMonth() 사용 | src/utils/date.ts 활용 |
+| DevOps | Vercel 환경에서 revalidatePath 캐시 키는 정확한 URL 문자열 매칭 | URL 형식 통일 필수 |
+| QA | YYYY-MM / YYYY-MM-01 / YYYY-MM-DD 세 형식 모두 테스트 | 타임존 2개 환경(KST, UTC) 검증 |
+
+### 2-3. 구현 계획
+
+**파일 1: `src/app/actions/monthlyPlan.ts`**
+
+```typescript
+// L168-171 수정 (upsertMonthlyPlan)
+// Before:
+revalidatePath(`/supporter/evaluations/${input.participant_id}/${m.slice(0, 7)}`)
+revalidatePath(`/supporter/evaluations/${input.participant_id}/${m.slice(0, 7)}/plans`)
+// After (m = 'YYYY-MM-01' — 이미 normalizeMonth 거친 값):
+revalidatePath(`/supporter/evaluations/${input.participant_id}/${m}`)
+revalidatePath(`/supporter/evaluations/${input.participant_id}/${m}/plans`)
+
+// L186-189 수정 (deleteMonthlyPlan) — 동일 패턴 적용
+```
+
+**파일 2: `src/app/(supporter)/supporter/evaluations/[participantId]/[month]/plans/page.tsx`**
+
+```typescript
+// L40: normalizeMonth 대신 parseMonth 사용 (src/utils/date.ts 활용)
+import { parseMonth } from '@/utils/date'
+
+// L40-61 수정:
+const { startDate: normalizedMonth, display: displayMonth } = parseMonth(month)
+
+// L63 수정:
+href={`/supporter/evaluations/${participantId}/${normalizedMonth}`}
+```
+
+### 2-4. QA 테스트 케이스
+
+| # | Given | When | Then |
+|:---:|:---|:---|:---|
+| TC-1 | URL: `.../2026-04-01/plans` | 계획 저장 → ← 버튼 클릭 | 200 OK, "4월" 표시 |
+| TC-2 | URL: `.../2026-04/plans` | 계획 저장 → ← 버튼 클릭 | 200 OK (raw month 처리) |
+| TC-3 | KST 환경 | displayMonth 렌더 | "2026년 4월" 정확히 표시 |
+| TC-4 | UTC 환경 | displayMonth 렌더 | "2026년 4월" 정확히 표시 |
+
+**공수**: S (0.5일, 3-4줄 수정)
+
+---
+
+## G-3. 월별계획 + 평가 전월 복사 기능
+
+### 3-1. 기능 범위 확정 (PM 결정)
+
+| 항목 | 복사 여부 | 비고 |
+|:---|:---:|:---|
+| monthly_plans.title | ✅ | 그대로 복사 |
+| monthly_plans.planned_budget | ✅ | 그대로 복사 |
+| monthly_plans.support_goal_id | ✅ | FK 유지 (동일 연도 care_plan 기준) |
+| monthly_plans.funding_source_id | ✅ | 복사 |
+| monthly_plans.target_count | ✅ | 복사 |
+| monthly_plans.scheduled_dates | ❌ | 날짜 다르므로 제외 |
+| monthly_plans.activity_photos | ❌ | 이전 월 사진이므로 제외 |
+| monthly_plans.staff_notes | ❌ | 이전 월 메모이므로 제외 |
+| evaluations.tried/learned/pleased/concerned/next_step | ✅ (선택) | UI에서 "초안으로 불러오기" 방식 |
+| goal_evaluations | ❌ | 새 월에 새로 작성 |
+
+**ON CONFLICT 정책**: `DO NOTHING` (기존 데이터 보존 우선)
+
+### 3-2. BE 설계
+
+**신규 파일: `src/app/actions/copyPlan.ts`**
+
+```typescript
+'use server'
+import { createClient } from '@/utils/supabase/server'
+import { revalidatePath } from 'next/cache'
+import { getMonthlyPlans } from './monthlyPlan'
+import { getEvaluation } from './evaluation'
+import { normalizeMonth } from '@/utils/date'
+
+// ① 월별계획 복사
+export async function copyMonthlyPlans(
+  participantId: string,
+  fromMonth: string,   // YYYY-MM-01
+  toMonth: string      // YYYY-MM-01
+): Promise<{ success?: boolean; copied?: number; skipped?: number; error?: string }> {
+  const { ok, error, supabase, user } = await assertStaff()
+  if (!ok || !user) return { error: error || '권한이 없습니다.' }
+
+  const from = normalizeMonth(fromMonth)
+  const to = normalizeMonth(toMonth)
+  if (from === to) return { error: '같은 달로 복사할 수 없습니다.' }
+
+  const plans = await getMonthlyPlans(participantId, from)
+  if (plans.length === 0) return { error: '복사할 계획이 없습니다.' }
+
+  let copied = 0
+  let skipped = 0
+  for (const p of plans) {
+    const { error: insErr } = await supabase
+      .from('monthly_plans')
+      .insert({
+        participant_id: participantId,
+        month: to,
+        order_index: p.order_index,
+        title: p.title,
+        description: p.description,
+        funding_source_id: p.funding_source_id,
+        support_goal_id: p.support_goal_id,
+        planned_budget: p.planned_budget,
+        target_count: p.target_count,
+        creator_id: user.id,
+      })
+    if (insErr?.code === '23505') skipped++  // UNIQUE 충돌 → 이미 있음
+    else if (insErr) return { error: insErr.message }
+    else copied++
+  }
+
+  revalidatePath(`/supporter/evaluations/${participantId}/${to}`)
+  revalidatePath(`/supporter/evaluations/${participantId}/${to}/plans`)
+  return { success: true, copied, skipped }
+}
+
+// ② 평가 초안 복사 (텍스트 필드만, id/month는 새 월로)
+export async function copyEvaluationDraft(
+  participantId: string,
+  fromMonth: string,
+  toMonth: string
+): Promise<{ success?: boolean; error?: string; draft?: Record<string, string> }> {
+  const from = normalizeMonth(fromMonth)
+  const to = normalizeMonth(toMonth)
+  if (from === to) return { error: '같은 달로 복사할 수 없습니다.' }
+
+  const supabase = await createClient()
+  const existing = await getEvaluation(participantId, from)
+  if (!existing) return { error: '복사할 평가가 없습니다.' }
+
+  // 텍스트 필드만 draft로 반환 (저장은 하지 않음 — 사용자가 확인 후 저장)
+  return {
+    success: true,
+    draft: {
+      tried: existing.tried || '',
+      learned: existing.learned || '',
+      pleased: existing.pleased || '',
+      concerned: existing.concerned || '',
+      next_step: existing.next_step || '',
+    }
+  }
+}
+```
+
+### 3-3. FE UX 흐름
+
+```
+[월별계획 편집 페이지 — MonthlyPlansClient]
+  계획 0개일 때 헤더 영역에 "📋 전월 복사" 버튼 표시
+    ↓ 클릭
+  확인 모달: "2026년 3월 계획을 이번 달로 복사할까요?"
+    [취소]   [복사하기]
+    ↓ 복사하기
+  copyMonthlyPlans() 호출 → loading 상태
+    ↓ 성공
+  "3개 계획이 복사되었어요 ✓" 초록 배너 + router.refresh()
+    ↓ 이미 계획 있는 경우 (skipped > 0)
+  "X개는 이미 있어 건너뛰었어요" 안내 (주황 배너)
+
+[평가 작성 폼 — EvaluationPageClient]
+  빈 폼 최상단에 "📝 전월 내용 불러오기" 버튼
+    ↓ 클릭
+  copyEvaluationDraft() 호출 → 폼 필드 채우기 (미저장 상태)
+  "전월 내용을 불러왔어요. 수정 후 저장하세요." 안내 배너
+```
+
+**컴포넌트 수정:**
+- `MonthlyPlansClient.tsx`: "전월 복사" 버튼 + 확인 모달 + 성공/스킵 배너 추가
+- `EvaluationPageClient.tsx`: "전월 불러오기" 버튼 추가 (폼 초기값 설정)
+
+### 3-4. QA 테스트 케이스
+
+| # | Given | When | Then |
+|:---:|:---|:---|:---|
+| TC-1 | 3월 계획 3개 | 4월에 전월 복사 | 4월에 3개 생성 (order_index 1~3) |
+| TC-2 | 3월 계획 3개, 4월 이미 1개 | 4월에 전월 복사 | 4월: 기존 1개 유지 + 나머지 2개 추가 (skip 1) |
+| TC-3 | 3월 계획 없음 | 4월에 전월 복사 | "복사할 계획이 없습니다" 오류 안내 |
+| TC-4 | 전월 복사 2회 연속 | 동일 요청 반복 | 중복 생성 없음 (멱등성) |
+| TC-5 | 3월 평가 있음 | 4월 평가 "전월 불러오기" | 폼에 3월 내용 채워짐, 저장 전 상태 |
+| TC-6 | support_goal_id 있는 계획 | 복사 시 | 같은 support_goal FK 유지 확인 |
+
+**공수**: M (1.5일 — Server Action 1일 + FE 0.5일)
+
+---
+
+## G-4. 이용계획서 선택란에 월별계획·지원목표 반영
+
+### 4-1. 현황 분석
+
+**현재 이용계획서 경로**: `/supporter/documents/care-plans/[participantId]/[planType]`
+**현재 이용계획서 탭**: `mohw_plan` (보건복지부형) · `seoul_plan` (서울형)
+**지원목표·예산 경로**: `/supporter/evaluations/[participantId]/goals` (별도 분리됨)
+
+**문제**: 이용계획서 작성 화면에서 지원목표·예산계획·월별계획을 함께 볼 수 없음. 서류 승인 시 담당자가 여러 화면을 오가야 함.
+
+### 4-2. 역할별 설계 의견
+
+**PL 결정 (아키텍처)**:
+- **별도 탭 추가** (CarePlanSection에 "지원목표 + 예산" 탭 추가)
+- SupportGoalsForm + BudgetLineItemsTable 기존 컴포넌트 재사용 (신규 컴포넌트 최소화)
+- care_plan_id가 확보된 후 지원목표 편집 가능 → 이용계획서 저장 후 탭 활성화
+
+**BE 결정**:
+- 신규 마이그레이션 불필요 (support_goals · budget_line_items 이미 care_plan_id FK 보유)
+- `upsertSupportGoal`, `deleteSupportGoal` 함수는 `src/app/actions/supportGoal.ts`에 이미 존재
+- care_plan 저장과 support_goals 저장은 분리된 액션 유지 (단일 트랜잭션 불필요)
+
+**UX 설계**:
+```
+이용계획서 상세 페이지
+  탭 1: 📄 보건복지부형
+  탭 2: 📄 서울형
+  탭 3 (신규): 🎯 지원목표·예산
+    ├─ SupportGoalsForm (기존 컴포넌트 재사용, care_plan_id 전달)
+    ├─ BudgetLineItemsTable (기존 컴포넌트 재사용)
+    └─ 하단: "연결된 월별계획" 링크 목록 (read-only)
+```
+
+### 4-3. 구현 계획
+
+**파일 1: `src/app/(supporter)/supporter/documents/care-plans/[participantId]/[planType]/page.tsx`**
+- 기존 단일 form → 탭 UI 추가
+- URL 파라미터 `planType`이 'goals'일 때 탭 3 활성화
+- care_plan.id 확보 후 SupportGoalsForm에 `carePlanId` prop 전달
+
+**파일 2: `src/components/documents/CarePlanSection.tsx`**
+- 탭 구조 추가 (headless 탭 or 간단한 state 기반)
+- 탭 3에 SupportGoalsForm + BudgetLineItemsTable 임베드
+
+**신규 파일 불필요** — 기존 컴포넌트 재사용
+
+**탭 라우팅 (URL 방식)**:
+```
+/supporter/documents/care-plans/[participantId]/mohw_plan   → 탭 1
+/supporter/documents/care-plans/[participantId]/seoul_plan  → 탭 2
+/supporter/documents/care-plans/[participantId]/goals       → 탭 3 (신규)
+```
+
+**연결된 월별계획 표시** (탭 3 하단):
+```typescript
+// care_plan.id로 support_goals 조회
+// 각 goal에 연결된 monthly_plans 조회 (지난 3개월)
+// read-only 링크 표시
+```
+
+### 4-4. QA 테스트 케이스
+
+| # | Given | When | Then |
+|:---:|:---|:---|:---|
+| TC-1 | care_plan 없음 | 탭 3 접근 | "이용계획서 먼저 저장하세요" 안내 |
+| TC-2 | care_plan 있음 | 탭 3 접근 | SupportGoalsForm 렌더, 기존 지원목표 로드 |
+| TC-3 | 지원목표 3개 있는 care_plan | 탭 3에서 1개 삭제 | goals 페이지 `/evaluations/goals`와 데이터 일치 |
+| TC-4 | mohw_plan → seoul_plan 전환 | 탭 3 유지 여부 | care_plan_id 변경 없으면 탭 3 유지 |
+| TC-5 | budget_line_items 3개 | 탭 3 BudgetLineItemsTable | 합계 금액 정확히 계산 (GENERATED) |
+
+**공수**: L (3일 — 탭 라우팅 1일 + 컴포넌트 임베드 1일 + QA 1일)
+
+---
+
+## G-5. 역할별 공수 요약 및 실행 순서
+
+### 공수 요약
+
+| Phase | 기능 | PM | BE | FE | QA | 합계 |
+|:---:|:---|:---:|:---:|:---:|:---:|:---:|
+| G-1 | ERD 인덱스 추가 | — | S | — | S | ~1일 |
+| G-2 | 404 버그 수정 | — | S | S | S | ~1일 |
+| G-3 | 전월 복사 | — | M | M | M | ~3일 |
+| G-4 | 이용계획서 탭 통합 | M | S | L | M | ~5일 |
+
+**총 예상 공수**: ~10인일
+
+### 실행 순서 (의존성 기준)
+
+```
+G-2 (0.5일, 즉시 수정)
+  ↓
+G-1 (0.5일, Migration 29 수동 실행)
+  ↓
+G-3 + G-4 병렬 (G-3: 1.5일 / G-4: 3일)
+  ↓
+통합 QA (1일)
+```
+
+---
+
+## G-6. Phase G 실행 요청 메시지
+
+```
+제안서 /Plan&Source/plan_evaluation_budget_proposal.md 의 "Phase G" 섹션을 참조해 구현을 진행해주세요.
+
+우선순위:
+1. G-2: 월별계획 저장 후 404 버그 즉시 수정 (revalidatePath + back link + displayMonth)
+2. G-1: Migration 29 생성 (care_plans 인덱스) — 수동 실행 안내
+3. G-3: 전월 복사 기능 (copyPlan Server Action + MonthlyPlansClient + EvaluationPageClient)
+4. G-4: 이용계획서 탭에 지원목표·예산 반영 (CarePlanSection 탭 구조 추가)
+
+완료 기준:
+- npm run build 통과
+- G-2: 월별계획 저장 → ← 버튼 → 200 OK, 날짜 정확히 표시
+- G-3: 전월 복사 버튼 → 확인 모달 → 복사 성공 배너
+- G-4: /documents/care-plans/.../goals 탭 렌더 확인
+```
