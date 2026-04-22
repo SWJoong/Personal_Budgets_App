@@ -57,7 +57,7 @@ export default async function SupportGoalsPage({ params }: Props) {
     <div className="flex flex-col min-h-screen bg-zinc-50 p-8 pb-20">
       <header className="mb-8 flex items-center gap-4">
         <Link
-          href={`/supporter/evaluations/${participantId}`}
+          href="/supporter/evaluations"
           className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl font-bold"
         >←</Link>
         <div>
