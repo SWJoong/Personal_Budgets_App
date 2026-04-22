@@ -21,19 +21,25 @@ export default async function MapPage() {
     redirect('/')
   }
 
+  // 당사자 목록 (필터용)
+  let participantsQuery = supabase
+    .from('participants')
+    .select('id, name')
+    .order('name', { ascending: true })
+  if (profile.role === 'supporter') {
+    participantsQuery = participantsQuery.eq('assigned_supporter_id', user.id)
+  }
+  const { data: participants } = await participantsQuery
+
   let txQuery = supabase
     .from('transactions')
-    .select('id, activity_name, amount, date, status, place_name, place_lat, place_lng, activity_image_url, receipt_image_url, participant:participants!transactions_participant_id_fkey ( name )')
+    .select('id, participant_id, activity_name, amount, date, status, place_name, place_lat, place_lng, activity_image_url, receipt_image_url, participant:participants!transactions_participant_id_fkey ( name )')
     .not('place_lat', 'is', null)
     .order('date', { ascending: false })
     .limit(500)
 
   if (profile.role === 'supporter') {
-    const { data: myParticipants } = await supabase
-      .from('participants')
-      .select('id')
-      .eq('assigned_supporter_id', user.id)
-    const ids = (myParticipants || []).map((p: any) => p.id)
+    const ids = (participants || []).map((p: any) => p.id)
     if (ids.length > 0) txQuery = txQuery.in('participant_id', ids)
   }
 
@@ -47,8 +53,9 @@ export default async function MapPage() {
     }))
   )
 
-  const mapTransactions: MapTransaction[] = (locatedTx || []).map((t: any) => ({
+  const mapTransactions: (MapTransaction & { participant_id: string })[] = (locatedTx || []).map((t: any) => ({
     id: t.id,
+    participant_id: t.participant_id,
     activity_name: t.activity_name,
     amount: t.amount,
     date: t.date,
@@ -65,7 +72,7 @@ export default async function MapPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 p-4 sm:p-8">
-      <header className="flex items-center justify-between mb-6">
+      <header className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">활동 지도</h1>
           <p className="text-zinc-500 mt-1 text-sm">장소 정보가 있는 거래 {mapTransactions.length}건을 지도에서 확인합니다.</p>
@@ -74,7 +81,11 @@ export default async function MapPage() {
       </header>
 
       <main className="w-full max-w-6xl">
-        <MapPageClient apiKey={mapApiKey} transactions={mapTransactions} />
+        <MapPageClient
+          apiKey={mapApiKey}
+          transactions={mapTransactions}
+          participants={participants || []}
+        />
       </main>
     </div>
   )
