@@ -165,8 +165,8 @@ export async function upsertMonthlyPlan(input: MonthlyPlanInput) {
     if (insErr) return { error: insErr.message }
   }
 
-  revalidatePath(`/supporter/evaluations/${input.participant_id}/${m.slice(0, 7)}`)
-  revalidatePath(`/supporter/evaluations/${input.participant_id}/${m.slice(0, 7)}/plans`)
+  revalidatePath(`/supporter/evaluations/${input.participant_id}/${m}`)
+  revalidatePath(`/supporter/evaluations/${input.participant_id}/${m}/plans`)
   revalidatePath(`/supporter/transactions`)
   revalidatePath(`/`)
   return { success: true }
@@ -183,8 +183,8 @@ export async function deleteMonthlyPlan(id: string, participantId: string, month
   if (delErr) return { error: delErr.message }
 
   const m = normalizeMonth(month)
-  revalidatePath(`/supporter/evaluations/${participantId}/${m.slice(0, 7)}`)
-  revalidatePath(`/supporter/evaluations/${participantId}/${m.slice(0, 7)}/plans`)
+  revalidatePath(`/supporter/evaluations/${participantId}/${m}`)
+  revalidatePath(`/supporter/evaluations/${participantId}/${m}/plans`)
   revalidatePath(`/supporter/transactions`)
   revalidatePath(`/`)
   return { success: true }

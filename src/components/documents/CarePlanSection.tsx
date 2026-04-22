@@ -27,6 +27,9 @@ const PLAN_TYPES: CarePlanType[] = ['mohw_plan', 'seoul_plan']
 const CURRENT_YEAR = new Date().getFullYear()
 const YEAR_OPTIONS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR + 1]
 
+const GOALS_LABEL = '지원목표·예산 계획'
+const GOALS_DESCRIPTION = '연간 지원 목표 및 예산 세목 (산출내역)'
+
 export default function CarePlanSection({ participants, carePlans }: Props) {
   const [selectedParticipantId, setSelectedParticipantId] = useState(participants[0]?.id ?? '')
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
@@ -119,6 +122,44 @@ export default function CarePlanSection({ participants, carePlans }: Props) {
           )
         })}
       </div>
+
+      {/* 지원목표·예산 카드 */}
+      {(() => {
+        const hasCarePlan = PLAN_TYPES.some(pt => findPlan(pt))
+        const goalsHref = `/supporter/evaluations/${selectedParticipantId}/goals`
+        return (
+          <div className={`p-5 rounded-2xl ring-1 transition-all ${
+            hasCarePlan ? 'bg-white ring-violet-200' : 'bg-white ring-zinc-200'
+          }`}>
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <p className="font-black text-zinc-900 text-sm">{GOALS_LABEL}</p>
+                <p className="text-xs text-zinc-400 mt-0.5">{GOALS_DESCRIPTION}</p>
+              </div>
+              {hasCarePlan ? (
+                <span className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 text-[10px] font-bold shrink-0">계획서 연결됨</span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-400 text-[10px] font-bold shrink-0">계획서 필요</span>
+              )}
+            </div>
+            {!hasCarePlan && (
+              <p className="text-[10px] text-amber-600 mb-3">
+                이용계획서를 먼저 작성하면 지원 목표를 연결할 수 있어요.
+              </p>
+            )}
+            <Link
+              href={goalsHref}
+              className={`block w-full py-2.5 rounded-xl text-sm font-black text-center transition-all active:scale-95 ${
+                hasCarePlan
+                  ? 'bg-violet-600 text-white hover:bg-violet-700'
+                  : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+              }`}
+            >
+              {hasCarePlan ? '지원목표 관리' : '관리하기'}
+            </Link>
+          </div>
+        )
+      })()}
 
       {selectedParticipant && (
         <p className="text-xs text-zinc-400 text-center mt-1">

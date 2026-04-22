@@ -4,6 +4,7 @@ import Link from 'next/link'
 import MonthlyPlansClient from './MonthlyPlansClient'
 import { getMonthlyPlans } from '@/app/actions/monthlyPlan'
 import { getSupportGoals } from '@/app/actions/supportGoal'
+import { parseMonth } from '@/utils/date'
 
 interface Props {
   params: Promise<{ participantId: string; month: string }>
@@ -37,7 +38,7 @@ export default async function MonthlyPlansEditPage({ params }: Props) {
     .eq('participant_id', participantId)
     .order('name', { ascending: true })
 
-  const normalizedMonth = month.length === 7 ? `${month}-01` : month
+  const { startDate: normalizedMonth, display: displayMonth } = parseMonth(month)
   const plans = await getMonthlyPlans(participantId, normalizedMonth)
 
   // 현재 연도 care_plan → support_goals
@@ -53,14 +54,11 @@ export default async function MonthlyPlansEditPage({ params }: Props) {
     ? (await getSupportGoals(carePlan.id)).filter(g => g.is_active)
     : []
 
-  const d = new Date(normalizedMonth)
-  const displayMonth = `${d.getFullYear()}년 ${d.getMonth() + 1}월`
-
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 p-8 pb-20">
       <header className="mb-8 flex items-center gap-4">
         <Link
-          href={`/supporter/evaluations/${participantId}/${month}`}
+          href={`/supporter/evaluations/${participantId}/${normalizedMonth}`}
           className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl font-bold"
         >←</Link>
         <div>

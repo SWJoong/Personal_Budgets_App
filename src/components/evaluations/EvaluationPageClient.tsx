@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import EvaluationForm from './EvaluationForm'
 import {
   EVAL_TEMPLATES,
@@ -8,6 +8,7 @@ import {
   type EvalTemplateId,
   type OrgEvalSetting,
 } from '@/types/eval-templates'
+import { getPrevMonthEvaluation } from '@/app/actions/copyPlan'
 
 interface Props {
   participantId: string
@@ -67,6 +68,10 @@ export default function EvaluationPageClient({
   initialTemplateId,
 }: Props) {
   const [templateId, setTemplateId] = useState<EvalTemplateId>(initialTemplateId)
+  const [formData, setFormData] = useState<any>(initialData)
+  const [formKey, setFormKey] = useState(0)
+  const [isPending, startTransition] = useTransition()
+  const [copyMsg, setCopyMsg] = useState('')
 
   const effectiveSetting: OrgEvalSetting = {
     active: templateId,
@@ -74,16 +79,47 @@ export default function EvaluationPageClient({
   }
   const templateFields = resolveTemplateFields(effectiveSetting)
 
-  const hasExistingData = !!initialData?.id
+  function handleLoadPrev() {
+    if (formData?.id && !confirm('현재 입력된 내용이 있습니다. 전월 내용으로 덮어쓸까요?')) return
+    setCopyMsg('')
+    startTransition(async () => {
+      const prev = await getPrevMonthEvaluation(participantId, month)
+      if (!prev) {
+        setCopyMsg('전월 평가 내용이 없습니다.')
+        return
+      }
+      // strip id/month so it's treated as new content for this month
+      const { id: _id, month: _month, published_at: _pub, ...rest } = prev
+      setFormData({ ...rest })
+      setTemplateId((prev.evaluation_template as EvalTemplateId) || 'pcp')
+      setFormKey(k => k + 1)
+      setCopyMsg('전월 내용을 불러왔습니다. 저장하면 이번 달에 반영돼요.')
+    })
+  }
+
+  const hasExistingData = !!formData?.id
   const templateChanged = templateId !== initialTemplateId
 
   return (
     <div className="flex flex-col gap-5">
       {/* 양식 선택 */}
       <div className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm">
-        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3">
-          평가 양식 선택
-        </p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+            평가 양식 선택
+          </p>
+          <button
+            type="button"
+            onClick={handleLoadPrev}
+            disabled={isPending}
+            className="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-600 font-bold text-xs hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+          >
+            {isPending ? '불러오는 중...' : '전월 내용 불러오기'}
+          </button>
+        </div>
+        {copyMsg && (
+          <p className="mb-3 text-xs text-blue-600 font-medium">{copyMsg}</p>
+        )}
         <div className="flex flex-wrap gap-2">
           {TEMPLATE_OPTIONS.map((opt) => {
             const isActive = templateId === opt.id
@@ -133,9 +169,10 @@ export default function EvaluationPageClient({
       </div>
 
       <EvaluationForm
+        key={formKey}
         participantId={participantId}
         month={month}
-        initialData={initialData}
+        initialData={formData}
         templateId={templateId}
         templateFields={templateFields}
       />

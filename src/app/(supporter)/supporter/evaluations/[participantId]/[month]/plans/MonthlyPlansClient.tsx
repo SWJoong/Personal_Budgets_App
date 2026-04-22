@@ -7,6 +7,7 @@ import {
   upsertMonthlyPlan,
   type MonthlyPlan,
 } from '@/app/actions/monthlyPlan'
+import { copyMonthlyPlans } from '@/app/actions/copyPlan'
 
 interface Props {
   participantId: string
@@ -66,8 +67,8 @@ export default function MonthlyPlansClient({
   const canAdd = drafts.length < 6
 
   const displayMonth = useMemo(() => {
-    const d = new Date(month)
-    return `${d.getFullYear()}년 ${d.getMonth() + 1}월`
+    const [y, mo] = month.split('-').map(Number)
+    return `${y}년 ${mo}월`
   }, [month])
 
   function nextOrderIndex(): number {
@@ -126,6 +127,28 @@ export default function MonthlyPlansClient({
     })
   }
 
+  async function handleCopyPrev() {
+    if (!confirm('전월 계획을 이번 달로 복사할까요?\n이미 같은 순서의 계획이 있으면 건너뜁니다.')) return
+    setError('')
+    setSuccessMsg('')
+    startTransition(async () => {
+      const res = await copyMonthlyPlans(participantId, month)
+      if (res.error) {
+        setError(res.error)
+        return
+      }
+      if (res.copied === 0 && res.skipped > 0) {
+        setSuccessMsg(`전월 계획 ${res.skipped}개가 이미 존재해 건너뛰었습니다.`)
+      } else {
+        setSuccessMsg(
+          `전월 계획 ${res.copied}개를 복사했어요.` +
+          (res.skipped > 0 ? ` (${res.skipped}개 순서 중복으로 건너뜀)` : '')
+        )
+        router.refresh()
+      }
+    })
+  }
+
   async function handleDelete(idx: number) {
     const d = drafts[idx]
     if (!confirm(`${d.order_index}번 계획을 삭제할까요?`)) return
@@ -151,19 +174,29 @@ export default function MonthlyPlansClient({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="text-sm text-zinc-500">
           <strong className="text-zinc-900">{displayMonth}</strong> 에 실행할 계획을 정리해주세요.
           각 계획의 제목, 예산, 예정일을 적으면 거래장부에서 연결할 수 있어요.
         </p>
-        <button
-          type="button"
-          onClick={addDraft}
-          disabled={!canAdd}
-          className="px-4 py-2 rounded-xl bg-zinc-900 text-white font-bold text-sm hover:bg-zinc-800 disabled:bg-zinc-300 transition-colors"
-        >
-          + 계획 추가 ({drafts.length}/6)
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={handleCopyPrev}
+            disabled={isPending}
+            className="px-4 py-2 rounded-xl bg-zinc-100 text-zinc-700 font-bold text-sm hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+          >
+            전월 복사
+          </button>
+          <button
+            type="button"
+            onClick={addDraft}
+            disabled={!canAdd}
+            className="px-4 py-2 rounded-xl bg-zinc-900 text-white font-bold text-sm hover:bg-zinc-800 disabled:bg-zinc-300 transition-colors"
+          >
+            + 계획 추가 ({drafts.length}/6)
+          </button>
+        </div>
       </div>
 
       {error && (
