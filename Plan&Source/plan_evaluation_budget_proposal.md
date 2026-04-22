@@ -8,7 +8,7 @@
 
 ---
 
-## 진행 현황 (2026-04-21 기준)
+## 진행 현황 (2026-04-22 기준)
 
 | Phase | 내용 | 상태 | 커밋 |
 |:---:|:---|:---:|:---|
@@ -21,12 +21,31 @@
 | C | Server Actions 3개 (supportGoal, goalEvaluation, budgetLineItem) | ✅ 완료 | `3c9632d` |
 | C | FE 컴포넌트 (SupportGoalsForm, BudgetLineItemsTable, GoalEvaluationCards) | ✅ 완료 | `b2ceb98` |
 | C | 당사자 `/my-plan` 읽기 전용 + monthly_plans support_goal 드롭다운 | ✅ 완료 | `d628b7a` |
-| F-1 | 평가 페이지 인라인 미리보기 (자동 redirect 제거, 드롭다운→searchParams 방식) | ✅ 완료 | — |
+| F-0 | `src/utils/date.ts` 생성 (KST 타임존 버그 근본 해결) | ✅ 완료 | `3b12876` |
+| F-1 | 평가 목록 진입 시 첫 당사자 자동 이동 (useEffect) | ✅ 완료 | `3b12876` |
+| F-2 | 평가 페이지 월 선택 P0 버그 수정 (toISOString → 순수 문자열 파싱) | ✅ 완료 | `3b12876` |
+| F-3 | 평가 페이지 좌측 활동 요약 → 계획별 거래 그룹 표시 | ✅ 완료 | `3b12876` |
+| F-4 | MonthlyPlanProgressTable "연결 목표" 컬럼 추가 | ✅ 완료 | `3b12876` |
+| F-6 | 활동 지도 전용 페이지 분리 (`/supporter/map`) + 사이드바 메뉴 추가 | ✅ 완료 | `bd8e318` |
+| F-7 | 당사자 통합 대시보드 (`/supporter/participants`, `/supporter/participants/[id]`) | ✅ 완료 | `bd8e318` |
+| G-1 | Migration 29 (`care_plans`, `evaluations` 인덱스) — DB 수동 실행 완료 | ✅ 완료 | `bd8e318` |
+| G-2 | 월별계획 저장 후 뒤로가기 404 버그 수정 (revalidatePath 캐시키 불일치) | ✅ 완료 | `3b12876` |
+| G-3 | 전월 복사 기능 (`copyPlan.ts` + 월별계획 "전월 복사" 버튼 + 평가 "전월 내용 불러오기") | ✅ 완료 | `3b12876` |
+| G-4 | 이용계획서 섹션에 "지원목표·예산 계획" 카드 추가 (`CarePlanSection.tsx`) | ✅ 완료 | `3b12876` |
+| 버그 | 지원목표 페이지 뒤로가기 404 수정 (존재하지 않는 라우트 → `/supporter/evaluations`) | ✅ 완료 | `8c4926b` |
+| 버그 | 활동 지도 필터 복원 (당사자·날짜·상태 필터 + 클라이언트 사이드 필터링) | ✅ 완료 | `6a3e07e` |
 
 > [!NOTE]
 > **v2 최종 점검 수정 사항 (2026-04-21)**
 > - `creator_id NOT NULL ... ON DELETE SET NULL` 모순 → **`ON DELETE RESTRICT`** 3곳 수정
 > - 나머지 Medium/Low 이슈(audit_logs RLS, evaluations 구조, care_plans_backup)는 Phase C BE 착수 시 반영
+
+> [!NOTE]
+> **Phase F/G 완료 요약 (2026-04-22)**
+> - KST 타임존 버그 전수 수정 → `src/utils/date.ts` 중앙화
+> - 전월 복사 기능: 월별계획(순서 충돌 skip) + 평가 텍스트(key prop으로 폼 remount)
+> - 지도 필터: 당사자·날짜·상태 클라이언트 사이드 필터링
+> - 이용계획서 화면에서 지원목표·예산 직접 관리 가능 (기존 evaluations/goals 페이지 연결)
 
 ---
 
@@ -1202,10 +1221,11 @@ Phase F-QA (검증 — 2일)
 
 | Phase | 내용 | 상태 |
 |:---:|:---|:---:|
-| G-1 | ERD 개선 (인덱스 추가) | ⬜ 계획 |
-| G-2 | 404 버그 수정 (월별계획 뒤로가기) | ⬜ 계획 |
-| G-3 | 전월 복사 기능 (월별계획 + 평가) | ⬜ 계획 |
-| G-4 | 이용계획서 선택란 지원목표·월별계획 반영 | ⬜ 계획 |
+| G-1 | ERD 개선 (인덱스 추가) — Migration 29 DB 실행 완료 | ✅ 완료 |
+| G-2 | 404 버그 수정 (월별계획 뒤로가기) — revalidatePath 캐시키 불일치 수정 | ✅ 완료 |
+| G-3 | 전월 복사 기능 (월별계획 + 평가) — `copyPlan.ts` + UI 버튼 | ✅ 완료 |
+| G-4 | 이용계획서 선택란 지원목표·월별계획 반영 — `CarePlanSection.tsx` 카드 추가 | ✅ 완료 |
+| 버그 | 지원목표 뒤로가기 404 + 활동 지도 필터 복원 | ✅ 완료 |
 
 ---
 
