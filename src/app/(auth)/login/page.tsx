@@ -232,6 +232,14 @@ export default function RoleSelectionPage() {
             — 버트런드 러셀, 《행복의 정복》
           </p>
 
+          <div className="w-full rounded-xl overflow-hidden mb-5">
+            <img 
+              src="/images/26oJy.jpg" 
+              alt="이스터에그 이미지" 
+              className="w-full object-contain max-h-48"
+            />
+          </div>
+
           <button
             onClick={() => setEasterEggOpen(false)}
             className="w-full py-2 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-700 transition-colors"
