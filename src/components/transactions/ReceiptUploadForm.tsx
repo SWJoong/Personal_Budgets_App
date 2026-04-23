@@ -280,7 +280,7 @@ export default function ReceiptUploadForm({
       <button
         type="submit"
         disabled={loading || analyzing}
-        className="w-full py-5 rounded-3xl bg-zinc-900 text-white text-xl font-black shadow-xl active:scale-95 disabled:bg-zinc-300 transition-all mt-4"
+        className="w-full py-5 rounded-3xl bg-green-600 text-white text-xl font-black shadow-xl active:scale-95 disabled:bg-zinc-300 transition-all mt-4"
       >
         {loading ? '등록 중...' : analyzing ? 'AI 분석 중...' : '활동 기록하기'}
       </button>

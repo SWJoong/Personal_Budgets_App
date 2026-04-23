@@ -170,6 +170,9 @@ export default function BlockCustomizeSheet({
 
   const enabledBlocks  = blocks.filter(b => b.enabled)
   const disabledBlocks = blocks.filter(b => !b.enabled)
+  const sheetTouchStartY = useRef(0)
+
+
 
   return (
     <>
@@ -189,7 +192,14 @@ export default function BlockCustomizeSheet({
         aria-modal="true"
         aria-label="화면 구성 편집"
       >
-        <div className="flex justify-center pt-3 pb-1">
+        <div
+          className="flex justify-center pt-3 pb-1 cursor-grab"
+          onTouchStart={e => { sheetTouchStartY.current = e.touches[0].clientY }}
+          onTouchMove={e => {
+            const delta = e.touches[0].clientY - sheetTouchStartY.current
+            if (delta > 50) onClose()
+          }}
+        >
           <div className="w-10 h-1 rounded-full bg-zinc-200" />
         </div>
 
@@ -231,7 +241,7 @@ export default function BlockCustomizeSheet({
               </p>
               <div ref={enabledListRef} className="flex flex-col gap-2">
                 {enabledBlocks.map((block) => {
-                  const meta       = BLOCK_METADATA[block.id]
+                  const meta = BLOCK_METADATA[block.id]
                   const isDragging = draggingId === block.id
                   const isTarget   = insertBeforeId === block.id && !!draggingId
 
@@ -287,10 +297,9 @@ export default function BlockCustomizeSheet({
                     </div>
                   )
                 })}
-
-                {/* 맨 아래 삽입 표시선 */}
-                {draggingId && insertBeforeId === 'END' && (
-                  <div className="h-0.5 rounded-full bg-blue-400 mx-1" />
+                {/* 마지막 위치에 드롭할 때 나타나는 안내선 */}
+                {insertBeforeId === 'END' && !!draggingId && (
+                  <div className="h-0.5 bg-blue-500 rounded-full mt-1" />
                 )}
               </div>
             </div>
@@ -324,7 +333,7 @@ export default function BlockCustomizeSheet({
 
           <button
             onClick={handleSave}
-            className="w-full mt-6 py-4 rounded-2xl bg-zinc-900 text-white font-black text-base active:scale-[0.98] transition-transform"
+            className="w-full mt-6 py-4 rounded-2xl bg-green-600 text-white font-black text-base active:scale-[0.98] transition-transform"
           >
             저장하기
           </button>

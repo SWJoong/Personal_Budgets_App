@@ -35,7 +35,10 @@
 | 버그 | 지원목표 페이지 뒤로가기 404 수정 (존재하지 않는 라우트 → `/supporter/evaluations`) | ✅ 완료 | `8c4926b` |
 | 버그 | 활동 지도 필터 복원 (당사자·날짜·상태 필터 + 클라이언트 사이드 필터링) | ✅ 완료 | `6a3e07e` |
 | H-사전 | 쉬운 정보 접근성 사전 수정 (BLOCK_METADATA 한자어, 수동태, 외래어, 특수문자, 괄호) | ✅ 완료 | — |
-| H-1~8 | Phase H: 당사자 직관성 강화 8개 항목 (×제거, 접기, 프리셋, ▲▼, 일러스트) | ⏳ 대기 | — |
+| H-1,4,5 | Wave 1: × 제거, 헤더 한글화, 요약 바 확대 | ✅ 완료 | — |
+| H-10,12,13 | Wave 0+1: 버튼 색상 초록/빨강 통일, 잔액 이펙트 수정, 신호등 테마 | ✅ 완료 | — |
+| H-2,3,9 | Wave 2: "이미 쓴 돈" 접기, 시뮬레이션 접기, FAB/도움말 숨김 | ✅ 완료 | — |
+| H-6~8,11 | Wave 3+4: 프리셋 버튼, ▲▼, 지폐 일러스트, 적응형 UI | ✅ 완료 | — |
 
 > [!NOTE]
 > **v2 최종 점검 수정 사항 (2026-04-21)**
@@ -48,6 +51,13 @@
 > - 전월 복사 기능: 월별계획(순서 충돌 skip) + 평가 텍스트(key prop으로 폼 remount)
 > - 지도 필터: 당사자·날짜·상태 클라이언트 사이드 필터링
 > - 이용계획서 화면에서 지원목표·예산 직접 관리 가능 (기존 evaluations/goals 페이지 연결)
+
+> [!NOTE]
+> **Phase H 완료 요약 (2026-04-23)**
+> - 당사자(발달장애인) 친화적인 "쉬운 정보" 접근성 13개 항목 전면 적용
+> - **시각/레이아웃**: 신호등 컬러 테마(초록/노랑/빨강) 적용, 지폐 SVG 일러스트 도입, 적응형 1뷰포트 UI(max-w-2xl) 적용
+> - **인지/텍스트**: 곱셈 기호(`×`) 제거 및 "1 장" 단위 표시, 헤더/전문 용어 완전 한글화
+> - **인터랙션**: "이미 쓴 돈"/시뮬레이션 기본 접기(토글형), 프리셋 버튼(1만/3만/5만원), ▲▼ 블록 순서 조작, 부드러운 잔액 애니메이션 도입
 
 ---
 
@@ -1651,6 +1661,12 @@ G-3 + G-4 병렬 (G-3: 1.5일 / G-4: 3일)
 | P9 | 시뮬레이션 프리셋 버튼 | M | `BalanceVisualWidget.tsx` |
 | P10 | 블록 순서 변경: 드래그 → ▲▼ 버튼 | M | `BlockCustomizeSheet.tsx` |
 | P13 | 현금 모드 지폐 일러스트 강화 | M | `BalanceCashViz.tsx` |
+| **추가 피드백 (2026-04-23 오후)** | | | |
+| F1 | `?` 도움말 + `화면 꾸미기` FAB 숨김 + 시트 pull-down 닫기 수정 | M | `HomeDashboard.tsx`, `BlockCustomizeSheet.tsx` |
+| F2 | 버튼 색상 통일: 긍정=초록, 부정=빨강 | M | 전역 (`globals.css` + 개별 컴포넌트) |
+| F3 | 적응형 UI — 모바일·웹 한 화면 대응 | M | `HomeDashboard.tsx`, `BalanceVisualWidget.tsx` |
+| F4 | 잔액 감소 이펙트 깨짐 수정 | S | `BalanceVisualWidget.tsx` |
+| F5 | 신호등 테마 컬러 체계 정립 (초록/노랑/빨강) | M | `budget-visuals.ts`, `globals.css`, 위젯 전역 |
 
 ---
 
@@ -1959,7 +1975,205 @@ function BillSvg({ value }: { value: number }) {
 
 ---
 
-## H-9. 역할별 공수 요약 및 실행 순서
+## H-9. F1 — `?` 도움말 · `화면 꾸미기` FAB 숨김 + 시트 닫기 수정
+
+**피드백**: 하단 `?` 도움말 버튼과 `화면 꾸미기 +` FAB가 당사자 집중을 방해. 화면 꾸미기 시트는 아래로 끌어서 닫는 기능이 작동하지 않음.
+
+### 변경사항
+
+| 구분 | 현재 | 변경 |
+|:---|:---|:---|
+| `?` 도움말 버튼 | 헤더 우측 항상 표시 | 더보기(`/more`) 페이지로 이동, 홈 헤더에서 제거 |
+| `화면 꾸미기 +` FAB | 화면 하단 항상 고정 | 더보기(`/more`) → 화면 설정 섹션 내부로 이동 |
+| 시트 pull-down 닫기 | 터치 드래그 미작동 | `onTouchMove` + 임계값(50px) 기반 닫기 구현 |
+
+### 구현 시나리오
+
+```diff
+# HomeDashboard.tsx — 헤더에서 HelpButton 제거
+- <HelpButton sectionKey="home" />
+
+# HomeDashboard.tsx — FAB 제거
+- <button className="fixed bottom-6 right-6 ..." onClick={openCustomize}>
+-   화면 꾸미기 +
+- </button>
+
+# MoreMenuClient.tsx — 화면 설정 섹션에 "화면 꾸미기" 버튼 추가
++ <button onClick={openCustomize} className="...">
++   🎨 화면 꾸미기
++ </button>
+```
+
+```tsx
+// BlockCustomizeSheet.tsx — pull-down 닫기 구현
+const touchStartY = useRef(0)
+const onTouchStart = (e: React.TouchEvent) => {
+  touchStartY.current = e.touches[0].clientY
+}
+const onTouchMove = (e: React.TouchEvent) => {
+  const delta = e.touches[0].clientY - touchStartY.current
+  if (delta > 50) onClose()  // 50px 아래로 스와이프 시 닫기
+}
+```
+
+**공수**: M (2시간)
+
+---
+
+## H-10. F2 — 버튼 색상 통일 (긍정=초록, 부정=빨강)
+
+**피드백**: 추가·저장 등 긍정 기능은 초록, 취소·삭제 등 부정 기능은 빨강으로 통일.
+
+### 색상 규칙 정의
+
+| 의미 | 색상 | Tailwind 클래스 | 사용 예 |
+|:---|:---|:---|:---|
+| 긍정 (추가/저장/확인) | 초록 | `bg-green-600 text-white` | 저장하기, 활동 기록하기, 계획 세우기 |
+| 중립 (이동/닫기) | 흰/회색 | `bg-zinc-100 text-zinc-700` | 닫기, 더보기, 접기 |
+| 부정 (취소/삭제/나가기) | 빨강 | `bg-red-50 text-red-600` / `bg-red-600 text-white` | 삭제, 안전하게 나가기 |
+
+### 주요 변경 대상
+
+| 파일 | 현재 | 변경 |
+|:---|:---|:---|
+| `BalanceVisualWidget.tsx` 제출 버튼 | `bg-zinc-900` (검정) | `bg-green-600` (초록) |
+| `BlockCustomizeSheet.tsx` 저장 버튼 | `bg-zinc-900` (검정) | `bg-green-600` (초록) |
+| `PlanChatContainer.tsx` 계획 저장 | `bg-zinc-900` (검정) | `bg-green-600` (초록) |
+| `MoreMenuClient.tsx` 나가기 버튼 | `bg-red-50` (연빨강) | 유지 (이미 빨강 계열) |
+| `ReceiptUploadForm.tsx` 제출 버튼 | `bg-zinc-900` (검정) | `bg-green-600` (초록) |
+
+**공수**: M (2시간 — 전역 검색·교체 + 시각 QA)
+
+---
+
+## H-11. F3 — 적응형 UI (모바일·웹 한 화면)
+
+**피드백**: 모바일, 웹사이트 관계 없이 한 화면 안에 핵심 정보가 보여야 함.
+
+### 현재 문제
+
+- 모바일(375px): 잔액 위젯 + 현금 시각화가 스크롤 없이 보이지 않음
+- 웹(1440px): 모바일 레이아웃이 좌측에 좁게 표시됨
+
+### 변경사항
+
+| 구분 | 변경 |
+|:---|:---|
+| 웹(768px 이상) | `max-w-lg mx-auto` → `max-w-2xl` 확대 + 2컬럼 그리드 옵션 |
+| 모바일(375px) | 잔액 숫자 + 게이지 바 + 상태 메시지를 **1 뷰포트 높이** 내 표시 |
+| 공통 | 잔액 위젯 높이를 `max-h-[calc(100dvh-120px)]` 이내로 제약 |
+| P2/P3 접기 | "이미 쓴 돈" + 시뮬레이션 기본 접기로 초기 뷰포트 내 노출 보장 |
+
+```diff
+# HomeDashboard.tsx — 메인 래퍼
+- <main className="flex-1 px-4 py-6 w-full">
++ <main className="flex-1 px-4 py-6 w-full max-w-2xl mx-auto">
+```
+
+**공수**: M (3시간 — 반응형 테스트 포함)
+
+---
+
+## H-12. F4 — 잔액 감소 이펙트 깨짐 수정
+
+**피드백**: 남은 금액 반영 후 줄어드는 이펙트가 깨짐.
+
+### 추정 원인
+
+`BalanceVisualWidget.tsx`의 `pendingDeduction` 적용 시 `displayBalance` 애니메이션:
+
+```tsx
+// 현재 코드 (L760~)
+useEffect(() => {
+  // displayBalance를 targetBalance로 카운트다운
+  const interval = setInterval(() => {
+    setDisplayBalance(prev => {
+      if (prev <= targetBalance) { clearInterval(interval); return targetBalance }
+      return prev - step
+    })
+  }, 16)
+}, [targetBalance])
+```
+
+### 수정 방향
+
+1. `requestAnimationFrame` 기반 부드러운 감소로 전환
+2. `step` 계산을 duration 기반(500ms)으로 고정
+3. 컴포넌트 언마운트 시 cleanup 보장
+
+```tsx
+// 개선 코드
+useEffect(() => {
+  const start = displayBalanceRef.current
+  const end = targetBalance
+  const duration = 500  // ms
+  const startTime = performance.now()
+
+  function animate(now: number) {
+    const elapsed = now - startTime
+    const progress = Math.min(elapsed / duration, 1)
+    const eased = 1 - Math.pow(1 - progress, 3)  // easeOutCubic
+    const current = Math.round(start + (end - start) * eased)
+    setDisplayBalance(current)
+    if (progress < 1) rafId = requestAnimationFrame(animate)
+  }
+
+  let rafId = requestAnimationFrame(animate)
+  return () => cancelAnimationFrame(rafId)
+}, [targetBalance])
+```
+
+**공수**: S (1시간)
+
+---
+
+## H-13. F5 — 신호등 테마 컬러 체계 정립
+
+**피드백**: 기본 테마 컬러를 신호등(초록/노랑/빨강)으로 통일.
+
+### 색상 체계 정의
+
+| 의미 | 색상 | CSS 변수 | 사용 장면 |
+|:---|:---|:---|:---|
+| **긍정/안전** | 초록 `#16a34a` | `--color-positive` | 잔액 충분, 저장 성공, 확인 완료 |
+| **주의/관찰** | 노랑 `#ca8a04` | `--color-caution` | 잔액 주의, 대기 중, 속도 경고 |
+| **경고/위험** | 빨강 `#dc2626` | `--color-negative` | 잔액 부족, 삭제, 초과 |
+
+### 적용 대상
+
+| 파일 | 현재 색상 | 변경 |
+|:---|:---|:---|
+| `budget-visuals.ts` luxury/stable | green/blue | green/green |
+| `budget-visuals.ts` observing | indigo | **yellow** (caution) |
+| `budget-visuals.ts` shrinking/warning | orange | **yellow → red** 그라데이션 |
+| `budget-visuals.ts` critical/empty | red | red 유지 |
+| `BalanceVisualWidget.tsx` 게이지 바 | blue-500 → red | green → yellow → red |
+| `MonthlyPlanMiniProgress.tsx` 진행 바 | green/orange/red | green/yellow/red |
+
+```diff
+# globals.css — 신호등 CSS 변수 추가
++ :root {
++   --color-positive: #16a34a;
++   --color-caution: #ca8a04;
++   --color-negative: #dc2626;
++ }
+
+# budget-visuals.ts — 상태별 색상 매핑 변경
+  } else if (percentage >= 61) {
+    status = 'stable'
+-   themeColor = 'blue'
++   themeColor = 'green'
+  } else if (percentage >= 41) {
+    status = 'observing'
+-   themeColor = 'indigo'
++   themeColor = 'yellow'
+```
+
+**공수**: M (2시간 — 전역 색상 변경 + 시각 QA)
+
+---
+
+## H-14. 역할별 공수 요약 및 실행 순서 (통합)
 
 ### 공수 요약
 
@@ -1973,39 +2187,48 @@ function BillSvg({ value }: { value: number }) {
 | H-6 (P9) | 시뮬레이션 프리셋 | M | S | ~1일 |
 | H-7 (P10) | ▲▼ 순서 변경 | M | M | ~1.5일 |
 | H-8 (P13) | 지폐 일러스트 | M | M | ~1.5일 |
+| **H-9 (F1)** | **FAB/도움말 숨김 + 시트 닫기** | **M** | **S** | **~1일** |
+| **H-10 (F2)** | **버튼 색상 통일 (초록/빨강)** | **M** | **M** | **~1일** |
+| **H-11 (F3)** | **적응형 UI 한 화면** | **M** | **M** | **~1.5일** |
+| **H-12 (F4)** | **잔액 이펙트 수정** | **S** | **S** | **~0.5일** |
+| **H-13 (F5)** | **신호등 테마 컬러** | **M** | **M** | **~1일** |
 
-**총 예상 공수**: ~6인일
+**총 예상 공수**: ~11인일 (기존 6인일 + 추가 피드백 5인일)
 
 ### 실행 순서 (의존성 기준)
 
 ```
-── Wave 1: 즉시 수정 (0.5일) ──────────────
-  H-1 (× 제거) + H-4 (헤더) + H-5 (텍스트 확대)
+── Wave 0: 테마 기반 (1일) — 다른 UI 변경의 선행 조건 ──
+  H-13 (신호등 컬러 체계) + H-10 (버튼 색상 통일)
   ↓
-── Wave 2: 접기 패턴 (1일) ────────────────
-  H-2 (쓴 돈 접기) + H-3 (시뮬레이션 접기)
+── Wave 1: 즉시 수정 (0.5일) ──────────────
+  H-1 (× 제거) + H-4 (헤더) + H-5 (텍스트 확대) + H-12 (이펙트 수정)
+  ↓
+── Wave 2: 접기·숨김 패턴 (1.5일) ─────────
+  H-2 (쓴 돈 접기) + H-3 (시뮬레이션 접기) + H-9 (FAB/도움말 숨김)
   ↓
 ── Wave 3: 인터랙션 개선 (2.5일, 병렬 가능) ─
   H-6 (프리셋 버튼)  ←→  H-7 (▲▼ 버튼)
   ↓
-── Wave 4: 시각 강화 (1.5일) ──────────────
-  H-8 (지폐 일러스트)
+── Wave 4: 시각·레이아웃 강화 (2.5일, 병렬 가능) ─
+  H-8 (지폐 일러스트)  ←→  H-11 (적응형 UI)
   ↓
-── 통합 QA (0.5일) ─────────────────────
+── 통합 QA (1일) ──────────────────────
 ```
 
 ---
 
-## H-10. Phase H 실행 요청 메시지
+## H-15. Phase H 실행 요청 메시지
 
 ```
 제안서 /Plan&Source/plan_evaluation_budget_proposal.md 의 "Phase H" 섹션을 참조해 구현을 진행해주세요.
 
 우선순위:
-1. Wave 1: H-1 + H-4 + H-5 (즉시 수정 — × 제거, 헤더 한글화, 텍스트 확대)
-2. Wave 2: H-2 + H-3 (접기 패턴 — "이미 쓴 돈" 접기, 시뮬레이션 접기)
+0. Wave 0: H-13 + H-10 (선행 — 신호등 테마 컬러 + 버튼 색상 통일)
+1. Wave 1: H-1 + H-4 + H-5 + H-12 (즉시 수정 — × 제거, 헤더, 텍스트, 이펙트)
+2. Wave 2: H-2 + H-3 + H-9 (접기/숨김 — 쓴 돈, 시뮬레이션, FAB/도움말)
 3. Wave 3: H-6 + H-7 (인터랙션 — 프리셋 버튼, ▲▼ 순서 버튼)
-4. Wave 4: H-8 (시각 — 지폐 일러스트)
+4. Wave 4: H-8 + H-11 (시각/레이아웃 — 지폐 일러스트, 적응형 UI)
 
 완료 기준:
 - npm run build 통과
@@ -2015,8 +2238,15 @@ function BillSvg({ value }: { value: number }) {
 - H-6: 1만원/3만원/5만원 프리셋 버튼 동작
 - H-7: ▲▼ 버튼으로 블록 순서 변경 가능 (드래그 제거)
 - H-8: 5만원/1만원/5천원/1천원 SVG 일러스트 렌더링
+- H-9: 홈 화면에서 ? 도움말 버튼, 화면 꾸미기 FAB 미노출
+- H-10: 저장·추가 버튼 → 초록, 삭제·나가기 → 빨강 확인
+- H-11: 모바일(375px) + 웹(1440px) 양쪽에서 첫 화면 1뷰포트 내 핵심 정보 노출
+- H-12: 잔액 감소 애니메이션 부드럽게 동작 (500ms easeOut)
+- H-13: 게이지 바·상태 메시지가 신호등 색상(초록→노랑→빨강) 적용
 
 접근성 기준:
 - evaluation-checklist.md 영역 A (A-20: 특수문자 금지) 통과
 - evaluation-checklist.md 영역 D (D-01: 정보 과부하 방지) 통과
+- 버튼 색상 → 직관적 의미 전달 (2017 안내서 §이미지 원칙)
+- 신호등 색상 → 상태 인지 강화 (2021 안내서 §시각적 요소 규칙)
 ```

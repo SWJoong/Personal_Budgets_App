@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { EasyTerm } from '@/components/ui/EasyTerm'
+import BillSvg from './BillIllustration'
 
 interface Props {
   displayBalance: number
@@ -61,9 +62,9 @@ function BillStack({ d, pending, spent }: { d: Denom & { count: number }; pendin
             }}
           >
             {i === 0 && (
-              <span className={`text-xs font-black ${d.text} tracking-tight relative z-10`}>
-                {d.label}
-              </span>
+              <div className="w-full h-full p-0.5">
+                <BillSvg value={d.value} />
+              </div>
             )}
             {/* spent: 맨 앞 카드에 빨간 X 오버레이 */}
             {spent && i === 0 && (
@@ -79,8 +80,8 @@ function BillStack({ d, pending, spent }: { d: Denom & { count: number }; pendin
       </div>
       <div className="flex flex-col leading-tight">
         <span className={`text-lg font-black ${spent ? 'text-zinc-400 line-through decoration-red-400 decoration-2' : 'text-zinc-800'}`}>
-          × {d.count}
-          <span className="text-xs font-bold text-zinc-500 ml-1">{d.unit}</span>
+          {d.count}
+          <span className="text-xs font-bold text-zinc-500 ml-0.5">{d.unit}</span>
         </span>
         <span className="text-[11px] font-medium text-zinc-400">
           {formatCurrency(d.value * d.count)}원
@@ -126,13 +127,50 @@ function CoinStack({ d, pending, spent }: { d: Denom & { count: number }; pendin
       </div>
       <div className="flex flex-col leading-tight">
         <span className={`text-lg font-black ${spent ? 'text-zinc-400 line-through decoration-red-400 decoration-2' : 'text-zinc-800'}`}>
-          × {d.count}
-          <span className="text-xs font-bold text-zinc-500 ml-1">{d.unit}</span>
+          {d.count}
+          <span className="text-xs font-bold text-zinc-500 ml-0.5">{d.unit}</span>
         </span>
         <span className="text-[11px] font-medium text-zinc-400">
           {formatCurrency(d.value * d.count)}원
         </span>
       </div>
+    </div>
+  )
+}
+
+/* ── "이미 쓴 돈" 접기/펼치기 섹션 ── */
+function SpentSection({ spentAmount, visibleSpent }: { spentAmount: number; visibleSpent: (Denom & { count: number })[] }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="border-t border-dashed border-red-200 pt-4">
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between mb-2"
+      >
+        <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">
+          🧾 <EasyTerm formal="이번 달 사용액" easy="이미 쓴 돈" />
+        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-black text-red-500">
+            -{formatCurrency(spentAmount)}원
+          </p>
+          <span className="text-[10px] text-zinc-400 font-bold">
+            {open ? '▲ 접기' : '▼ 자세히'}
+          </span>
+        </div>
+      </button>
+      {open && (
+        <div className="flex flex-col gap-4 opacity-[0.65] animate-fade-in-up">
+          {visibleSpent.map(d =>
+            d.kind === 'bill' ? (
+              <BillStack key={d.value} d={d} spent />
+            ) : (
+              <CoinStack key={d.value} d={d} spent />
+            )
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -203,33 +241,15 @@ export default function CashViz({ displayBalance, pendingDeduction, totalBudget 
         </div>
       )}
 
-      {/* ━━ 이미 사용한 돈 ━━ */}
+      {/* ━━ 이미 사용한 돈 (기본 접기) ━━ */}
       {hasSpent && visibleSpent.length > 0 && (
-        <div className="border-t border-dashed border-red-200 pt-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">
-              🧾 <EasyTerm formal="이번 달 사용액" easy="이미 쓴 돈" />
-            </p>
-            <p className="text-sm font-black text-red-500">
-              -{formatCurrency(spentAmount)}원
-            </p>
-          </div>
-          <div className="flex flex-col gap-4 opacity-[0.65]">
-            {visibleSpent.map(d =>
-              d.kind === 'bill' ? (
-                <BillStack key={d.value} d={d} spent />
-              ) : (
-                <CoinStack key={d.value} d={d} spent />
-              )
-            )}
-          </div>
-        </div>
+        <SpentSection spentAmount={spentAmount} visibleSpent={visibleSpent} />
       )}
 
       {/* ━━ 요약 바 ━━ */}
       {totalBudget > 0 && (
         <div className="border-t border-zinc-100 pt-3">
-          <div className="flex items-center gap-2 text-[10px] font-bold">
+          <div className="flex items-center gap-2 text-xs font-bold">
             <div className="flex items-center gap-1.5 flex-1">
               <div className="w-2.5 h-2.5 rounded-sm bg-green-400" />
               <span className="text-zinc-500">남은 돈 {formatCurrency(displayBalance)}</span>

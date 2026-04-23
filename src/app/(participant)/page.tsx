@@ -162,7 +162,7 @@ export default async function Home() {
       recentTransactions={recentTransactions || []}
       remainingDays={remainingDays}
       totalDaysInMonth={totalDaysInMonth}
-      userName={profile?.name || user.email?.split('@')[0] || ''}
+      userName={profile?.name || '사용자'}
       dailyTransactions={dailyTransactions || []}
       monthlyTrend={monthlyTrend}
       uiPreferences={uiPreferences}

@@ -46,20 +46,20 @@ export function getBudgetVisualInfo(
     status = 'stable';
     message = '예산이 안정적이에요. 잘하고 있어요!';
     icon = '👛'; // 지갑
-    themeColor = 'blue';
-    bgClass = 'bg-blue-50';
+    themeColor = 'green';
+    bgClass = 'bg-green-50';
   } else if (percentage >= 41) {
     status = 'observing';
     message = '예산을 살펴보며 쓰고 있어요. 지금처럼만 해요.';
     icon = '🪙'; // 동전
-    themeColor = 'indigo';
-    bgClass = 'bg-zinc-50';
+    themeColor = 'yellow';
+    bgClass = 'bg-yellow-50';
   } else if (percentage >= 21) {
     status = 'shrinking';
     message = '남은 돈이 줄고 있어요. 다음 활동을 신중히 골라봐요.';
     icon = '💸'; // 날아가는 돈
-    themeColor = 'orange';
-    bgClass = 'bg-orange-50';
+    themeColor = 'yellow';
+    bgClass = 'bg-yellow-50';
   } else if (percentage >= 11) {
     status = 'critical';
     message = '남은 돈이 적어요. 꼭 필요한 곳에만 사용하는 게 좋아요.';
@@ -79,8 +79,8 @@ export function getBudgetVisualInfo(
     message = '예산을 조금 빠르게 쓰고 있어요. 조금만 천천히 써봐요.';
     icon = '🏃';
     status = 'warning';
-    themeColor = 'orange';
-    bgClass = 'bg-orange-50';
+    themeColor = 'yellow';
+    bgClass = 'bg-yellow-50';
   }
 
   return { status, message, icon, percentage, themeColor, bgClass };

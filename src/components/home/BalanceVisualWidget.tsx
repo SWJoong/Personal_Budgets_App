@@ -22,6 +22,7 @@ const DEFAULT_EMOJI_FAVORITES = ['🍎', '🍪', '⭐', '🐥', '🌸', '🎈', 
 const THEME = {
   green:  { fill: '#22c55e', stroke: '#16a34a', light: '#dcfce7', text: 'text-green-700', bg: 'bg-green-50', border: 'border-green-100' },
   blue:   { fill: '#3b82f6', stroke: '#2563eb', light: '#dbeafe', text: 'text-blue-700',  bg: 'bg-blue-50',  border: 'border-blue-100' },
+  yellow: { fill: '#ca8a04', stroke: '#a16207', light: '#fef9c3', text: 'text-yellow-700', bg: 'bg-yellow-50', border: 'border-yellow-100' },
   indigo: { fill: '#6366f1', stroke: '#4f46e5', light: '#e0e7ff', text: 'text-indigo-700', bg: 'bg-zinc-50', border: 'border-zinc-100' },
   orange: { fill: '#f97316', stroke: '#ea580c', light: '#ffedd5', text: 'text-orange-700', bg: 'bg-orange-50', border: 'border-orange-100' },
   red:    { fill: '#ef4444', stroke: '#dc2626', light: '#fee2e2', text: 'text-red-700',   bg: 'bg-red-50',   border: 'border-red-100' },
@@ -29,6 +30,106 @@ const THEME = {
 } as const
 
 type ThemeKey = keyof typeof THEME
+
+/* ── 시뮬레이션 접기/프리셋 섹션 ── */
+const SIM_PRESETS = [10000, 30000, 50000]
+
+function SimulationSection({
+  simAmount, setSimAmount, simValue, simBalance, isSimOver, displayBalance,
+}: {
+  simAmount: string
+  setSimAmount: (v: string) => void
+  simValue: number
+  simBalance: number
+  isSimOver: boolean
+  displayBalance: number
+}) {
+  const [open, setOpen] = useState(false)
+
+  if (!open) {
+    return (
+      <div className="px-5 pb-3 pt-1">
+        <button
+          onClick={() => setOpen(true)}
+          className="w-full py-3 rounded-2xl bg-zinc-50 ring-1 ring-zinc-100
+            text-sm font-bold text-zinc-400 hover:bg-zinc-100 transition-all
+            flex items-center justify-center gap-2 active:scale-[0.98]"
+        >
+          🛍️ 이만큼 사면 얼마 남을까?
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="px-5 pb-4 pt-2 flex flex-col gap-3">
+      {/* 프리셋 버튼 */}
+      <div className="flex gap-2">
+        {SIM_PRESETS.map(amount => {
+          const colors: Record<number, { base: string; active: string }> = {
+            10000: { base: 'bg-green-50 text-green-700 hover:bg-green-100 ring-1 ring-green-200', active: 'bg-green-600 text-white shadow-md ring-1 ring-green-600' },
+            30000: { base: 'bg-blue-50 text-blue-700 hover:bg-blue-100 ring-1 ring-blue-200', active: 'bg-blue-600 text-white shadow-md ring-1 ring-blue-600' },
+            50000: { base: 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 ring-1 ring-yellow-200', active: 'bg-yellow-500 text-white shadow-md ring-1 ring-yellow-500' },
+          }
+          const c = colors[amount] || { base: 'bg-zinc-100 text-zinc-600', active: 'bg-zinc-900 text-white' }
+          const isActive = simValue === amount
+
+          return (
+            <button
+              key={amount}
+              onClick={() => setSimAmount(String(amount))}
+              className={`flex-1 py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
+                isActive ? c.active : c.base
+              }`}
+            >
+              {formatCurrency(amount)}원
+            </button>
+          )
+        })}
+      </div>
+
+      {/* 직접 입력 */}
+      <details className="text-xs">
+        <summary className="text-zinc-400 cursor-pointer font-bold">
+          다른 금액 직접 적기
+        </summary>
+        <div className="mt-2 flex items-center gap-3 px-4 py-3 rounded-2xl ring-1 ring-zinc-100 bg-zinc-50">
+          <span className="text-lg shrink-0">🛍️</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            step={1000}
+            value={simAmount}
+            onChange={e => setSimAmount(e.target.value)}
+            placeholder="금액을 써요"
+            className="flex-1 bg-transparent outline-none text-sm font-bold text-zinc-700 placeholder:text-zinc-300 min-w-0"
+          />
+          <span className="text-sm font-bold text-zinc-400 shrink-0">원</span>
+        </div>
+      </details>
+
+      {/* 결과 표시 */}
+      {simValue > 0 && (
+        <div className={`p-4 rounded-2xl flex items-center justify-between ${isSimOver ? 'bg-red-50' : 'bg-zinc-50'}`}>
+          <span className="text-xs text-zinc-400 font-bold">
+            <EasyTerm formal="구매 후 잔액" easy="사고 남는 돈" />
+          </span>
+          <span className={`text-sm font-black ${isSimOver ? 'text-red-500' : 'text-zinc-800'}`}>
+            {isSimOver ? '돈이 부족해요 ❌' : `${formatCurrency(simBalance)}원`}
+          </span>
+        </div>
+      )}
+
+      {/* 닫기 */}
+      <button
+        onClick={() => { setOpen(false); setSimAmount('') }}
+        className="text-xs text-zinc-400 font-bold text-center"
+      >
+        닫기
+      </button>
+    </div>
+  )
+}
 
 interface Props {
   currentBalance: number
@@ -520,8 +621,32 @@ export default function BalanceVisualWidget({
   // 금액 시뮬레이션 — "이만큼 사면 얼마나 남을까?"
   const [simAmount, setSimAmount] = useState('')
 
-  // 화면에 보여줄 실제 잔액 (낙관적 차감 적용)
-  const displayBalance = Math.max(0, currentBalance - pendingDeduction)
+  // 화면에 보여줄 실제 잔액 (부드러운 전환 적용)
+  const targetBalance = Math.max(0, currentBalance - pendingDeduction)
+  const [displayBalance, setDisplayBalance] = useState(targetBalance)
+  const displayRef = useRef(targetBalance)
+
+  useEffect(() => {
+    const start = displayRef.current
+    const end = targetBalance
+    if (start === end) return
+    const duration = 500
+    const startTime = performance.now()
+
+    function animate(now: number) {
+      const elapsed = now - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)  // easeOutCubic
+      const current = Math.round(start + (end - start) * eased)
+      displayRef.current = current
+      setDisplayBalance(current)
+      if (progress < 1) rafId = requestAnimationFrame(animate)
+    }
+
+    let rafId = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(rafId)
+  }, [targetBalance])
+
   const displayPct = totalBudget > 0 ? Math.round((displayBalance / totalBudget) * 100) : percentage
 
   // 시뮬레이션 적용 퍼센트 (차트에 반영)
@@ -779,27 +904,26 @@ export default function BalanceVisualWidget({
           </div>
         </div>
 
-        {/* 차트 스타일 전환 */}
-        <div className="flex bg-zinc-100 rounded-xl p-1 gap-1 shrink-0 ml-2 mt-0.5">
-          {STYLE_OPTIONS.map(opt => (
-            <button
-              key={opt.key}
-              onClick={() => changeStyle(opt.key)}
-              aria-label={opt.title}
-              aria-pressed={style === opt.key}
-              title={opt.title}
-              className={`flex flex-col items-center justify-center w-10 min-h-[52px] rounded-lg transition-all duration-200 gap-0.5 ${
-                style === opt.key
-                  ? 'bg-white shadow-sm scale-105'
-                  : 'hover:bg-zinc-200 active:scale-95'
-              }`}
-            >
-              <span className="text-lg leading-none">{opt.label}</span>
-              <span className={`text-[9px] font-bold leading-none ${style === opt.key ? 'text-zinc-700' : 'text-zinc-400'}`}>
-                {opt.short}
-              </span>
-            </button>
-          ))}
+        {/* 차트 스타일 전환 (드롭다운) */}
+        <div className="shrink-0 ml-2 mt-0.5 relative">
+          <select
+            value={style}
+            onChange={(e) => changeStyle(e.target.value as WidgetStyle)}
+            className="appearance-none bg-zinc-100 hover:bg-zinc-200 border-none text-zinc-700 text-xs font-bold rounded-xl pl-3 pr-8 py-2 focus:outline-none transition-colors cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2371717a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 0.6rem top 50%',
+              backgroundSize: '0.6rem auto',
+            }}
+            aria-label="잔액 요약 위젯 보기 방식 설정"
+          >
+            {STYLE_OPTIONS.map(opt => (
+              <option key={opt.key} value={opt.key}>
+                {opt.label} {opt.short}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -864,37 +988,15 @@ export default function BalanceVisualWidget({
         {style === 'text' && <TextViz percentage={activePct} currentBalance={simValue > 0 ? simBalance : displayBalance} />}
       </div>
 
-      {/* 금액 시뮬레이션 — "이만큼 사면 얼마 남을까?" */}
-      <div className="px-5 pb-4 pt-2">
-        <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl ring-1 transition-colors ${
-          isSimOver ? 'bg-red-50 ring-red-200' : simValue > 0 ? 'bg-zinc-50 ring-zinc-200' : 'bg-zinc-50 ring-zinc-100'
-        }`}>
-          <span className="text-lg shrink-0">🛍️</span>
-          <input
-            type="number"
-            inputMode="numeric"
-            step={1000}
-            value={simAmount}
-            onChange={e => setSimAmount(e.target.value)}
-            placeholder="금액을 써요"
-            className="flex-1 bg-transparent outline-none text-sm font-bold text-zinc-700 placeholder:text-zinc-300 placeholder:font-medium min-w-0"
-          />
-          <span className="text-sm font-bold text-zinc-400 shrink-0">원</span>
-          {simAmount && (
-            <button onClick={() => setSimAmount('')} className="text-zinc-300 hover:text-zinc-500 text-xs shrink-0">✕</button>
-          )}
-        </div>
-        {simValue > 0 && (
-          <div className="mt-2 flex items-center justify-between px-1">
-            <span className="text-xs text-zinc-400 font-bold">
-              <EasyTerm formal="구매 후 잔액" easy="사고 남는 돈" />
-            </span>
-            <span className={`text-sm font-black transition-colors ${isSimOver ? 'text-red-500' : 'text-zinc-800'}`}>
-              {isSimOver ? '돈이 부족해요 ❌' : `${formatCurrency(simBalance)}원`}
-            </span>
-          </div>
-        )}
-      </div>
+      {/* 금액 시뮬레이션 — 기본 접기 + 프리셋 버튼 */}
+      <SimulationSection
+        simAmount={simAmount}
+        setSimAmount={setSimAmount}
+        simValue={simValue}
+        simBalance={simBalance}
+        isSimOver={isSimOver}
+        displayBalance={displayBalance}
+      />
 
       {/* 상태 메시지 */}
       <div className={`px-5 py-3 flex items-center gap-3 ${c.bg} border-t ${c.border}`}>
@@ -1048,7 +1150,7 @@ export default function BalanceVisualWidget({
                 type="button"
                 disabled={uploadSubmitting || uploadAnalyzing || !uploadDescription || !uploadAmount}
                 onClick={handleInlineSubmit}
-                className="w-full mt-4 py-4 rounded-2xl bg-zinc-900 text-white font-black text-base active:scale-[0.98] transition-all disabled:bg-zinc-300"
+                className="w-full mt-4 py-4 rounded-2xl bg-green-600 text-white font-black text-base active:scale-[0.98] transition-all disabled:bg-zinc-300"
               >
                 {uploadSubmitting ? '기록하는 중...' : uploadAnalyzing ? '사진 읽는 중...' : '활동 기록하기'}
               </button>

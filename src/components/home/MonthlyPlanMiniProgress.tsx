@@ -24,7 +24,7 @@ export default function MonthlyPlanMiniProgress({
   plans,
   isStaff = false,
 }: Props) {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
 
   if (!plans || plans.length === 0) return null
 
@@ -65,7 +65,7 @@ export default function MonthlyPlanMiniProgress({
                 </div>
                 <div className="h-2 rounded-full bg-zinc-100 overflow-hidden">
                   <div
-                    className={`h-full transition-all ${pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-orange-500' : 'bg-green-500'}`}
+                    className={`h-full transition-all ${pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>

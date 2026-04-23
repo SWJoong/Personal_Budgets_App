@@ -99,32 +99,38 @@ function FaqModal({ onClose }: { onClose: () => void }) {
   return createPortal(modal, document.body)
 }
 
+import { usePathname } from 'next/navigation'
+import HelpButton from '@/components/help/HelpButton'
+
 interface Props {
-  /** 당사자 화면: 하단 탭바 위에 위치, 관리자 화면: 하단 우측 고정 */
-  variant?: 'participant' | 'admin'
+  /** participant: 플로팅, admin: 플로팅, inline: 일반 버튼 */
+  variant?: 'participant' | 'admin' | 'inline'
+  className?: string
 }
 
-export default function FaqButton({ variant = 'participant' }: Props) {
+export default function FaqButton({ variant = 'participant', className }: Props) {
   const [open, setOpen] = useState(false)
 
   if (FAQ_ITEMS.length === 0) return null
 
-  const positionClass = variant === 'participant'
-    ? 'fixed bottom-20 right-4 z-[100]'   // TabBar 높이(64px) 위
-    : 'fixed bottom-6 right-6 z-[100]'
+  let positionClass = ''
+  if (variant === 'participant') positionClass = 'fixed bottom-20 right-4 z-[100]'
+  else if (variant === 'admin') positionClass = 'fixed bottom-6 right-6 z-[100]'
 
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className={`${positionClass} flex items-center gap-1.5 px-3 py-2 rounded-full bg-white shadow-lg ring-1 ring-zinc-200 hover:ring-blue-300 hover:shadow-blue-100 transition-all active:scale-95 text-zinc-600 hover:text-blue-600 group`}
+        className={className || `${positionClass} flex items-center gap-1.5 px-3 py-2 rounded-full bg-white shadow-lg ring-1 ring-zinc-200 hover:ring-blue-300 hover:shadow-blue-100 transition-all active:scale-95 text-zinc-600 hover:text-blue-600 group`}
         aria-label="자주 묻는 질문"
         title="Q&A 보기"
       >
-        <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-[11px] font-black flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+        <span className={variant === 'inline' ? 'hidden' : "w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-[11px] font-black flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors"}>
           Q
         </span>
-        <span className="text-xs font-bold whitespace-nowrap">궁금한 점</span>
+        <span className={variant === 'inline' ? 'text-xs font-black' : "text-xs font-bold whitespace-nowrap"}>
+          {variant === 'inline' ? 'Q 궁금한 점' : '궁금한 점'}
+        </span>
       </button>
 
       {open && <FaqModal onClose={() => setOpen(false)} />}

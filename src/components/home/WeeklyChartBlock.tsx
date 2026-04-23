@@ -22,6 +22,7 @@ interface Props {
 
 const THEME = {
   green:  { fill: '#22c55e', bg: 'bg-green-500' },
+  yellow: { fill: '#ca8a04', bg: 'bg-yellow-600' },
   blue:   { fill: '#3b82f6', bg: 'bg-blue-500' },
   indigo: { fill: '#6366f1', bg: 'bg-indigo-500' },
   orange: { fill: '#f97316', bg: 'bg-orange-500' },

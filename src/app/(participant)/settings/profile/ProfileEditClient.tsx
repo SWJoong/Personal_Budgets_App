@@ -118,7 +118,7 @@ export default function ProfileEditClient({ profile, userEmail, isAdminEmail }: 
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-5 rounded-3xl bg-zinc-900 text-white text-lg font-black shadow-xl active:scale-95 disabled:bg-zinc-300 transition-all mt-4"
+        className="w-full py-5 rounded-3xl bg-green-600 text-white text-lg font-black shadow-xl active:scale-95 disabled:bg-zinc-300 transition-all mt-4"
       >
         {loading ? '저장 중...' : '프로필 저장'}
       </button>

@@ -14,6 +14,8 @@ import { UIPreferences, DEFAULT_PREFERENCES, BlockId } from '@/types/ui-preferen
 import { saveUIPreferences } from '@/app/actions/preferences'
 import NavDropdown from '@/components/layout/NavDropdown'
 import HelpButton from '@/components/help/HelpButton'
+import FaqButton from '@/components/ui/FaqButton'
+
 import EasyModeOnboarding from './EasyModeOnboarding'
 import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
 import ImageLightbox from '@/components/ui/ImageLightbox'
@@ -360,16 +362,36 @@ export default function HomeDashboard({
       <HelpAutoTrigger sectionKey="home" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/90 backdrop-blur-md border-b border-border">
         <Link href="/" className="text-lg font-bold tracking-tight text-foreground hover:opacity-70 transition-opacity">아름드리꿈터</Link>
-        <div className="flex items-center gap-2">
-          <div className="text-xs font-bold px-2.5 py-1 bg-primary/10 rounded-full text-primary whitespace-nowrap">
+        <div className="flex items-center gap-1.5">
+          {/* 도움말, 궁금한 점, 꾸미기 묶음 */}
+          <div className="flex items-center gap-1 bg-zinc-100 rounded-full p-1">
+            <HelpButton
+              sectionKey="home"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-zinc-600 hover:bg-white hover:shadow-sm transition-all active:scale-95"
+              text={<span className="text-xs font-black">? 도움말</span>}
+            />
+            <FaqButton
+              variant="inline"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-zinc-600 hover:bg-white hover:shadow-sm transition-all active:scale-95"
+            />
+            <button
+              onClick={() => setIsSheetOpen(true)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-zinc-600 hover:bg-white hover:shadow-sm transition-all active:scale-95"
+              aria-label="화면 꾸미기"
+              title="화면 구성 편집"
+            >
+              <span className="text-xs font-black">⚙️ 꾸미기</span>
+            </button>
+          </div>
+          
+          <div className="text-xs font-bold px-2.5 py-1.5 bg-primary/10 rounded-full text-primary whitespace-nowrap hidden sm:block ml-1">
             {userName} 님
           </div>
-          <HelpButton sectionKey="home" />
           <NavDropdown />
         </div>
       </header>
 
-      <main className="flex-1 w-full p-4 flex flex-col gap-4">
+      <main className="flex-1 w-full max-w-2xl mx-auto p-4 flex flex-col gap-4">
         {/* [필수] 잔액 시각화 위젯 */}
         <div className="stagger-item" style={{ animationDelay: '0s' }}>
           <BalanceVisualWidget
@@ -399,19 +421,7 @@ export default function HomeDashboard({
         })}
       </main>
 
-      {/* 확장형 FAB (sticky) */}
-      <div className="sticky bottom-0 z-30 flex justify-end px-4 pb-4 pt-2 pointer-events-none">
-        <button
-          onClick={() => setIsSheetOpen(true)}
-          className="pointer-events-auto flex items-center gap-2 py-3 pl-5 pr-4 rounded-full bg-zinc-900 text-white shadow-xl active:scale-95 transition-all hover:bg-zinc-800"
-          aria-label="화면 구성 편집"
-        >
-          <span className="text-sm font-black whitespace-nowrap">
-            <EasyTerm formal="화면 구성 편집" easy="화면 꾸미기" />
-          </span>
-          <span className="text-lg leading-none">+</span>
-        </button>
-      </div>
+
 
       {/* 블록 커스터마이징 바텀시트 */}
       <BlockCustomizeSheet

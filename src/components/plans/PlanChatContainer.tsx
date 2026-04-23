@@ -371,7 +371,7 @@ export default function PlanChatContainer({
                 <button
                   onClick={handleCustomMethodSubmit}
                   disabled={!customMethod.trim()}
-                  className="flex-1 py-4 rounded-2xl bg-zinc-900 text-white font-black text-sm disabled:bg-zinc-200 disabled:text-zinc-400"
+                  className="flex-1 py-4 rounded-2xl bg-green-600 text-white font-black text-sm disabled:bg-zinc-200 disabled:text-zinc-400"
                 >
                   다음 →
                 </button>
@@ -473,7 +473,7 @@ export default function PlanChatContainer({
             <button
               onClick={handleConfirm}
               disabled={saving}
-              className="flex-[2] py-5 rounded-2xl bg-zinc-900 text-white font-black text-sm active:scale-95 transition-transform disabled:bg-zinc-200 disabled:text-zinc-400"
+              className="flex-[2] py-5 rounded-2xl bg-green-600 text-white font-black text-sm active:scale-95 transition-transform disabled:bg-zinc-200 disabled:text-zinc-400"
             >
               {saving ? '저장 중...' : '✅ 이렇게 할게요!'}
             </button>
@@ -565,7 +565,7 @@ function OptionButton({
         </span>
       )}
       <span className={`text-xs font-black px-2 py-1 rounded-lg shrink-0 ${
-        muted ? 'bg-zinc-200 text-zinc-400' : 'bg-zinc-900 text-white'
+        muted ? 'bg-zinc-200 text-zinc-400' : 'bg-green-600 text-white'
       }`}>
         {badge}
       </span>
@@ -627,7 +627,7 @@ function CustomInput({
         <button
           onClick={onSubmit}
           disabled={!value.trim()}
-          className="flex-1 py-4 rounded-2xl bg-zinc-900 text-white font-black text-sm disabled:bg-zinc-200 disabled:text-zinc-400"
+          className="flex-1 py-4 rounded-2xl bg-green-600 text-white font-black text-sm disabled:bg-zinc-200 disabled:text-zinc-400"
         >
           다음 →
         </button>
