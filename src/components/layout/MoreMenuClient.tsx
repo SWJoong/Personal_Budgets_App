@@ -13,7 +13,7 @@ interface FileLink {
 }
 
 export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] }) {
-  const { fontSize, setFontSize, highContrast, setHighContrast, easyTerms, setEasyTerms, yellowBg, setYellowBg } = useAccessibility()
+  const { fontSize, setFontSize, highContrast, setHighContrast, easyTerms, setEasyTerms, yellowBg, setYellowBg, darkMode, setDarkMode } = useAccessibility()
   const supabase = createClient()
   const router = useRouter()
 
@@ -138,6 +138,27 @@ export default function MoreMenuClient({ fileLinks }: { fileLinks: FileLink[] })
             >
               <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
                 highContrast ? 'left-7' : 'left-1'
+              }`} />
+            </button>
+          </div>
+
+          {/* 다크 모드 토글 (광과민성 배려) */}
+          <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-zinc-700">🌙 다크 모드</span>
+              <span className="text-xs text-zinc-400 font-medium">눈부심을 줄이기 위해 어두운 배경을 사용해요</span>
+            </div>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
+                darkMode ? 'bg-indigo-600' : 'bg-zinc-200'
+              }`}
+              role="switch"
+              aria-checked={darkMode}
+              aria-label="다크 모드 전환"
+            >
+              <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
+                darkMode ? 'left-7' : 'left-1'
               }`} />
             </button>
           </div>

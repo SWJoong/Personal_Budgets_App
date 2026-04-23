@@ -341,12 +341,120 @@ html.high-contrast {
   --color-border: hsl(0 0% 0%);
 }
 
-/* 고대비: 카드 배경/테두리 강제 */
+/* 고대비: 카드/컨테이너 배경·테두리 강제 (버튼·링크·입력은 제외) */
 html.high-contrast .participant-view section,
-html.high-contrast .participant-view [class*="rounded-"] {
+html.high-contrast .participant-view [class*="rounded-"]:not(button):not(a):not(input):not(select):not(textarea):not(label) {
   background-color: #ffffff !important;
   border: 2px solid #000000 !important;
   box-shadow: none !important;
+}
+
+/* 고대비: 액션 버튼은 원래 배경색 유지하되 테두리 강화 */
+html.high-contrast .participant-view button,
+html.high-contrast .participant-view [type="submit"],
+html.high-contrast .participant-view [type="button"],
+html.high-contrast .participant-view a[class*="rounded-"] {
+  border: 2px solid #000000 !important;
+  box-shadow: none !important;
+}
+
+/* 고대비: 회색조 텍스트 및 밝은 텍스트를 검은색으로 강제 (가독성 향상) */
+html.high-contrast .text-zinc-800,
+html.high-contrast .text-zinc-700,
+html.high-contrast .text-zinc-600,
+html.high-contrast .text-zinc-500,
+html.high-contrast .text-zinc-400,
+html.high-contrast .text-zinc-300,
+html.high-contrast .text-zinc-200,
+html.high-contrast .text-zinc-100,
+html.high-contrast .text-foreground {
+  color: #000000 !important;
+}
+
+/* 고대비: 특정 배경들을 흰색으로 강제 */
+html.high-contrast .bg-zinc-50,
+html.high-contrast .bg-zinc-100,
+html.high-contrast .bg-white,
+html.high-contrast .bg-background {
+  background-color: #ffffff !important;
+}
+
+/* 고대비: 입력 요소도 명확한 테두리와 배경 적용 */
+html.high-contrast .participant-view input,
+html.high-contrast .participant-view select,
+html.high-contrast .participant-view textarea {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+}
+
+/* ─── 배경 이미지 숨김 (텍스트 명료도 극대화) ─── */
+html.high-contrast *,
+html.dark-mode * {
+  background-image: none !important;
+}
+
+/* ─── 다크 모드 (광과민성 / 저시력 사용자용) ─── */
+html.dark-mode {
+  --color-primary: hsl(207 100% 75%);
+  --color-foreground: hsl(0 0% 100%);
+  --color-background: hsl(0 0% 0%);
+  --color-border: hsl(0 0% 100%);
+}
+
+html.dark-mode body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* 다크모드: 둥근 요소(카드 등) 배경·테두리 강제 (버튼/링크/입력 제외) */
+html.dark-mode .participant-view section,
+html.dark-mode .participant-view [class*="rounded-"]:not(button):not(a):not(input):not(select):not(textarea):not(label) {
+  background-color: #000000 !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* 다크모드: 기존 어두운 텍스트를 흰색으로 반전 */
+html.dark-mode .text-zinc-900,
+html.dark-mode .text-zinc-800,
+html.dark-mode .text-zinc-700,
+html.dark-mode .text-zinc-600,
+html.dark-mode .text-zinc-500,
+html.dark-mode .text-zinc-400,
+html.dark-mode .text-foreground {
+  color: #ffffff !important;
+}
+
+/* 다크모드: 특정 배경들을 검은색으로 강제 */
+html.dark-mode .bg-zinc-50,
+html.dark-mode .bg-zinc-100,
+html.dark-mode .bg-white,
+html.dark-mode .bg-background {
+  background-color: #000000 !important;
+}
+
+/* 다크모드: 액션 버튼 원래 배경 유지 및 명확한 테두리 */
+html.dark-mode .participant-view button,
+html.dark-mode .participant-view [type="submit"],
+html.dark-mode .participant-view [type="button"],
+html.dark-mode .participant-view a[class*="rounded-"] {
+  border: 2px solid #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* 다크모드: 입력 요소 */
+html.dark-mode .participant-view input,
+html.dark-mode .participant-view select,
+html.dark-mode .participant-view textarea {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+html.high-contrast .participant-view input::placeholder,
+html.high-contrast .participant-view textarea::placeholder {
+  color: #666666 !important;
 }
 
 /* 고대비: 중요 금액 텍스트 */
@@ -374,19 +482,7 @@ html.high-contrast .hc-gauge-fill {
   background-color: #000000 !important;
 }
 
-/* 고대비: 버튼 및 뱃지 */
-html.high-contrast .participant-view button:not([class*="bg-zinc-900"]):not([class*="bg-red"]) {
-  border: 2px solid #000 !important;
-}
-
-/* 고대비: 텍스트 가시성 보장 */
-html.high-contrast .participant-view p,
-html.high-contrast .participant-view span:not([class*="term-"]),
-html.high-contrast .participant-view h1,
-html.high-contrast .participant-view h2,
-html.high-contrast .participant-view h3 {
-  color: #000000 !important;
-}
+/* Removed problematic global text color overrides that forced all spans/p to black */
 
 /* Easy-read mode for participants */
 .participant-view .easy-text {

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -16,63 +17,53 @@ const NAV_ITEMS = [
 
 export default function NavDropdown() {
   const [isOpen, setIsOpen] = useState(false)
-  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
+  const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
-  const buttonRef = useRef<HTMLButtonElement>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
 
-  const openMenu = () => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect()
-      setMenuPos({
-        top: rect.bottom + 8,
-        right: window.innerWidth - rect.right,
-      })
-    }
-    setIsOpen(true)
-  }
+  useEffect(() => { setMounted(true) }, [])
 
+  // 페이지 이동 시 자동 닫기
   useEffect(() => {
-    if (!isOpen) return
-    const handleClick = (e: MouseEvent) => {
-      if (
-        buttonRef.current?.contains(e.target as Node) ||
-        menuRef.current?.contains(e.target as Node)
-      ) return
-      setIsOpen(false)
-    }
-    const handleResize = () => setIsOpen(false)
-    document.addEventListener('mousedown', handleClick)
-    window.addEventListener('resize', handleResize)
-    return () => {
-      document.removeEventListener('mousedown', handleClick)
-      window.removeEventListener('resize', handleResize)
-    }
+    setIsOpen(false)
+  }, [pathname])
+
+  // 열린 동안 body 스크롤 잠금
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
-  return (
-    <div>
-      <button
-        ref={buttonRef}
-        onClick={() => isOpen ? setIsOpen(false) : openMenu()}
-        className="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-all active:scale-95"
-        aria-label="메뉴 열기"
-        aria-expanded={isOpen}
-        aria-haspopup="listbox"
-      >
-        <span className="text-zinc-600 text-base font-black leading-none select-none">
-          {isOpen ? '✕' : '☰'}
-        </span>
-      </button>
+  const drawer = mounted && isOpen ? createPortal(
+    <>
+      {/* 배경 오버레이 */}
+      <div
+        className="fixed inset-0 bg-black/40"
+        style={{ zIndex: 99998 }}
+        onClick={() => setIsOpen(false)}
+        aria-hidden="true"
+      />
 
-      {isOpen && (
-        <div
-          ref={menuRef}
-          className="fixed w-52 bg-white rounded-2xl shadow-2xl ring-1 ring-zinc-100 overflow-hidden z-[9000] animate-fade-in-down"
-          style={{ top: menuPos.top, right: menuPos.right }}
-          role="listbox"
-          aria-label="페이지 이동"
-        >
+      {/* 우측 슬라이드 드로어 */}
+      <div
+        className="fixed top-0 right-0 bottom-0 w-64 bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+        style={{ zIndex: 99999 }}
+        role="dialog"
+        aria-label="페이지 이동 메뉴"
+      >
+        {/* 드로어 헤더 */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
+          <span className="text-sm font-black text-zinc-400 uppercase tracking-widest">메뉴</span>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-colors"
+            aria-label="메뉴 닫기"
+          >
+            <span className="text-zinc-600 text-sm font-black leading-none">✕</span>
+          </button>
+        </div>
+
+        {/* 메뉴 목록 */}
+        <nav className="flex-1 overflow-y-auto py-2">
           {NAV_ITEMS.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -81,14 +72,12 @@ export default function NavDropdown() {
               <Link
                 key={item.href}
                 href={item.href}
-                role="option"
-                aria-selected={isActive}
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3.5 hover:bg-zinc-50 transition-colors ${
+                className={`flex items-center gap-3 px-5 py-4 hover:bg-zinc-50 transition-colors ${
                   isActive ? 'bg-zinc-50' : ''
                 }`}
               >
-                <span className="text-xl w-7 text-center">{item.icon}</span>
+                <span className="text-2xl w-8 text-center">{item.icon}</span>
                 <span
                   className={`text-sm font-bold flex-1 ${
                     isActive ? 'text-zinc-900' : 'text-zinc-600'
@@ -102,8 +91,27 @@ export default function NavDropdown() {
               </Link>
             )
           })}
-        </div>
-      )}
-    </div>
+        </nav>
+      </div>
+    </>,
+    document.body
+  ) : null
+
+  return (
+    <>
+      <button
+        onClick={() => setIsOpen((v) => !v)}
+        className="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-all active:scale-95"
+        aria-label={isOpen ? '메뉴 닫기' : '메뉴 열기'}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+      >
+        <span className="text-zinc-600 text-base font-black leading-none select-none">
+          {isOpen ? '✕' : '☰'}
+        </span>
+      </button>
+
+      {drawer}
+    </>
   )
 }

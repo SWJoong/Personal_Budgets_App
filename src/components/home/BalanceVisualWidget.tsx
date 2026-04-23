@@ -77,7 +77,7 @@ function SimulationSection({
           return (
             <button
               key={amount}
-              onClick={() => setSimAmount(String(amount))}
+              onClick={() => setSimAmount(isActive ? '' : String(amount))}
               className={`flex-1 py-3 rounded-xl font-black text-sm transition-all active:scale-95 ${
                 isActive ? c.active : c.base
               }`}

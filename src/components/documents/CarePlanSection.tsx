@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import type { CarePlanType } from '@/types/care-plans'
 import { CARE_PLAN_LABELS, CARE_PLAN_DESCRIPTIONS } from '@/types/care-plans'
+import { getSupportGoals } from '@/app/actions/supportGoal'
+import type { SupportGoal } from '@/app/actions/supportGoal'
 
 interface CarePlanSummary {
   id: string
@@ -11,6 +13,7 @@ interface CarePlanSummary {
   plan_type: string
   plan_year: number
   updated_at: string
+  content?: any
 }
 
 interface Participant {
@@ -19,7 +22,9 @@ interface Participant {
 }
 
 interface Props {
-  participants: Participant[]
+  selectedParticipantId: string
+  selectedParticipantName?: string
+  selectedYear: number
   carePlans: CarePlanSummary[]
 }
 
@@ -30,11 +35,29 @@ const YEAR_OPTIONS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR + 1]
 const GOALS_LABEL = '지원목표·예산 계획'
 const GOALS_DESCRIPTION = '연간 지원 목표 및 예산 세목 (산출내역)'
 
-export default function CarePlanSection({ participants, carePlans }: Props) {
-  const [selectedParticipantId, setSelectedParticipantId] = useState(participants[0]?.id ?? '')
-  const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR)
+function formatPreview(planType: CarePlanType, content: any): string {
+  if (!content) return '내용이 없습니다.'
+  try {
+    if (planType === 'seoul_plan') {
+      return `[원하는 삶의 모습]\n${content.desired_life || '-'}\n\n[장애로 인한 어려움]\n${content.difficulties || '-'}\n\n[시도하고 싶은 것]\n${content.trial_goals || '-'}`
+    } else if (planType === 'mohw_plan') {
+      return `[개인예산 이용계획 목표]\n${content.plan_goal || '-'}\n\n[현재 일상생활]\n${content.daily_routine || '-'}`
+    }
+  } catch (e) {
+    return '내용을 불러올 수 없습니다.'
+  }
+  return '내용이 없습니다.'
+}
 
-  const selectedParticipant = participants.find(p => p.id === selectedParticipantId)
+export default function CarePlanSection({ selectedParticipantId, selectedParticipantName, selectedYear, carePlans }: Props) {
+  const [openDetails, setOpenDetails] = useState<Record<string, boolean>>({})
+  const [goals, setGoals] = useState<SupportGoal[] | null>(null)
+  const [isLoadingGoals, setIsLoadingGoals] = useState(false)
+
+  useEffect(() => {
+    setOpenDetails({})
+    setGoals(null)
+  }, [selectedParticipantId, selectedYear])
 
   function findPlan(planType: CarePlanType) {
     return carePlans.find(
@@ -44,38 +67,16 @@ export default function CarePlanSection({ participants, carePlans }: Props) {
     )
   }
 
-  if (participants.length === 0) {
+  if (!selectedParticipantId) {
     return (
       <div className="p-6 rounded-2xl bg-zinc-50 text-center text-sm text-zinc-400">
-        담당 당사자가 없습니다.
+        당사자를 선택해주세요.
       </div>
     )
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 헤더 + 필터 */}
-      <div className="flex flex-wrap items-center gap-3">
-        <select
-          value={selectedParticipantId}
-          onChange={e => setSelectedParticipantId(e.target.value)}
-          className="px-3 py-2 rounded-xl bg-white ring-1 ring-zinc-200 text-sm font-bold focus:ring-zinc-900 focus:outline-none"
-        >
-          {participants.map(p => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
-
-        <select
-          value={selectedYear}
-          onChange={e => setSelectedYear(Number(e.target.value))}
-          className="px-3 py-2 rounded-xl bg-white ring-1 ring-zinc-200 text-sm font-bold focus:ring-zinc-900 focus:outline-none"
-        >
-          {YEAR_OPTIONS.map(y => (
-            <option key={y} value={y}>{y}년</option>
-          ))}
-        </select>
-      </div>
 
       {/* 이용계획서 카드 목록 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -108,16 +109,32 @@ export default function CarePlanSection({ participants, carePlans }: Props) {
                 </p>
               )}
 
-              <Link
-                href={href}
-                className={`block w-full py-2.5 rounded-xl text-sm font-black text-center transition-all active:scale-95 ${
-                  existing
-                    ? 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
-                    : 'bg-zinc-900 text-white hover:bg-zinc-700'
-                }`}
-              >
-                {existing ? '수정하기' : '작성하기'}
-              </Link>
+              <div className="flex gap-2">
+                {existing && (
+                  <button
+                    onClick={() => setOpenDetails(prev => ({ ...prev, [planType]: !prev[planType] }))}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-black text-zinc-600 bg-white ring-1 ring-zinc-200 hover:bg-zinc-50 transition-all active:scale-95"
+                  >
+                    {openDetails[planType] ? '세부내용 접기 ▲' : '세부내용 펼쳐보기 ▼'}
+                  </button>
+                )}
+                <Link
+                  href={href}
+                  className={`block flex-1 py-2.5 rounded-xl text-sm font-black text-center transition-all active:scale-95 ${
+                    existing
+                      ? 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                      : 'bg-zinc-900 text-white hover:bg-zinc-700'
+                  }`}
+                >
+                  {existing ? '수정하기' : '작성하기'}
+                </Link>
+              </div>
+
+              {existing && openDetails[planType] && (
+                <div className="mt-4 p-4 rounded-xl bg-zinc-50 border border-zinc-100 text-xs text-zinc-700 whitespace-pre-wrap leading-relaxed animate-in slide-in-from-top-2 duration-200">
+                  {formatPreview(planType, existing.content)}
+                </div>
+              )}
             </div>
           )
         })}
@@ -126,7 +143,25 @@ export default function CarePlanSection({ participants, carePlans }: Props) {
       {/* 지원목표·예산 카드 */}
       {(() => {
         const hasCarePlan = PLAN_TYPES.some(pt => findPlan(pt))
+        const existingPlanForGoals = findPlan('mohw_plan') || findPlan('seoul_plan')
         const goalsHref = `/supporter/evaluations/${selectedParticipantId}/goals`
+
+        const handleToggleGoals = async () => {
+          if (openDetails['goals']) {
+            setOpenDetails(prev => ({ ...prev, goals: false }))
+            return
+          }
+          if (!goals && existingPlanForGoals) {
+            setIsLoadingGoals(true)
+            try {
+              const fetched = await getSupportGoals(existingPlanForGoals.id)
+              setGoals(fetched)
+            } catch (e) {}
+            setIsLoadingGoals(false)
+          }
+          setOpenDetails(prev => ({ ...prev, goals: true }))
+        }
+
         return (
           <div className={`p-5 rounded-2xl ring-1 transition-all ${
             hasCarePlan ? 'bg-white ring-violet-200' : 'bg-white ring-zinc-200'
@@ -147,23 +182,53 @@ export default function CarePlanSection({ participants, carePlans }: Props) {
                 이용계획서를 먼저 작성하면 지원 목표를 연결할 수 있어요.
               </p>
             )}
-            <Link
-              href={goalsHref}
-              className={`block w-full py-2.5 rounded-xl text-sm font-black text-center transition-all active:scale-95 ${
-                hasCarePlan
-                  ? 'bg-violet-600 text-white hover:bg-violet-700'
-                  : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
-              }`}
-            >
-              {hasCarePlan ? '지원목표 관리' : '관리하기'}
-            </Link>
+
+            <div className="flex gap-2 mt-3">
+              {hasCarePlan && (
+                <button
+                  onClick={handleToggleGoals}
+                  disabled={isLoadingGoals}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-black text-zinc-600 bg-white ring-1 ring-zinc-200 hover:bg-zinc-50 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {isLoadingGoals ? '불러오는 중...' : openDetails['goals'] ? '세부내용 접기 ▲' : '세부내용 펼쳐보기 ▼'}
+                </button>
+              )}
+              <Link
+                href={goalsHref}
+                className={`block flex-1 py-2.5 rounded-xl text-sm font-black text-center transition-all active:scale-95 ${
+                  hasCarePlan
+                    ? 'bg-violet-600 text-white hover:bg-violet-700'
+                    : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+                }`}
+              >
+                {hasCarePlan ? '지원목표 관리' : '관리하기'}
+              </Link>
+            </div>
+
+            {hasCarePlan && openDetails['goals'] && (
+              <div className="mt-4 p-4 rounded-xl bg-zinc-50 border border-zinc-100 text-xs text-zinc-700 whitespace-pre-wrap leading-relaxed animate-in slide-in-from-top-2 duration-200">
+                {!goals ? (
+                  '내용을 불러오지 못했습니다.'
+                ) : goals.length === 0 ? (
+                  '등록된 지원 목표가 없습니다.'
+                ) : (
+                  goals.map((g, i) => (
+                    <div key={g.id} className="mb-3 last:mb-0">
+                      <p className="font-bold text-zinc-900 mb-1">{i + 1}. {g.support_area}</p>
+                      {g.outcome_goal && <p className="text-zinc-600 ml-3">- 목표: {g.outcome_goal}</p>}
+                      {g.strategy && <p className="text-zinc-600 ml-3">- 전략: {g.strategy}</p>}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         )
       })()}
 
-      {selectedParticipant && (
+      {selectedParticipantName && (
         <p className="text-xs text-zinc-400 text-center mt-1">
-          {selectedParticipant.name} 님의 {selectedYear}년 이용계획서
+          {selectedParticipantName} 님의 {selectedYear}년 이용계획서
         </p>
       )}
     </div>

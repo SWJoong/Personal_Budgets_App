@@ -362,25 +362,27 @@ export default function HomeDashboard({
       <HelpAutoTrigger sectionKey="home" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/90 backdrop-blur-md border-b border-border">
         <Link href="/" className="text-lg font-bold tracking-tight text-foreground hover:opacity-70 transition-opacity">아름드리꿈터</Link>
-        <div className="flex items-center gap-1.5">
-          {/* 도움말, 궁금한 점, 꾸미기 묶음 */}
-          <div className="flex items-center gap-1 bg-zinc-100 rounded-full p-1">
+        <div className="flex items-center gap-1">
+          {/* 도움말, 궁금한 점, 꾸미기 — 같은 색, 아이콘으로 구분 */}
+          <div className="flex items-center bg-zinc-100 rounded-full p-1 gap-0.5">
             <HelpButton
               sectionKey="home"
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-zinc-600 hover:bg-white hover:shadow-sm transition-all active:scale-95"
-              text={<span className="text-xs font-black">? 도움말</span>}
+              text={<span className="text-xs font-bold">📖 사용법</span>}
             />
+            <div className="w-px h-4 bg-zinc-300" aria-hidden="true" />
             <FaqButton
               variant="inline"
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-zinc-600 hover:bg-white hover:shadow-sm transition-all active:scale-95"
             />
+            <div className="w-px h-4 bg-zinc-300" aria-hidden="true" />
             <button
               onClick={() => setIsSheetOpen(true)}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-zinc-600 hover:bg-white hover:shadow-sm transition-all active:scale-95"
               aria-label="화면 꾸미기"
               title="화면 구성 편집"
             >
-              <span className="text-xs font-black">⚙️ 꾸미기</span>
+              <span className="text-xs font-bold">⚙️ 꾸미기</span>
             </button>
           </div>
           

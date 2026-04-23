@@ -99,9 +99,6 @@ function FaqModal({ onClose }: { onClose: () => void }) {
   return createPortal(modal, document.body)
 }
 
-import { usePathname } from 'next/navigation'
-import HelpButton from '@/components/help/HelpButton'
-
 interface Props {
   /** participant: 플로팅, admin: 플로팅, inline: 일반 버튼 */
   variant?: 'participant' | 'admin' | 'inline'
@@ -128,8 +125,8 @@ export default function FaqButton({ variant = 'participant', className }: Props)
         <span className={variant === 'inline' ? 'hidden' : "w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-[11px] font-black flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors"}>
           Q
         </span>
-        <span className={variant === 'inline' ? 'text-xs font-black' : "text-xs font-bold whitespace-nowrap"}>
-          {variant === 'inline' ? 'Q 궁금한 점' : '궁금한 점'}
+        <span className={variant === 'inline' ? 'text-xs font-bold' : "text-xs font-bold whitespace-nowrap"}>
+          {variant === 'inline' ? '💬 궁금한 점' : '궁금한 점'}
         </span>
       </button>
 

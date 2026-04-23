@@ -47,6 +47,7 @@ const quickItems: SubItem[] = [
   { name: '🧾 영수증 검토',    href: '/supporter/review' },
   { name: '📊 예산 배정',      href: '/admin/participants' },
   { name: '📋 평가 작성',      href: '/supporter/evaluations' },
+  { name: '😊 피드백 확인',    href: '/admin/feedback' },
 ]
 
 export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps) {

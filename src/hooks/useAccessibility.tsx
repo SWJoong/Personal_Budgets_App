@@ -13,6 +13,8 @@ interface AccessibilityContextType {
   setEasyTerms: (on: boolean) => void
   yellowBg: boolean
   setYellowBg: (on: boolean) => void
+  darkMode: boolean
+  setDarkMode: (on: boolean) => void
 }
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined)
@@ -22,6 +24,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
   const [highContrast, setHighContrastState] = useState(false)
   const [easyTerms, setEasyTermsState] = useState(false)
   const [yellowBg, setYellowBgState] = useState(false)
+  const [darkMode, setDarkModeState] = useState(false)
 
   // 로컬 스토리지에서 설정 불러오기
   useEffect(() => {
@@ -33,6 +36,8 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     if (savedEasyTerms === 'true') setEasyTermsState(true)
     const savedYellowBg = localStorage.getItem('app-yellow-bg')
     if (savedYellowBg === 'true') setYellowBgState(true)
+    const savedDarkMode = localStorage.getItem('app-dark-mode')
+    if (savedDarkMode === 'true') setDarkModeState(true)
   }, [])
 
   const setFontSize = (size: FontSize) => {
@@ -79,7 +84,20 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     }
   }
 
-  // 초기 로드 시 폰트 사이즈 & 고대비 & 쉬운 용어 적용
+  const setDarkMode = (on: boolean) => {
+    setDarkModeState(on)
+    localStorage.setItem('app-dark-mode', String(on))
+    const html = document.documentElement
+    if (on) {
+      html.classList.add('dark-mode')
+      // 다크 모드와 고대비(또는 노란배경)가 충돌하지 않도록 조정
+      if (yellowBg) setYellowBg(false)
+    } else {
+      html.classList.remove('dark-mode')
+    }
+  }
+
+  // 초기 로드 시 폰트 사이즈 & 고대비 & 쉬운 용어 & 다크모드 적용
   useEffect(() => {
     const html = document.documentElement
     if (fontSize === 'normal') html.style.fontSize = '16px'
@@ -94,10 +112,13 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
 
     if (yellowBg) html.classList.add('yellow-bg')
     else html.classList.remove('yellow-bg')
-  }, [fontSize, highContrast, easyTerms, yellowBg])
+
+    if (darkMode) html.classList.add('dark-mode')
+    else html.classList.remove('dark-mode')
+  }, [fontSize, highContrast, easyTerms, yellowBg, darkMode])
 
   return (
-    <AccessibilityContext.Provider value={{ fontSize, setFontSize, highContrast, setHighContrast, easyTerms, setEasyTerms, yellowBg, setYellowBg }}>
+    <AccessibilityContext.Provider value={{ fontSize, setFontSize, highContrast, setHighContrast, easyTerms, setEasyTerms, yellowBg, setYellowBg, darkMode, setDarkMode }}>
       {children}
     </AccessibilityContext.Provider>
   )

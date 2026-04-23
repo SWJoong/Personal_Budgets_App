@@ -87,16 +87,6 @@ export default function EvaluationsPageClient({
           </select>
         </div>
 
-        <div className="flex flex-col gap-1 sm:w-36">
-          <label className="text-xs font-black text-zinc-400 uppercase tracking-widest invisible">작업</label>
-          <button
-            onClick={handleOpenDetail}
-            disabled={!selectedParticipantId || !selectedMonth}
-            className="w-full p-3 rounded-xl bg-zinc-900 text-white font-bold hover:bg-zinc-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            ✏️ 평가 작성/편집
-          </button>
-        </div>
       </div>
     </div>
   )
