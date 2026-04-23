@@ -34,6 +34,8 @@
 | G-4 | 이용계획서 섹션에 "지원목표·예산 계획" 카드 추가 (`CarePlanSection.tsx`) | ✅ 완료 | `3b12876` |
 | 버그 | 지원목표 페이지 뒤로가기 404 수정 (존재하지 않는 라우트 → `/supporter/evaluations`) | ✅ 완료 | `8c4926b` |
 | 버그 | 활동 지도 필터 복원 (당사자·날짜·상태 필터 + 클라이언트 사이드 필터링) | ✅ 완료 | `6a3e07e` |
+| H-사전 | 쉬운 정보 접근성 사전 수정 (BLOCK_METADATA 한자어, 수동태, 외래어, 특수문자, 괄호) | ✅ 완료 | — |
+| H-1~8 | Phase H: 당사자 직관성 강화 8개 항목 (×제거, 접기, 프리셋, ▲▼, 일러스트) | ⏳ 대기 | — |
 
 > [!NOTE]
 > **v2 최종 점검 수정 사항 (2026-04-21)**
@@ -1625,4 +1627,396 @@ G-3 + G-4 병렬 (G-3: 1.5일 / G-4: 3일)
 - G-2: 월별계획 저장 → ← 버튼 → 200 OK, 날짜 정확히 표시
 - G-3: 전월 복사 버튼 → 확인 모달 → 복사 성공 배너
 - G-4: /documents/care-plans/.../goals 탭 렌더 확인
+```
+
+---
+
+# Phase H — 쉬운 정보 접근성 UI 개선 (당사자 직관성 강화)
+
+> **근거**: 2026-04-23 쉬운 정보 접근성 점검 보고서 + 당사자 관점 UI 직관성 분석
+> **기준**: 한국장애인고용공단 「알기 쉬운 자료 제작 안내서」(2021) + 보건복지부 「쉽게 접근할 수 있는 정보 만들기」(2017)
+> **목표**: 당사자 첫 화면 인지 부담 50% 감소, 돈 크기 직관성 향상
+
+---
+
+## H-0. 선정 항목 및 우선순위
+
+| 코드 | 항목 | 난이도 | 대상 파일 |
+|:---:|:---|:---:|:---|
+| P1 | 곱셈 기호 `×` 제거 → 자연어 표현 | S | `BalanceCashViz.tsx` |
+| P2 | "이미 쓴 돈" 섹션 기본 접기 | S | `BalanceCashViz.tsx` |
+| P3 | 시뮬레이션 입력 기본 접기 | S | `BalanceVisualWidget.tsx` |
+| P4 | 헤더 영어 role 값 한글화 | S | `HomeDashboard.tsx` |
+| P6 | 요약 바 텍스트 크기 확대 | S | `BalanceCashViz.tsx` |
+| P9 | 시뮬레이션 프리셋 버튼 | M | `BalanceVisualWidget.tsx` |
+| P10 | 블록 순서 변경: 드래그 → ▲▼ 버튼 | M | `BlockCustomizeSheet.tsx` |
+| P13 | 현금 모드 지폐 일러스트 강화 | M | `BalanceCashViz.tsx` |
+
+---
+
+## H-1. P1 — 곱셈 기호 `×` 제거
+
+**현재**: `× 1 장` / `× 3 개`
+**변경**: `1 장` (기호 없이) + 소액은 `300원어치`
+
+### 변경 위치
+
+```diff
+# BalanceCashViz.tsx — BillStack (L81–83)
+- <span className={`text-lg font-black ...`}>
+-   × {d.count}
+-   <span className="text-xs font-bold text-zinc-500 ml-1">{d.unit}</span>
+- </span>
++ <span className={`text-lg font-black ...`}>
++   {d.count}
++   <span className="text-xs font-bold text-zinc-500 ml-0.5">{d.unit}</span>
++ </span>
+```
+
+동일 패턴을 `CoinStack` (L128–130)에도 적용.
+
+**공수**: S (0.5시간)
+
+---
+
+## H-2. P2 — "이미 쓴 돈" 섹션 기본 접기
+
+**현재**: 항상 펼쳐져 있어 스크롤이 길어짐 (6개 금종 상세 분해)
+**변경**: 접힌 상태가 기본. 토글 버튼으로 펼치기.
+
+### 구현 시나리오
+
+1. `CashViz`를 클라이언트 컴포넌트로 변경 (이미 `'use client'`)
+2. `useState(false)`로 "이미 쓴 돈" 섹션의 open 상태 관리
+3. 헤더 영역을 `<button>`으로 래핑, 클릭 시 토글
+
+```tsx
+// BalanceCashViz.tsx — 추가
+const [spentOpen, setSpentOpen] = useState(false)
+
+// "이미 쓴 돈" 섹션 (L206~)
+{hasSpent && visibleSpent.length > 0 && (
+  <div className="border-t border-dashed border-red-200 pt-4">
+    <button
+      type="button"
+      onClick={() => setSpentOpen(v => !v)}
+      className="w-full flex items-center justify-between mb-2"
+    >
+      <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">
+        🧾 <EasyTerm formal="이번 달 사용액" easy="이미 쓴 돈" />
+      </p>
+      <div className="flex items-center gap-2">
+        <p className="text-sm font-black text-red-500">
+          -{formatCurrency(spentAmount)}원
+        </p>
+        <span className="text-[10px] text-zinc-400">
+          {spentOpen ? '▲ 접기' : '▼ 자세히'}
+        </span>
+      </div>
+    </button>
+    {spentOpen && (
+      <div className="flex flex-col gap-4 opacity-[0.65]">
+        {/* 기존 금종별 렌더링 */}
+      </div>
+    )}
+  </div>
+)}
+```
+
+**공수**: S (1시간)
+
+---
+
+## H-3. P3 — 시뮬레이션 입력 기본 접기
+
+**현재**: `🛍️ 금액을 써요` 입력 필드가 항상 노출
+**변경**: "이만큼 사면?" 버튼만 표시, 누르면 입력 영역 확장
+
+### 구현 시나리오
+
+```tsx
+// BalanceVisualWidget.tsx — 시뮬레이션 영역 (L868~)
+const [simOpen, setSimOpen] = useState(false)
+
+// 렌더링
+{simOpen ? (
+  // 기존 시뮬레이션 UI (input + 결과)
+  <div className="px-5 pb-4 pt-2">
+    {/* ... 기존 코드 ... */}
+    <button onClick={() => { setSimOpen(false); setSimAmount('') }}
+      className="text-xs text-zinc-400 mt-2">닫기</button>
+  </div>
+) : (
+  <button
+    onClick={() => setSimOpen(true)}
+    className="mx-5 mb-4 mt-2 py-3 w-[calc(100%-2.5rem)] rounded-2xl
+      bg-zinc-50 ring-1 ring-zinc-100 text-sm font-bold text-zinc-400
+      hover:bg-zinc-100 transition-all flex items-center justify-center gap-2"
+  >
+    🛍️ 이만큼 사면 얼마 남을까?
+  </button>
+)}
+```
+
+**공수**: S (1시간)
+
+---
+
+## H-4. P4 — 헤더 영어 role 값 한글화
+
+**현재**: `HomeDashboard.tsx` 헤더에 `{userName} 님` 표시 — 정상
+**추가 확인**: 프로필 뱃지 등에서 `participant` 영어 노출 여부 점검
+
+```diff
+# HomeDashboard.tsx (L364)
+  <div className="text-xs font-bold px-2.5 py-1 bg-primary/10 rounded-full text-primary whitespace-nowrap">
+-   {userName} 님
++   {userName} 님
+  </div>
+```
+
+> 이미 `userName`이 한글 이름으로 전달되므로 헤더는 정상.
+> 다만 **Vercel 배포 환경에서 확인 필요** — 스크린샷의 `participant 님`은 `profile.name`이 null일 때 fallback으로 `email.split('@')[0]`이 표시된 것으로 추정.
+
+### 추가 조치
+
+```diff
+# page.tsx (participant home — L165)
+- userName={profile?.name || user.email?.split('@')[0] || ''}
++ userName={profile?.name || '사용자'}
+```
+
+**공수**: S (0.5시간)
+
+---
+
+## H-5. P6 — 요약 바 텍스트 크기 확대
+
+**현재**: `text-[10px]` (10px) — 매우 작아서 읽기 어려움
+**변경**: `text-xs` (12px) + font-bold
+
+```diff
+# BalanceCashViz.tsx (L232)
+- <div className="flex items-center gap-2 text-[10px] font-bold">
++ <div className="flex items-center gap-2 text-xs font-bold">
+```
+
+**공수**: S (0.5시간)
+
+---
+
+## H-6. P9 — 시뮬레이션 프리셋 버튼
+
+**현재**: 숫자 직접 입력 — 발달장애인에게 어려움
+**변경**: `[1만원]` `[3만원]` `[5만원]` 프리셋 버튼 + 직접 입력 토글
+
+### 구현 시나리오
+
+```tsx
+// BalanceVisualWidget.tsx — simOpen 확장 영역 내부
+const SIM_PRESETS = [10000, 30000, 50000]
+
+{simOpen && (
+  <div className="px-5 pb-4 pt-2 flex flex-col gap-3">
+    {/* 프리셋 버튼 */}
+    <div className="flex gap-2">
+      {SIM_PRESETS.map(amount => (
+        <button
+          key={amount}
+          onClick={() => setSimAmount(String(amount))}
+          className={`flex-1 py-3 rounded-xl font-black text-sm transition-all
+            ${simValue === amount
+              ? 'bg-zinc-900 text-white'
+              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}
+        >
+          {formatCurrency(amount)}원
+        </button>
+      ))}
+    </div>
+
+    {/* 직접 입력 (작은 토글) */}
+    <details className="text-xs">
+      <summary className="text-zinc-400 cursor-pointer">
+        다른 금액 직접 적기
+      </summary>
+      <div className="mt-2 flex items-center gap-2 ...">
+        <input type="number" ... />
+      </div>
+    </details>
+
+    {/* 결과 표시 */}
+    {simValue > 0 && (
+      <div className="p-4 rounded-2xl bg-zinc-50 ...">
+        <span>{isSimOver ? '돈이 부족해요 ❌' : `${formatCurrency(simBalance)}원 남아요`}</span>
+      </div>
+    )}
+  </div>
+)}
+```
+
+**공수**: M (2시간)
+
+---
+
+## H-7. P10 — 블록 순서 변경: 드래그 → ▲▼ 버튼
+
+**현재**: 포인터 드래그로 블록 순서 변경 — 발달장애인에게 매우 어려운 동작
+**변경**: 드래그 핸들 제거, ▲ ▼ 버튼으로 교체
+
+### 구현 시나리오
+
+```tsx
+// BlockCustomizeSheet.tsx — enabledBlocks 렌더 영역
+
+function moveBlock(blockId: BlockId, direction: 'up' | 'down') {
+  setBlocks(prev => {
+    const enabled = prev.filter(b => b.enabled)
+    const disabled = prev.filter(b => !b.enabled)
+    const idx = enabled.findIndex(b => b.id === blockId)
+    if (idx < 0) return prev
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (targetIdx < 0 || targetIdx >= enabled.length) return prev
+    const next = [...enabled]
+    ;[next[idx], next[targetIdx]] = [next[targetIdx], next[idx]]
+    return [...next, ...disabled]
+  })
+}
+
+// 각 블록 카드 내부 — 드래그 핸들 대신:
+<div className="flex flex-col gap-0.5 shrink-0">
+  <button
+    onClick={() => moveBlock(block.id, 'up')}
+    disabled={idx === 0}
+    className="w-8 h-6 rounded-md bg-white/10 text-white text-xs
+      disabled:opacity-20 hover:bg-white/20 transition-all"
+    aria-label="위로 이동"
+  >▲</button>
+  <button
+    onClick={() => moveBlock(block.id, 'down')}
+    disabled={idx === enabledBlocks.length - 1}
+    className="w-8 h-6 rounded-md bg-white/10 text-white text-xs
+      disabled:opacity-20 hover:bg-white/20 transition-all"
+    aria-label="아래로 이동"
+  >▼</button>
+</div>
+```
+
+기존 `onHandlePointerDown/Move/Up`, `DragHandleIcon`, FLIP 애니메이션 코드는 제거.
+
+**공수**: M (3시간 — 기존 드래그 로직 제거 + ▲▼ 구현 + QA)
+
+---
+
+## H-8. P13 — 현금 모드 지폐 일러스트 강화
+
+**현재**: 단색 CSS 사각형 (`bg-yellow-100` 등) + 텍스트 라벨
+**변경**: 실제 한국 원화 지폐의 단순화된 SVG 일러스트
+
+### 구현 시나리오
+
+1. 각 금종별 SVG 인라인 컴포넌트 생성 (`BillIllustration`)
+2. 지폐 색상 + 인물 실루엣 + 금액 텍스트를 최소한으로 표현
+3. 동전은 현재 원형 스타일 유지 (이미 직관적)
+
+```tsx
+// 새 파일: src/components/home/BillIllustration.tsx
+
+function BillSvg({ value }: { value: number }) {
+  const configs: Record<number, { bg: string; accent: string; portrait: string }> = {
+    50000: { bg: '#fef9c3', accent: '#ca8a04', portrait: '신사임당' },
+    10000: { bg: '#dcfce7', accent: '#16a34a', portrait: '세종대왕' },
+    5000:  { bg: '#ffedd5', accent: '#ea580c', portrait: '율곡' },
+    1000:  { bg: '#dbeafe', accent: '#2563eb', portrait: '퇴계' },
+  }
+  const c = configs[value] || configs[1000]
+
+  return (
+    <svg viewBox="0 0 120 50" className="w-full h-full">
+      {/* 지폐 배경 */}
+      <rect x="1" y="1" width="118" height="48" rx="4"
+        fill={c.bg} stroke={c.accent} strokeWidth="1.5" />
+      {/* 인물 실루엣 (원형) */}
+      <circle cx="30" cy="25" r="14" fill={c.accent} opacity="0.15" />
+      <circle cx="30" cy="20" r="6" fill={c.accent} opacity="0.3" />
+      <ellipse cx="30" cy="32" rx="10" ry="7" fill={c.accent} opacity="0.2" />
+      {/* 금액 */}
+      <text x="75" y="22" textAnchor="middle"
+        className="text-[11px] font-black" fill={c.accent}>
+        {value >= 10000 ? `${value/10000}만` : `${value/1000}천`}
+      </text>
+      <text x="75" y="36" textAnchor="middle"
+        className="text-[8px]" fill={c.accent} opacity="0.6">
+        원
+      </text>
+    </svg>
+  )
+}
+```
+
+기존 `BillStack`의 지폐 렌더링에서 `<span>{d.label}</span>` 대신 `<BillSvg value={d.value} />` 사용.
+
+**공수**: M (3시간 — SVG 디자인 + 통합 + 반응형 QA)
+
+---
+
+## H-9. 역할별 공수 요약 및 실행 순서
+
+### 공수 요약
+
+| 코드 | 기능 | FE | QA | 합계 |
+|:---:|:---|:---:|:---:|:---:|
+| H-1 (P1) | `×` 기호 제거 | S | S | ~0.5일 |
+| H-2 (P2) | "이미 쓴 돈" 접기 | S | S | ~0.5일 |
+| H-3 (P3) | 시뮬레이션 접기 | S | S | ~0.5일 |
+| H-4 (P4) | 헤더 role 한글화 | S | S | ~0.5일 |
+| H-5 (P6) | 요약 바 텍스트 확대 | S | — | ~0.2일 |
+| H-6 (P9) | 시뮬레이션 프리셋 | M | S | ~1일 |
+| H-7 (P10) | ▲▼ 순서 변경 | M | M | ~1.5일 |
+| H-8 (P13) | 지폐 일러스트 | M | M | ~1.5일 |
+
+**총 예상 공수**: ~6인일
+
+### 실행 순서 (의존성 기준)
+
+```
+── Wave 1: 즉시 수정 (0.5일) ──────────────
+  H-1 (× 제거) + H-4 (헤더) + H-5 (텍스트 확대)
+  ↓
+── Wave 2: 접기 패턴 (1일) ────────────────
+  H-2 (쓴 돈 접기) + H-3 (시뮬레이션 접기)
+  ↓
+── Wave 3: 인터랙션 개선 (2.5일, 병렬 가능) ─
+  H-6 (프리셋 버튼)  ←→  H-7 (▲▼ 버튼)
+  ↓
+── Wave 4: 시각 강화 (1.5일) ──────────────
+  H-8 (지폐 일러스트)
+  ↓
+── 통합 QA (0.5일) ─────────────────────
+```
+
+---
+
+## H-10. Phase H 실행 요청 메시지
+
+```
+제안서 /Plan&Source/plan_evaluation_budget_proposal.md 의 "Phase H" 섹션을 참조해 구현을 진행해주세요.
+
+우선순위:
+1. Wave 1: H-1 + H-4 + H-5 (즉시 수정 — × 제거, 헤더 한글화, 텍스트 확대)
+2. Wave 2: H-2 + H-3 (접기 패턴 — "이미 쓴 돈" 접기, 시뮬레이션 접기)
+3. Wave 3: H-6 + H-7 (인터랙션 — 프리셋 버튼, ▲▼ 순서 버튼)
+4. Wave 4: H-8 (시각 — 지폐 일러스트)
+
+완료 기준:
+- npm run build 통과
+- H-1: 현금 모드에서 × 기호 없이 "1 장", "3 개" 표시
+- H-2: "이미 쓴 돈" 기본 접힌 상태, 클릭 시 펼침
+- H-3: 시뮬레이션 버튼만 표시, 클릭 시 확장
+- H-6: 1만원/3만원/5만원 프리셋 버튼 동작
+- H-7: ▲▼ 버튼으로 블록 순서 변경 가능 (드래그 제거)
+- H-8: 5만원/1만원/5천원/1천원 SVG 일러스트 렌더링
+
+접근성 기준:
+- evaluation-checklist.md 영역 A (A-20: 특수문자 금지) 통과
+- evaluation-checklist.md 영역 D (D-01: 정보 과부하 방지) 통과
 ```
