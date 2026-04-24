@@ -123,7 +123,7 @@ function SimulationSection({
       {/* 닫기 */}
       <button
         onClick={() => { setOpen(false); setSimAmount('') }}
-        className="text-xs text-zinc-400 font-bold text-center"
+        className="w-full py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-sm font-black text-zinc-600 transition-colors active:scale-[0.98]"
       >
         닫기
       </button>
