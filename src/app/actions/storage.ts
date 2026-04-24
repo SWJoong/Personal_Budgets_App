@@ -4,6 +4,7 @@ import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { extractStoragePath } from '@/utils/supabase/storage'
 
 const SIGNED_URL_EXPIRES = 3600 // 1시간
+const EASY_READ_IMAGE_MAX_BYTES = 2 * 1024 * 1024 // 2MB
 
 /**
  * 트랜잭션 목록의 영수증·활동사진 URL을 signed URL로 일괄 변환합니다.
@@ -93,4 +94,41 @@ export async function getSignedImageUrl(
     .createSignedUrl(path, SIGNED_URL_EXPIRES)
 
   return data?.signedUrl ?? null
+}
+
+/**
+ * Easy Read 이미지를 activity-photos 버킷에 업로드합니다.
+ * @param file - 업로드할 파일 (2MB 이하, 이미지 형식)
+ * @param participantId - 당사자 UUID
+ * @param entityType - 'plan' | 'goal'
+ * @param entityId - 계획 또는 목표의 UUID
+ * @returns Storage path 문자열 (DB 저장용)
+ */
+export async function uploadEasyReadImage(
+  file: File,
+  participantId: string,
+  entityType: 'plan' | 'goal',
+  entityId: string
+): Promise<{ path?: string; error?: string }> {
+  if (!file.type.startsWith('image/')) {
+    return { error: '이미지 파일만 업로드할 수 있습니다.' }
+  }
+  if (file.size > EASY_READ_IMAGE_MAX_BYTES) {
+    return { error: '파일 크기는 2MB 이하여야 합니다.' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '인증 필요' }
+
+  const ext = file.name.split('.').pop() || 'jpg'
+  const storagePath = `${participantId}/easy-read/${entityType}-${entityId}.${ext}`
+
+  const admin = createAdminClient()
+  const { error } = await admin.storage
+    .from('activity-photos')
+    .upload(storagePath, file, { upsert: true, contentType: file.type })
+
+  if (error) return { error: error.message }
+  return { path: storagePath }
 }

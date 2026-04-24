@@ -15,6 +15,8 @@ export interface MonthlyPlanInput {
   planned_budget: number
   target_count?: number | null
   scheduled_dates?: string[] | null   // ['YYYY-MM-DD', ...]
+  easy_description?: string | null
+  easy_image_url?: string | null
 }
 
 export interface MonthlyPlan {
@@ -29,6 +31,8 @@ export interface MonthlyPlan {
   planned_budget: number
   target_count: number | null
   scheduled_dates: string[] | null
+  easy_description: string | null
+  easy_image_url: string | null
   funding_source?: { id: string; name: string } | null
   support_goal?: { id: string; support_area: string } | null
 }
@@ -68,13 +72,15 @@ export async function getMonthlyPlans(
   const m = normalizeMonth(month)
   const { data } = await supabase
     .from('monthly_plans')
-    .select('id, participant_id, month, order_index, title, description, funding_source_id, support_goal_id, planned_budget, target_count, scheduled_dates, funding_source:funding_sources ( id, name ), support_goal:support_goals ( id, support_area )')
+    .select('id, participant_id, month, order_index, title, description, funding_source_id, support_goal_id, planned_budget, target_count, scheduled_dates, easy_description, easy_image_url, funding_source:funding_sources ( id, name ), support_goal:support_goals ( id, support_area )')
     .eq('participant_id', participantId)
     .eq('month', m)
     .order('order_index', { ascending: true })
 
   return (data || []).map((p: any) => ({
     ...p,
+    easy_description: p.easy_description ?? null,
+    easy_image_url: p.easy_image_url ?? null,
     funding_source: Array.isArray(p.funding_source) ? p.funding_source[0] ?? null : p.funding_source ?? null,
     support_goal: Array.isArray(p.support_goal) ? p.support_goal[0] ?? null : p.support_goal ?? null,
   })) as MonthlyPlan[]
@@ -143,6 +149,8 @@ export async function upsertMonthlyPlan(input: MonthlyPlanInput) {
     planned_budget: Number(input.planned_budget) || 0,
     target_count: input.target_count ?? null,
     scheduled_dates: input.scheduled_dates?.length ? input.scheduled_dates : [],
+    easy_description: input.easy_description?.trim() || null,
+    easy_image_url: input.easy_image_url || null,
     creator_id: user.id,
     updated_at: new Date().toISOString(),
   }

@@ -32,8 +32,8 @@ const PLAN_TYPES: CarePlanType[] = ['mohw_plan', 'seoul_plan']
 const CURRENT_YEAR = new Date().getFullYear()
 const YEAR_OPTIONS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR + 1]
 
-const GOALS_LABEL = '지원목표·예산 계획'
-const GOALS_DESCRIPTION = '연간 지원 목표 및 예산 세목 (산출내역)'
+const GOALS_LABEL = '직접지급형 지원목표·예산 계획'
+const GOALS_DESCRIPTION = '직접지급 방식 연간 지원 목표 및 예산 세목 (산출내역)'
 
 function formatPreview(planType: CarePlanType, content: any): string {
   if (!content) return '내용이 없습니다.'

@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import HomeDashboard from '@/components/home/HomeDashboard'
 import { UIPreferences, DEFAULT_PREFERENCES } from '@/types/ui-preferences'
@@ -138,7 +138,19 @@ export default async function Home() {
 
   // 이번 달 월별 계획 진행률 (month 는 0-indexed 이므로 +1)
   const currentMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`
-  const monthlyPlanProgress = await getMonthlyPlanProgress(user.id, currentMonth)
+  const rawMonthlyPlanProgress = await getMonthlyPlanProgress(user.id, currentMonth)
+
+  // 월별 계획 이미지 signed URL 처리
+  const adminClient = createAdminClient()
+  const monthlyPlanProgress = await Promise.all(
+    rawMonthlyPlanProgress.map(async p => {
+      if (!p.easy_image_url) return p
+      const { data } = await adminClient.storage
+        .from('activity-photos')
+        .createSignedUrl(p.easy_image_url, 86400)
+      return { ...p, easy_image_url: data?.signedUrl ?? p.easy_image_url }
+    })
+  )
 
   // 지원자 편지 블록이 활성화된 경우에만 최근 발행된 평가 조회
   let latestEvaluation: { month: string; easy_summary: string | null; next_step: string | null } | null = null

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { callOpenAI } from '@/utils/openai'
 
 interface PlanOption {
   name: string
@@ -17,26 +18,6 @@ interface PlanContext {
   where?: string
   who?: string
   why?: string
-}
-
-async function callOpenAI(messages: { role: string; content: string }[]) {
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) throw new Error('API 키 설정이 필요합니다.')
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages,
-      response_format: { type: 'json_object' },
-    }),
-  })
-  const data = await response.json()
-  return JSON.parse(data.choices[0].message.content)
 }
 
 /**
@@ -89,7 +70,8 @@ export async function suggestActivityOptions(
       },
       { role: 'user', content: '오늘 할 수 있는 활동을 추천해줘.' },
     ])
-    return { success: true, data: { a: result.a, b: result.b } }
+    const r = result as { a: string; b: string }
+    return { success: true, data: { a: r.a, b: r.b } }
   } catch (error: any) {
     console.error('활동 추천 오류:', error)
     return { success: false, error: error.message }
@@ -122,13 +104,14 @@ export async function suggestMethodOptions(
       },
       { role: 'user', content: `${activity}을(를) 어떻게 하면 좋을지 추천해줘.` },
     ])
+    const r = result as { a: string; b: string; a_cost: number; b_cost: number }
     return {
       success: true,
       data: {
-        a: result.a,
-        b: result.b,
-        a_cost: Number(result.a_cost) || 5000,
-        b_cost: Number(result.b_cost) || 10000,
+        a: r.a,
+        b: r.b,
+        a_cost: Number(r.a_cost) || 5000,
+        b_cost: Number(r.b_cost) || 10000,
       },
     }
   } catch (error: any) {

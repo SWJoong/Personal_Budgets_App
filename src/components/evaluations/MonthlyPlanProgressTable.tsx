@@ -97,6 +97,15 @@ export default function MonthlyPlanProgressTable({
                     {p.description && (
                       <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{p.description}</p>
                     )}
+                    {p.easy_description ? (
+                      <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold">
+                        💬 {p.easy_description}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center mt-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-bold">
+                        쉬운 설명 없음
+                      </span>
+                    )}
                   </td>
                   <td className="py-3 pr-3 text-xs">
                     {p.support_goal

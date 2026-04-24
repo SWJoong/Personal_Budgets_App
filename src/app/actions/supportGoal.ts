@@ -18,6 +18,8 @@ export interface SupportGoalInput {
   eval_tool?: string | null
   eval_target?: string | null
   is_active?: boolean
+  easy_description?: string | null
+  easy_image_url?: string | null
 }
 
 export interface SupportGoal {
@@ -35,6 +37,8 @@ export interface SupportGoal {
   eval_tool: string | null
   eval_target: string | null
   is_active: boolean
+  easy_description: string | null
+  easy_image_url: string | null
   creator_id: string
   created_at: string
   updated_at: string
@@ -88,6 +92,8 @@ export async function upsertSupportGoal(input: SupportGoalInput) {
     eval_tool: input.eval_tool?.trim() || null,
     eval_target: input.eval_target?.trim() || null,
     is_active: input.is_active ?? true,
+    easy_description: input.easy_description?.trim() || null,
+    easy_image_url: input.easy_image_url || null,
     creator_id: user.id,
     updated_at: new Date().toISOString(),
   }

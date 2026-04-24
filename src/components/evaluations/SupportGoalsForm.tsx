@@ -8,6 +8,7 @@ import {
   type SupportGoal,
   type SupportGoalInput,
 } from '@/app/actions/supportGoal'
+import { uploadEasyReadImage } from '@/app/actions/storage'
 
 interface Props {
   carePlanId: string
@@ -28,6 +29,9 @@ interface Draft {
   eval_tool: string
   eval_target: string
   is_active: boolean
+  easy_description: string
+  easy_image_url: string
+  easy_image_file: File | null
   open: boolean
   dirty: boolean
 }
@@ -46,6 +50,9 @@ function toDraft(g?: SupportGoal, order_index = 1): Draft {
     eval_tool: g?.eval_tool ?? '',
     eval_target: g?.eval_target ?? '',
     is_active: g?.is_active ?? true,
+    easy_description: g?.easy_description ?? '',
+    easy_image_url: g?.easy_image_url ?? '',
+    easy_image_file: null,
     open: !g,
     dirty: false,
   }
@@ -93,28 +100,41 @@ export default function SupportGoalsForm({ carePlanId, participantId, initialGoa
       showToast(false, '지원 영역을 입력해주세요.')
       return
     }
-    const input: SupportGoalInput = {
-      id: d.id,
-      care_plan_id: carePlanId,
-      participant_id: participantId,
-      order_index: d.order_index,
-      support_area: d.support_area,
-      is_to_goal: d.is_to_goal,
-      is_for_whom: d.is_for_whom,
-      needed_support: d.needed_support || null,
-      outcome_goal: d.outcome_goal || null,
-      strategy: d.strategy || null,
-      linked_services: d.linked_services || null,
-      eval_tool: d.eval_tool || null,
-      eval_target: d.eval_target || null,
-      is_active: d.is_active,
-    }
     startTransition(async () => {
+      // 이미지 파일이 있으면 먼저 업로드
+      let imageUrl = d.easy_image_url || null
+      if (d.easy_image_file && d.id) {
+        const uploadResult = await uploadEasyReadImage(d.easy_image_file, participantId, 'goal', d.id)
+        if (uploadResult.error) {
+          showToast(false, `이미지 업로드 실패: ${uploadResult.error}`)
+          return
+        }
+        imageUrl = uploadResult.path || null
+      }
+
+      const input: SupportGoalInput = {
+        id: d.id,
+        care_plan_id: carePlanId,
+        participant_id: participantId,
+        order_index: d.order_index,
+        support_area: d.support_area,
+        is_to_goal: d.is_to_goal,
+        is_for_whom: d.is_for_whom,
+        needed_support: d.needed_support || null,
+        outcome_goal: d.outcome_goal || null,
+        strategy: d.strategy || null,
+        linked_services: d.linked_services || null,
+        eval_tool: d.eval_tool || null,
+        eval_target: d.eval_target || null,
+        is_active: d.is_active,
+        easy_description: d.easy_description || null,
+        easy_image_url: imageUrl,
+      }
       const result = await upsertSupportGoal(input)
       if (result.error) {
         showToast(false, result.error)
       } else {
-        update(idx, { dirty: false, open: false })
+        update(idx, { dirty: false, open: false, easy_image_file: null })
         showToast(true, '목표가 저장되었습니다.')
       }
     })
@@ -285,6 +305,66 @@ export default function SupportGoalsForm({ carePlanId, participantId, initialGoa
                     />
                   </div>
                 ))}
+              </div>
+
+              {/* 당사자용 쉬운 정보 */}
+              <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-black text-blue-700 uppercase tracking-wider">당사자용 쉬운 정보</p>
+                  {!d.easy_description && (
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full">
+                      쉬운 설명 없음
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest">쉬운 설명 (25자 이내)</label>
+                    <span className={`text-[10px] font-bold tabular-nums ${d.easy_description.length > 25 ? 'text-red-500' : 'text-blue-400'}`}>
+                      {d.easy_description.length}/25
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    value={d.easy_description}
+                    onChange={e => update(idx, { easy_description: e.target.value.slice(0, 25) })}
+                    placeholder="예) 나는 친구와 밥을 먹고 싶어요."
+                    maxLength={25}
+                    className="w-full px-3 py-2 rounded-xl bg-white ring-1 ring-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">대표 이미지 (선택)</label>
+                  <div className="flex items-center gap-3">
+                    {(d.easy_image_file ? URL.createObjectURL(d.easy_image_file) : d.easy_image_url) && (
+                      <img
+                        src={d.easy_image_file ? URL.createObjectURL(d.easy_image_file) : d.easy_image_url}
+                        alt="쉬운 정보 대표 이미지 미리보기"
+                        className="w-14 h-14 rounded-xl object-cover ring-1 ring-blue-200"
+                      />
+                    )}
+                    <label className="cursor-pointer px-3 py-2 rounded-xl bg-white ring-1 ring-blue-200 text-blue-700 text-xs font-bold hover:bg-blue-50 transition-colors">
+                      이미지 선택
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={e => update(idx, { easy_image_file: e.target.files?.[0] ?? null })}
+                      />
+                    </label>
+                    {(d.easy_image_file || d.easy_image_url) && (
+                      <button
+                        type="button"
+                        onClick={() => update(idx, { easy_image_file: null, easy_image_url: '' })}
+                        className="text-xs text-red-500 hover:text-red-700 font-bold"
+                      >
+                        삭제
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* 활성 여부 */}

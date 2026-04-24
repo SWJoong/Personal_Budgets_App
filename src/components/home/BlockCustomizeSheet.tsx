@@ -24,7 +24,7 @@ export default function BlockCustomizeSheet({
 }: BlockCustomizeSheetProps) {
   const [blocks, setBlocks] = useState<BlockItem[]>(() => buildBlockList(currentPreferences))
   const [draggingId, setDraggingId] = useState<BlockId | null>(null)
-  const { highContrast, setHighContrast, darkMode, setDarkMode, yellowBg, setYellowBg, easyTerms, setEasyTerms } = useAccessibility()
+  const { highContrast, setHighContrast, darkMode, setDarkMode, yellowBg, setYellowBg, easyTerms, setEasyTerms, fontSize, setFontSize } = useAccessibility()
   // 드래그 중 삽입 위치 — 해당 아이템 '위'에 삽입. 'END'는 맨 아래.
   const [insertBeforeId, setInsertBeforeId] = useState<BlockId | 'END' | null>(null)
 
@@ -227,6 +227,29 @@ export default function BlockCustomizeSheet({
           {/* 화면 설정 */}
           <div className="mb-6">
             <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">화면 설정</p>
+            
+            {/* 글자 크기 조정 */}
+            <div className="bg-white rounded-2xl ring-1 ring-zinc-100 p-3.5 mb-3 flex items-center justify-between">
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-zinc-700">글자 크기</span>
+                <span className="text-xs text-zinc-400">화면의 글자 크기를 조절해요</span>
+              </div>
+              <div className="flex bg-zinc-100 rounded-xl p-1 shrink-0">
+                {(['normal', 'large', 'huge'] as const).map(size => (
+                  <button
+                    key={size}
+                    onClick={() => setFontSize(size)}
+                    aria-label={`글자 크기: ${size === 'normal' ? '보통' : size === 'large' ? '크게' : '아주 크게'}`}
+                    className={`w-10 h-8 flex items-center justify-center rounded-lg font-bold transition-all ${
+                      fontSize === size ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'
+                    }`}
+                  >
+                    <span className={size === 'normal' ? 'text-sm' : size === 'large' ? 'text-lg' : 'text-xl'}>가</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="flex flex-col gap-0 bg-white rounded-2xl ring-1 ring-zinc-100 overflow-hidden">
               {[
                 { key: 'highContrast', label: '🌗 글씨가 더 잘 보여요', desc: '글씨와 배경의 대비를 높여요', value: highContrast, set: setHighContrast, color: 'bg-zinc-900' },
