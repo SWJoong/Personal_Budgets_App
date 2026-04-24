@@ -224,6 +224,37 @@ export default function BlockCustomizeSheet({
           style={{ paddingBottom: 'max(2.5rem, env(safe-area-inset-bottom) + 0.5rem)' }}
         >
 
+          {/* 화면 설정 */}
+          <div className="mb-6">
+            <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">화면 설정</p>
+            <div className="flex flex-col gap-0 bg-white rounded-2xl ring-1 ring-zinc-100 overflow-hidden">
+              {[
+                { key: 'highContrast', label: '🌗 글씨가 더 잘 보여요', desc: '글씨와 배경의 대비를 높여요', value: highContrast, set: setHighContrast, color: 'bg-zinc-900' },
+                { key: 'darkMode',     label: '🌙 다크 모드',           desc: '눈부심을 줄여요',             value: darkMode,     set: setDarkMode,     color: 'bg-indigo-600' },
+                { key: 'yellowBg',     label: '🟡 노란 배경',           desc: '읽기 편하게 노란 배경으로',   value: yellowBg,     set: setYellowBg,     color: 'bg-yellow-400' },
+                { key: 'easyTerms',    label: '💬 쉬운 말 모드',        desc: '어려운 말을 쉽게 바꿔요',     value: easyTerms,    set: setEasyTerms,    color: 'bg-blue-600' },
+              ].map(({ key, label, desc, value, set, color }, idx, arr) => (
+                <div
+                  key={key}
+                  className={`flex items-center justify-between px-4 py-3.5 ${idx < arr.length - 1 ? 'border-b border-zinc-100' : ''}`}
+                >
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-zinc-700">{label}</span>
+                    <span className="text-xs text-zinc-400">{desc}</span>
+                  </div>
+                  <button
+                    onClick={() => set(!value)}
+                    className={`relative w-12 h-7 rounded-full transition-all duration-300 ${value ? color : 'bg-zinc-200'}`}
+                    role="switch"
+                    aria-checked={value}
+                  >
+                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${value ? 'left-5' : 'left-0.5'}`} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* 필수 블록 */}
           <div className="mb-4">
             <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">항상 보여요</p>
@@ -343,36 +374,6 @@ export default function BlockCustomizeSheet({
             </div>
           )}
 
-          {/* 화면 설정 */}
-          <div className="mt-6">
-            <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">화면 설정</p>
-            <div className="flex flex-col gap-0 bg-white rounded-2xl ring-1 ring-zinc-100 overflow-hidden">
-              {[
-                { key: 'highContrast', label: '🌗 글씨가 더 잘 보여요', desc: '글씨와 배경의 대비를 높여요', value: highContrast, set: setHighContrast, color: 'bg-zinc-900' },
-                { key: 'darkMode',     label: '🌙 다크 모드',           desc: '눈부심을 줄여요',             value: darkMode,     set: setDarkMode,     color: 'bg-indigo-600' },
-                { key: 'yellowBg',     label: '🟡 노란 배경',           desc: '읽기 편하게 노란 배경으로',   value: yellowBg,     set: setYellowBg,     color: 'bg-yellow-400' },
-                { key: 'easyTerms',    label: '💬 쉬운 말 모드',        desc: '어려운 말을 쉽게 바꿔요',     value: easyTerms,    set: setEasyTerms,    color: 'bg-blue-600' },
-              ].map(({ key, label, desc, value, set, color }, idx, arr) => (
-                <div
-                  key={key}
-                  className={`flex items-center justify-between px-4 py-3.5 ${idx < arr.length - 1 ? 'border-b border-zinc-100' : ''}`}
-                >
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-zinc-700">{label}</span>
-                    <span className="text-xs text-zinc-400">{desc}</span>
-                  </div>
-                  <button
-                    onClick={() => set(!value)}
-                    className={`relative w-12 h-7 rounded-full transition-all duration-300 ${value ? color : 'bg-zinc-200'}`}
-                    role="switch"
-                    aria-checked={value}
-                  >
-                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${value ? 'left-5' : 'left-0.5'}`} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </>
