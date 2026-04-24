@@ -138,43 +138,6 @@ function CoinStack({ d, pending, spent }: { d: Denom & { count: number }; pendin
   )
 }
 
-/* ── "이미 쓴 돈" 접기/펼치기 섹션 ── */
-function SpentSection({ spentAmount, visibleSpent }: { spentAmount: number; visibleSpent: (Denom & { count: number })[] }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <div className="border-t border-dashed border-red-200 pt-4">
-      <button
-        type="button"
-        onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between mb-2"
-      >
-        <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">
-          🧾 <EasyTerm formal="이번 달 사용액" easy="이미 쓴 돈" />
-        </p>
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-black text-red-500">
-            -{formatCurrency(spentAmount)}원
-          </p>
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black transition-colors ${open ? 'bg-zinc-200 text-zinc-600' : 'bg-zinc-100 text-zinc-500'}`}>
-            {open ? '▲ 접기' : '▼ 자세히'}
-          </span>
-        </div>
-      </button>
-      {open && (
-        <div className="flex flex-col gap-4 opacity-[0.65] animate-fade-in-up">
-          {visibleSpent.map(d =>
-            d.kind === 'bill' ? (
-              <BillStack key={d.value} d={d} spent />
-            ) : (
-              <CoinStack key={d.value} d={d} spent />
-            )
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
 export default function CashViz({ displayBalance, pendingDeduction, totalBudget }: Props) {
   const balanceParts = useMemo(() => decompose(displayBalance), [displayBalance])
   const pendingParts = useMemo(() => decompose(pendingDeduction), [pendingDeduction])
@@ -189,39 +152,49 @@ export default function CashViz({ displayBalance, pendingDeduction, totalBudget 
   const visiblePending = pendingParts.filter(p => p.count > 0)
   const visibleSpent = spentParts.filter(p => p.count > 0)
 
+  const [openBalance, setOpenBalance] = useState(true)
+  const [openSpent, setOpenSpent] = useState(false)
+
   return (
-    <div className="flex flex-col gap-5 px-5 py-5">
-      {/* ━━ 남은 돈 ━━ */}
+    <div className="flex flex-col gap-0 px-5 py-3">
+      {/* ━━ 남은 돈 (접기/펼치기) ━━ */}
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <button
+          type="button"
+          onClick={() => setOpenBalance(v => !v)}
+          className="w-full flex items-center justify-between py-3"
+        >
           <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
             💰 <EasyTerm formal="현재 잔액" easy="지금 남은 돈" />
           </p>
-          <p className="text-sm font-black text-zinc-700">
-            {formatCurrency(displayBalance)}원
-          </p>
-        </div>
-        {visibleBalance.length === 0 ? (
-          <p className="text-sm font-bold text-zinc-400 py-4 text-center">
-            남은 돈이 없어요.
-          </p>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {visibleBalance.map(d =>
-              d.kind === 'bill' ? (
-                <BillStack key={d.value} d={d} />
-              ) : (
-                <CoinStack key={d.value} d={d} />
-              )
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-black text-zinc-700">
+              {formatCurrency(displayBalance)}원
+            </p>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black transition-colors ${openBalance ? 'bg-zinc-200 text-zinc-600' : 'bg-zinc-100 text-zinc-500'}`}>
+              {openBalance ? '▲ 접기' : '▼ 자세히'}
+            </span>
+          </div>
+        </button>
+        {openBalance && (
+          <div className="pb-3 animate-fade-in-up">
+            {visibleBalance.length === 0 ? (
+              <p className="text-sm font-bold text-zinc-400 py-4 text-center">남은 돈이 없어요.</p>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {visibleBalance.map(d =>
+                  d.kind === 'bill' ? <BillStack key={d.value} d={d} /> : <CoinStack key={d.value} d={d} />
+                )}
+              </div>
             )}
           </div>
         )}
       </div>
 
-      {/* ━━ 반영 대기 중 (점선) ━━ */}
+      {/* ━━ 반영 대기 중 (항상 표시) ━━ */}
       {hasPending && visiblePending.length > 0 && (
-        <div className="border-t border-dashed border-orange-200 pt-4">
-          <div className="flex items-center justify-between mb-2">
+        <div className="border-t border-dashed border-orange-200 py-3">
+          <div className="flex items-center justify-between mb-3">
             <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
               🕒 <EasyTerm formal="반영 대기 중" easy="곧 빠져 나갈 돈" />
             </p>
@@ -231,19 +204,40 @@ export default function CashViz({ displayBalance, pendingDeduction, totalBudget 
           </div>
           <div className="flex flex-col gap-4">
             {visiblePending.map(d =>
-              d.kind === 'bill' ? (
-                <BillStack key={d.value} d={d} pending />
-              ) : (
-                <CoinStack key={d.value} d={d} pending />
-              )
+              d.kind === 'bill' ? <BillStack key={d.value} d={d} pending /> : <CoinStack key={d.value} d={d} pending />
             )}
           </div>
         </div>
       )}
 
-      {/* ━━ 이미 사용한 돈 (기본 접기) ━━ */}
+      {/* ━━ 이미 쓴 돈 (접기/펼치기) ━━ */}
       {hasSpent && visibleSpent.length > 0 && (
-        <SpentSection spentAmount={spentAmount} visibleSpent={visibleSpent} />
+        <div className="border-t border-dashed border-red-200">
+          <button
+            type="button"
+            onClick={() => setOpenSpent(v => !v)}
+            className="w-full flex items-center justify-between py-3"
+          >
+            <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">
+              🧾 <EasyTerm formal="이번 달 사용액" easy="이미 쓴 돈" />
+            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-black text-red-500">
+                -{formatCurrency(spentAmount)}원
+              </p>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black transition-colors ${openSpent ? 'bg-zinc-200 text-zinc-600' : 'bg-zinc-100 text-zinc-500'}`}>
+                {openSpent ? '▲ 접기' : '▼ 자세히'}
+              </span>
+            </div>
+          </button>
+          {openSpent && (
+            <div className="pb-3 flex flex-col gap-4 opacity-[0.65] animate-fade-in-up">
+              {visibleSpent.map(d =>
+                d.kind === 'bill' ? <BillStack key={d.value} d={d} spent /> : <CoinStack key={d.value} d={d} spent />
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       {/* ━━ 요약 바 ━━ */}
