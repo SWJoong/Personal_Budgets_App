@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { UIPreferences, OPTIONAL_BLOCKS, BLOCK_METADATA, REQUIRED_BLOCKS, BlockId } from '@/types/ui-preferences'
+import { useAccessibility } from '@/hooks/useAccessibility'
 
 interface BlockItem {
   id: BlockId
@@ -23,6 +24,7 @@ export default function BlockCustomizeSheet({
 }: BlockCustomizeSheetProps) {
   const [blocks, setBlocks] = useState<BlockItem[]>(() => buildBlockList(currentPreferences))
   const [draggingId, setDraggingId] = useState<BlockId | null>(null)
+  const { highContrast, setHighContrast, darkMode, setDarkMode, yellowBg, setYellowBg, easyTerms, setEasyTerms } = useAccessibility()
   // 드래그 중 삽입 위치 — 해당 아이템 '위'에 삽입. 'END'는 맨 아래.
   const [insertBeforeId, setInsertBeforeId] = useState<BlockId | 'END' | null>(null)
 
@@ -203,14 +205,24 @@ export default function BlockCustomizeSheet({
           <div className="w-10 h-1 rounded-full bg-zinc-200" />
         </div>
 
+        {/* 고정 헤더 — 제목 + 저장 버튼 */}
+        <div className="flex items-center justify-between px-6 pt-3 pb-4 border-b border-zinc-100 shrink-0">
+          <div>
+            <h2 className="text-lg font-black text-zinc-900 leading-tight">화면 꾸미기</h2>
+            <p className="text-xs text-zinc-400 mt-0.5">보고 싶은 정보를 선택하고 순서를 바꿀 수 있어요</p>
+          </div>
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 rounded-xl bg-green-600 text-white font-black text-sm active:scale-95 transition-transform"
+          >
+            저장
+          </button>
+        </div>
+
         <div
-          className="px-6 pb-10 pt-3 max-h-[80vh] overflow-y-auto"
+          className="px-6 pb-10 pt-4 max-h-[72vh] overflow-y-auto"
           style={{ paddingBottom: 'max(2.5rem, env(safe-area-inset-bottom) + 0.5rem)' }}
         >
-          <h2 className="text-lg font-black text-zinc-900 mb-1">화면 꾸미기</h2>
-          <p className="text-sm text-zinc-400 mb-6">
-            보고 싶은 정보를 선택하고 순서를 바꿀 수 있어요
-          </p>
 
           {/* 필수 블록 */}
           <div className="mb-4">
@@ -331,12 +343,36 @@ export default function BlockCustomizeSheet({
             </div>
           )}
 
-          <button
-            onClick={handleSave}
-            className="w-full mt-6 py-4 rounded-2xl bg-green-600 text-white font-black text-base active:scale-[0.98] transition-transform"
-          >
-            저장하기
-          </button>
+          {/* 화면 설정 */}
+          <div className="mt-6">
+            <p className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] mb-3">화면 설정</p>
+            <div className="flex flex-col gap-0 bg-white rounded-2xl ring-1 ring-zinc-100 overflow-hidden">
+              {[
+                { key: 'highContrast', label: '🌗 글씨가 더 잘 보여요', desc: '글씨와 배경의 대비를 높여요', value: highContrast, set: setHighContrast, color: 'bg-zinc-900' },
+                { key: 'darkMode',     label: '🌙 다크 모드',           desc: '눈부심을 줄여요',             value: darkMode,     set: setDarkMode,     color: 'bg-indigo-600' },
+                { key: 'yellowBg',     label: '🟡 노란 배경',           desc: '읽기 편하게 노란 배경으로',   value: yellowBg,     set: setYellowBg,     color: 'bg-yellow-400' },
+                { key: 'easyTerms',    label: '💬 쉬운 말 모드',        desc: '어려운 말을 쉽게 바꿔요',     value: easyTerms,    set: setEasyTerms,    color: 'bg-blue-600' },
+              ].map(({ key, label, desc, value, set, color }, idx, arr) => (
+                <div
+                  key={key}
+                  className={`flex items-center justify-between px-4 py-3.5 ${idx < arr.length - 1 ? 'border-b border-zinc-100' : ''}`}
+                >
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-zinc-700">{label}</span>
+                    <span className="text-xs text-zinc-400">{desc}</span>
+                  </div>
+                  <button
+                    onClick={() => set(!value)}
+                    className={`relative w-12 h-7 rounded-full transition-all duration-300 ${value ? color : 'bg-zinc-200'}`}
+                    role="switch"
+                    aria-checked={value}
+                  >
+                    <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${value ? 'left-5' : 'left-0.5'}`} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </>

@@ -155,7 +155,7 @@ function SpentSection({ spentAmount, visibleSpent }: { spentAmount: number; visi
           <p className="text-sm font-black text-red-500">
             -{formatCurrency(spentAmount)}원
           </p>
-          <span className="text-[10px] text-zinc-400 font-bold">
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black transition-colors ${open ? 'bg-zinc-200 text-zinc-600' : 'bg-zinc-100 text-zinc-500'}`}>
             {open ? '▲ 접기' : '▼ 자세히'}
           </span>
         </div>

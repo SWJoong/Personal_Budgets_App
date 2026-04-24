@@ -661,6 +661,7 @@ export default function BalanceVisualWidget({
   const receiptInputRef = useRef<HTMLInputElement>(null)
   const activityInputRef = useRef<HTMLInputElement>(null)
   const secondFileRef = useRef<HTMLInputElement>(null)  // 두 번째 파일 (추가 사진)
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false)
   const [uploadMode, setUploadMode] = useState<'receipt' | 'activity' | null>(null)
   const [uploadPreview, setUploadPreview] = useState<string | null>(null)
   const [uploadFile, setUploadFile] = useState<File | null>(null)
@@ -1013,24 +1014,44 @@ export default function BalanceVisualWidget({
         />
       )}
 
-      {/* 영수증 / 활동사진 버튼 — 정사각형 */}
-      <div className="flex gap-3 px-5 py-3.5 border-t border-zinc-100">
+      {/* 사진 추가 버튼 — 우측 고정 + 버튼 */}
+      <div className="relative flex items-center justify-end px-5 py-3 border-t border-zinc-100">
         <button
           type="button"
-          onClick={() => receiptInputRef.current?.click()}
-          className="flex-1 aspect-square bg-blue-50 text-blue-600 rounded-2xl flex flex-col items-center justify-center gap-1.5 hover:bg-blue-100 transition-all active:scale-[0.97]"
+          onClick={() => setShowPhotoMenu(v => !v)}
+          className="w-11 h-11 rounded-full bg-zinc-900 text-white flex items-center justify-center shadow-lg hover:bg-zinc-700 transition-all active:scale-90 text-2xl font-black"
+          aria-label="사진 추가"
         >
-          <span className="text-3xl">📷</span>
-          <span className="text-xs font-bold">영수증 찍기</span>
+          +
         </button>
-        <button
-          type="button"
-          onClick={() => activityInputRef.current?.click()}
-          className="flex-1 aspect-square bg-purple-50 text-purple-600 rounded-2xl flex flex-col items-center justify-center gap-1.5 hover:bg-purple-100 transition-all active:scale-[0.97]"
-        >
-          <span className="text-3xl">🖼️</span>
-          <span className="text-xs font-bold">활동사진</span>
-        </button>
+
+        {/* 사진 종류 선택 팝업 */}
+        {showPhotoMenu && (
+          <>
+            <div
+              className="fixed inset-0 z-30"
+              onClick={() => setShowPhotoMenu(false)}
+              aria-hidden="true"
+            />
+            <div className="absolute bottom-14 right-5 z-40 flex flex-col gap-2 animate-fade-in-up">
+              <button
+                type="button"
+                onClick={() => { setShowPhotoMenu(false); receiptInputRef.current?.click() }}
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-blue-600 text-white font-black text-sm shadow-lg whitespace-nowrap"
+              >
+                <span className="text-xl">📷</span> 영수증 찍기
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowPhotoMenu(false); activityInputRef.current?.click() }}
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg whitespace-nowrap"
+              >
+                <span className="text-xl">🖼️</span> 활동사진 찍기
+              </button>
+            </div>
+          </>
+        )}
+
         {/* 숨겨진 파일 입력 */}
         <input
           ref={receiptInputRef}
@@ -1065,7 +1086,7 @@ export default function BalanceVisualWidget({
                 <h2 className="text-lg font-black text-zinc-900">
                   {uploadMode === 'receipt' ? '🧂 영수증 기록하기' : '📸 활동 기록'}
                 </h2>
-                <button onClick={closeUploadSheet} className="text-zinc-400 hover:text-zinc-600 text-lg font-bold">✕</button>
+                <button onClick={closeUploadSheet} className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 text-base font-black transition-colors">✕</button>
               </div>
 
               {/* 사진 미리보기 */}

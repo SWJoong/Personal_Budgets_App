@@ -79,6 +79,12 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     const html = document.documentElement
     if (on) {
       html.classList.add('yellow-bg')
+      // 노란 배경과 다크모드는 동시에 사용 불가
+      if (darkMode) {
+        setDarkModeState(false)
+        localStorage.setItem('app-dark-mode', 'false')
+        html.classList.remove('dark-mode')
+      }
     } else {
       html.classList.remove('yellow-bg')
     }
@@ -90,8 +96,12 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     const html = document.documentElement
     if (on) {
       html.classList.add('dark-mode')
-      // 다크 모드와 고대비(또는 노란배경)가 충돌하지 않도록 조정
-      if (yellowBg) setYellowBg(false)
+      // 다크 모드와 노란 배경은 동시에 사용 불가
+      if (yellowBg) {
+        setYellowBgState(false)
+        localStorage.setItem('app-yellow-bg', 'false')
+        html.classList.remove('yellow-bg')
+      }
     } else {
       html.classList.remove('dark-mode')
     }

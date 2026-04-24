@@ -171,10 +171,10 @@ export default function ImportResultModal({ participants, participantFundingSour
           <div>
             <h2 className="text-lg font-black text-zinc-900">카카오뱅크 거래내역 가져오기</h2>
             <p className="text-xs text-zinc-400 font-medium mt-0.5">
-              카카오뱅크 앱 → 거래내역 → 내보내기 (.xlsx 또는 .csv)
+              카카오뱅크 앱 → 입출금 통장 → 우상단 설정 버튼 → 거래내역 다운로드 → 이메일 전송
             </p>
           </div>
-          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-zinc-100 text-zinc-400 text-xl font-bold">✕</button>
+          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 text-base font-black transition-colors">✕</button>
         </div>
 
         {/* 본문 */}
@@ -244,8 +244,8 @@ export default function ImportResultModal({ participants, participantFundingSour
 
               {/* 파일 형식 안내 */}
               <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-500 font-medium leading-relaxed">
-                <p className="font-bold text-zinc-700 mb-1">카카오뱅크 내보내기 형식 안내</p>
-                <p>카카오뱅크 앱 → 입출금 통장 → 거래내역 → 우상단 공유 버튼 → <strong>엑셀(.xlsx)</strong> 또는 <strong>CSV</strong> 내보내기</p>
+                <p className="font-bold text-zinc-700 mb-1">카카오뱅크 거래내역 내보내기 방법</p>
+                <p>카카오뱅크 앱 → 입출금 통장 → <strong>우상단 설정 버튼(⚙)</strong> → 거래내역 다운로드 → 이메일 전송</p>
                 <div className="mt-2 bg-white rounded-lg px-3 py-2 font-mono text-[10px] text-zinc-400">
                   거래일시 | 구분 | 거래금액 | 거래 후 잔액 | 거래구분 | 내용 | 메모<br/>
                   2026.03.05 10:53 | 출금 | -20000 | 440000 | 체크카드결제 | 볼링클럽 | 볼링 활동비
