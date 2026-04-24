@@ -40,6 +40,7 @@
 | H-2,3,9 | Wave 2: "이미 쓴 돈" 접기, 시뮬레이션 접기, FAB/도움말 숨김 | ✅ 완료 | — |
 | H-6~8,11 | Wave 3+4: 프리셋 버튼, ▲▼, 지폐 일러스트, 적응형 UI | ✅ 완료 | — |
 | v4.9 | 사진 버튼 + FAB 통합, 꾸미기 저장 버튼 헤더 고정, 접근성 토글 꾸미기 시트 추가, 다크↔노란배경 상호배제 버그 수정, CSV 안내 경로 수정, 닫기 버튼 가시성 개선 | ✅ 완료 | `3f7fb12` |
+| I | 당사자 화면 "이번 달 할 것들" + "내가 이루고 싶은 것" 통합 레이아웃 + AI 쉬운 요약 (Migration 30, openai.ts 추출, easyReadSummary.ts, MonthlyPlanEasyCard, SupportGoalEasyCard) | 🔜 예정 | — |
 
 > [!NOTE]
 > **v2 최종 점검 수정 사항 (2026-04-21)**
@@ -2256,4 +2257,353 @@ useEffect(() => {
 - evaluation-checklist.md 영역 D (D-01: 정보 과부하 방지) 통과
 - 버튼 색상 → 직관적 의미 전달 (2017 안내서 §이미지 원칙)
 - 신호등 색상 → 상태 인지 강화 (2021 안내서 §시각적 요소 규칙)
+```
+
+---
+
+## Phase I. 당사자 통합 레이아웃 + AI 쉬운 요약
+
+> **역할별 검토 완료 (2026-04-24)**: PL · BE · FE · UX/UI · QA · PM
+
+---
+
+### I-0. 목적 및 범위
+
+| 항목 | 내용 |
+|------|------|
+| 목적 | 당사자(발달장애인)가 자신의 지원 목표·월별 계획을 쉽게 이해할 수 있도록 통합 레이아웃 제공 |
+| 범위 | DB 확장 → callOpenAI 유틸 추출 → AI 쉬운 요약 액션 → 관리자 입력 UI → 당사자 화면 통합 레이아웃 |
+| 총 공수 | 약 6.5인일 (개발 5.5 + QA 1), 약 7영업일 (1.5주) |
+
+---
+
+### I-1. DB 확장 — Migration 30
+
+**파일**: `supabase/migrations/30_easy_read_columns.sql`
+**현재 최고 번호**: 29 (`29_care_plans_index.sql`)
+
+```sql
+-- ============================================================
+-- Migration 30: easy_read 컬럼 추가
+-- monthly_plans + support_goals 에 easy_image_url, easy_description
+-- 실행: Supabase 대시보드 > SQL Editor 에서 수동 실행
+-- ============================================================
+
+ALTER TABLE public.monthly_plans
+  ADD COLUMN IF NOT EXISTS easy_description TEXT,
+  ADD COLUMN IF NOT EXISTS easy_image_url   TEXT;
+
+ALTER TABLE public.support_goals
+  ADD COLUMN IF NOT EXISTS easy_description TEXT,
+  ADD COLUMN IF NOT EXISTS easy_image_url   TEXT;
+-- RLS 추가 불필요: 기존 테이블 정책이 신규 컬럼에 자동 적용
+```
+
+> **Storage**: 기존 `activity-photos` private 버킷 재사용.
+> DB 저장값: Storage **path 문자열** (`{participantId}/easy-read/{type}-{id}.jpg`) — public URL 아님.
+> Signed URL: 서버 컴포넌트에서 `createAdminClient().storage.createSignedUrl(path, 86400)` — **24시간 TTL**.
+
+---
+
+### I-BE-공통. `src/utils/openai.ts` 추출 (선행 작업)
+
+`plan.ts`의 private `callOpenAI` 함수를 공유 유틸로 추출. `plan.ts`는 import로 교체.
+기존 AI 계획 추천 기능 회귀 테스트 필수.
+
+```typescript
+// src/utils/openai.ts
+export async function callOpenAI(
+  messages: { role: string; content: string }[],
+  options?: { model?: string }
+) {
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) throw new Error('OPENAI_API_KEY 설정이 필요합니다.')
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: options?.model ?? 'gpt-4o',
+      messages,
+      response_format: { type: 'json_object' },
+    }),
+  })
+  if (!response.ok) throw new Error(`OpenAI 오류: ${response.status}`)
+  const data = await response.json()
+  return JSON.parse(data.choices[0].message.content)
+}
+```
+
+---
+
+### I-3. AI 쉬운 요약 Server Action
+
+**파일**: `src/app/actions/easyReadSummary.ts`
+
+```typescript
+'use server'
+// generateEasyReadSummary(participantId: string, month: string)
+// 1. 권한 확인 (supporter/admin만)
+// 2. monthly_plans + support_goals 조회
+// 3. callOpenAI 호출 (src/utils/openai.ts)
+// 4. 각 레코드 easy_description upsert (easy_image_url 미변경)
+// AI 실패 시: DB 미변경, 에러 반환 → 기존값 보존
+```
+
+**GPT-4o 시스템 프롬프트 핵심**:
+- 한 문장, 15자 이내
+- 쉬운 우리말만 (한자어·영어·전문 용어 금지)
+- 계획: 행동 중심 ("~해요", "~가요")
+- 목표: 1인칭 ("나는 ~하고 싶어요")
+
+**응답 JSON 형식**:
+```json
+{
+  "plans": [{ "id": "uuid", "easy_description": "이번 달에 카페에 4번 가요." }],
+  "goals": [{ "id": "uuid", "easy_description": "나는 친구와 밥을 먹고 싶어요." }]
+}
+```
+
+---
+
+### I-2. 관리자/실무자 입력 UI
+
+#### A. 서버 액션 확장
+
+**`src/app/actions/monthlyPlan.ts`**:
+```typescript
+export interface MonthlyPlanInput {
+  // ... 기존 필드 ...
+  easy_description?: string | null
+  easy_image_url?: string | null
+}
+```
+
+**`src/app/actions/supportGoal.ts`** — 동일하게 확장.
+
+**`src/app/actions/storage.ts`** — 이미지 업로드 함수 추가:
+```typescript
+// uploadEasyReadImage(file, participantId, entityType: 'plan'|'goal', entityId)
+// 경로: {participantId}/easy-read/{entityType}-{entityId}.ext
+// adminClient + upsert: true
+// 반환: Storage path 문자열
+```
+
+#### B. MonthlyPlansClient.tsx 확장
+
+**파일**: `src/app/(supporter)/supporter/evaluations/[participantId]/[month]/plans/MonthlyPlansClient.tsx`
+
+- `Draft`에 `easy_description`, `easy_image_file`, `easy_image_url` 추가
+- 카드 내 파란 배경 **"당사자용 쉬운 정보"** 구분 섹션 추가
+  - `easy_description` input (30자 제한, 글자수 카운터)
+  - 이미지 업로드 + `URL.createObjectURL` 미리보기
+- 상단 툴바에 **"✨ AI 자동 작성"** 버튼 (`generateEasyReadSummary` 호출)
+- `easy_description` 없는 카드에 노란 경고 배지: `"쉬운 설명 없음 — 제목이 표시됩니다"`
+
+#### C. SupportGoalsForm.tsx 확장
+
+**파일**: `src/components/evaluations/SupportGoalsForm.tsx`
+
+각 목표 카드 내 동일 패턴 (25자 제한), `is_active` 토글 위에 삽입.
+
+---
+
+### I-4. 당사자 화면 — 통합 레이아웃
+
+#### 변경 후 `/plan/page.tsx` 구조
+
+```
+잔액 위젯
+[NEW] "이번 달 할 것들" — details open (기본 펼침), 계획 0개이면 숨김
+[NEW] "내가 이루고 싶은 것" — details 기본 접힘, SupportGoalEasyCard 가로 스크롤
+저장된 계획 목록 (오늘 계획 AI — 기존 유지)
+PlanChatContainer
+```
+
+> **UX/UI 섹션명 결정**:
+> - "이번 달 내 계획" → **"이번 달 할 것들"** (행동 중심)
+> - "내 목표" → **"내가 이루고 싶은 것"** (1인칭 구체적)
+
+#### 데이터 페칭 추가 (서버 컴포넌트)
+
+```typescript
+// getMonthlyPlanProgress(user.id, currentMonth) — 기존 함수 재사용 (tx_count 포함)
+// getSupportGoals(carePlanId)
+// Signed URL 배치 생성: createAdminClient().storage.createSignedUrl(path, 86400)
+```
+
+#### 신규 컴포넌트 위치: `src/components/plans/`
+
+**`MonthlyPlanEasyCard.tsx`**:
+- **세로 레이아웃**: 이미지(96×96) → `easyDescription`(`text-lg font-black`) → 진행 아이콘
+- **진행 상황**: `target_count ≤ 6` → 원형 아이콘(`🟢/⭕`) + `"N/M번"` 텍스트 병기, `7+` → 신호등 바
+- **신호등**: ≥80%=`emerald-400`, 50~79%=`amber-400`, <50%=`red-400`
+- **이미지 fallback**: `order_index` 기반 고유 이모지 + 컬러 배경 (1:🎯blue, 2:🎨green, 3:🏃amber, 4:🍽️purple, 5:🛒rose, 6:🎵teal)
+- **텍스트 fallback**: `easy_description = null` → `title` 원문 표시
+
+**`SupportGoalEasyCard.tsx`** (chip 형태 미사용, 카드 형태 채택):
+- 120×120 카드, 이미지 상단 56px + 텍스트 하단
+- 컨테이너: `overflow-x-auto snap-x snap-mandatory flex gap-3`
+- **이미지 fallback**: 컬러 배경 + 이모지
+
+---
+
+### I-5. 역할별 공수 및 실행 순서
+
+| 코드 | 기능 | BE | FE | QA | 합계 |
+|:---:|:---|:---:|:---:|:---:|:---:|
+| I-1 | Migration 30 SQL 생성 | S | — | S | ~0.3일 |
+| I-BE | openai.ts 추출 + plan.ts 교체 | S | — | S | ~0.3일 |
+| I-3 | easyReadSummary.ts 서버 액션 | M | — | M | ~1.5일 |
+| I-2a | MonthlyPlansClient 입력 UI | S | M | S | ~1.5일 |
+| I-2b | SupportGoalsForm 입력 UI | S | M | S | ~1일 |
+| I-4 | 당사자 화면 + 신규 컴포넌트 2개 | S | M | M | ~2일 |
+
+**총 예상 공수**: 6.5인일 / **기간**: 약 7영업일 (1.5주)
+
+```
+Day 1 AM │ I-1 SQL 생성 → 사용자 Supabase 수동 실행 ← 병목 (R-1)
+Day 1 PM │ I-BE: openai.ts 추출
+Day 1~2  │ I-3: easyReadSummary.ts (병렬 가능)
+Day 2~3  │ I-2a MonthlyPlansClient ←→ I-2b SupportGoalsForm (병렬)
+Day 3~5  │ I-4: plan/page.tsx + MonthlyPlanEasyCard + SupportGoalEasyCard
+Day 5    │ QA Smoke Test + 접근성 체크리스트 (A-01~A-11)
+```
+
+---
+
+### I-6. 리스크 매트릭스
+
+| ID | 리스크 | 등급 | 대응 |
+|:--:|--------|:----:|------|
+| R-1 | Migration 30 수동 실행 지연 → BE/FE 착수 불가 | 🔴 | SQL 파일 먼저 준비 후 사용자에게 실행 타이밍 선확인 |
+| R-2 | AI 생성 텍스트 Easy Read 기준 미달 | 🟡 | TC-12 수동 검수 필수, 관리자 수정 가능으로 완화 |
+| R-3 | callOpenAI 추출 후 plan.ts 회귀 | 🟡 | 추출 직후 기존 AI 계획 추천 기능 동작 확인 필수 |
+| R-4 | Storage signed URL 24시간 만료 후 이미지 깨짐 | 🟡 | 서버 컴포넌트 새로고침 시 자동 갱신 → 수용 |
+| R-5 | 이미지 파일 크기/형식 미검증 | 🟢 | `accept="image/*"` + 서버 2MB 제한 추가 |
+
+---
+
+### I-7. 수동 작업 필요 항목
+
+| # | 작업 | 담당 | 시점 |
+|---|------|------|------|
+| M-1 | Supabase 대시보드 > SQL Editor에서 `30_easy_read_columns.sql` 실행 | 사용자 직접 | I-1 파일 생성 직후 |
+| M-2 | AI 생성 텍스트 Easy Read 수동 검수 (`easy-read-review` 스킬 활용) | PM | I-3 완료 후 |
+
+---
+
+### I-8. QA 핵심 테스트 케이스
+
+| # | 시나리오 | 구분 |
+|---|----------|------|
+| TC-01 | 관리자 easy_description 수동 입력 + 저장 → DB 반영 | Happy Path |
+| TC-02 | 관리자 이미지 업로드 → Storage 저장 + DB path 저장 | Happy Path |
+| TC-03 | AI 자동 작성 버튼 → easy_description 15자 이내 생성 | Happy Path |
+| TC-04 | 당사자 /plan "이번 달 할 것들" 섹션 렌더링 | Happy Path |
+| TC-05 | "내가 이루고 싶은 것" 가로 스크롤 + 모바일 375px | Happy Path |
+| TC-06 | easy_description NULL → title 원문 fallback | Edge Case |
+| TC-07 | easy_image_url NULL → order_index 이모지 fallback | Edge Case |
+| TC-08 | 월별 계획 0개 → 섹션 미렌더링 | Edge Case |
+| TC-09 | AI 생성 후 수동 수정 저장 → 수동값 우선 | Edge Case |
+| TC-10 | target_count NULL → 진행 바 없이 텍스트만 | Edge Case |
+| TC-11 | OPENAI_API_KEY 미설정 → 적절한 에러, DB 미변경 | AI |
+| TC-12 | AI 생성 텍스트 Easy Read 원칙 수동 검수 | AI |
+| TC-13 | 계획 0개 상태에서 AI 버튼 → 에러 반환 | AI |
+| TC-14 | AI 응답 지연 중 UI 로딩 상태 + 중복 클릭 방지 | AI |
+
+**접근성 체크리스트 (A-01~A-11)**:
+- 이미지/이모지 `alt`·`aria-label`, 진행 아이콘 텍스트 병기 ("N/M번")
+- `<details>/<summary>` 키보드 접근, 가로 스크롤 키보드 탐색
+- `easyDescription` 텍스트 최소 `text-base`(16px), 터치 영역 최소 44×44px
+
+---
+
+### I-9. 완료 정의 (Definition of Done)
+
+```
+DB
+  ✅ Migration 30 Supabase 실제 반영
+  ✅ monthly_plans, support_goals에 easy_description, easy_image_url 컬럼 존재
+
+관리자 화면
+  ✅ easy_description 입력·저장 동작
+  ✅ 이미지 업로드 → Storage 저장 동작
+  ✅ ✨ AI 자동 작성 버튼 → 결과 필드 반영 + DB 저장
+  ✅ easy_description 없는 카드에 경고 배지
+
+당사자 화면
+  ✅ "이번 달 할 것들" 기본 펼침, MonthlyPlanEasyCard 렌더링
+  ✅ "내가 이루고 싶은 것" 기본 접힘, SupportGoalEasyCard 가로 스크롤
+  ✅ NULL fallback (title 원문, order_index 이모지) 정상 동작
+
+빌드·품질
+  ✅ npm run build 통과 (TypeScript 에러 0건)
+  ✅ 모바일 375px 레이아웃 이상 없음
+  ✅ Smoke Test 14항목 + 접근성 체크 11항목 통과
+```
+
+---
+
+### I-10. Phase I 실행 요청 메시지
+
+```
+제안서 /Plan&Source/plan_evaluation_budget_proposal.md 의 "Phase I" 섹션을 참조해 구현해주세요.
+
+## 구현 순서
+
+### Step 1 — BE 기반
+1-A. supabase/migrations/30_easy_read_columns.sql 생성
+     - monthly_plans, support_goals에 easy_description TEXT, easy_image_url TEXT 추가
+     - ADD COLUMN IF NOT EXISTS 사용, RLS 추가 불필요
+1-B. src/utils/openai.ts 신규 생성
+     - plan.ts의 callOpenAI private 함수 추출 → 공유 유틸
+     - plan.ts에서 import로 교체 (기존 AI 계획 추천 기능 회귀 확인 필수)
+1-C. src/app/actions/easyReadSummary.ts 신규 생성
+     - generateEasyReadSummary(participantId, month) 함수
+     - GPT-4o 시스템 프롬프트: 15자 이내, 계획=행동 중심("~해요"), 목표=1인칭("나는~")
+     - AI 실패 시 DB 미변경, 에러 반환
+
+### Step 2 — 서버 액션 확장
+2-A. monthlyPlan.ts: MonthlyPlanInput + upsertMonthlyPlan payload에 easy_description?, easy_image_url? 추가
+2-B. supportGoal.ts: SupportGoalInput + upsertSupportGoal 동일하게 확장
+2-C. storage.ts: uploadEasyReadImage(file, participantId, entityType, entityId) 추가
+     - 경로: {participantId}/easy-read/{entityType}-{entityId}.ext
+     - adminClient + upsert: true, 반환: Storage path 문자열
+
+### Step 3 — 관리자 UI 확장
+3-A. MonthlyPlansClient.tsx
+     - Draft에 easy_description, easy_image_file, easy_image_url 추가
+     - 카드 내 파란 배경 "당사자용 쉬운 정보" 섹션 (30자 input + 이미지 업로드 + 미리보기)
+     - 상단 툴바에 "✨ AI 자동 작성" 버튼 (generateEasyReadSummary 호출)
+     - easy_description 없는 카드에 노란 경고 배지
+3-B. SupportGoalsForm.tsx: 동일 패턴 (25자 input), is_active 토글 위에 삽입
+
+### Step 4 — 당사자 화면
+4-A. src/components/plans/MonthlyPlanEasyCard.tsx 신규
+     - 세로 레이아웃: 이미지(96×96) → easyDescription(text-lg font-black) → 진행 아이콘
+     - target_count ≤ 6: 원형 아이콘(🟢/⭕) + "N/M번" 텍스트 병기
+     - target_count 7+: 신호등 바 (≥80%=emerald, 50~79%=amber, <50%=red)
+     - 이미지 없을 때: order_index 기반 고유 이모지 + 컬러 배경
+     - easy_description null: title 원문 fallback
+4-B. src/components/plans/SupportGoalEasyCard.tsx 신규
+     - 120×120 카드, 이미지 상단(56px) + 텍스트 하단
+     - 컨테이너: overflow-x-auto snap-x snap-mandatory flex gap-3
+4-C. src/app/(participant)/plan/page.tsx 수정
+     - getMonthlyPlanProgress + getSupportGoals + signed URL 배치 생성(24h TTL) 추가
+     - "이번 달 할 것들": details open, MonthlyPlanEasyCard 목록, 계획 0개이면 섹션 숨김
+     - "내가 이루고 싶은 것": details 접힘, SupportGoalEasyCard 가로 스크롤
+
+## 완료 기준
+- npm run build 통과 (TypeScript 에러 0건)
+- Migration 30 SQL 파일 생성 (파일 상단에 "Supabase 대시보드 수동 실행" 안내 코멘트 포함)
+- 관리자: easy_description 저장, 이미지 업로드, AI 자동 작성 동작
+- 당사자 /plan: MonthlyPlanEasyCard + SupportGoalEasyCard 렌더링
+- NULL fallback 정상 동작 (title 원문, order_index 이모지)
+- 모바일 375px 레이아웃 이상 없음
+
+## 접근성 기준
+- 모든 이미지/이모지에 alt 또는 aria-label
+- 진행 아이콘에 텍스트 병기 ("N/M번")
+- easyDescription 최소 text-base(16px) 이상
+- 카드 터치 영역 최소 44×44px
 ```
