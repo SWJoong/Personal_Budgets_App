@@ -27,7 +27,7 @@ export const HELP_SECTIONS: Record<string, HelpSection> = {
       },
       {
         icon: '🤔',
-        title: '오늘 계획 세우기',
+        title: '나의 계획 세우기',
         body: '"오늘 뭐 할까?" 버튼을 누르면 하고 싶은 활동을 함께 계획할 수 있어요. AI가 좋은 방법을 제안해 줄 거예요!',
       },
       {

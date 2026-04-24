@@ -101,7 +101,7 @@ export default async function PlanPage() {
             <span className="text-sm font-bold">아름드리꿈터</span>
           </Link>
           <span className="text-zinc-300">·</span>
-          <h1 className="text-sm font-black text-zinc-800">🤔 오늘 계획</h1>
+          <h1 className="text-sm font-black text-zinc-800">🤔 나의 계획</h1>
         </div>
         <div className="flex items-center gap-2">
           <HelpButton sectionKey="plan" />

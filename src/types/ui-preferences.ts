@@ -33,7 +33,7 @@ export const BLOCK_METADATA: Record<BlockId, { icon: string; label: string; desc
   yearly_balance:      { icon: '📊', label: '올해 남은 돈',    description: '1년 동안 남은 돈' },
   monthly_trend:       { icon: '📈', label: '달마다 쓴 돈',    description: '최근 6달 동안 쓴 돈 그림' },
   recent_transactions: { icon: '🕐', label: '최근에 쓴 돈',    description: '최근 3번 쓴 돈 목록' },
-  plan_shortcut:       { icon: '🤔', label: '오늘 계획',       description: '오늘 활동 계획 세우기' },
+  plan_shortcut:       { icon: '🤔', label: '나의 계획',       description: '나의 활동 계획 세우기' },
   calendar_shortcut:   { icon: '📅', label: '달력 바로가기',   description: '이번 달 활동을 달력에서 확인' },
   evaluation_letter:   { icon: '💌', label: '선생님 편지',     description: '선생님이 이번 달에 써준 편지' },
   weekly_chart:        { icon: '📉', label: '이번 주 쓴 돈',   description: '최근 7일 하루마다 쓴 돈' },
