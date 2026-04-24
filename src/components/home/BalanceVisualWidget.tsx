@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { createTransaction } from '@/app/actions/transaction'
@@ -1032,41 +1033,44 @@ export default function BalanceVisualWidget({
         onChange={(e) => handleInlineUpload(e, 'activity')}
       />
 
-      {/* 사진 추가 FAB — 스크롤 시에도 화면 우하단에 고정 */}
-      <button
-        type="button"
-        onClick={() => setShowPhotoMenu(v => !v)}
-        className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-zinc-900 text-white flex items-center justify-center shadow-xl hover:bg-zinc-700 transition-all active:scale-90 text-3xl font-black"
-        aria-label="사진 추가"
-      >
-        +
-      </button>
-
-      {/* 사진 종류 선택 팝업 */}
-      {showPhotoMenu && (
+      {/* 사진 추가 FAB — Portal로 document.body에 마운트해 fixed 위치 보장 */}
+      {typeof document !== 'undefined' && createPortal(
         <>
-          <div
-            className="fixed inset-0 z-30"
-            onClick={() => setShowPhotoMenu(false)}
-            aria-hidden="true"
-          />
-          <div className="fixed bottom-24 right-6 z-40 flex flex-col gap-2 animate-fade-in-up">
-            <button
-              type="button"
-              onClick={() => { setShowPhotoMenu(false); receiptInputRef.current?.click() }}
-              className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-blue-600 text-white font-black text-sm shadow-lg whitespace-nowrap"
-            >
-              <span className="text-xl">📷</span> 영수증 찍기
-            </button>
-            <button
-              type="button"
-              onClick={() => { setShowPhotoMenu(false); activityInputRef.current?.click() }}
-              className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg whitespace-nowrap"
-            >
-              <span className="text-xl">🖼️</span> 활동사진 찍기
-            </button>
-          </div>
-        </>
+          <button
+            type="button"
+            onClick={() => setShowPhotoMenu(v => !v)}
+            className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-zinc-900 text-white flex items-center justify-center shadow-xl hover:bg-zinc-700 transition-all active:scale-90 text-3xl font-black"
+            aria-label="사진 추가"
+          >
+            +
+          </button>
+          {showPhotoMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-30"
+                onClick={() => setShowPhotoMenu(false)}
+                aria-hidden="true"
+              />
+              <div className="fixed bottom-24 right-6 z-40 flex flex-col gap-2 animate-fade-in-up">
+                <button
+                  type="button"
+                  onClick={() => { setShowPhotoMenu(false); receiptInputRef.current?.click() }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-blue-600 text-white font-black text-sm shadow-lg whitespace-nowrap"
+                >
+                  <span className="text-xl">📷</span> 영수증 찍기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowPhotoMenu(false); activityInputRef.current?.click() }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg whitespace-nowrap"
+                >
+                  <span className="text-xl">🖼️</span> 활동사진 찍기
+                </button>
+              </div>
+            </>
+          )}
+        </>,
+        document.body
       )}
 
       {/* 인라인 업로드 모달 — 화면 중앙 */}
