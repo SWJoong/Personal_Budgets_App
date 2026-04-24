@@ -1014,62 +1014,60 @@ export default function BalanceVisualWidget({
         />
       )}
 
-      {/* 사진 추가 버튼 — 우측 고정 + 버튼 */}
-      <div className="relative flex items-center justify-end px-5 py-3 border-t border-zinc-100">
-        <button
-          type="button"
-          onClick={() => setShowPhotoMenu(v => !v)}
-          className="w-11 h-11 rounded-full bg-zinc-900 text-white flex items-center justify-center shadow-lg hover:bg-zinc-700 transition-all active:scale-90 text-2xl font-black"
-          aria-label="사진 추가"
-        >
-          +
-        </button>
+      {/* 숨겨진 파일 입력 */}
+      <input
+        ref={receiptInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => handleInlineUpload(e, 'receipt')}
+      />
+      <input
+        ref={activityInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => handleInlineUpload(e, 'activity')}
+      />
 
-        {/* 사진 종류 선택 팝업 */}
-        {showPhotoMenu && (
-          <>
-            <div
-              className="fixed inset-0 z-30"
-              onClick={() => setShowPhotoMenu(false)}
-              aria-hidden="true"
-            />
-            <div className="absolute bottom-14 right-5 z-40 flex flex-col gap-2 animate-fade-in-up">
-              <button
-                type="button"
-                onClick={() => { setShowPhotoMenu(false); receiptInputRef.current?.click() }}
-                className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-blue-600 text-white font-black text-sm shadow-lg whitespace-nowrap"
-              >
-                <span className="text-xl">📷</span> 영수증 찍기
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowPhotoMenu(false); activityInputRef.current?.click() }}
-                className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg whitespace-nowrap"
-              >
-                <span className="text-xl">🖼️</span> 활동사진 찍기
-              </button>
-            </div>
-          </>
-        )}
+      {/* 사진 추가 FAB — 스크롤 시에도 화면 우하단에 고정 */}
+      <button
+        type="button"
+        onClick={() => setShowPhotoMenu(v => !v)}
+        className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-zinc-900 text-white flex items-center justify-center shadow-xl hover:bg-zinc-700 transition-all active:scale-90 text-3xl font-black"
+        aria-label="사진 추가"
+      >
+        +
+      </button>
 
-        {/* 숨겨진 파일 입력 */}
-        <input
-          ref={receiptInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(e) => handleInlineUpload(e, 'receipt')}
-        />
-        <input
-          ref={activityInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(e) => handleInlineUpload(e, 'activity')}
-        />
-      </div>
+      {/* 사진 종류 선택 팝업 */}
+      {showPhotoMenu && (
+        <>
+          <div
+            className="fixed inset-0 z-30"
+            onClick={() => setShowPhotoMenu(false)}
+            aria-hidden="true"
+          />
+          <div className="fixed bottom-24 right-6 z-40 flex flex-col gap-2 animate-fade-in-up">
+            <button
+              type="button"
+              onClick={() => { setShowPhotoMenu(false); receiptInputRef.current?.click() }}
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-blue-600 text-white font-black text-sm shadow-lg whitespace-nowrap"
+            >
+              <span className="text-xl">📷</span> 영수증 찍기
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowPhotoMenu(false); activityInputRef.current?.click() }}
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg whitespace-nowrap"
+            >
+              <span className="text-xl">🖼️</span> 활동사진 찍기
+            </button>
+          </div>
+        </>
+      )}
 
       {/* 인라인 업로드 모달 — 화면 중앙 */}
       {uploadMode && (
