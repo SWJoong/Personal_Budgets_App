@@ -394,28 +394,31 @@ html.dark-mode * {
   background-image: none !important;
 }
 
-/* ─── 다크 모드 (광과민성 / 저시력 사용자용) ─── */
+/* ─── 다크 모드 (광과민성 / 저시력 사용자용 — 진짜 다크 테마) ─── */
 html.dark-mode {
-  --color-primary: hsl(207 100% 75%);
-  --color-foreground: hsl(0 0% 100%);
-  --color-background: hsl(0 0% 0%);
-  --color-border: hsl(0 0% 100%);
+  --color-primary: hsl(207 90% 65%);
+  --color-foreground: hsl(210 40% 95%);
+  --color-background: hsl(222 47% 8%);
+  --color-card: hsl(222 47% 13%);
+  --color-border: hsl(217 32% 28%);
+  --color-muted: hsl(217 32% 18%);
+  --color-muted-foreground: hsl(215 20% 60%);
 }
 
 html.dark-mode body {
-  background-color: #000000 !important;
-  color: #ffffff !important;
+  background-color: #0b1120 !important;
+  color: #eef2f7 !important;
 }
 
-/* 다크모드: 둥근 요소(카드 등) 배경·테두리 강제 (버튼/링크/입력 제외) */
+/* 다크모드: 카드/섹션 → 어두운 슬레이트 배경 + 미세한 테두리 */
 html.dark-mode .participant-view section,
 html.dark-mode .participant-view [class*="rounded-"]:not(button):not(a):not(input):not(select):not(textarea):not(label) {
-  background-color: #000000 !important;
-  border: 2px solid #ffffff !important;
+  background-color: #1a2540 !important;
+  border: 1px solid #2d3f5c !important;
   box-shadow: none !important;
 }
 
-/* 다크모드: 기존 어두운 텍스트를 흰색으로 반전 */
+/* 다크모드: 텍스트 */
 html.dark-mode .text-zinc-900,
 html.dark-mode .text-zinc-800,
 html.dark-mode .text-zinc-700,
@@ -423,23 +426,33 @@ html.dark-mode .text-zinc-600,
 html.dark-mode .text-zinc-500,
 html.dark-mode .text-zinc-400,
 html.dark-mode .text-foreground {
-  color: #ffffff !important;
+  color: #eef2f7 !important;
 }
 
-/* 다크모드: 특정 배경들을 검은색으로 강제 */
+/* 다크모드: 밝은 배경 클래스 → 어두운 배경으로 */
 html.dark-mode .bg-zinc-50,
 html.dark-mode .bg-zinc-100,
 html.dark-mode .bg-white,
 html.dark-mode .bg-background {
-  background-color: #000000 !important;
+  background-color: #1a2540 !important;
 }
 
-/* 다크모드: 액션 버튼 원래 배경 유지 및 명확한 테두리 */
+/* 다크모드: 헤더·네비 등 흰 배경 */
+html.dark-mode .bg-white\/80 {
+  background-color: rgba(26, 37, 64, 0.92) !important;
+}
+
+/* 다크모드: 잔액 위젯 차트 영역 (inline style 오버라이드) */
+html.dark-mode .dm-chart-bg {
+  background: #0f1e38 !important;
+}
+
+/* 다크모드: 버튼은 테두리만 살짝 조정, 색상 유지 */
 html.dark-mode .participant-view button,
 html.dark-mode .participant-view [type="submit"],
 html.dark-mode .participant-view [type="button"],
 html.dark-mode .participant-view a[class*="rounded-"] {
-  border: 2px solid #ffffff !important;
+  border-color: #3d5478 !important;
   box-shadow: none !important;
 }
 
@@ -447,9 +460,9 @@ html.dark-mode .participant-view a[class*="rounded-"] {
 html.dark-mode .participant-view input,
 html.dark-mode .participant-view select,
 html.dark-mode .participant-view textarea {
-  background-color: #000000 !important;
-  color: #ffffff !important;
-  border: 2px solid #ffffff !important;
+  background-color: #0f1e38 !important;
+  color: #eef2f7 !important;
+  border: 1px solid #2d3f5c !important;
 }
 
 html.high-contrast .participant-view input::placeholder,

@@ -951,7 +951,7 @@ export default function BalanceVisualWidget({
       </div>
 
       {/* 시각화 영역 — §4: 무광택 단색 */}
-      <div style={{ background: c.light }}>
+      <div className="dm-chart-bg" style={{ background: c.light }}>
         {style === 'pie'   && (
           <PizzaChart
             percentage={activePct}
