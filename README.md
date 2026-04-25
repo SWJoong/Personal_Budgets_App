@@ -214,10 +214,131 @@ supabase db push
 - [Next.js localFont 최적화](https://nextjs.org/docs/app/building-your-application/optimizing/fonts)
 - [Vercel 배포](https://personal-budgets-app-gp8t.vercel.app/)
 
-## 📝 개발 히스토리
+## 📝 개발 이력 (Development History)
 
+> 기반 문서: `Plan&Source/plan_evaluation_budget_proposal.md` (v2 — SKILL 에이전트 팀 리뷰 반영)
+
+---
+
+이 앱의 개발은 크게 세 흐름으로 이뤄졌다.
+
+**첫 번째 흐름은 시각화·기반 구조 확립이다 (Phase A → 0 → B, 2026-04-20~22).** Perplexity Computer로 초기 프로토타입을 만든 뒤, 당사자가 자신의 예산 상태를 직관적으로 파악할 수 있도록 잔액 위젯과 CashViz 지폐 일러스트를 다듬는 것으로 본격 개발을 시작했다(Phase A). 동시에 Vitest와 GitHub Actions CI를 도입해 이후 작업의 품질 기반을 마련하고(Phase 0), `monthly_plans` 테이블과 CRUD·위젯 연동을 완성해 "이번 달 계획"이라는 핵심 데이터 구조를 확립했다(Phase B).
+
+**두 번째 흐름은 개별지원계획서 기능의 전면 구현이다 (Phase C → F → G, 2026-04-22).** `support_goals`·`goal_evaluations`·`budget_line_items` 세 테이블을 Migration 24~27로 추가하고, 대응하는 Server Actions와 `SupportGoalsForm`·`BudgetLineItemsTable`·`GoalEvaluationCards` 컴포넌트를 구현해 지원목표·예산 세목·4+1 평가 워크플로를 완성했다(Phase C). 이어서 KST 타임존 버그를 `src/utils/date.ts`로 일괄 해결하고 평가 페이지 월 선택 버그를 수정했으며, 활동 지도(`/supporter/map`)와 당사자 통합 대시보드(`/supporter/participants`)를 별도 페이지로 분리했다(Phase F). Phase G에서는 전월 복사 기능(`copyPlan.ts`)과 이용계획서 내 지원목표·예산 계획 카드(`CarePlanSection.tsx`)를 추가해 실무자가 한 화면에서 계획 수립과 예산 관리를 완결할 수 있도록 했다.
+
+**세 번째 흐름은 발달장애인 접근성 심화와 UI 완성도 제고다 (Phase H → v4.9 → Phase I 예정, 2026-04-23~).** "쉬운 정보(Easy Read)" 기준 13개 항목을 Wave 단계별로 적용해 곱셈 기호 제거·헤더 한글화·신호등 컬러 테마·지폐 일러스트 도입·정보 과부하 방지용 기본 접기 등을 전면 반영했다(Phase H). v4.9에서는 FAB 통합·꾸미기 헤더 고정·다크/노란 배경 상호 배제 버그 등 세부 사용성을 다듬었다. 다음 Phase I에서는 당사자 화면에 "이번 달 할 것들"과 "내가 이루고 싶은 것"을 통합 레이아웃으로 보여 주고, GPT-4o 기반 AI 쉬운 요약(`easyReadSummary.ts`)을 도입해 당사자 스스로 자신의 계획과 목표를 이해하는 경험을 완성할 예정이다.
+
+---
+
+### 초기 개발
 - **v3**: Perplexity Computer로 생성한 `kkumteo-budget-app` 기반 UX 재설계
 - **v5.1**: GitHub `SWJoong/PersonalBudgetsApp` `main` 브랜치 (`106eadf`, 2026-03-25 기준) 보강 완료
+
+---
+
+### Phase A — 2026-04-20~21 ✅ 완료
+
+| 커밋 | 내용 |
+|------|------|
+| `a9d741f` | **v3.7.3** 잔액 위젯 개선 — 피자/물컵 중앙 금액 표시, pending 점선 추가 |
+| `e81c78a` | **CashViz** 지폐 간격 확대 + "이미 쓴 돈" 섹션 가시성 강화 |
+
+---
+
+### Phase 0 — 2026-04-21~22 ✅ 완료 (스테이징 환경 수동 필요)
+
+| 커밋 | 내용 | 상태 |
+|------|------|:---:|
+| `cea7d51` | Vitest + @testing-library 설치 + CI `npm test` 추가 | ✅ |
+| — | 스테이징 Supabase 환경 구성 | ⚠️ 수동 필요 |
+
+---
+
+### Phase B — 2026-04-22 ✅ 완료
+
+| 커밋 | 내용 |
+|------|------|
+| `27ca29e` | **v3.7.4** monthly_plans 체계 — Migration 23 + CRUD + 위젯 연동 |
+
+---
+
+### Phase C — 2026-04-22 ✅ 완료
+
+| 커밋 | 내용 |
+|------|------|
+| `3c9632d` | Migration 24~27 SQL 생성 (`support_goals`, `goal_evaluations`, `budget_line_items`, `monthly_plans` 확장) |
+| `3c9632d` | Server Actions 3개 (`supportGoal`, `goalEvaluation`, `budgetLineItem`) |
+| `b2ceb98` | FE 컴포넌트 — `SupportGoalsForm`, `BudgetLineItemsTable`, `GoalEvaluationCards` |
+| `d628b7a` | 당사자 `/my-plan` 읽기 전용 + monthly_plans support_goal 드롭다운 연동 |
+
+---
+
+### Phase F — 2026-04-22 ✅ 완료
+
+| 커밋 | 항목 | 내용 |
+|------|------|------|
+| `3b12876` | F-0 | `src/utils/date.ts` 생성 — KST 타임존 버그 근본 해결 |
+| `3b12876` | F-1 | 평가 목록 진입 시 첫 당사자 자동 이동 (`useEffect`) |
+| `3b12876` | F-2 | 평가 페이지 월 선택 P0 버그 수정 (`toISOString` → 순수 문자열 파싱) |
+| `3b12876` | F-3 | 평가 페이지 좌측 활동 요약 → 계획별 거래 그룹 표시 |
+| `3b12876` | F-4 | `MonthlyPlanProgressTable` "연결 목표" 컬럼 추가 |
+| `bd8e318` | F-6 | 활동 지도 전용 페이지 분리 (`/supporter/map`) + 사이드바 메뉴 추가 |
+| `bd8e318` | F-7 | 당사자 통합 대시보드 (`/supporter/participants`, `/supporter/participants/[id]`) |
+
+---
+
+### Phase G — 2026-04-22 ✅ 완료
+
+| 커밋 | 항목 | 내용 |
+|------|------|------|
+| `bd8e318` | G-1 | Migration 29 (`care_plans`, `evaluations` 인덱스) — DB 수동 실행 완료 |
+| `3b12876` | G-2 | 월별계획 저장 후 뒤로가기 404 버그 수정 (`revalidatePath` 캐시키 불일치) |
+| `3b12876` | G-3 | 전월 복사 기능 — `copyPlan.ts` + 월별계획 "전월 복사" 버튼 + 평가 "전월 내용 불러오기" |
+| `3b12876` | G-4 | 이용계획서 섹션에 "지원목표·예산 계획" 카드 추가 (`CarePlanSection.tsx`) |
+
+#### 버그 수정 (Phase G 전후)
+
+| 커밋 | 내용 |
+|------|------|
+| `8c4926b` | 지원목표 페이지 뒤로가기 404 수정 (존재하지 않는 라우트 → `/supporter/evaluations`) |
+| `6a3e07e` | 활동 지도 필터 복원 — 당사자·날짜·상태 필터 + 클라이언트 사이드 필터링 |
+
+---
+
+### Phase H — 2026-04-23 ✅ 완료 (쉬운 정보 접근성 전면 개선)
+
+발달장애인 친화적 "쉬운 정보(Easy Read)" 기준 13개 항목 전면 적용
+
+| Wave | 항목 | 내용 |
+|:---:|------|------|
+| 사전 | H-사전 | BLOCK_METADATA — 한자어, 수동태, 외래어, 특수문자, 괄호 개선 |
+| Wave 1 | H-1,4,5 | `×` 기호 제거, 헤더 한글화, 요약 바 확대 |
+| Wave 0+1 | H-10,12,13 | 버튼 색상 초록/빨강 통일, 잔액 이펙트 수정, 신호등 테마 적용 |
+| Wave 2 | H-2,3,9 | "이미 쓴 돈"·시뮬레이션 기본 접기, FAB/도움말 헤더 통합 |
+| Wave 3+4 | H-6~8,11 | 프리셋 버튼(1만/3만/5만), ▲▼ 순서 변경, 지폐 일러스트, 적응형 UI |
+
+---
+
+### v4.9 ✅ 완료 (`3f7fb12`)
+
+- 사진 버튼 + FAB 통합
+- 꾸미기 저장 버튼 헤더 고정
+- 접근성 토글 꾸미기 시트 추가
+- 다크 ↔ 노란 배경 상호 배제 버그 수정
+- CSV 안내 경로 수정
+- 닫기 버튼 가시성 개선
+
+---
+
+### Phase I — 🔜 예정
+
+당사자 화면 "이번 달 할 것들" + "내가 이루고 싶은 것" 통합 레이아웃 + AI 쉬운 요약
+
+| 항목 | 내용 |
+|------|------|
+| DB | Migration 30 |
+| AI | `openai.ts` 추출, `easyReadSummary.ts` |
+| FE | `MonthlyPlanEasyCard`, `SupportGoalEasyCard` |
 
 ---
 
