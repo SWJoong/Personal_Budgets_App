@@ -207,7 +207,7 @@ function PizzaChart({
             <path d="M 30 50 Q 32 48 35 50 Q 32 52 30 50" fill="#22c55e" />
           </g>
 
-          {/* pending 점선 호 — 곧 빠질 구간 */}
+          {/* pending 호 — 피자 끝 바로 다음 영역, 반투명 주황 */}
           {pendingClamped > 0 && (
             <circle
               cx="50" cy="50" r="25"
@@ -216,19 +216,10 @@ function PizzaChart({
               strokeWidth="50"
               strokeDasharray={`${pendingArcLen} ${circumference}`}
               strokeDashoffset={pendingDashOffset}
-              opacity="0.5"
-              mask="url(#pending-dash-bvw)"
+              opacity="0.45"
               style={{ transition: 'stroke-dashoffset 0.7s ease-out' }}
             />
           )}
-          <mask id="pending-dash-bvw">
-            <rect width="100" height="100" fill="black" />
-            <circle
-              cx="50" cy="50" r="25"
-              fill="none" stroke="white" strokeWidth="50"
-              strokeDasharray="3 2"
-            />
-          </mask>
         </svg>
 
         {/* 중앙 레이블 — 금액 */}
@@ -613,6 +604,7 @@ export default function BalanceVisualWidget({
   currentMonth,
 }: Props) {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
   const [style, setStyle] = useState<WidgetStyle>('pie')
   const [selectedEmoji, setSelectedEmoji] = useState('🍎')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -679,6 +671,7 @@ export default function BalanceVisualWidget({
   const [secondPreview, setSecondPreview] = useState<string | null>(null)
 
   useEffect(() => {
+    setMounted(true)
     const raw = localStorage.getItem('balance-widget-style') as string | null
     // 구버전 'pouch' → 새 버전 'pie'로 마이그레이션
     const s = raw === 'pouch' ? 'pie' : (raw as WidgetStyle | null)
@@ -1036,7 +1029,7 @@ export default function BalanceVisualWidget({
       />
 
       {/* FAB + 인라인 업로드 모달 — Portal로 document.body에 마운트해 fixed 위치 보장 */}
-      {typeof document !== 'undefined' && createPortal(
+      {mounted && createPortal(
         <>
           {/* 사진 찍기 FAB */}
           <button
