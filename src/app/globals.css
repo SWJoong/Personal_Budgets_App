@@ -433,8 +433,14 @@ html.dark-mode .text-foreground {
 html.dark-mode .bg-zinc-50,
 html.dark-mode .bg-zinc-100,
 html.dark-mode .bg-white,
-html.dark-mode .bg-background {
+html.dark-mode .bg-background,
+html.dark-mode .easy-read-bg {
   background-color: #1a2540 !important;
+}
+
+/* 다크모드: 페이지 루트 배경 (easy-read-bg 포함) */
+html.dark-mode .easy-read-bg {
+  background: #0b1120 !important;
 }
 
 /* 다크모드: 헤더·네비 등 흰 배경 */
@@ -446,6 +452,31 @@ html.dark-mode .bg-white\/80 {
 html.dark-mode .dm-chart-bg {
   background: #0f1e38 !important;
 }
+
+/* 다크모드: 상태 시맨틱 색상 보존 (초록/노랑/빨강 의미 유지) */
+html.dark-mode .participant-view .bg-green-50,
+html.dark-mode .participant-view [class*="rounded-"].bg-green-50 { background-color: rgba(34, 197, 94, 0.15) !important; }
+html.dark-mode .participant-view .bg-yellow-50,
+html.dark-mode .participant-view [class*="rounded-"].bg-yellow-50 { background-color: rgba(234, 179, 8, 0.15) !important; }
+html.dark-mode .participant-view .bg-red-50,
+html.dark-mode .participant-view [class*="rounded-"].bg-red-50 { background-color: rgba(239, 68, 68, 0.15) !important; }
+html.dark-mode .participant-view .bg-orange-50,
+html.dark-mode .participant-view [class*="rounded-"].bg-orange-50 { background-color: rgba(249, 115, 22, 0.15) !important; }
+html.dark-mode .participant-view .bg-blue-50,
+html.dark-mode .participant-view [class*="rounded-"].bg-blue-50 { background-color: rgba(59, 130, 246, 0.15) !important; }
+html.dark-mode .participant-view .bg-indigo-50,
+html.dark-mode .participant-view [class*="rounded-"].bg-indigo-50 { background-color: rgba(99, 102, 241, 0.15) !important; }
+html.dark-mode .participant-view .bg-violet-50,
+html.dark-mode .participant-view [class*="rounded-"].bg-violet-50 { background-color: rgba(139, 92, 246, 0.15) !important; }
+
+/* 다크모드: 시맨틱 텍스트 색상 (어두운 배경에서 가독성 향상) */
+html.dark-mode .participant-view .text-green-700 { color: #4ade80 !important; }
+html.dark-mode .participant-view .text-yellow-700 { color: #fbbf24 !important; }
+html.dark-mode .participant-view .text-red-700 { color: #f87171 !important; }
+html.dark-mode .participant-view .text-orange-700 { color: #fb923c !important; }
+html.dark-mode .participant-view .text-blue-700 { color: #60a5fa !important; }
+html.dark-mode .participant-view .text-indigo-700 { color: #818cf8 !important; }
+html.dark-mode .participant-view .text-violet-700 { color: #a78bfa !important; }
 
 /* 다크모드: 버튼은 테두리만 살짝 조정, 색상 유지 */
 html.dark-mode .participant-view button,
