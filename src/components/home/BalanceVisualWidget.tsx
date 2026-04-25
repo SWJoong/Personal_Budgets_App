@@ -159,10 +159,12 @@ function PizzaChart({
   const circumference = 2 * Math.PI * 25
   const offset = circumference - circumference * Math.max(0, Math.min(1, percentage / 100))
 
-  // pending 호: 현재 잔액 호 직전 구간을 점선으로 표시 (빠질 예정 영역)
+  // pending 호: 피자 끝 지점에서 빈 영역 쪽으로 점선 호를 표시 (빠질 예정 영역)
   const pendingClamped = Math.max(0, Math.min(100 - percentage, pendingPct))
   const pendingArcLen = circumference * (pendingClamped / 100)
-  const pendingDashOffset = circumference - circumference * (percentage / 100) - pendingArcLen
+  // 호가 시작할 위치(피자 끝) = C * pct/100
+  // strokeDashoffset = pendingArcLen + C*(1 - pct/100) 가 올바른 공식
+  const pendingDashOffset = pendingArcLen + circumference * (1 - percentage / 100)
 
   const balanceText = formatCurrency(displayBalance)
   const longText = balanceText.length >= 7
