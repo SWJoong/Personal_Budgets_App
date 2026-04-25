@@ -1033,16 +1033,19 @@ export default function BalanceVisualWidget({
         onChange={(e) => handleInlineUpload(e, 'activity')}
       />
 
-      {/* 사진 추가 FAB — Portal로 document.body에 마운트해 fixed 위치 보장 */}
+      {/* FAB + 인라인 업로드 모달 — Portal로 document.body에 마운트해 fixed 위치 보장 */}
       {typeof document !== 'undefined' && createPortal(
         <>
+          {/* 사진 찍기 FAB */}
           <button
             type="button"
             onClick={() => setShowPhotoMenu(v => !v)}
-            className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-zinc-900 text-white flex items-center justify-center shadow-xl hover:bg-zinc-700 transition-all active:scale-90 text-3xl font-black"
-            aria-label="사진 추가"
+            className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-5 py-3.5 rounded-full bg-green-500 text-white shadow-xl hover:bg-green-400 transition-all active:scale-90"
+            aria-label="사진 찍기"
           >
-            +
+            <span className="text-xl inline-block align-middle">➕</span>
+            <span className="text-xl inline-block align-middle">📷</span>
+            <span className="text-sm font-black inline-block align-middle">사진 찍기</span>
           </button>
           {showPhotoMenu && (
             <>
@@ -1057,7 +1060,7 @@ export default function BalanceVisualWidget({
                   onClick={() => { setShowPhotoMenu(false); receiptInputRef.current?.click() }}
                   className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-blue-600 text-white font-black text-sm shadow-lg whitespace-nowrap"
                 >
-                  <span className="text-xl">📷</span> 영수증 찍기
+                  <span className="text-xl">🧾</span> 영수증 찍기
                 </button>
                 <button
                   type="button"
@@ -1069,122 +1072,120 @@ export default function BalanceVisualWidget({
               </div>
             </>
           )}
+
+          {/* 인라인 업로드 모달 — 화면 중앙 */}
+          {uploadMode && (
+            <>
+              <div
+                className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+                onClick={closeUploadSheet}
+                aria-hidden="true"
+              />
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[500px] max-h-[90dvh] overflow-y-auto animate-fade-in-up">
+                  <div className="px-5 pb-8 pt-5">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-lg font-black text-zinc-900">
+                        {uploadMode === 'receipt' ? '🧾 영수증 기록하기' : '📸 활동 기록'}
+                      </h2>
+                      <button onClick={closeUploadSheet} className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 text-base font-black transition-colors">✕</button>
+                    </div>
+
+                    {/* 사진 미리보기 */}
+                    {uploadPreview && (
+                      <div className="relative aspect-square rounded-2xl overflow-hidden mb-4 ring-1 ring-zinc-200">
+                        <img src={uploadPreview} alt="미리보기" className="w-full h-full object-cover" />
+                        {uploadAnalyzing && (
+                          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-sm">
+                            <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin mb-2" />
+                            <p className="font-black text-sm animate-pulse-gentle">영수증 읽는 중...</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* 두 번째 사진 추가 */}
+                    <div className="mb-4">
+                      {secondPreview ? (
+                        <div className="relative aspect-square rounded-2xl overflow-hidden ring-1 ring-zinc-200">
+                          <img src={secondPreview} alt="추가 사진" className="w-full h-full object-cover" />
+                          <button
+                            onClick={() => { setSecondFile(null); setSecondPreview(null) }}
+                            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white text-xs flex items-center justify-center"
+                          >✕</button>
+                          <span className="absolute bottom-2 left-2 text-[10px] font-black text-white bg-black/40 px-2 py-0.5 rounded-full">
+                            {uploadMode === 'receipt' ? '활동사진' : '영수증'}
+                          </span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => secondFileRef.current?.click()}
+                          className="w-full py-3 rounded-2xl border-2 border-dashed border-zinc-200 text-zinc-400 text-sm font-bold hover:border-zinc-400 hover:text-zinc-600 transition-all flex items-center justify-center gap-2"
+                        >
+                          <span>{uploadMode === 'receipt' ? '📸' : '🧾'}</span>
+                          <span>{uploadMode === 'receipt' ? '활동사진도 추가하기 (선택)' : '영수증도 추가하기 (선택)'}</span>
+                        </button>
+                      )}
+                      <input ref={secondFileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleSecondFile} />
+                    </div>
+
+                    {/* 활동 내용 */}
+                    <div className="flex flex-col gap-3">
+                      <input
+                        type="text"
+                        value={uploadDescription}
+                        onChange={(e) => setUploadDescription(e.target.value)}
+                        placeholder={uploadAnalyzing ? '사진 읽는 중...' : '무엇을 했나요? 편의점 간식처럼 적어 주세요'}
+                        className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold transition-all"
+                        required
+                      />
+                      <div className="relative">
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          step={1000}
+                          value={uploadAmount}
+                          onChange={(e) => setUploadAmount(e.target.value)}
+                          placeholder="0"
+                          className="w-full p-4 pr-12 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-xl font-black text-right transition-all"
+                          required
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-zinc-400">원</span>
+                      </div>
+                      <input
+                        type="date"
+                        value={uploadDate}
+                        onChange={(e) => setUploadDate(e.target.value)}
+                        className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold transition-all"
+                      />
+                    </div>
+
+                    {uploadToast && (
+                      <div className={`mt-3 p-3 rounded-xl text-sm font-bold animate-fade-in-up ${uploadToast.includes('안') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+                        {uploadToast}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      disabled={uploadSubmitting || uploadAnalyzing || !uploadDescription || !uploadAmount}
+                      onClick={handleInlineSubmit}
+                      className="w-full mt-4 py-4 rounded-2xl bg-green-600 text-white font-black text-base active:scale-[0.98] transition-all disabled:bg-zinc-300"
+                    >
+                      {uploadSubmitting ? '기록하는 중...' : uploadAnalyzing ? '사진 읽는 중...' : '활동 기록하기'}
+                    </button>
+
+                    <p className="text-center text-zinc-400 text-xs font-medium mt-2">
+                      지원자 선생님이 확인하면 예산에 반영해요.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </>,
         document.body
-      )}
-
-      {/* 인라인 업로드 모달 — 화면 중앙 */}
-      {uploadMode && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-            onClick={closeUploadSheet}
-            aria-hidden="true"
-          />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[500px] max-h-[90dvh] overflow-y-auto animate-fade-in-up">
-            <div className="px-5 pb-8 pt-5">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-black text-zinc-900">
-                  {uploadMode === 'receipt' ? '🧂 영수증 기록하기' : '📸 활동 기록'}
-                </h2>
-                <button onClick={closeUploadSheet} className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 text-base font-black transition-colors">✕</button>
-              </div>
-
-              {/* 사진 미리보기 */}
-              {uploadPreview && (
-                <div className="relative aspect-square rounded-2xl overflow-hidden mb-4 ring-1 ring-zinc-200">
-                  <img src={uploadPreview} alt="미리보기" className="w-full h-full object-cover" />
-                  {uploadAnalyzing && (
-                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-sm">
-                      <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin mb-2" />
-                      <p className="font-black text-sm animate-pulse-gentle">영수증 읽는 중...</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* 두 번째 사진 추가 (영수증↔활동사진 동시 등록) */}
-              <div className="mb-4">
-                {secondPreview ? (
-                  <div className="relative aspect-square rounded-2xl overflow-hidden ring-1 ring-zinc-200">
-                    <img src={secondPreview} alt="추가 사진" className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => { setSecondFile(null); setSecondPreview(null) }}
-                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white text-xs flex items-center justify-center"
-                    >✕</button>
-                    <span className="absolute bottom-2 left-2 text-[10px] font-black text-white bg-black/40 px-2 py-0.5 rounded-full">
-                      {uploadMode === 'receipt' ? '활동사진' : '영수증'}
-                    </span>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => secondFileRef.current?.click()}
-                    className="w-full py-3 rounded-2xl border-2 border-dashed border-zinc-200 text-zinc-400 text-sm font-bold hover:border-zinc-400 hover:text-zinc-600 transition-all flex items-center justify-center gap-2"
-                  >
-                    <span>{uploadMode === 'receipt' ? '📸' : '🧾'}</span>
-                    <span>{uploadMode === 'receipt' ? '활동사진도 추가하기 (선택)' : '영수증도 추가하기 (선택)'}</span>
-                  </button>
-                )}
-                <input ref={secondFileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleSecondFile} />
-              </div>
-
-              {/* 활동 내용 */}
-              <div className="flex flex-col gap-3">
-                <input
-                  type="text"
-                  value={uploadDescription}
-                  onChange={(e) => setUploadDescription(e.target.value)}
-                  placeholder={uploadAnalyzing ? '사진 읽는 중...' : '무엇을 했나요? 편의점 간식처럼 적어 주세요'}
-                  className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold transition-all"
-                  required
-                />
-
-                <div className="relative">
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    step={1000}
-                    value={uploadAmount}
-                    onChange={(e) => setUploadAmount(e.target.value)}
-                    placeholder="0"
-                    className="w-full p-4 pr-12 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-xl font-black text-right transition-all"
-                    required
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-zinc-400">원</span>
-                </div>
-
-                <input
-                  type="date"
-                  value={uploadDate}
-                  onChange={(e) => setUploadDate(e.target.value)}
-                  className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold transition-all"
-                />
-              </div>
-
-              {uploadToast && (
-                <div className="mt-3 p-3 rounded-xl bg-green-50 text-green-700 text-sm font-bold animate-fade-in-up">
-                  {uploadToast}
-                </div>
-              )}
-
-              <button
-                type="button"
-                disabled={uploadSubmitting || uploadAnalyzing || !uploadDescription || !uploadAmount}
-                onClick={handleInlineSubmit}
-                className="w-full mt-4 py-4 rounded-2xl bg-green-600 text-white font-black text-base active:scale-[0.98] transition-all disabled:bg-zinc-300"
-              >
-                {uploadSubmitting ? '기록하는 중...' : uploadAnalyzing ? '사진 읽는 중...' : '활동 기록하기'}
-              </button>
-
-              <p className="text-center text-zinc-400 text-xs font-medium mt-2">
-                지원자 선생님이 확인하면 예산에 반영해요.
-              </p>
-            </div>
-          </div>
-          </div>
-        </>
       )}
 
     </section>

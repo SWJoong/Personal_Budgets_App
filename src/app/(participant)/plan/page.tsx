@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import PlanChatContainer from '@/components/plans/PlanChatContainer'
 import { formatCurrency } from '@/utils/budget-visuals'
+import { getActivityEmoji } from '@/utils/activityEmoji'
 import HelpButton from '@/components/help/HelpButton'
 import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
 import NavDropdown from '@/components/layout/NavDropdown'
@@ -44,11 +45,6 @@ export default async function PlanPage() {
 
   // 이번 달 월별계획 + 진행률
   const monthlyPlans = await getMonthlyPlanProgress(user.id, currentMonth)
-
-  // 이번 달 계획 예산 집계
-  const totalPlannedBudget = monthlyPlans.reduce((acc, p) => acc + (Number(p.planned_budget) || 0), 0)
-  const totalSpentConfirmed = monthlyPlans.reduce((acc, p) => acc + p.spent_confirmed, 0)
-  const totalSpentPending = monthlyPlans.reduce((acc, p) => acc + p.spent_pending, 0)
 
   // 최신 이용계획서 → 지원목표 조회
   const { data: carePlan } = await supabase
@@ -109,81 +105,20 @@ export default async function PlanPage() {
         </div>
       </header>
 
-      <main className="flex-1 p-4 w-full flex flex-col gap-6">
-        {/* 현재 잔액 요약 */}
-        <div className="rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm relative overflow-hidden">
-          {/* 상단: 잔액 */}
-          <div className="p-6 flex justify-between items-center">
-            <div className="flex flex-col z-10 relative">
-              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">사용 가능한 돈</span>
-              <span className="text-3xl font-black text-zinc-900">
-                {totalBalance.toLocaleString()}원
-              </span>
-            </div>
-            <span className="text-5xl z-10 relative">💰</span>
-            <div className="absolute -right-4 -bottom-4 text-8xl opacity-[0.03] rotate-12">💰</div>
-          </div>
-
-          {/* 하단: 이번 달 계획 예산 요약 (계획이 있을 때만) */}
-          {totalPlannedBudget > 0 && (
-            <div className="px-6 pb-5 flex flex-col gap-2 border-t border-zinc-100 pt-4">
-              {/* 예산 바 */}
-              {(() => {
-                const pct = Math.min(100, Math.round((totalSpentConfirmed / totalPlannedBudget) * 100))
-                const barColor = pct >= 100 ? 'bg-red-400' : pct >= 80 ? 'bg-amber-400' : 'bg-emerald-400'
-                return (
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex justify-between items-center text-[10px] font-bold text-zinc-500">
-                      <span>이번 달 계획 예산</span>
-                      <span>{pct}% 사용</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-zinc-100 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all ${barColor}`}
-                        style={{ width: `${pct}%` }}
-                        role="progressbar"
-                        aria-label={`이번 달 계획 예산 ${pct}% 사용`}
-                        aria-valuenow={pct}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                      />
-                    </div>
-                  </div>
-                )
-              })()}
-              {/* 숫자 요약 */}
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div>
-                  <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">계획 예산</p>
-                  <p className="text-sm font-black text-zinc-700">{formatCurrency(totalPlannedBudget)}원</p>
-                </div>
-                <div>
-                  <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">이미 씀</p>
-                  <p className="text-sm font-black text-zinc-900">{formatCurrency(totalSpentConfirmed)}원</p>
-                </div>
-                <div>
-                  <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">남은 예산</p>
-                  <p className={`text-sm font-black ${totalPlannedBudget - totalSpentConfirmed <= 0 ? 'text-red-500' : 'text-emerald-600'}`}>
-                    {formatCurrency(Math.max(0, totalPlannedBudget - totalSpentConfirmed))}원
-                  </p>
-                </div>
-              </div>
-              {totalSpentPending > 0 && (
-                <p className="text-[10px] text-orange-500 font-bold text-center">
-                  · 대기 중 {formatCurrency(totalSpentPending)}원 포함 예정
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+      <main className="flex-1 p-4 w-full flex flex-col gap-8">
 
         {/* 이번 달 할 것들 */}
         {monthlyPlans.length > 0 && (
-          <details open className="group">
-            <summary className="flex items-center gap-2 cursor-pointer list-none select-none">
-              <span className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">이번 달 할 것들</span>
+          <details open className="group flex flex-col gap-3">
+            <summary className="flex items-center justify-between cursor-pointer list-none select-none">
+              <div className="flex items-center gap-3 pl-3 border-l-4 border-blue-400">
+                <div>
+                  <h2 className="text-base font-black text-zinc-800">📅 이번 달 할 것들</h2>
+                  <p className="text-xs text-zinc-400 font-medium mt-0.5">이번 달 활동 계획과 진행 현황</p>
+                </div>
+              </div>
               <svg
-                className="w-4 h-4 text-zinc-400 transition-transform group-open:rotate-180"
+                className="w-5 h-5 text-zinc-400 transition-transform group-open:rotate-180 shrink-0"
                 viewBox="0 0 16 16"
                 fill="none"
                 aria-hidden="true"
@@ -213,11 +148,16 @@ export default async function PlanPage() {
 
         {/* 내가 이루고 싶은 것 */}
         {supportGoals.length > 0 && (
-          <details className="group">
-            <summary className="flex items-center gap-2 cursor-pointer list-none select-none">
-              <span className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">내가 이루고 싶은 것</span>
+          <details className="group flex flex-col gap-3">
+            <summary className="flex items-center justify-between cursor-pointer list-none select-none">
+              <div className="flex items-center gap-3 pl-3 border-l-4 border-violet-400">
+                <div>
+                  <h2 className="text-base font-black text-zinc-800">⭐ 내가 이루고 싶은 것</h2>
+                  <p className="text-xs text-zinc-400 font-medium mt-0.5">나의 지원 목표</p>
+                </div>
+              </div>
               <svg
-                className="w-4 h-4 text-zinc-400 transition-transform group-open:rotate-180"
+                className="w-5 h-5 text-zinc-400 transition-transform group-open:rotate-180 shrink-0"
                 viewBox="0 0 16 16"
                 fill="none"
                 aria-hidden="true"
@@ -248,14 +188,19 @@ export default async function PlanPage() {
         {/* 저장된 계획 목록 */}
         {plans && plans.length > 0 && (
           <section className="flex flex-col gap-3">
-            <h2 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] ml-1">나의 계획</h2>
+            <div className="flex items-center gap-3 pl-3 border-l-4 border-emerald-400">
+              <div>
+                <h2 className="text-base font-black text-zinc-800">📋 저장한 계획</h2>
+                <p className="text-xs text-zinc-400 font-medium mt-0.5">AI로 만든 활동 계획 목록</p>
+              </div>
+            </div>
             <div className="flex flex-col gap-2">
               {plans.map((plan: any) => {
                 const selectedOption = plan.options?.[plan.selected_option_index]
                 return (
                   <div key={plan.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{selectedOption?.icon || '📝'}</span>
+                      <span className="text-2xl">{selectedOption?.icon || getActivityEmoji(plan.activity_name)}</span>
                       <div>
                         <p className="font-black text-zinc-800 text-sm">{plan.activity_name}</p>
                         <div className="flex items-center gap-2 mt-0.5">
@@ -283,19 +228,21 @@ export default async function PlanPage() {
 
         {/* 채팅형 계획 세우기 */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] ml-1">새 계획 만들기</h2>
+          <div className="flex items-center gap-3 pl-3 border-l-4 border-orange-400">
+            <div>
+              <h2 className="text-base font-black text-zinc-800">✨ 새 계획 만들기</h2>
+              <p className="text-xs text-zinc-400 font-medium mt-0.5">AI와 함께 오늘 활동을 계획해요</p>
+            </div>
+          </div>
           <PlanChatContainer totalBalance={totalBalance} participantId={user.id} />
         </section>
 
         {/* 도움말 */}
-        <div className="p-6 rounded-[2rem] bg-blue-50 border border-blue-100 flex gap-4 items-start">
-          <span className="text-2xl mt-1">💡</span>
-          <div className="flex flex-col gap-1">
-            <h4 className="text-blue-800 font-bold">도움말</h4>
-            <p className="text-blue-600 text-sm leading-relaxed font-medium">
-              비용이 적은 방법을 선택하면 나중에 다른 활동을 더 많이 할 수 있어요!
-            </p>
-          </div>
+        <div className="p-5 rounded-2xl bg-blue-50 border border-blue-100 flex gap-3 items-start">
+          <span className="text-xl mt-0.5">💡</span>
+          <p className="text-blue-700 text-sm leading-relaxed font-medium">
+            비용이 적은 방법을 선택하면 나중에 다른 활동을 더 많이 할 수 있어요!
+          </p>
         </div>
       </main>
     </div>

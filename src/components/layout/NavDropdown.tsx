@@ -5,14 +5,31 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const NAV_ITEMS = [
+type NavItem = {
+  href: string
+  icon: string
+  label: string
+  subs?: { href: string; icon: string; label: string }[]
+}
+
+const NAV_ITEMS: NavItem[] = [
   { href: '/',         icon: '🏠', label: '홈' },
   { href: '/receipt',  icon: '🧾', label: '영수증' },
   { href: '/calendar', icon: '📅', label: '달력' },
   { href: '/plan',     icon: '🤔', label: '나의 계획' },
   { href: '/gallery',  icon: '📸', label: '사진 모아보기' },
   { href: '/map',      icon: '🗺️', label: '사용 장소 지도' },
-  { href: '/more',     icon: '⚙️',  label: '더보기' },
+  {
+    href: '/more',
+    icon: '⚙️',
+    label: '더보기',
+    subs: [
+      { href: '/my-plan',              icon: '🎯', label: '내 목표 보기' },
+      { href: '/evaluations',          icon: '💌', label: '지원자 선생님의 편지' },
+      { href: '/more?open=display',    icon: '🌗', label: '화면 설정' },
+      { href: '/more?open=files',      icon: '📁', label: '내 서류함' },
+    ],
+  },
 ]
 
 export default function NavDropdown() {
@@ -69,26 +86,59 @@ export default function NavDropdown() {
               pathname === item.href ||
               (item.href !== '/' && pathname.startsWith(item.href))
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 px-5 py-4 hover:bg-zinc-50 transition-colors ${
-                  isActive ? 'bg-zinc-50' : ''
-                }`}
-              >
-                <span className="text-2xl w-8 text-center">{item.icon}</span>
-                <span
-                  className={`text-sm font-bold flex-1 ${
-                    isActive ? 'text-zinc-900' : 'text-zinc-600'
+              <div key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 px-5 py-4 hover:bg-zinc-50 transition-colors ${
+                    isActive ? 'bg-zinc-50' : ''
                   }`}
                 >
-                  {item.label}
-                </span>
-                {isActive && (
-                  <div className="w-2 h-2 rounded-full bg-zinc-900 shrink-0" />
+                  <span className="text-2xl w-8 text-center">{item.icon}</span>
+                  <span
+                    className={`text-sm font-bold flex-1 ${
+                      isActive ? 'text-zinc-900' : 'text-zinc-600'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                  {isActive && (
+                    <div className="w-2 h-2 rounded-full bg-zinc-900 shrink-0" />
+                  )}
+                </Link>
+
+                {/* 서브 항목 (더보기 하위) */}
+                {item.subs && (
+                  <div className="flex flex-col pb-1">
+                    {item.subs.map((sub) => {
+                      const subBase = sub.href.split('?')[0]
+                      const isSubActive = pathname === subBase
+                      return (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          onClick={() => setIsOpen(false)}
+                          className={`flex items-center gap-2.5 pl-14 pr-5 py-2.5 hover:bg-zinc-50 transition-colors ${
+                            isSubActive ? 'bg-zinc-50' : ''
+                          }`}
+                        >
+                          <span className="text-base w-5 text-center shrink-0">{sub.icon}</span>
+                          <span
+                            className={`text-xs font-bold flex-1 ${
+                              isSubActive ? 'text-zinc-900' : 'text-zinc-500'
+                            }`}
+                          >
+                            {sub.label}
+                          </span>
+                          {isSubActive && (
+                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 shrink-0" />
+                          )}
+                        </Link>
+                      )
+                    })}
+                  </div>
                 )}
-              </Link>
+              </div>
             )
           })}
         </nav>

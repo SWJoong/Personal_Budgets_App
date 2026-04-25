@@ -8,6 +8,7 @@ import { speak } from '@/utils/tts'
 import WaterCupPlanPreview from '@/components/home/WaterCupPlanPreview'
 import PlaceSearch from '@/components/map/PlaceSearch'
 import type { PlaceResult } from '@/app/actions/geocode'
+import { getActivityEmoji } from '@/utils/activityEmoji'
 
 type WizardStage = 'loading' | 'activity' | 'method' | 'when' | 'where' | 'confirm' | 'feedback' | 'done'
 
@@ -15,63 +16,6 @@ const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토']
 
 const ACTIVITY_FALLBACK = { a: '카페 음료 마시기', b: '편의점 간식 사기' }
 const METHOD_FALLBACK = { a: '간단하게', b: '조금 더 여유있게', a_cost: 5000, b_cost: 10000 }
-
-const ACTIVITY_ICONS: Record<string, string> = {
-  a: '🛍️',
-  b: '🍽️',
-}
-const METHOD_ICONS: Record<string, string> = {
-  a: '🛒',
-  b: '🛒',
-}
-
-// 활동명에서 관련 이모지를 추출하는 키워드 매핑
-const EMOJI_RULES: [RegExp, string][] = [
-  // 음식·카페
-  [/카페|커피|아메리카노|라떼|음료|차\b|티\b/i, '☕'],
-  [/밥|식사|점심|저녁|아침|한식|중식|일식|양식|식당|맛집|레스토랑/i, '🍽️'],
-  [/치킨|닭|피자|햄버거|버거|패스트푸드/i, '🍗'],
-  [/라면|국수|우동|파스타|면\b/i, '🍜'],
-  [/케이크|빵|베이커리|디저트|마카롱|도넛|쿠키/i, '🧁'],
-  [/아이스크림|빙수|아이스/i, '🍦'],
-  [/편의점|간식|과자|음식|먹/i, '🍪'],
-  [/술|맥주|소주|와인/i, '🍺'],
-  // 쇼핑
-  [/옷|의류|패션|자켓|티셔츠|청바지|코트|니트|셔츠|원피스/i, '👕'],
-  [/신발|운동화|구두|슬리퍼/i, '👟'],
-  [/가방|백팩|지갑|파우치/i, '👜'],
-  [/마트|쇼핑|백화점|아울렛|구매|구입|사기\b|살\b/i, '🛍️'],
-  [/편의점/i, '🏪'],
-  // 문화·여가
-  [/영화|극장|시네마/i, '🎬'],
-  [/책|도서|서점|독서|읽/i, '📚'],
-  [/음악|음반|cd|콘서트|공연|뮤지컬|연주/i, '🎵'],
-  [/게임|오락|놀이|pc방/i, '🎮'],
-  [/전시|박물관|미술관|갤러리/i, '🎨'],
-  [/공원|산책|나들이|피크닉/i, '🌳'],
-  [/여행|관광|투어|여행지/i, '✈️'],
-  // 건강·운동
-  [/운동|헬스|헬스장|체육관|수영|요가|필라테스/i, '💪'],
-  [/산책|달리기|러닝|조깅/i, '🏃'],
-  [/병원|진료|치료|건강검진/i, '🏥'],
-  [/약|약국/i, '💊'],
-  // 생활·교통
-  [/교통|버스|지하철|택시|기차|ktx/i, '🚌'],
-  [/미용|헤어|이발|네일|마사지/i, '💇'],
-  [/전자|가전|핸드폰|폰|컴퓨터|노트북|태블릿|충전기/i, '📱'],
-  [/인터넷|구독|넷플릭스|스포티파이|유튜브|멜론/i, '📺'],
-  [/꽃|화분|식물|원예/i, '🌸'],
-  [/선물|기념일|생일|크리스마스/i, '🎁'],
-  [/공부|학원|과외|수업|강의|교육|학습|자격증/i, '✏️'],
-  [/청소|세탁|빨래|생활용품|소모품/i, '🧹'],
-]
-
-function getActivityEmoji(name: string): string {
-  for (const [pattern, emoji] of EMOJI_RULES) {
-    if (pattern.test(name)) return emoji
-  }
-  return '📝'
-}
 
 interface OptionData {
   a: string
@@ -258,13 +202,13 @@ export default function PlanChatContainer({
           {!showCustom ? (
             <>
               <OptionButton
-                icon={ACTIVITY_ICONS.a}
+                icon={getActivityEmoji(activityOptions.a)}
                 label={activityOptions.a}
                 badge="A"
                 onClick={() => handleSelectActivity(activityOptions.a)}
               />
               <OptionButton
-                icon={ACTIVITY_ICONS.b}
+                icon={getActivityEmoji(activityOptions.b)}
                 label={activityOptions.b}
                 badge="B"
                 onClick={() => handleSelectActivity(activityOptions.b)}
@@ -307,14 +251,14 @@ export default function PlanChatContainer({
                 currentBalance={totalBalance}
                 totalBudget={totalBalance}
                 options={[
-                  { name: methodOptions.a, cost: methodOptions.a_cost, icon: METHOD_ICONS.a },
-                  { name: methodOptions.b, cost: methodOptions.b_cost, icon: METHOD_ICONS.b },
+                  { name: methodOptions.a, cost: methodOptions.a_cost, icon: getActivityEmoji(selectedActivity) },
+                  { name: methodOptions.b, cost: methodOptions.b_cost, icon: getActivityEmoji(selectedActivity) },
                 ]}
                 selectedIndex={hoveredMethodIndex}
               />
 
               <OptionButton
-                icon={METHOD_ICONS.a}
+                icon={getActivityEmoji(methodOptions.a || selectedActivity)}
                 label={methodOptions.a}
                 cost={methodOptions.a_cost}
                 badge="A"
@@ -323,7 +267,7 @@ export default function PlanChatContainer({
                 onLeave={() => setHoveredMethodIndex(null)}
               />
               <OptionButton
-                icon={METHOD_ICONS.b}
+                icon={getActivityEmoji(methodOptions.b || selectedActivity)}
                 label={methodOptions.b}
                 cost={methodOptions.b_cost}
                 badge="B"

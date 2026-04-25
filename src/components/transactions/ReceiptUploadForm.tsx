@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { createTransaction } from '@/app/actions/transaction'
 import { analyzeReceipt } from '@/app/actions/ocr'
@@ -289,8 +290,8 @@ export default function ReceiptUploadForm({
         사진은 선택사항이에요.<br/>지원자 선생님이 확인하면 예산에 반영해요.
       </p>
 
-      {/* 성공 알림 + 자기결정 피드백 — 화면 중앙 오버레이 */}
-      {showFeedback && (
+      {/* 성공 알림 + 자기결정 피드백 — Portal로 화면 중앙 오버레이 */}
+      {showFeedback && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
           <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center gap-2 animate-fade-in-up">
             <span className="text-5xl">✅</span>
@@ -308,7 +309,8 @@ export default function ReceiptUploadForm({
               }}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </form>
   )

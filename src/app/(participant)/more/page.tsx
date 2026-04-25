@@ -6,7 +6,12 @@ import NavDropdown from '@/components/layout/NavDropdown'
 import HelpButton from '@/components/help/HelpButton'
 import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
 
-export default async function MorePage() {
+export default async function MorePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ open?: string }>
+}) {
+  const { open } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -58,7 +63,7 @@ export default async function MorePage() {
         </section>
 
         {/* 클라이언트 컴포넌트 (설정 및 로그아웃 핸들링) */}
-        <MoreMenuClient fileLinks={fileLinks || []} />
+        <MoreMenuClient fileLinks={fileLinks || []} initialOpenSection={open} />
         
         <div className="text-center py-4">
           <p className="text-[10px] font-bold text-zinc-300 uppercase tracking-[0.3em]">아름드리꿈터 개인예산</p>
