@@ -207,7 +207,7 @@ supabase db push
 
 ## 🔗 관련 링크
 
-- [Perplexity Computer 세션](https://www.perplexity.ai/computer/aareumdeuriggumteo-gaeinyesan-g-MwSGZcj6RxGBmKnyyF.vUA)
+- [Perplexity Computer 세션](https://www.perplexity.ai/computer)
 - [GitHub Repository](https://github.com/SWJoong/PersonalBudgetsApp)
 - [Pretendard CDN](https://github.com/orioncactus/pretendard)
 - [Supabase Storage 문서](https://supabase.com/docs/guides/storage)
