@@ -375,7 +375,7 @@ npm run generate-types  # Supabase 타입 재생성
 ## 🔗 관련 링크
 
 - [배포 주소](https://personal-budgets-app-gp8t.vercel.app/)
-- [GitHub Repository](https://github.com/SWJoong/PersonalBudgetsApp)
+- [GitHub Repository](https://github.com/SWJoong/Personal_Budgets_App)
 - [Pretendard CDN](https://github.com/orioncactus/pretendard)
 - [Supabase Storage 문서](https://supabase.com/docs/guides/storage)
 

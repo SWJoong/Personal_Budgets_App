@@ -7,6 +7,7 @@ export default function RoleSelectionPage() {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<"admin" | "participant" | null>(null);
   const [easterEggOpen, setEasterEggOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const handleRoleSelect = (role: "admin" | "participant") => {
     console.log("🎭 Role selected:", role);
@@ -196,6 +197,82 @@ export default function RoleSelectionPage() {
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground mt-4">
           <p>💡 언제든지 역할을 변경할 수 있습니다</p>
+        </div>
+
+        {/* 프로젝트 소개 — 접기/펼치기 */}
+        <div className="mt-2 rounded-2xl border border-zinc-200 overflow-hidden">
+          <button
+            onClick={() => setInfoOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
+          >
+            <span className="flex items-center gap-2">
+              <span>📖</span>
+              <span>이 앱에 대해 더 알아보기</span>
+            </span>
+            <span className={`transition-transform duration-200 ${infoOpen ? "rotate-180" : ""}`}>
+              ▼
+            </span>
+          </button>
+
+          {infoOpen && (
+            <div className="px-5 pb-5 pt-1 text-sm text-zinc-700 space-y-5 border-t border-zinc-100">
+              {/* 개요 */}
+              <div>
+                <h3 className="font-bold text-zinc-800 mb-1.5">📋 프로젝트 개요</h3>
+                <p className="text-xs text-zinc-600 leading-relaxed">
+                  발달장애인 당사자가 자신의 예산을 시각적으로 쉽게 이해하고 관리할 수 있도록 돕는 웹 앱입니다.
+                  <strong> 쉬운 정보(Easy Read)</strong> 원칙을 적용해 당사자·지원자·관리자 세 역할을 지원합니다.
+                </p>
+              </div>
+
+              {/* 주요 기능 */}
+              <div>
+                <h3 className="font-bold text-zinc-800 mb-1.5">✨ 주요 기능</h3>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-zinc-600">
+                  <span>• SVG 주머니·지폐 잔액 시각화</span>
+                  <span>• 영수증 OCR (GPT-4o)</span>
+                  <span>• 월별계획 · 전월 복사</span>
+                  <span>• 지원목표 · 4+1 평가</span>
+                  <span>• 이용계획서 자동 생성</span>
+                  <span>• SIS-A 지원필요도 사정</span>
+                  <span>• CSV 거래내역 가져오기</span>
+                  <span>• 활동 지도 (카카오맵)</span>
+                  <span>• TTS 음성 읽기</span>
+                  <span>• AI 쉬운 요약</span>
+                </div>
+              </div>
+
+              {/* 기술 스택 */}
+              <div>
+                <h3 className="font-bold text-zinc-800 mb-1.5">🏗️ 기술 스택</h3>
+                <div className="flex flex-wrap gap-1.5 text-xs">
+                  {["Next.js 16", "React 19", "TypeScript", "Tailwind CSS 4", "Supabase", "GPT-4o", "Kakao Maps", "Vercel"].map((t) => (
+                    <span key={t} className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{t}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* 인증 방식 */}
+              <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-800 leading-relaxed">
+                <span className="font-bold">🔐 인증 안내</span><br />
+                현재 배포 버전은 <strong>데모 모드</strong>입니다. 초기 개발 시 <strong>Google OAuth</strong> 설정을 완료했으며,
+                이후 정식 배포 버전에서 Google 로그인으로 전환할 예정입니다.
+              </div>
+
+              {/* GitHub 링크 */}
+              <a
+                href="https://github.com/SWJoong/Personal_Budgets_App"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-zinc-300 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+                </svg>
+                GitHub 저장소 보기
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>
