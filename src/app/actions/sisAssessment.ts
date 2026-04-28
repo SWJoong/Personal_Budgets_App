@@ -104,6 +104,8 @@ export async function getAllSisAssessments(): Promise<SisAssessmentRow[]> {
 
 /** 평가 삭제 */
 export async function deleteSisAssessment(id: string): Promise<{ success: boolean; error?: string }> {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return { success: false, error: '데모 모드에서는 삭제할 수 없습니다.' }
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()

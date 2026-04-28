@@ -194,6 +194,8 @@ export async function getEvaluation(participantId: string, month: string) {
 }
 
 export async function deleteEvaluation(evaluationId: string, participantId: string, month: string) {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') throw new Error('데모 모드에서는 삭제할 수 없습니다.')
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()

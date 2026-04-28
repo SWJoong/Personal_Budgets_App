@@ -181,6 +181,8 @@ export async function upsertMonthlyPlan(input: MonthlyPlanInput) {
 }
 
 export async function deleteMonthlyPlan(id: string, participantId: string, month: string) {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return { error: '데모 모드에서는 삭제할 수 없습니다.' }
+
   const { ok, error, supabase } = await assertStaff()
   if (!ok) return { error: error || '권한이 없습니다.' }
 

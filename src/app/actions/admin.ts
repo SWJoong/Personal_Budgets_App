@@ -263,6 +263,8 @@ export async function updateParticipant(participantId: string, formData: {
  * 당사자 삭제 (CASCADE로 관련 데이터도 함께 삭제됨)
  */
 export async function deleteParticipant(participantId: string) {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return { error: '데모 모드에서는 삭제할 수 없습니다.' }
+
   const { supabase } = await verifyAdmin()
 
   try {
@@ -358,6 +360,8 @@ export async function createFundingSource(participantId: string, formData: {
  * 재원 삭제
  */
 export async function deleteFundingSource(fundingSourceId: string) {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return { error: '데모 모드에서는 삭제할 수 없습니다.' }
+
   const { supabase } = await verifyAdmin()
 
   try {

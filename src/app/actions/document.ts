@@ -160,6 +160,8 @@ export async function uploadDocument(formData: FormData) {
 }
 
 export async function deleteDocument(id: string) {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') throw new Error('데모 모드에서는 삭제할 수 없습니다.')
+
   const admin = createAdminClient()
 
   const { error } = await admin.from('file_links').delete().eq('id', id)

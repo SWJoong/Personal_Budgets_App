@@ -113,6 +113,8 @@ export async function upsertBudgetLineItem(input: BudgetLineItemInput, participa
 }
 
 export async function deleteBudgetLineItem(id: string, participantId: string) {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return { error: '데모 모드에서는 삭제할 수 없습니다.' }
+
   const { ok, error, supabase } = await assertStaff()
   if (!ok) return { error: error || '권한이 없습니다.' }
 
