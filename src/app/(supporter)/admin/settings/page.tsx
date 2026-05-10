@@ -1,6 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { ensureAdminAccount } from '@/app/actions/admin'
 import { getEvalTemplateSetting } from '@/app/actions/evalTemplates'
 import AdminSettingsClient from './AdminSettingsClient'
 
@@ -9,9 +8,6 @@ export default async function AdminSettingsPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
-
-  // 관리자 계정 자동 설정 (cheese0318@nowondaycare.org → admin)
-  await ensureAdminAccount()
 
   // 관리자 권한 확인
   const { data: profile } = await supabase

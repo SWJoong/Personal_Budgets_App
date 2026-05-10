@@ -1,18 +1,8 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { UserRole } from '@/types/database'
-
-const ADMIN_EMAILS = [
-  'kim.cs@example.com',
-  'ahreum217@nowondaycare.org',
-  'valuesh@nowondaycare.org',
-  'tpdnr9870@nowondaycare.org',
-  '0305ysy@nowondaycare.org',
-  'soujin1020@nowondaycare.org',
-  'green4869@nowondaycare.org',
-]
 
 /**
  * 관리자 권한 검증
@@ -59,33 +49,6 @@ export async function updateUserRole(userId: string, newRole: UserRole) {
   revalidatePath('/admin/settings')
   revalidatePath('/admin')
   return { success: true }
-}
-
-/**
- * 관리자 계정 초기 설정 (kim.cs@example.com)
- * 해당 이메일 사용자가 profiles에 존재하면 admin 역할 부여
- */
-export async function ensureAdminAccount() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) return
-
-  // 현재 로그인 유저의 이메일이 관리자 이메일 목록에 있는 경우 자동 승격
-  if (user.email && ADMIN_EMAILS.includes(user.email)) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile && profile.role !== 'admin') {
-      await supabase
-        .from('profiles')
-        .update({ role: 'admin' })
-        .eq('id', user.id)
-    }
-  }
 }
 
 /**
@@ -379,4 +342,79 @@ export async function deleteFundingSource(fundingSourceId: string) {
   } catch (e: any) {
     return { error: `오류: ${e.message}` }
   }
+}
+
+// ──────────────────────────────────────────
+// 사용자 초대 관리 (user_invitations 테이블)
+// ──────────────────────────────────────────
+
+export type InvitationRole = 'admin' | 'supporter' | 'participant'
+
+export interface Invitation {
+  id: string
+  email: string
+  role: InvitationRole
+  note: string | null
+  used_at: string | null
+  created_at: string
+}
+
+/**
+ * 초대 목록 조회
+ */
+export async function getInvitations(): Promise<{ invitations: Invitation[]; error?: string }> {
+  const { supabase } = await verifyAdmin()
+  const { data, error } = await supabase
+    .from('user_invitations')
+    .select('id, email, role, note, used_at, created_at')
+    .order('created_at', { ascending: false })
+
+  if (error) return { error: error.message, invitations: [] }
+  return { invitations: (data as Invitation[]) ?? [] }
+}
+
+/**
+ * 초대 등록 (이메일 + 역할)
+ */
+export async function createInvitation(formData: {
+  email: string
+  role: InvitationRole
+  note?: string
+}): Promise<{ success?: boolean; error?: string }> {
+  const { supabase, user } = await verifyAdmin()
+
+  const { error } = await supabase
+    .from('user_invitations')
+    .insert({
+      email: formData.email.trim().toLowerCase(),
+      role: formData.role,
+      note: formData.note?.trim() || null,
+      invited_by: user.id,
+    })
+
+  if (error) {
+    if (error.code === '23505') return { error: '이미 등록된 이메일입니다.' }
+    return { error: `등록 실패: ${error.message}` }
+  }
+
+  revalidatePath('/admin/invitations')
+  return { success: true }
+}
+
+/**
+ * 초대 삭제 (미사용 초대만)
+ */
+export async function deleteInvitation(id: string): Promise<{ success?: boolean; error?: string }> {
+  const { supabase } = await verifyAdmin()
+
+  const { error } = await supabase
+    .from('user_invitations')
+    .delete()
+    .eq('id', id)
+    .is('used_at', null)
+
+  if (error) return { error: `삭제 실패: ${error.message}` }
+
+  revalidatePath('/admin/invitations')
+  return { success: true }
 }
