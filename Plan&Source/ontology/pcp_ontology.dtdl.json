@@ -1,0 +1,234 @@
+[
+  {
+    "@context": "dtmi:dtdl:context;3",
+    "@id": "dtmi:kr:armdeuri:pcp:Person;1",
+    "@type": "Interface",
+    "displayName": { "ko": "당사자 (Person)", "en": "Person" },
+    "description": {
+      "ko": "장애인 당사자. 개인예산의 소비자이자 삶의 주체. [기존 테이블: participants + profiles(role=participant)]",
+      "en": "Participant with disability. Consumer of the personal budget and owner of their life. [Existing tables: participants + profiles]"
+    },
+    "contents": [
+      { "@type": "Property", "name": "name", "displayName": { "ko": "이름" }, "schema": "string" },
+      { "@type": "Property", "name": "budget_start_date", "displayName": { "ko": "예산 시작일" }, "schema": "date" },
+      { "@type": "Property", "name": "budget_end_date", "displayName": { "ko": "예산 종료일" }, "schema": "date" },
+      { "@type": "Property", "name": "yearly_budget", "displayName": { "ko": "연간 예산" }, "schema": "double" },
+      {
+        "@type": "Relationship",
+        "name": "has_important_to",
+        "displayName": { "ko": "나에게 중요한 것" },
+        "description": { "ko": "당사자가 삶의 질을 위해 진정으로 원하는 목표·선호 매핑. [신규 테이블: value_nodes(kind=important_to)]" },
+        "target": "dtmi:kr:armdeuri:pcp:ImportantTo;1",
+        "properties": [
+          { "@type": "Property", "name": "weight", "displayName": { "ko": "가중치" }, "schema": "double" }
+        ]
+      },
+      {
+        "@type": "Relationship",
+        "name": "requires_important_for",
+        "displayName": { "ko": "나를 위해 중요한 것" },
+        "description": { "ko": "지원자 관점에서 객관적으로 필요한 안전·건강 요소 매핑. [신규 테이블: value_nodes(kind=important_for)]" },
+        "target": "dtmi:kr:armdeuri:pcp:ImportantFor;1",
+        "properties": [
+          { "@type": "Property", "name": "weight", "displayName": { "ko": "가중치" }, "schema": "double" }
+        ]
+      },
+      {
+        "@type": "Relationship",
+        "name": "makes_transaction",
+        "displayName": { "ko": "지출을 결정한다" },
+        "description": { "ko": "당사자가 스스로 결정하여 권한을 행사한 구매·서비스 이용 이벤트. [기존 FK: transactions.participant_id]" },
+        "target": "dtmi:kr:armdeuri:pcp:Transaction;1"
+      }
+    ]
+  },
+  {
+    "@context": "dtmi:dtdl:context;3",
+    "@id": "dtmi:kr:armdeuri:pcp:Supporter;1",
+    "@type": "Interface",
+    "displayName": { "ko": "지원자 (Supporter)", "en": "Supporter" },
+    "description": {
+      "ko": "사례관리팀·사회복지 실무자·PCP 퍼실리테이터. [기존 테이블: profiles(role=supporter|admin)]",
+      "en": "Case manager / social worker / PCP facilitator. [Existing table: profiles]"
+    },
+    "contents": [
+      { "@type": "Property", "name": "name", "displayName": { "ko": "이름" }, "schema": "string" },
+      { "@type": "Property", "name": "role", "displayName": { "ko": "역할" }, "schema": "string" },
+      {
+        "@type": "Relationship",
+        "name": "facilitates_plan_for",
+        "displayName": { "ko": "계획 수립을 지원한다" },
+        "description": { "ko": "지원자가 당사자의 꿈 찾기 등 PCP 수립 과정을 교육·지원. [기존 FK: participants.assigned_supporter_id]" },
+        "target": "dtmi:kr:armdeuri:pcp:Person;1"
+      }
+    ]
+  },
+  {
+    "@context": "dtmi:dtdl:context;3",
+    "@id": "dtmi:kr:armdeuri:pcp:ValueNode;1",
+    "@type": "Interface",
+    "displayName": { "ko": "가치·욕구 노드 (Value Node)", "en": "Value Node" },
+    "description": {
+      "ko": "PCP 철학을 반영하는 핵심 추상 노드. Important To / Important For 두 하위 클래스가 상속. [신규 테이블: value_nodes]",
+      "en": "Core abstract node of PCP. Extended by ImportantTo and ImportantFor. [New table: value_nodes]"
+    },
+    "contents": [
+      { "@type": "Property", "name": "label", "displayName": { "ko": "이름표" }, "schema": "string" },
+      { "@type": "Property", "name": "weight", "displayName": { "ko": "가중치(0~5)" }, "schema": "double" },
+      { "@type": "Property", "name": "easy_description", "displayName": { "ko": "쉬운 설명" }, "schema": "string" },
+      { "@type": "Property", "name": "status", "displayName": { "ko": "상태(active|archived)" }, "schema": "string" },
+      {
+        "@type": "Relationship",
+        "name": "is_addressed_by",
+        "displayName": { "ko": "계획에 반영된다" },
+        "description": { "ko": "도출된 욕구가 개인별지원계획(ISP)의 세부 목표로 반영됨. [신규 FK: support_goals.value_node_id → 기존 care_plans]" },
+        "target": "dtmi:kr:armdeuri:pcp:BudgetPlan;1"
+      }
+    ]
+  },
+  {
+    "@context": "dtmi:dtdl:context;3",
+    "@id": "dtmi:kr:armdeuri:pcp:ImportantTo;1",
+    "@type": "Interface",
+    "extends": "dtmi:kr:armdeuri:pcp:ValueNode;1",
+    "displayName": { "ko": "중요한 것 To (선호·교류·취미)", "en": "Important To" },
+    "description": {
+      "ko": "당사자에게 중요한 것 — 스스로 원하고 선호하며 애착을 가지는 요소. [value_nodes.kind = important_to]",
+      "en": "What matters TO the person: preferences, relationships, hobbies."
+    }
+  },
+  {
+    "@context": "dtmi:dtdl:context;3",
+    "@id": "dtmi:kr:armdeuri:pcp:ImportantFor;1",
+    "@type": "Interface",
+    "extends": "dtmi:kr:armdeuri:pcp:ValueNode;1",
+    "displayName": { "ko": "중요한 것 For (건강·안전)", "en": "Important For" },
+    "description": {
+      "ko": "당사자를 위해 중요한 것 — 건강·안전 등 전문가 관점에서 필요한 조치. [value_nodes.kind = important_for]",
+      "en": "What matters FOR the person: health, safety, valued roles."
+    }
+  },
+  {
+    "@context": "dtmi:dtdl:context;3",
+    "@id": "dtmi:kr:armdeuri:pcp:NetworkEntity;1",
+    "@type": "Interface",
+    "displayName": { "ko": "지역사회 관계망 (Network Entity)", "en": "Network Entity" },
+    "description": {
+      "ko": "가족·이웃·친구·동네 가게 등 비공식 자원. 고립 위험 분석(SNA)의 핵심 노드. [신규 테이블: network_entities]",
+      "en": "Informal community network: family, neighbors, friends, local shops. [New table: network_entities]"
+    },
+    "contents": [
+      { "@type": "Property", "name": "name", "displayName": { "ko": "이름" }, "schema": "string" },
+      { "@type": "Property", "name": "relation_type", "displayName": { "ko": "관계 유형(가족|이웃|친구|동료|기타)" }, "schema": "string" },
+      { "@type": "Property", "name": "is_active", "displayName": { "ko": "활성 여부" }, "schema": "boolean" },
+      {
+        "@type": "Relationship",
+        "name": "reports_status_of",
+        "displayName": { "ko": "안부를 전한다" },
+        "description": { "ko": "지역 네트워크가 당사자의 상태 변화·안부를 간접 제보·연결. 엣지 소멸(3개월 무접촉)은 고립 신호. [신규 테이블: graph_edges(물리 엣지)]" },
+        "target": "dtmi:kr:armdeuri:pcp:Person;1",
+        "properties": [
+          { "@type": "Property", "name": "last_contact_date", "displayName": { "ko": "마지막 접촉일" }, "schema": "date" }
+        ]
+      }
+    ]
+  },
+  {
+    "@context": "dtmi:dtdl:context;3",
+    "@id": "dtmi:kr:armdeuri:pcp:ServiceResource;1",
+    "@type": "Interface",
+    "displayName": { "ko": "서비스 자원·용처 (Service Resource)", "en": "Service Resource" },
+    "description": {
+      "ko": "지역 내 서비스 제공기관과 5개 영역(운동·문화여가·교육봉사 등) 활동 장소. 현행 transactions.place_name TEXT의 엔티티 승격. [신규 테이블: service_resources]",
+      "en": "Community service providers and approved spending venues. Promotion of place_name TEXT into an entity. [New table: service_resources]"
+    },
+    "contents": [
+      { "@type": "Property", "name": "name", "displayName": { "ko": "이름" }, "schema": "string" },
+      { "@type": "Property", "name": "category", "displayName": { "ko": "분류(카페·수영장·병원 등)" }, "schema": "string" },
+      { "@type": "Property", "name": "kakao_place_id", "displayName": { "ko": "카카오 장소 ID" }, "schema": "string" },
+      { "@type": "Property", "name": "is_verified", "displayName": { "ko": "실무자 확인 여부" }, "schema": "boolean" },
+      { "@type": "Property", "name": "risk_tags", "displayName": { "ko": "위험 태그(주류·사행성 등)" }, "schema": "string" }
+    ]
+  },
+  {
+    "@context": "dtmi:dtdl:context;3",
+    "@id": "dtmi:kr:armdeuri:pcp:BudgetPlan;1",
+    "@type": "Interface",
+    "displayName": { "ko": "예산 계획·ISP (Budget Plan)", "en": "Budget Plan / ISP" },
+    "description": {
+      "ko": "당사자가 수립하고 심의위원회가 승인한 자기주도지원계획과 예산. 7단계 사이클 상태 포함. [기존: care_plans + budget_line_items, 신규: budget_cycles(stage)]",
+      "en": "Self-directed support plan and budget. [Existing: care_plans + budget_line_items, New: budget_cycles]"
+    },
+    "contents": [
+      { "@type": "Property", "name": "plan_year", "displayName": { "ko": "계획 연도" }, "schema": "integer" },
+      {
+        "@type": "Property",
+        "name": "stage",
+        "displayName": { "ko": "진행 단계(7단계)" },
+        "description": { "ko": "신청→욕구상담→계획작성→심의승인→지급→집행모니터링→정산평가 [신규 테이블: budget_cycles.stage]" },
+        "schema": "string"
+      },
+      { "@type": "Property", "name": "total_amount", "displayName": { "ko": "총 예산" }, "schema": "double" },
+      {
+        "@type": "Relationship",
+        "name": "allocates_funds_to",
+        "displayName": { "ko": "예산을 배정한다" },
+        "description": { "ko": "승인된 예산이 어느 제공기관·용처에 얼마 할당되었는지. 배정액이 엣지 가중치. [신규 FK: budget_line_items.service_resource_id]" },
+        "target": "dtmi:kr:armdeuri:pcp:ServiceResource;1",
+        "properties": [
+          { "@type": "Property", "name": "allocated_amount", "displayName": { "ko": "배정액" }, "schema": "double" }
+        ]
+      }
+    ]
+  },
+  {
+    "@context": "dtmi:dtdl:context;3",
+    "@id": "dtmi:kr:armdeuri:pcp:Transaction;1",
+    "@type": "Interface",
+    "displayName": { "ko": "집행 내역 (Transaction)", "en": "Transaction" },
+    "description": {
+      "ko": "개인예산이 실제 지출된 개별 이벤트 — 영수증·날짜·품목. [기존 테이블: transactions]",
+      "en": "Individual spending event with receipt, date, item. [Existing table: transactions]"
+    },
+    "contents": [
+      { "@type": "Property", "name": "date", "displayName": { "ko": "날짜" }, "schema": "date" },
+      { "@type": "Property", "name": "activity_name", "displayName": { "ko": "활동명" }, "schema": "string" },
+      { "@type": "Property", "name": "amount", "displayName": { "ko": "금액" }, "schema": "double" },
+      { "@type": "Property", "name": "status", "displayName": { "ko": "상태(pending|confirmed)" }, "schema": "string" },
+      {
+        "@type": "Relationship",
+        "name": "is_spent_at",
+        "displayName": { "ko": "여기서 사용됐다" },
+        "description": { "ko": "실제 예산이 사용된 지역사회 기관·품목 연결. [신규 FK: transactions.service_resource_id]" },
+        "target": "dtmi:kr:armdeuri:pcp:ServiceResource;1"
+      },
+      {
+        "@type": "Relationship",
+        "name": "violates_rule",
+        "displayName": { "ko": "규칙에 저촉된다 (조건부)" },
+        "description": { "ko": "집행 내역이 오남용 제한 규칙에 저촉되는지 룰 엔진이 논리 검사. 자동 거절이 아니라 실무자 검토 플래그. [신규 테이블: rule_violations]" },
+        "target": "dtmi:kr:armdeuri:pcp:RestrictionRule;1",
+        "properties": [
+          { "@type": "Property", "name": "violation_status", "displayName": { "ko": "처리 상태(open|dismissed|upheld)" }, "schema": "string" }
+        ]
+      }
+    ]
+  },
+  {
+    "@context": "dtmi:dtdl:context;3",
+    "@id": "dtmi:kr:armdeuri:pcp:RestrictionRule;1",
+    "@type": "Interface",
+    "displayName": { "ko": "제한 규칙 (Restriction Rule)", "en": "Restriction Rule" },
+    "description": {
+      "ko": "도박·주류·담배 등 오남용 차단 기준 모음. 기관 공통(global)과 개인별(participant) 범위 지원. [신규 테이블: restriction_rules]",
+      "en": "Misuse-prevention rules (gambling, alcohol, tobacco, limits). [New table: restriction_rules]"
+    },
+    "contents": [
+      { "@type": "Property", "name": "name", "displayName": { "ko": "규칙 이름" }, "schema": "string" },
+      { "@type": "Property", "name": "rule_type", "displayName": { "ko": "규칙 유형(keyword_block|category_block|amount_limit_per_tx|monthly_category_limit|resource_risk_tag|frequency_limit)" }, "schema": "string" },
+      { "@type": "Property", "name": "severity", "displayName": { "ko": "심각도(info|warn|block)" }, "schema": "string" },
+      { "@type": "Property", "name": "easy_message", "displayName": { "ko": "당사자용 쉬운 안내 문구(비낙인)" }, "schema": "string" },
+      { "@type": "Property", "name": "is_active", "displayName": { "ko": "활성 여부" }, "schema": "boolean" }
+    ]
+  }
+]
