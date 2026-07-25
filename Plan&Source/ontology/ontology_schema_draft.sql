@@ -605,12 +605,199 @@ ALTER TABLE public.form_definitions
 --   · 정산·성과 보고를 사업별로 분리 산출할 수 있다 (재원별 잔액은 이미 funding_sources 가 관리)
 
 
+-- ============================================================================
+-- [v3 추가] 주도성(Self-direction)과 변화(Outcome) 측정
+--   질문: ① 당사자가 얼마나 주도적으로 계획을 세우고 실행했는가
+--         ② 그 과정에서 지역사회 관계나 개인에게 어떤 변화가 있었는가
+--   상세: Plan&Source/PCT_주도성_변화측정_설계_v1.md
+-- ============================================================================
+
+
 -- ────────────────────────────────────────────────────────────────────────────
--- 14. [v2] RLS — 신규 5개 테이블
+-- 15. planning_meetings — 사람중심 회의 (PCD·PATH·계획수립·평가회)
+--     가치·욕구는 저절로 생기지 않는다. 회의에서 나온다.
+--     그 과정을 기록하지 않으면 "누가 이 계획을 만들었는가"에 답할 수 없다.
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.planning_meetings (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id      UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  cycle_id            UUID REFERENCES public.budget_cycles(id) ON DELETE SET NULL,
+  kind                TEXT NOT NULL CHECK (kind IN (
+                        'pcd',          -- 사람중심설명 회의 (당사자를 알아가기)
+                        'path',         -- 꿈 찾기
+                        'plan_making',  -- 계획 수립
+                        'review')),     -- 평가회
+  met_on              DATE NOT NULL,
+  -- 주도성의 1차 지표: 자기 삶에 관한 회의에 당사자가 있었는가, 어떤 역할이었는가
+  participant_attended BOOLEAN NOT NULL DEFAULT TRUE,
+  participant_role     TEXT CHECK (participant_role IN ('led','spoke','present','absent')),
+  location            TEXT,
+  summary             TEXT,
+  facilitator_id      UUID REFERENCES public.profiles(id),
+  creator_id          UUID REFERENCES public.profiles(id),
+  created_at          TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- 누가 함께했는가 — PCD는 당사자를 잘 아는 주변 사람들이 모여 하는 것이다.
+-- 유급 지원자만 앉아 있는 회의는 그 자체가 신호가 된다.
+CREATE TABLE public.planning_meeting_attendees (
+  meeting_id        UUID NOT NULL REFERENCES public.planning_meetings(id) ON DELETE CASCADE,
+  network_entity_id UUID REFERENCES public.network_entities(id) ON DELETE CASCADE,
+  profile_id        UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  role_note         TEXT,
+  PRIMARY KEY (meeting_id, network_entity_id, profile_id)
+);
+
+-- 회의 산출물 연결 (가치·욕구가 어느 회의에서 나왔는지 추적)
+ALTER TABLE public.value_nodes ADD COLUMN meeting_id UUID REFERENCES public.planning_meetings(id) ON DELETE SET NULL;
+
+CREATE INDEX idx_planning_meetings_participant ON public.planning_meetings (participant_id, met_on DESC);
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 16. 주도성 기록 — transactions.decided_by / care_plans.self_direction_level
+--     방식: 자동 추정 + 실무자 보정 (매 거래 입력을 강요하지 않는다)
+-- ────────────────────────────────────────────────────────────────────────────
+ALTER TABLE public.transactions
+  ADD COLUMN decided_by TEXT CHECK (decided_by IN (
+    'self',              -- 당사자가 스스로 정함
+    'self_with_support', -- 당사자가 정하고 곁에서 도움받음
+    'suggested_accepted',-- 지원자가 제안하고 당사자가 선택함
+    'supporter'));       -- 지원자가 결정함
+
+-- 자동 추정 트리거(초안): 당사자 화면에서 등록된 거래(creator_id = participant_id) → 'self'
+--   그 외에는 NULL 로 두고 실무자가 영수증 검토 대기열에서 필요할 때만 한 번 클릭으로 지정.
+--   NULL 은 "아직 확인 안 함"이며 주도성 비율 계산에서 분모에는 들어가되 분자에는 안 들어간다
+--   (모르는 것을 주도적이었다고 세지 않는다).
+--
+-- CREATE OR REPLACE FUNCTION public.f_infer_decided_by() RETURNS TRIGGER AS $$
+-- BEGIN
+--   IF NEW.decided_by IS NULL AND NEW.creator_id = NEW.participant_id THEN
+--     NEW.decided_by := 'self';
+--   END IF;
+--   RETURN NEW;
+-- END; $$ LANGUAGE plpgsql;
+
+ALTER TABLE public.care_plans
+  ADD COLUMN self_direction_level TEXT CHECK (self_direction_level IN (
+    'participant_led',  -- 당사자 주도
+    'co_produced',      -- 함께 만듦
+    'supporter_led'));  -- 지원자 주도
+-- 계획의 저자는 언제나 당사자이지만, 실제 수립 과정에서 얼마나 주도했는지는 별개이며
+-- 해가 갈수록 participant_led 로 옮겨가는 것이 사업의 목표다.
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 17. v_self_direction — 주도성 비율 (질문 ①의 답)
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE VIEW public.v_self_direction AS
+SELECT
+  t.participant_id,
+  DATE_TRUNC('month', t.date)::DATE AS month,
+  SUM(t.amount)                                                            AS total_amount,
+  SUM(t.amount) FILTER (WHERE t.decided_by IN ('self','self_with_support')) AS self_directed_amount,
+  COUNT(*)                                                                 AS total_count,
+  COUNT(*) FILTER (WHERE t.decided_by = 'self')                            AS self_count,
+  COUNT(*) FILTER (WHERE t.decided_by IS NULL)                             AS unknown_count,
+  CASE WHEN SUM(t.amount) > 0
+       THEN ROUND(COALESCE(SUM(t.amount) FILTER (
+              WHERE t.decided_by IN ('self','self_with_support')), 0) / SUM(t.amount), 2)
+  END                                                                      AS self_directed_ratio
+FROM public.transactions t
+WHERE t.status = 'confirmed'
+GROUP BY t.participant_id, DATE_TRUNC('month', t.date);
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 18. outcome_snapshots — 변화 측정의 실체 (질문 ②의 답)
+--     월별 평가 시점에 그때의 지표를 계산해 **저장**한다.
+--     뷰가 아닌 이유: 나중에 관계망을 정리하거나 가치를 보관 처리해도
+--     3월 스냅샷은 3월의 값이어야 추이가 의미를 갖는다.
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.outcome_snapshots (
+  id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id         UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  evaluation_id          UUID REFERENCES public.evaluations(id) ON DELETE SET NULL,
+  snapshot_month         DATE NOT NULL,
+
+  -- To/For 균형 (§7 v_to_for_balance 를 시점 고정)
+  to_count               SMALLINT,
+  for_count              SMALLINT,
+  balance_index          NUMERIC(3,2),   -- -1(전부 For) ~ +1(전부 To)
+
+  -- 관계 지도 (§3-1 v_relationship_map 을 시점 고정)
+  family_count           SMALLINT,
+  friend_count           SMALLINT,
+  paid_count             SMALLINT,
+  community_count        SMALLINT,
+  unpaid_ratio           NUMERIC(3,2),
+
+  -- 주도성 (§17 v_self_direction 을 시점 고정)
+  self_directed_ratio    NUMERIC(3,2),
+  monthly_spent          NUMERIC,
+
+  -- 지역사회 참여 폭
+  distinct_resource_count SMALLINT,      -- 그 달에 방문한 서로 다른 자원 수
+
+  computed_at            TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  UNIQUE (participant_id, snapshot_month)
+);
+
+CREATE INDEX idx_outcome_snapshots_participant
+  ON public.outcome_snapshots (participant_id, snapshot_month);
+
+-- 채우는 방식(초안): 월별 평가를 발행(published_at 설정)할 때 서버 액션이 아래를 호출.
+--   실무자의 추가 입력은 없다 — 이미 있는 데이터로 계산만 한다.
+--
+-- CREATE OR REPLACE FUNCTION public.f_capture_outcome_snapshot(p_participant UUID, p_month DATE)
+-- RETURNS UUID AS $$
+--   INSERT INTO outcome_snapshots (participant_id, snapshot_month, to_count, for_count,
+--     balance_index, family_count, friend_count, paid_count, community_count, unpaid_ratio,
+--     self_directed_ratio, monthly_spent, distinct_resource_count)
+--   SELECT p_participant, p_month, b.to_count, b.for_count, b.balance_index,
+--          r.family_count, r.friend_count, r.paid_count, r.community_count, r.unpaid_ratio,
+--          s.self_directed_ratio, s.total_amount,
+--          (SELECT COUNT(DISTINCT service_resource_id) FROM transactions
+--            WHERE participant_id = p_participant
+--              AND DATE_TRUNC('month', date) = p_month AND status = 'confirmed')
+--   FROM v_to_for_balance b
+--   LEFT JOIN v_relationship_map r ON r.participant_id = b.participant_id
+--   LEFT JOIN v_self_direction  s ON s.participant_id = b.participant_id AND s.month = p_month
+--   WHERE b.participant_id = p_participant
+--   ON CONFLICT (participant_id, snapshot_month) DO UPDATE SET ...
+--   RETURNING id;
+-- $$ LANGUAGE sql;
+
+-- 활용 예 — 사업 성과 보고에 그대로 쓰이는 질의:
+--   SELECT snapshot_month, friend_count, unpaid_ratio, self_directed_ratio, balance_index
+--   FROM outcome_snapshots WHERE participant_id = ? ORDER BY snapshot_month;
+--   → "3월 대비 12월에 친구가 2명 늘었고, 주도성 비율이 0.3에서 0.7이 되었다"
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 19. 평가 → 배움 → 새 가치 (PCT 순환을 닫는 연결)
+-- ────────────────────────────────────────────────────────────────────────────
+-- value_nodes.source 에 'evaluation_learning' 을 추가하고, 어느 평가에서 나온 배움인지 연결
+ALTER TABLE public.value_nodes ADD COLUMN evaluation_id UUID REFERENCES public.evaluations(id) ON DELETE SET NULL;
+-- (§2 의 source CHECK 에 'evaluation_learning' 추가 필요)
+--
+-- 흐름: 월별 평가의 "배운 것(learned)" 을 실무자가 읽고 →
+--       "새로 알게 된 것을 프로필에 추가할까요?" 버튼 → value_nodes 생성(source='evaluation_learning')
+--       → 다음 계획 수립 때 이 노드가 입력이 된다.
+-- 이 고리가 없으면 평가는 서류로 끝나고 당사자에 대한 앎은 갱신되지 않는다.
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 20. [v2] RLS — 신규 5개 테이블
 -- ────────────────────────────────────────────────────────────────────────────
 -- taxonomies / taxonomy_terms / term_mappings / form_definitions / programs
 --   → 기관 공통 마스터 데이터: SELECT 는 authenticated 전원, 쓰기는 admin 만
 --     (system_settings 의 20번 마이그레이션 패턴과 동일)
--- form_responses
+-- form_responses / planning_meetings / planning_meeting_attendees / outcome_snapshots
 --   → 당사자 개인 데이터: SELECT 는 is_self(participant_id) OR is_staff(),
 --     쓰기는 is_staff() — §9 헬퍼 3종 재사용
+--
+-- ⚠️ outcome_snapshots 의 당사자 노출 범위에 대한 판단:
+--    주도성 비율·균형 지수 같은 숫자는 실무자용 진단 도구이지 당사자를 평가하는 점수가 아니다.
+--    당사자 화면에는 숫자 대신 '나의 그림'과 "지난달보다 새로운 곳에 2번 더 다녀왔어요" 같은
+--    서술로만 표시한다. RLS 로 막기보다 화면 설계에서 지키는 원칙으로 둔다.
