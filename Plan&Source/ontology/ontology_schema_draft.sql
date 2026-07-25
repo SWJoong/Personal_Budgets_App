@@ -5,7 +5,15 @@
 --    확정 후 기관 관례에 따라 supabase/migrations/NN_*.sql 로 분할·번호 부여하여
 --    Supabase 대시보드 > SQL Editor 에서 순서대로 수동 실행합니다.
 --    (권장 분할: 33_service_resources / 34_restriction_rules / 35_value_nodes /
---     36_graph_edges / 37_budget_cycles / 38_network_entities)
+--     36_graph_edges / 37_budget_cycles / 38_network_entities /
+--     39_taxonomies / 40_form_definitions / 41_programs)
+--
+-- v2 (2026-07-23) 변경: 기관·사업별 서식 이질성 대응
+--   · value_nodes.kind 2종 → 8종 확장 (§2)
+--   · 어휘 계층 추가 — taxonomies / taxonomy_terms / term_mappings (§11)
+--   · 서식 계층 추가 — form_definitions / form_responses (§12)
+--   · 사업 계층 추가 — programs, funding_sources.program_id (§13)
+--   설계 근거: Plan&Source/서식_이질성_해결방안_v1.md
 --
 -- 설계 원칙
 --   1. 전부 추가형(additive) — 기존 테이블·화면·잔액 트리거를 깨지 않는다.
@@ -60,12 +68,24 @@ CREATE INDEX idx_tx_service_resource ON public.transactions (service_resource_id
 CREATE TABLE public.value_nodes (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   participant_id   UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
-  kind             TEXT NOT NULL CHECK (kind IN ('important_to','important_for')),
+  -- v2 확장: 2종 → 8종. 기관·사업별 서식의 질문이 모두 착지할 수 있어야 하므로.
+  --   important_to  : 복지부 "내 삶에서 가장 원하는 것", 아름드리 "나에게 중요한 것"
+  --   important_for : 복지부 "변화를 위해 필요한 지원", 아름드리 "나를 위해 중요한 것"
+  --   strength      : 서울형 "나의 재능, 강점, 기술"          ← v1에서 착지할 곳이 없었음
+  --   dream         : 서울형 "내가 원하는 삶의 모습", "시도하고 싶은 것"
+  --   barrier       : 복지부 "가장 불편한 점", 서울형 "장애로 인한 사회적 제한"
+  --   communication : ELP 요소 — 어느 공식 서식에도 없으나 발달장애인 지원에 필수
+  --   what_works / what_doesnt : ELP "좋은 지원 / 피해야 할 것" (실무자 교체 시 지원 질 유지)
+  kind             TEXT NOT NULL CHECK (kind IN (
+                     'important_to','important_for','strength','dream',
+                     'barrier','communication','what_works','what_doesnt')),
   label            TEXT NOT NULL,                   -- 예: "수영을 계속하고 싶다"
   description      TEXT,
   weight           NUMERIC NOT NULL DEFAULT 1 CHECK (weight BETWEEN 0 AND 5),
   source           TEXT NOT NULL DEFAULT 'manual'
-                     CHECK (source IN ('manual','support_goal_backfill','interview','ai_suggested')),
+                     CHECK (source IN ('manual','support_goal_backfill','interview','form_intake','ai_suggested')),
+  -- v2: 어느 기관 서식의 어느 질문에서 나왔는지 추적 (예: 'seoul_plan.talents')
+  source_form_field TEXT,
   status           TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','archived')),
   easy_description TEXT,
   easy_image_url   TEXT,
@@ -77,6 +97,9 @@ CREATE TABLE public.value_nodes (
 ALTER TABLE public.support_goals ADD COLUMN value_node_id UUID REFERENCES public.value_nodes(id) ON DELETE SET NULL;
 
 CREATE INDEX idx_value_nodes_participant ON public.value_nodes (participant_id, kind) WHERE status = 'active';
+
+-- 주의: To/For 균형 지표(§7 v_to_for_balance)는 important_to / important_for 2종만 집계한다.
+--       strength·dream 등 나머지 kind는 균형 계산에 포함하지 않되 '삶의 그림' 시각화에는 사용.
 
 -- 백필(초안): is_to_goal → kind='important_to' 1행, is_for_whom → 'important_for' 1행,
 --   둘 다 체크면 2행 생성(label=support_area 동일), 생성 id 를 support_goals.value_node_id 에 역기록.
@@ -331,3 +354,212 @@ CREATE TABLE public.budget_cycle_events (        -- 상태 전이 이력 = 감�
 --          직전 90일 대비 감소율 ...
 --   FROM v_graph_edges ...;
 -- pg_cron 으로 야간 REFRESH — 그래프 연산이 화면 응답에 개입하지 않도록 분리
+
+
+-- ============================================================================
+-- [v2 추가] 기관·사업별 서식 이질성 대응 — 어휘 계층 / 서식 계층 / 사업 계층
+--   배경: 보건복지부형·서울형·기관 자체 ISP의 구조와 지원영역 분류가 모두 다름.
+--   원칙: 서식을 통일하지 않는다. 의미를 통일하고 서식은 그 위의 투영으로 만든다.
+--   상세: Plan&Source/서식_이질성_해결방안_v1.md
+-- ============================================================================
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 11. 어휘 계층 — taxonomies / taxonomy_terms / term_mappings
+--     국내에 사례관리 욕구분류의 단일 표준이 부재하므로
+--     "표준 하나 채택"이 아니라 "복수 체계 등록 + 상호 매핑"으로 간다.
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.taxonomies (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code       TEXT NOT NULL UNIQUE,        -- 'mohw_2024' | 'sis_a' | 'gyeonggi_5' | 'org_custom'
+  name       TEXT NOT NULL,
+  source     TEXT,                        -- '보건복지부' | 'AAIDD' | '경기도' | '기관 자체'
+  version    TEXT,
+  is_active  BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+CREATE TABLE public.taxonomy_terms (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  taxonomy_id      UUID NOT NULL REFERENCES public.taxonomies(id) ON DELETE CASCADE,
+  code             TEXT NOT NULL,
+  label            TEXT NOT NULL,
+  parent_id        UUID REFERENCES public.taxonomy_terms(id) ON DELETE CASCADE,  -- 대분류→중분류
+  order_index      SMALLINT DEFAULT 1,
+  easy_description TEXT,
+  easy_image_url   TEXT,
+  UNIQUE (taxonomy_id, code)
+);
+
+CREATE INDEX idx_taxonomy_terms_parent ON public.taxonomy_terms (taxonomy_id, parent_id, order_index);
+
+CREATE TABLE public.term_mappings (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  from_term_id UUID NOT NULL REFERENCES public.taxonomy_terms(id) ON DELETE CASCADE,
+  to_term_id   UUID NOT NULL REFERENCES public.taxonomy_terms(id) ON DELETE CASCADE,
+  relation     TEXT NOT NULL CHECK (relation IN ('exact','broader','narrower','related')),
+  note         TEXT,
+  creator_id   UUID REFERENCES public.profiles(id),
+  created_at   TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  UNIQUE (from_term_id, to_term_id)
+);
+
+-- 기존 자유 텍스트는 원문 보존용으로 유지하고, 코드 참조를 나란히 추가 (파괴적 변경 없음)
+ALTER TABLE public.support_goals     ADD COLUMN support_area_term_id UUID REFERENCES public.taxonomy_terms(id) ON DELETE SET NULL;
+ALTER TABLE public.service_resources ADD COLUMN category_term_id     UUID REFERENCES public.taxonomy_terms(id) ON DELETE SET NULL;
+ALTER TABLE public.budget_line_items ADD COLUMN category_term_id     UUID REFERENCES public.taxonomy_terms(id) ON DELETE SET NULL;
+
+-- 시드 예시 (초안) ─ 보건복지부 8대분류
+--   INSERT INTO taxonomies (code, name, source, version)
+--     VALUES ('mohw_2024', '보건복지부 개인예산 지원영역', '보건복지부', '2024');
+--   대분류: 신체적 건강 / 정신적 건강 / 주거 / 일상생활 / 일자리 /
+--           법률 및 권익보장 / 문화 및 여가(사회참여) / 바우처 유연화
+--   중분류 예: 신체적 건강 → 건강증진 · 재활 · 장애인보조기기 · 의료용 소모품 · 기타 건강지원 제품
+--
+-- 시드 예시 (초안) ─ SIS-A 8영역 (아름드리 ISP가 사용)
+--   INSERT INTO taxonomies (code, name, source) VALUES ('sis_a', 'SIS-A 지원요구 영역', 'AAIDD');
+--   고용 활동 / 평생학습 활동 / 가정생활 활동 / 건강 및 안전 활동 /
+--   사회 활동 / 지역사회생활 활동 / 보호 및 권리주장 활동 / 행동 지원요구
+--
+-- crosswalk 예시 (초안)
+--   sis_a:'건강 및 안전 활동'  --broader-->  mohw_2024:'신체적 건강'
+--   sis_a:'건강 및 안전 활동'  --related-->  mohw_2024:'정신적 건강'
+--   sis_a:'사회 활동'          --exact  -->  mohw_2024:'문화 및 여가(사회참여)'
+--   sis_a:'고용 활동'          --exact  -->  mohw_2024:'일자리'
+--   ⚠️ 매핑은 1:1이 아니며 손실이 발생한다. relation 으로 손실 방향을 명시하고,
+--      집계·비교 시 exact 만 쓸지 broader 까지 포함할지 보고서마다 선택하게 한다.
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 12. 서식 계층 — form_definitions / form_responses
+--     서식 1개 = TS 인터페이스 1개 + React 컴포넌트 1개 였던 구조를
+--     서식 1개 = JSON 정의 1건 + 공용 렌더러 로 바꾼다.
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.form_definitions (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code        TEXT NOT NULL,               -- 'mohw_plan' | 'seoul_plan' | 'armdeuri_isp' ...
+  name        TEXT NOT NULL,
+  kind        TEXT NOT NULL CHECK (kind IN ('care_plan','evaluation','application','settlement')),
+  version     TEXT NOT NULL DEFAULT '1',
+  program_id  UUID,                        -- §13 programs (사업이 요구하는 서식)
+  taxonomy_id UUID REFERENCES public.taxonomies(id) ON DELETE SET NULL,  -- matrix 필드가 참조
+  schema      JSONB NOT NULL,              -- 아래 구조 참조
+  is_active   BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at  TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  UNIQUE (code, version)
+);
+
+-- schema JSONB 구조 (초안)
+-- {
+--   "sections": [
+--     { "id": "s3", "number": "3", "title": "현재 일상생활",
+--       "fields": [
+--         { "id": "daily_routine", "type": "textarea", "label": "내가 하루를 보내는 방식은?" },
+--         { "id": "life_wish",     "type": "textarea", "label": "내가 내 삶에서 가장 원하는 것은?",
+--           "bind": { "target": "value_node", "kind": "important_to" } },
+--         { "id": "key_people",    "type": "textarea", "label": "가장 자주 만나는 사람은?",
+--           "bind": { "target": "network_entity" } },
+--         { "id": "difficulty",    "type": "textarea", "label": "가장 불편한 점은?",
+--           "bind": { "target": "value_node", "kind": "barrier" } }
+--       ] },
+--     { "id": "s4", "number": "4", "title": "개인예산 지원영역 욕구사정",
+--       "fields": [
+--         { "id": "needs", "type": "matrix", "taxonomy": "mohw_2024",
+--           "columns": [ { "id": "limit", "label": "제한점" },
+--                        { "id": "need",  "label": "욕구와 희망" } ],
+--           "bind": { "target": "value_node", "kind": "important_to", "valueColumn": "need",
+--                     "termFrom": "row" } }
+--       ] },
+--     { "id": "s5", "number": "5", "title": "개인예산 이용계획",
+--       "fields": [
+--         { "id": "service_plan", "type": "table",
+--           "columns": [ {"id":"major","label":"대분류"}, {"id":"minor","label":"중분류"},
+--                        {"id":"service","label":"서비스 내용"}, {"id":"count","label":"횟수"},
+--                        {"id":"hours","label":"시간"}, {"id":"provider","label":"지원인력/기관"},
+--                        {"id":"start","label":"시작일","type":"date"},
+--                        {"id":"end","label":"종료일","type":"date"},
+--                        {"id":"price_type","label":"가격유형"},
+--                        {"id":"alloc","label":"할당예산","type":"number"},
+--                        {"id":"total","label":"총예산","type":"number"} ],
+--           "bind": { "target": "budget_line_item" } },
+--         { "id": "deduction_rate", "type": "radio",
+--           "label": "차감 이용비율", "options": ["변동없음","10%","15%","20%"] }
+--           /* bind 없음 → form_responses.extras 에 원본 보존 */
+--       ] }
+--   ]
+-- }
+--
+-- 필드 type: text | textarea | boolean | radio | checkbox | date | number
+--            | table | matrix | signature
+-- bind.target: value_node | network_entity | support_goal | budget_line_item
+--              | service_resource | participant_profile
+-- ⚠️ bind 가 없는 필드는 의미 계층에 착지하지 않는다 = 온톨로지를 오염시키지 않는다.
+--    대신 form_responses.extras 에 원본 그대로 남겨 손실 없이 서식을 재출력할 수 있게 한다.
+
+CREATE TABLE public.form_responses (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id     UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  form_definition_id UUID NOT NULL REFERENCES public.form_definitions(id) ON DELETE RESTRICT,
+  cycle_id           UUID,                 -- §8 budget_cycles
+  care_plan_id       UUID REFERENCES public.care_plans(id) ON DELETE SET NULL,  -- 기존 문서와 연결
+  -- 의미 계층에 매핑되지 않는 서식 고유 필드의 원본 (접수번호·동의 서명·차감비율·가족사항 표 등)
+  extras             JSONB NOT NULL DEFAULT '{}',
+  submitted_at       TIMESTAMPTZ,
+  creator_id         UUID REFERENCES public.profiles(id),
+  created_at         TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  updated_at         TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+CREATE INDEX idx_form_responses_participant ON public.form_responses (participant_id, form_definition_id);
+
+-- 기존 care_plans 와의 관계 (초안)
+--   care_plans.plan_type TEXT ('mohw_plan'|'seoul_plan') 는 CHECK 제약이 없으므로
+--   form_definitions.code 와 자연스럽게 대응된다. 이관 경로:
+--     1) 기존 2개 서식을 JSON 정의로 옮겨 form_definitions 에 등록 (코드 변경 없이 병행 가능)
+--     2) care_plans.content JSONB 를 bind 규칙에 따라 의미 계층 + form_responses.extras 로 분해
+--     3) 출력 렌더러를 먼저 붙이고(현재 인쇄 경로 자체가 없음), 입력 화면은 그 다음에 교체
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 13. 사업 계층 — programs
+--     한 당사자가 복수 사업에 동시 참여하는 것은 이미 현실이다.
+--     (000 개별지원계획서: 아산사회복지재단 사업 920,000원 + 기관 예산 580,000원)
+--     기존 funding_sources 가 다중 재원을 이미 지원하므로 여기에 사업을 바인딩한다.
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.programs (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code           TEXT NOT NULL UNIQUE,     -- 'mohw_pilot' | 'seoul_pilot' | 'asan_grant' | 'org_own'
+  name           TEXT NOT NULL,
+  operator       TEXT,                     -- 보건복지부 | 서울시 | 아산사회복지재단 | 기관 자체
+  taxonomy_id    UUID REFERENCES public.taxonomies(id) ON DELETE SET NULL,
+  budget_ceiling NUMERIC,                  -- 예: 서울형 2,400,000 / 월 400,000
+  period_start   DATE,
+  period_end     DATE,
+  is_active      BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at     TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+ALTER TABLE public.funding_sources    ADD COLUMN program_id UUID REFERENCES public.programs(id) ON DELETE SET NULL;
+ALTER TABLE public.restriction_rules  ADD COLUMN program_id UUID REFERENCES public.programs(id) ON DELETE CASCADE;
+ALTER TABLE public.form_definitions
+  ADD CONSTRAINT form_definitions_program_id_fkey
+  FOREIGN KEY (program_id) REFERENCES public.programs(id) ON DELETE SET NULL;
+
+-- 효과
+--   · 사업마다 다른 용처 제한이 자동 적용된다
+--     (경기 기회소득 5영역 허용 vs 복지부 주류·담배 배제 vs 재단 사업 자체 기준)
+--   · 룰 엔진(§4)의 scope 가 global | participant 에 더해 사실상 program 단위로 확장된다
+--     → f_check_transaction_rules() 는 거래의 funding_source_id → program_id 를 따라가
+--       해당 사업 규칙만 평가한다
+--   · 정산·성과 보고를 사업별로 분리 산출할 수 있다 (재원별 잔액은 이미 funding_sources 가 관리)
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 14. [v2] RLS — 신규 5개 테이블
+-- ────────────────────────────────────────────────────────────────────────────
+-- taxonomies / taxonomy_terms / term_mappings / form_definitions / programs
+--   → 기관 공통 마스터 데이터: SELECT 는 authenticated 전원, 쓰기는 admin 만
+--     (system_settings 의 20번 마이그레이션 패턴과 동일)
+-- form_responses
+--   → 당사자 개인 데이터: SELECT 는 is_self(participant_id) OR is_staff(),
+--     쓰기는 is_staff() — §9 헬퍼 3종 재사용
