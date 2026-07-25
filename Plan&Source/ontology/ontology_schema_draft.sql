@@ -107,22 +107,73 @@ CREATE INDEX idx_value_nodes_participant ON public.value_nodes (participant_id, 
 
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 3. network_entities — 지역사회 관계망 (Network_Entity 클래스)
+-- 3. network_entities — 관계 지도 (Relationship Map)
+--    사람중심계획의 표준 도구. 4분면으로 나누는 목적은 분류 자체가 아니라
+--    "관계의 균형이 깨졌는지(off balance)"를 보기 위함이다.
+--    유급 지원자만 남고 무급 관계(가족·친구·지역사회)가 비면 그것이 고립 신호다.
 -- ────────────────────────────────────────────────────────────────────────────
 CREATE TABLE public.network_entities (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   participant_id    UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
   name              TEXT NOT NULL,
-  relation_type     TEXT NOT NULL,                  -- '가족','이웃','친구','동료','기타'
+  -- 관계 지도 4분면 (자유 텍스트 → 코드로 정형화. 집계·균형 지표 산출에 필요)
+  relation_category TEXT NOT NULL CHECK (relation_category IN (
+                      'family',        -- 가족: 부모·형제자매·조부모·친척
+                      'friend',        -- 친구: 친구·이웃 등 스스로 선택한 무급 관계
+                      'paid_support',  -- 유급 지원자: 활동지원사·치료사·사회복지사
+                      'community')),   -- 직장·학교·지역사회: 동료·선생님·단골 가게 주인
+  relation_detail   TEXT,                           -- '어머니','수영 강사','1103동 이웃' 등 구체 관계
   contact           TEXT,
-  linked_profile_id UUID REFERENCES public.profiles(id),  -- 향후 계정 연결 대비
+  -- 유급 지원자가 기관 소속 실무자와 동일인이면 여기로 연결 (관계 지도와 계정을 잇는 고리)
+  linked_profile_id UUID REFERENCES public.profiles(id),
+  -- 관계 지도를 동심원으로 그릴 때 당사자로부터의 거리. 4분면(누구인가) × 동심원(얼마나 가까운가)
+  closeness         SMALLINT CHECK (closeness BETWEEN 1 AND 4),
+  contact_frequency TEXT,                           -- '주 1회','월 1회','연 2~3회' 등
+  last_contact_date DATE,                           -- 관계 소멸 감지의 입력값
   notes             TEXT,
   easy_image_url    TEXT,
   is_active         BOOLEAN NOT NULL DEFAULT TRUE,
   created_at        TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
-CREATE INDEX idx_network_entities_participant ON public.network_entities (participant_id) WHERE is_active;
+CREATE INDEX idx_network_entities_participant
+  ON public.network_entities (participant_id, relation_category) WHERE is_active;
+
+-- 분면 구성의 유연성에 대한 주석:
+--   PCP 문헌은 4분면이 고정이 아니라 당사자에 맞게 조정 가능하다고 본다
+--   (유급 지원이 없는 사람에게는 '동료·동급생' 분면이 더 적합할 수 있음).
+--   초기에는 위 4종 CHECK 로 고정하고, 기관별 조정 요구가 실제로 발생하면
+--   §11 어휘 계층에 'relationship_map' 분류체계로 옮긴다.
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 3-1. v_relationship_map — 관계 균형 지표
+--      관계 지도의 본래 목적("off balance" 확인)을 그대로 지표화한 것
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE VIEW public.v_relationship_map AS
+SELECT
+  p.id AS participant_id,
+  COUNT(ne.id) FILTER (WHERE ne.relation_category = 'family')       AS family_count,
+  COUNT(ne.id) FILTER (WHERE ne.relation_category = 'friend')       AS friend_count,
+  COUNT(ne.id) FILTER (WHERE ne.relation_category = 'paid_support') AS paid_count,
+  COUNT(ne.id) FILTER (WHERE ne.relation_category = 'community')    AS community_count,
+  COUNT(ne.id)                                                      AS total_count,
+  -- 무급 관계 비율: 낮을수록 "삶에 돈 받고 오는 사람만 있다" = 고립 위험
+  CASE WHEN COUNT(ne.id) > 0
+       THEN ROUND(COUNT(ne.id) FILTER (WHERE ne.relation_category <> 'paid_support')::NUMERIC
+                  / COUNT(ne.id), 2) END                            AS unpaid_ratio,
+  -- 최근 90일 내 접촉이 있었던 무급 관계 수 (살아 있는 관계)
+  COUNT(ne.id) FILTER (WHERE ne.relation_category <> 'paid_support'
+                         AND ne.last_contact_date >= CURRENT_DATE - 90) AS active_unpaid_count
+FROM public.participants p
+LEFT JOIN public.network_entities ne ON ne.participant_id = p.id AND ne.is_active
+GROUP BY p.id;
+
+-- 알림 판정(초안): friend_count = 0 → "친구 분면이 비어 있음"
+--                  unpaid_ratio < 0.4 → "유급 관계 편중"
+--                  active_unpaid_count 가 직전 분기 대비 감소 → "관계 소멸 진행 중"
+-- ⚠️ 이 지표는 실무자에게 보여 주는 것이지 당사자를 평가하는 점수가 아니다.
+--    당사자 화면에는 숫자 대신 '나의 사람들' 그림으로만 표시한다.
 
 
 -- ────────────────────────────────────────────────────────────────────────────

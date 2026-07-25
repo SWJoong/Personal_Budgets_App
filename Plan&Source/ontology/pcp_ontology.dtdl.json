@@ -1,6 +1,15 @@
 [
   {
     "@context": "dtmi:dtdl:context;3",
+    "@id": "dtmi:kr:armdeuri:pcp:_STALE_NOTICE;1",
+    "@type": "Interface",
+    "displayName": { "ko": "⚠️ 이 파일은 최신이 아닙니다 (STALE)" },
+    "description": {
+      "ko": "정본은 pcp_ontology.rdf 입니다. Microsoft Ontology Playground는 DTDL이 아니라 RDF/XML(OWL)을 사용하므로 이 파일은 로드되지 않습니다. 또한 3차 변경(당사자↔가치 7종 연결, 지원자↔소통방식·좋은지원, 강점→계획, 관계 지도 4분면)이 이 파일에는 반영되어 있지 않습니다. Azure Digital Twins를 쓰게 될 경우를 대비한 보관용이며, 그때는 RDF를 기준으로 다시 생성하십시오."
+    }
+  },
+  {
+    "@context": "dtmi:dtdl:context;3",
     "@id": "dtmi:kr:armdeuri:pcp:Person;1",
     "@type": "Interface",
     "displayName": { "ko": "당사자 (Person)", "en": "Person" },
