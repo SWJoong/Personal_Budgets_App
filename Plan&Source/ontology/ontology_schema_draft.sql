@@ -787,15 +787,198 @@ ALTER TABLE public.value_nodes ADD COLUMN evaluation_id UUID REFERENCES public.e
 -- 이 고리가 없으면 평가는 서류로 끝나고 당사자에 대한 앎은 갱신되지 않는다.
 
 
+-- ============================================================================
+-- [v4 추가] 재정 세목화와 행정 거버넌스 (심의·이의신청)
+--   배경: 외부 검토 보고서가 지적한 대로, 철학적 가치 모델링은 갖추었으나
+--         "당사자의 꿈"과 "한정된 국가 예산"을 매개하는 행정·재무 계층이 없었다.
+--         특히 심의 결과와 반려 사유, 이의신청 절차가 데이터에 남지 않으면
+--         당사자는 자기 신청이 어디에 있는지도, 왜 거부됐는지도 알 수 없다.
+--   상세: Plan&Source/PCT_주도성_변화측정_설계_v1.md §9 (외부 검토 반영)
+-- ============================================================================
+
+
 -- ────────────────────────────────────────────────────────────────────────────
--- 20. [v2] RLS — 신규 5개 테이블
+-- 21. budget_line_items 확장 — 심의 상태와 지출 영역
+--     예산은 계획 전체가 아니라 세목 단위로 심의·승인·정산된다.
+-- ────────────────────────────────────────────────────────────────────────────
+ALTER TABLE public.budget_line_items
+  ADD COLUMN requested_amount NUMERIC,        -- 신청액 (기존 total_amount 는 계산된 값)
+  ADD COLUMN approved_amount  NUMERIC,        -- 승인액. 신청액과 다르면 조건부 승인(삭감)
+  ADD COLUMN approval_status  TEXT NOT NULL DEFAULT 'draft' CHECK (approval_status IN (
+    'draft',        -- 작성 중
+    'submitted',    -- 제출됨 (심의 대기)
+    'approved',     -- 승인
+    'conditional',  -- 조건부 승인 (금액 삭감 등)
+    'rejected',     -- 반려
+    'under_appeal')),                          -- 재심 중
+  -- 어느 가치·욕구가 이 지출을 정당화하는가 (온톨로지의 justifiesExpense)
+  ADD COLUMN justified_by_value_id UUID REFERENCES public.value_nodes(id) ON DELETE SET NULL,
+  -- 복지부 지출 허용 영역 매핑 (§11 어휘 계층 경유)
+  ADD COLUMN spending_domain_term_id UUID REFERENCES public.taxonomy_terms(id) ON DELETE SET NULL;
+
+CREATE INDEX idx_budget_items_status ON public.budget_line_items (approval_status);
+CREATE INDEX idx_budget_items_justified ON public.budget_line_items (justified_by_value_id);
+
+-- 근거 없는 지출 찾기 — 사람이 일일이 대조하지 않아도 구조가 드러낸다.
+-- ⚠️ 연결이 없다고 자동 반려하지 않는다. 당사자가 말로 다 설명하지 못한 이유가 있을 수 있고,
+--    그때는 연결을 추가하는 것이 사람이 할 일이다. 이 뷰는 "물어볼 목록"이지 "거절 목록"이 아니다.
+CREATE VIEW public.v_unjustified_items AS
+SELECT bli.id, bli.care_plan_id, bli.item_name, bli.requested_amount, bli.approval_status
+FROM public.budget_line_items bli
+WHERE bli.justified_by_value_id IS NULL
+  AND bli.approval_status IN ('submitted','approved','conditional');
+
+-- 실제 지출이 어느 세목에서 나갔는가 (온톨로지의 settledAgainst) — 세목 단위 정산
+ALTER TABLE public.transactions
+  ADD COLUMN budget_line_item_id UUID REFERENCES public.budget_line_items(id) ON DELETE SET NULL;
+
+CREATE INDEX idx_transactions_line_item ON public.transactions (budget_line_item_id);
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 22. committee_reviews — 심의·의결
+--     반려 사유가 기록되지 않으면 당사자는 무엇을 고쳐야 할지 알 수 없다.
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.committee_reviews (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id  UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  care_plan_id    UUID REFERENCES public.care_plans(id) ON DELETE SET NULL,
+  cycle_id        UUID REFERENCES public.budget_cycles(id) ON DELETE SET NULL,
+  reviewed_on     DATE NOT NULL,
+  committee_name  TEXT,
+  decision        TEXT NOT NULL CHECK (decision IN ('approved','conditional','rejected')),
+  decision_reason TEXT,                       -- 반려·삭감 시 사실상 필수
+  approved_total  NUMERIC,
+  minutes         TEXT,                       -- 심의 의견 요지
+  creator_id      UUID REFERENCES public.profiles(id),
+  created_at      TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- 세목별 결정 이력 (한 심의에서 항목마다 결과가 갈린다)
+CREATE TABLE public.committee_review_items (
+  review_id          UUID NOT NULL REFERENCES public.committee_reviews(id) ON DELETE CASCADE,
+  budget_line_item_id UUID NOT NULL REFERENCES public.budget_line_items(id) ON DELETE CASCADE,
+  decision           TEXT NOT NULL CHECK (decision IN ('approved','conditional','rejected')),
+  approved_amount    NUMERIC,
+  reason             TEXT,
+  PRIMARY KEY (review_id, budget_line_item_id)
+);
+
+CREATE INDEX idx_committee_reviews_participant ON public.committee_reviews (participant_id, reviewed_on DESC);
+
+-- 반려 사유 없는 반려를 막는 제약 (초안)
+--   ALTER TABLE committee_reviews ADD CONSTRAINT chk_rejection_needs_reason
+--     CHECK (decision = 'approved' OR decision_reason IS NOT NULL);
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 23. appeal_processes — 이의신청
+--     자기결정권은 원하는 것을 말할 권리에 그치지 않고, 거부당했을 때 다툴 권리를 포함한다.
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.appeal_processes (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id  UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  review_id       UUID NOT NULL REFERENCES public.committee_reviews(id) ON DELETE CASCADE,
+  filed_on        DATE NOT NULL,
+  -- 당사자 본인이 제기했다면 그 자체가 자기옹호(self-advocacy)의 기록
+  filed_by_participant BOOLEAN NOT NULL DEFAULT TRUE,
+  reason          TEXT NOT NULL,
+  easy_reason     TEXT,                       -- 당사자가 직접 쓴 쉬운 말 사유
+  outcome         TEXT NOT NULL DEFAULT 'pending' CHECK (outcome IN (
+                    'pending','upheld','partially_upheld','dismissed')),
+  outcome_reason  TEXT,
+  resolved_on     DATE,
+  created_at      TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+CREATE INDEX idx_appeals_participant ON public.appeal_processes (participant_id, filed_on DESC);
+
+-- 신청 기한 안내(초안): 제도상 통보 후 일정 기간(예: 14일) 내 신청.
+--   기한이 지나가는 것을 시스템이 알려주지 않으면 권리가 형식으로만 남는다.
+--   SELECT ... WHERE decision <> 'approved'
+--     AND reviewed_on + INTERVAL '14 days' >= CURRENT_DATE
+--     AND NOT EXISTS (SELECT 1 FROM appeal_processes a WHERE a.review_id = cr.id)
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 24. 목표별 지지망 — goal_supporters (온톨로지의 goalSupportedBy)
+--     관계 지도가 "곁에 누가 있는가"라면, 이것은 "이 꿈을 누가 돕는가"다.
+--     관계 지도가 채워져 있어도 모든 목표를 유급 지원자만 돕고 있다면 실질적 고립이다.
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.goal_supporters (
+  value_node_id     UUID NOT NULL REFERENCES public.value_nodes(id) ON DELETE CASCADE,
+  network_entity_id UUID NOT NULL REFERENCES public.network_entities(id) ON DELETE CASCADE,
+  role_note         TEXT,
+  PRIMARY KEY (value_node_id, network_entity_id)
+);
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 25. value_nodes 생애주기 — 언제 알게 되었고 이루어졌는가
+-- ────────────────────────────────────────────────────────────────────────────
+ALTER TABLE public.value_nodes
+  ADD COLUMN created_on  DATE DEFAULT CURRENT_DATE,   -- 발굴된 날
+  ADD COLUMN is_achieved BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN achieved_on DATE;
+-- "이루어짐"이 곧 종료는 아니다. 이룬 뒤에도 그 사람에게 계속 중요한 것으로 남을 수 있으므로
+-- status(active/archived)와는 별개 값으로 둔다.
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 26. 보건복지부 지출 허용 영역 — 어휘 계층 시드 (초안)
+--     새 클래스를 만들지 않고 §11 taxonomies 에 하나의 체계로 등록한다.
+--     사업마다 영역 구분이 다르므로(경기 5영역 등) 고정 enum 보다 이 방식이 맞다.
+-- ────────────────────────────────────────────────────────────────────────────
+-- INSERT INTO taxonomies (code, name, source, version)
+--   VALUES ('mohw_spending_2026', '개인예산 지출 허용 영역', '보건복지부', '2026');
+-- 영역: 주거환경 / 일상생활 / 신체건강·보건의료 / 정신건강·심리정서 /
+--       보호·돌봄 / 보육·교육 / 취업·창업 / 자기계발
+--
+-- 정책 분석 질의 예 — 세목이 이 체계에 매핑되어 있으면 바로 나온다:
+--   SELECT tt.label, COUNT(*), SUM(bli.approved_amount)
+--   FROM budget_line_items bli
+--   JOIN taxonomy_terms tt ON tt.id = bli.spending_domain_term_id
+--   WHERE bli.approval_status IN ('approved','conditional')
+--   GROUP BY tt.label ORDER BY 3 DESC;
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 27. v_plan_status — 당사자가 "내 신청이 지금 어디 있는지" 보는 뷰
+--     행정적 자기 통제권의 최소 조건. 당사자 화면에는 쉬운 말로 변환해 표시한다.
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE VIEW public.v_plan_status AS
+SELECT
+  bli.care_plan_id,
+  cp.participant_id,
+  COUNT(*)                                                    AS item_count,
+  COUNT(*) FILTER (WHERE bli.approval_status = 'draft')       AS draft_count,
+  COUNT(*) FILTER (WHERE bli.approval_status = 'submitted')   AS waiting_count,
+  COUNT(*) FILTER (WHERE bli.approval_status = 'approved')    AS approved_count,
+  COUNT(*) FILTER (WHERE bli.approval_status = 'conditional') AS conditional_count,
+  COUNT(*) FILTER (WHERE bli.approval_status = 'rejected')    AS rejected_count,
+  COUNT(*) FILTER (WHERE bli.approval_status = 'under_appeal') AS appeal_count,
+  SUM(bli.requested_amount)                                   AS total_requested,
+  SUM(bli.approved_amount)                                    AS total_approved
+FROM public.budget_line_items bli
+JOIN public.care_plans cp ON cp.id = bli.care_plan_id
+GROUP BY bli.care_plan_id, cp.participant_id;
+
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- 28. [v2] RLS — 신규 5개 테이블
 -- ────────────────────────────────────────────────────────────────────────────
 -- taxonomies / taxonomy_terms / term_mappings / form_definitions / programs
 --   → 기관 공통 마스터 데이터: SELECT 는 authenticated 전원, 쓰기는 admin 만
 --     (system_settings 의 20번 마이그레이션 패턴과 동일)
 -- form_responses / planning_meetings / planning_meeting_attendees / outcome_snapshots
+-- committee_reviews / committee_review_items / appeal_processes / goal_supporters
 --   → 당사자 개인 데이터: SELECT 는 is_self(participant_id) OR is_staff(),
 --     쓰기는 is_staff() — §9 헬퍼 3종 재사용
+--
+-- ⚠️ 예외 — appeal_processes 는 당사자에게 INSERT 권한을 준다.
+--    이의신청을 실무자만 대신 넣을 수 있다면 그것은 권리 구제가 아니다.
+--    committee_reviews 의 decision_reason 도 당사자가 반드시 읽을 수 있어야 한다
+--    (쉬운 말 변환은 화면에서 처리).
 --
 -- ⚠️ outcome_snapshots 의 당사자 노출 범위에 대한 판단:
 --    주도성 비율·균형 지수 같은 숫자는 실무자용 진단 도구이지 당사자를 평가하는 점수가 아니다.
