@@ -5,7 +5,9 @@
 
 | 파일 | 내용 |
 |---|---|
-| `seoul_ontology.rdf` | 온톨로지 정본. 클래스 26 / 관계 46 / 속성 120 / 고아 노드 0 |
+| `seoul_ontology.rdf` | **온톨로지 정본**(영문 라벨). 클래스 26 / 관계 46 / 속성 120 / 고아 노드 0 |
+| `seoul_ontology_ko.rdf` | **한글 라벨판** — Playground 로 보기용. `to_korean_labels.py` 가 생성 |
+| `to_korean_labels.py` | Playground 내보내기 파일의 라벨을 한글로 변환 |
 | `seoul_schema_draft.sql` | SQL 스키마 **초안**. ⚠️ 그대로 실행하지 마세요 |
 | `seoul_graph_overlay.sql` | 그래프 오버레이 — 외래키를 트리플로 투영해 경로 탐색을 가능하게 함 |
 | `verify_00_stubs.sql` | 검증용 스텁 (`profiles`·`participants`·`auth.uid()` + RLS) |
@@ -33,7 +35,7 @@
 참여자에서 나가는 화살표 8개(신청·동의·계획수립·이용·이의신청 등)가
 방사형으로 보이면 제대로 로드된 것입니다.
 
-### 라벨이 영문인 이유 — 그리고 한글은 어디에 있나
+### 파일이 두 벌인 이유
 
 Playground 검증기에는 이름 규칙이 **세 가지**입니다.
 
@@ -43,29 +45,45 @@ Playground 검증기에는 이름 규칙이 **세 가지**입니다.
 | ASCII 문자·숫자로 **끝** | `Participant (참여자)` → `)` 로 끝나 실패 |
 | **26자 이내** | `registeredAddress (주민등록상 주소)` = 30자 → 실패 |
 
-이 검증기는 한글을 letter 로 치지 않으므로 **라벨에 한글을 넣는 방법 자체가 없습니다.**
-그래서 라벨은 영문 식별자로 두고, 한글은 `rdfs:comment` 로 옮겼습니다.
-Playground 에서 노드를 클릭하면 DESCRIPTION 패널에 한글 이름과 설명이 나옵니다.
+이 검증기는 한글을 letter 로 치지 않으므로 시작에도 끝에도 올 수 없습니다.
+그래서 용도에 따라 두 벌을 둡니다.
 
-**한글 그림은 도구 대신 직접 만듭니다.**
+| | `seoul_ontology.rdf` (정본) | `seoul_ontology_ko.rdf` |
+|---|---|---|
+| 라벨 | 영문 식별자 | **한글** |
+| 한글 위치 | `rdfs:comment` (노드 클릭 시 DESCRIPTION) | 라벨과 주석 양쪽 |
+| Playground 검증 | 통과 | **오류 표시됨** (그림은 정상) |
+| 쓰임 | SQL·문서와 이름을 맞춤, Submit to Catalogue | 실무자와 함께 보기 |
+
+**검증 오류는 표시일 뿐 그림 렌더링을 막지 않습니다.** 실무자와 관계를 함께 읽는 것이
+목적이라면 한글판을 쓰시고, 이름을 코드와 대조해야 하면 정본을 쓰십시오.
+
+한글판은 **Playground 에서 [Export RDF] 로 받은 파일**을 변환해 만듭니다.
+아이콘·색·카디널리티 같은 Playground 자체 설정이 보존됩니다.
+
+```bash
+python3 to_korean_labels.py <내보낸파일.rdf> > seoul_ontology_ko.rdf
+```
+
+한글 이름은 `rdfs:comment` 앞부분에서 가져오므로, 이름을 바꾸려면 정본의 주석을 고칩니다.
+
+### 도구 없이 보는 한글 그림
 
 ```bash
 python3 make_diagram.py  > seoul_ontology_diagram.md   # Mermaid (GitHub 에서 렌더링)
 python3 make_artifact.py > seoul_ontology_view.html    # 웹 페이지
 ```
 
-RDF 가 정본이고 두 산출물은 거기서 생성되므로 어긋날 수 없습니다.
-RDF 를 고쳤으면 다시 생성하세요.
+정본 RDF 에서 생성되므로 어긋날 수 없습니다. RDF 를 고쳤으면 다시 생성하세요.
 
-### 식별자(🔑)
+### 식별자(🔑) — 해결됨
 
-각 엔티티에 `...Id` 속성이 있고, 표준 OWL 의 `owl:hasKey` 로 선언해 두었습니다.
+각 엔티티에 `...Id` 속성을 두고 표준 OWL 의 `owl:hasKey` 로 선언했습니다.
+**Playground 가 이를 읽어 자기 형식(`ont:isIdentifier`)으로 26개 전부 변환한 것을
+내보내기 파일에서 확인했습니다.** 열쇠 아이콘을 일일이 누를 필요가 없습니다.
+
 SQL 에서는 이미 모든 테이블이 `id UUID PRIMARY KEY` 이므로 새로 만든 개념이 아니라
 그림에 드러낸 것입니다.
-
-> Playground 가 `owl:hasKey` 를 읽는지는 확인되지 않았습니다. 여전히
-> `has no identifier property` 가 나오면 한 엔티티에서 열쇠 아이콘을 누른 뒤
-> **[Export RDF]** 로 받아 공유해 주세요. 그 형식을 보고 나머지도 반영하겠습니다.
 
 ---
 

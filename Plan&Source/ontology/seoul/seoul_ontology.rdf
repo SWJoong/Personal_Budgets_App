@@ -368,7 +368,7 @@
         <rdfs:label>decidedBy</rdfs:label>
         <rdfs:domain rdf:resource="#SelectionDecision"/>
         <rdfs:range rdf:resource="#AdministeringBody"/>
-        <rdfs:comment xml:lang="ko">결정 주체</rdfs:comment>
+        <rdfs:comment xml:lang="ko">선정을 결정한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <!-- ── 이용계획 ──────────────────────────────────────────── -->
@@ -435,7 +435,7 @@
         <rdfs:label>conductedBy</rdfs:label>
         <rdfs:domain rdf:resource="#PlanReview"/>
         <rdfs:range rdf:resource="#ReviewCommittee"/>
-        <rdfs:comment xml:lang="ko">심의 주체</rdfs:comment>
+        <rdfs:comment xml:lang="ko">심의를 맡는다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#issues">
