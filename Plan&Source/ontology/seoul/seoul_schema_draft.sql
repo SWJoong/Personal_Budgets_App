@@ -1,0 +1,1222 @@
+-- =====================================================================
+-- 서울형 장애인 개인예산제 시범사업 — 스키마 초안
+--
+-- ⚠️ 이 파일은 검토·논의용 초안입니다. 그대로 실행하지 마세요.
+--    확정 후 supabase/migrations/ 에 번호를 붙여 분할하고,
+--    실행은 기관 관례대로 Supabase 대시보드 > SQL Editor 에서 수동으로 합니다.
+--
+-- 대응 온톨로지 : Plan&Source/ontology/seoul/seoul_ontology.rdf
+-- 설계 근거     : Plan&Source/서울형_온톨로지_설계_v1.md
+-- 원본 서식     : Plan&Source/서울형 개인예산 양식.md
+--
+-- ─────────────────────────────────────────────────────────────────────
+-- 설계 전제 세 가지
+--
+-- 1. 프로그램 모듈 분리
+--    모든 테이블에 seoul_ 접두어를 붙인다. 복지부형(mohw_)·시범사업형(pcp_)이
+--    같은 DB 안에서 서로를 건드리지 않고 공존하게 하기 위함이다.
+--    공유하는 것은 profiles / participants 둘뿐이다 — 사람은 한 명이니까.
+--
+-- 2. 제도 파라미터는 상수가 아니라 데이터
+--    한도액 240만원, 월 40만원, 6개월, 이의신청 14일은 차수마다 바뀐다.
+--    코드에 박으면 3차 시범사업에서 전부 고쳐야 하므로 seoul_cohorts 행으로 둔다.
+--
+-- 3. 잔액은 저장하지 않는다
+--    기존 앱의 잠복 결함(잔액 트리거 + 수동 보정 공존 → 이중 반영)을 반복하지 않기 위해
+--    잔액은 항상 뷰에서 계산한다. 느리면 인덱스를 걸지, 값을 복제하지 않는다.
+-- ─────────────────────────────────────────────────────────────────────
+
+
+-- =====================================================================
+-- §1. 차수와 제도 파라미터
+-- =====================================================================
+
+CREATE TABLE public.seoul_cohorts (
+  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code                 TEXT NOT NULL UNIQUE,          -- '2024_1', '2025_2', '2026_3'
+  name                 TEXT NOT NULL,
+  period_months        INT  NOT NULL,                 -- 확인된 자료: 6
+  monthly_ceiling      NUMERIC(12,2) NOT NULL,        -- 확인된 자료: 400,000 (2025년 40~50만)
+  total_ceiling        NUMERIC(12,2) NOT NULL,        -- 확인된 자료: 2,400,000
+  -- ⚠️ 월 미사용액 이월 가능 여부는 공개 자료로 확인되지 않았다. 기관 확인 항목.
+  --    TRUE  = 총액만 강제, 월 초과는 경고만  (기본값 — 잘못 막으면 당사자가 즉시 손해)
+  --    FALSE = 월 한도도 하드 차단
+  carry_over_allowed   BOOLEAN NOT NULL DEFAULT TRUE,
+  appeal_due_days      INT  NOT NULL DEFAULT 14,      -- ⚠️ 서울형 적용 여부 확인 필요
+  starts_on            DATE,
+  ends_on              DATE,
+  is_active            BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMENT ON TABLE  public.seoul_cohorts IS '시범사업 차수별 제도 파라미터. 금액·기간·기한을 코드가 아닌 데이터로 둔다.';
+COMMENT ON COLUMN public.seoul_cohorts.carry_over_allowed IS '기관 확인 필요. 잔액 계산 로직 전체가 이 값에 좌우된다.';
+
+
+-- =====================================================================
+-- §2. 서비스 영역 (제도가 확정한 6종)
+-- =====================================================================
+
+CREATE TABLE public.seoul_service_domains (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code         TEXT NOT NULL UNIQUE,
+  label        TEXT NOT NULL,
+  description  TEXT,
+  sort_order   INT  NOT NULL DEFAULT 0
+);
+COMMENT ON TABLE public.seoul_service_domains IS
+  '서울형이 정한 6개 지원 영역. pcp 모듈은 기관마다 분류가 달라 taxonomy+crosswalk 로 풀었지만 서울형은 제도가 확정했으므로 코드 테이블로 고정한다.';
+
+INSERT INTO public.seoul_service_domains (code, label, description, sort_order) VALUES
+  ('daily_living',     '일상생활',     '장애로 인해 겪는 일상생활의 어려움을 보완하거나 자립을 지원하는 서비스 또는 물품', 1),
+  ('social_life',      '사회생활',     '사회적 관계를 넓히고 지역사회 참여를 촉진하기 위한 서비스',                        2),
+  ('employment',       '취·창업활동',  '당사자의 경험과 연계하여 고용 및 소득 창출의 실현 가능성이 있는 서비스',           3),
+  ('self_development', '자기개발',     '역량 강화를 위한 학습 및 성장 지원 서비스',                                      4),
+  ('health_safety',    '건강·안전',    '신체적·정신적 건강 유지 및 위험 예방을 위한 서비스',                              5),
+  ('housing',          '주거환경개선', '주거공간의 장애 맞춤형 환경 조성을 위한 서비스',                                  6);
+
+
+-- =====================================================================
+-- §3. 지출 규칙 — 금지(차단) vs 요건(사람 판단)
+-- =====================================================================
+
+CREATE TABLE public.seoul_spending_rules (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  cohort_id     UUID REFERENCES public.seoul_cohorts(id) ON DELETE CASCADE,  -- NULL = 전 차수 공통
+  code          TEXT NOT NULL,
+  label         TEXT NOT NULL,
+  -- ★ 자동화 경계선. 이 한 컬럼이 "시스템이 막을 것"과 "사람이 판단할 것"을 가른다.
+  kind          TEXT NOT NULL CHECK (kind IN ('prohibition','criterion')),
+  enforcement   TEXT NOT NULL CHECK (enforcement IN ('block','warn','flag')),
+  domain_id     UUID REFERENCES public.seoul_service_domains(id) ON DELETE SET NULL, -- NULL = 전역
+  keywords      TEXT[],          -- 단순 키워드 매칭용. 정교한 판정은 사람 몫.
+  source_note   TEXT,            -- 어느 지침에서 온 규칙인가 — 근거 없는 규칙은 이의신청에서 무너진다
+  is_active     BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (cohort_id, code)
+);
+COMMENT ON TABLE public.seoul_spending_rules IS
+  '금지 항목은 제도가 정한 것이므로 차단한다. 반면 장애 연관성·목표 연관성 같은 요건은 판단이 필요하므로 플래그만 세운다. 요건까지 자동 차단하면 말로 설명하기 어려운 당사자가 가장 불리해진다.';
+
+INSERT INTO public.seoul_spending_rules (code, label, kind, enforcement, keywords, source_note) VALUES
+  ('no_alcohol_tobacco_lottery', '주류·담배·복권 구입 불가', 'prohibition', 'block',
+     ARRAY['주류','술','담배','전자담배','복권','로또'], '서울형 시범사업 지원 불가 항목'),
+  ('no_tax_utility',            '세금·공과금 불가',        'prohibition', 'block',
+     ARRAY['세금','국세','지방세','공과금','과태료','범칙금'], '서울형 시범사업 지원 불가 항목'),
+  ('no_saving_debt',            '저축·부채상환 불가',      'prohibition', 'block',
+     ARRAY['저축','적금','예금','대출','상환','이자'], '서울형 시범사업 지원 불가 항목'),
+  ('must_relate_to_disability', '장애 연관성이 있어야 함', 'criterion',   'flag',  NULL,
+     '이용 제한 요건 — 담당자·심의 판단 사항'),
+  ('must_relate_to_goal',       '목표 연관성이 있어야 함', 'criterion',   'flag',  NULL,
+     '이용 제한 요건 — 담당자·심의 판단 사항'),
+  ('must_be_in_plan',           '이용계획에 포함되어야 함','criterion',   'warn',  NULL,
+     '이용 제한 요건. 활동지원·발달장애인 긴급돌봄은 미포함이어도 이용 가능하다는 예외가 있음 — 기관 확인 필요');
+
+
+-- =====================================================================
+-- §4. 기관과 담당자
+-- =====================================================================
+
+CREATE TABLE public.seoul_administering_bodies (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name       TEXT NOT NULL,
+  body_role  TEXT NOT NULL CHECK (body_role IN ('city','district','foundation')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.seoul_executing_agencies (
+  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name                 TEXT NOT NULL,
+  designated_by_id     UUID REFERENCES public.seoul_administering_bodies(id) ON DELETE SET NULL,
+  contact              TEXT,
+  is_active            BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMENT ON TABLE public.seoul_executing_agencies IS
+  '신청 접수·계획수립 지원·모니터링을 맡는 복지관. 동의서에 열거된 8개 기관이 여기 해당하며 아름드리꿈터도 이 위치에 선다.';
+
+CREATE TABLE public.seoul_review_committees (
+  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name                 TEXT NOT NULL,
+  administering_body_id UUID REFERENCES public.seoul_administering_bodies(id) ON DELETE SET NULL,
+  -- ⚠️ 서울형의 심의 주체·구성·의결정족수는 공개 자료로 확인되지 않았다. 기관 확인 항목.
+  composition_note     TEXT,
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
+-- =====================================================================
+-- §5. 참여자 자격 정보
+--     participants / profiles 는 기존 테이블을 그대로 쓴다 (프로그램 공유 지점)
+-- =====================================================================
+
+CREATE TABLE public.seoul_disability_profiles (
+  id                        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id            UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  primary_disability_type   TEXT,
+  -- ★ 서울형은 중증(severe)만 대상
+  disability_severity       TEXT CHECK (disability_severity IN ('severe','mild')),
+  secondary_disability_type TEXT,
+  acquired_disability_age   TEXT CHECK (acquired_disability_age IN
+                              ('none','under20','20s','30s','40s','50s','60s')),
+  recorded_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (participant_id)
+);
+
+CREATE TABLE public.seoul_benefit_status (
+  id                             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id                 UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  public_assistance              TEXT CHECK (public_assistance IN ('basic_livelihood','near_poor','none')),
+  uses_activity_support          BOOLEAN NOT NULL DEFAULT FALSE,
+  uses_seoul_additional_support  BOOLEAN NOT NULL DEFAULT FALSE,
+  -- ★ 배타 규칙의 입력값. 신청서에 "보건복지부 시범사업 참여자의 경우 서울형 참여 불가" 명시.
+  participates_in_mohw_pilot     BOOLEAN NOT NULL DEFAULT FALSE,
+  recorded_at                    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (participant_id)
+);
+
+CREATE TABLE public.seoul_proxies (
+  id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id           UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  proxy_name               TEXT NOT NULL,
+  relation_to_participant  TEXT NOT NULL,
+  contact                  TEXT,
+  created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMENT ON TABLE public.seoul_proxies IS
+  '대리 서명 사실 자체를 기록한다. 자기결정권이 핵심인 제도에서 누가 서명했는지가 사라지면 안 된다.';
+
+
+-- =====================================================================
+-- §6. 신청 · 동의 · 선정
+-- =====================================================================
+
+CREATE TABLE public.seoul_applications (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id      UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  cohort_id           UUID NOT NULL REFERENCES public.seoul_cohorts(id) ON DELETE RESTRICT,
+  receipt_number      TEXT,
+  application_date    DATE NOT NULL DEFAULT CURRENT_DATE,
+  received_by_id      UUID REFERENCES public.seoul_executing_agencies(id) ON DELETE SET NULL,
+  proxy_id            UUID REFERENCES public.seoul_proxies(id) ON DELETE SET NULL,
+  applicant_signature TEXT,          -- 서명 이미지 경로 또는 전자서명 값
+  status              TEXT NOT NULL DEFAULT 'received'
+                        CHECK (status IN ('draft','received','screening','selected','not_selected','withdrawn')),
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (participant_id, cohort_id),          -- 한 차수에 한 번만 신청
+  UNIQUE (cohort_id, receipt_number)
+);
+
+CREATE TABLE public.seoul_consent_records (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  application_id        UUID NOT NULL REFERENCES public.seoul_applications(id) ON DELETE CASCADE,
+  participant_id        UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  consent_type          TEXT NOT NULL CHECK (consent_type IN ('general','unique_id')),
+  is_agreed             BOOLEAN NOT NULL,
+  consent_date          DATE NOT NULL DEFAULT CURRENT_DATE,
+  -- ★ 본인이 동의했는지 대리인이 대신했는지
+  signed_by_proxy       BOOLEAN NOT NULL DEFAULT FALSE,
+  retention_period_note TEXT DEFAULT '서울형 장애인 개인예산제 시범사업 및 성과평가에 필요한 기간',
+  withdrawn_at          TIMESTAMPTZ,   -- 개인정보보호법상 철회권
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (application_id, consent_type)
+);
+COMMENT ON TABLE public.seoul_consent_records IS
+  '동의는 부가정보가 아니라 참여의 전제다. 서식에 "동의 거부 시 사업 참여 불가"가 명시되어 있으므로 1급 개체로 둔다.';
+
+CREATE TABLE public.seoul_selection_decisions (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  application_id   UUID NOT NULL REFERENCES public.seoul_applications(id) ON DELETE CASCADE,
+  is_selected      BOOLEAN NOT NULL,
+  selection_reason TEXT,
+  selection_date   DATE NOT NULL DEFAULT CURRENT_DATE,
+  decided_by_id    UUID REFERENCES public.seoul_administering_bodies(id) ON DELETE SET NULL,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (application_id)
+);
+
+
+-- =====================================================================
+-- §7. 이용계획
+-- =====================================================================
+
+CREATE TABLE public.seoul_utilization_plans (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id        UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  application_id        UUID NOT NULL REFERENCES public.seoul_applications(id) ON DELETE CASCADE,
+  cohort_id             UUID NOT NULL REFERENCES public.seoul_cohorts(id) ON DELETE RESTRICT,
+  -- ★ 계획의 저자는 참여자다. 담당자는 돕는 사람.
+  assisted_by_id        UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  authored_with_support TEXT NOT NULL DEFAULT 'with_support'
+                          CHECK (authored_with_support IN ('self','with_support','by_supporter')),
+  status                TEXT NOT NULL DEFAULT 'draft'
+                          CHECK (status IN ('draft','submitted','under_review','approved',
+                                            'conditional','rejected','under_appeal')),
+  plan_period_start     DATE,
+  plan_period_end       DATE,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (plan_period_end IS NULL OR plan_period_start IS NULL OR plan_period_end >= plan_period_start)
+);
+
+CREATE TABLE public.seoul_self_narratives (
+  id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plan_id                 UUID NOT NULL REFERENCES public.seoul_utilization_plans(id) ON DELETE CASCADE,
+  -- 서식의 "나의 상황" 5항목. 5칸 고정이므로 행이 아니라 컬럼으로 둔다.
+  strengths_talents       TEXT,   -- 나의 재능, 강점, 기술
+  social_barriers         TEXT,   -- 장애로 인해 겪는 사회적 제한, 삶에서의 어려움
+  desired_change          TEXT,   -- 내가 원하는 변화와 지원
+  desired_life            TEXT,   -- 내가 원하는 삶의 모습
+  goal_to_try             TEXT,   -- 시도하고 싶은 것 (1~2년 내 목표)
+  -- ★ 서식은 "나의 ~"인데 실제로는 3인칭 대필이 흔하다. 취지가 지켜졌는지 나중에 점검할 수 있게 남긴다.
+  written_in_first_person BOOLEAN,
+  updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (plan_id)
+);
+
+CREATE TABLE public.seoul_requested_services (
+  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plan_id              UUID NOT NULL REFERENCES public.seoul_utilization_plans(id) ON DELETE CASCADE,
+  priority             INT  NOT NULL CHECK (priority >= 1),   -- 서식의 구분 1·2·3
+  service_name         TEXT NOT NULL,
+  domain_id            UUID REFERENCES public.seoul_service_domains(id) ON DELETE SET NULL,
+  estimated_cost       NUMERIC(12,2),
+  -- 항목 단위 승인 (조건부승인 시 일부만 승인되는 경우)
+  approved_for_service BOOLEAN,
+  review_note          TEXT,
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (plan_id, priority)
+);
+
+
+-- =====================================================================
+-- §8. 심의 · 통지 · 이의신청
+-- =====================================================================
+
+CREATE TABLE public.seoul_plan_reviews (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  plan_id        UUID NOT NULL REFERENCES public.seoul_utilization_plans(id) ON DELETE CASCADE,
+  committee_id   UUID REFERENCES public.seoul_review_committees(id) ON DELETE SET NULL,
+  decision       TEXT NOT NULL CHECK (decision IN ('approved','conditional','rejected')),
+  -- ★ 사유 없는 부결은 이의신청을 불가능하게 만든다
+  reason         TEXT,
+  review_date    DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (decision = 'approved' OR (reason IS NOT NULL AND length(trim(reason)) > 0))
+);
+
+CREATE TABLE public.seoul_notifications (
+  id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  review_id              UUID NOT NULL REFERENCES public.seoul_plan_reviews(id) ON DELETE CASCADE,
+  participant_id         UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  -- ★ 이의신청 기한의 기산점
+  notified_on            DATE NOT NULL DEFAULT CURRENT_DATE,
+  method                 TEXT CHECK (method IN ('mail','sms','in_person','app')),
+  -- 발송했다고 전달된 것은 아니다. 발달장애인 대상이면 확인 여부까지 봐야 한다.
+  is_read_by_participant BOOLEAN NOT NULL DEFAULT FALSE,
+  read_at                TIMESTAMPTZ,
+  created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.seoul_appeals (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  notification_id   UUID NOT NULL REFERENCES public.seoul_notifications(id) ON DELETE CASCADE,
+  participant_id    UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  committee_id      UUID REFERENCES public.seoul_review_committees(id) ON DELETE SET NULL,
+  filed_on          DATE NOT NULL DEFAULT CURRENT_DATE,
+  ground            TEXT NOT NULL,
+  -- ★ 본인이 냈는지 대리로 냈는지. 실무자만 넣을 수 있다면 권리구제가 아니다.
+  filed_by_self     BOOLEAN NOT NULL DEFAULT TRUE,
+  due_on            DATE,          -- 트리거가 cohort.appeal_due_days 로 채운다
+  outcome           TEXT NOT NULL DEFAULT 'pending'
+                      CHECK (outcome IN ('pending','upheld','partially_upheld','dismissed')),
+  outcome_reason    TEXT,
+  decided_on        DATE,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
+-- =====================================================================
+-- §9. 예산 배정 · 집행
+-- =====================================================================
+
+CREATE TABLE public.seoul_budget_allocations (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id     UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  plan_id            UUID NOT NULL REFERENCES public.seoul_utilization_plans(id) ON DELETE CASCADE,
+  review_id          UUID REFERENCES public.seoul_plan_reviews(id) ON DELETE SET NULL,
+  cohort_id          UUID NOT NULL REFERENCES public.seoul_cohorts(id) ON DELETE RESTRICT,
+  funded_by_id       UUID REFERENCES public.seoul_administering_bodies(id) ON DELETE SET NULL,
+  -- 차수 기본값을 복사해 오되 개별 조정이 가능하도록 행에 둔다
+  monthly_ceiling    NUMERIC(12,2) NOT NULL,
+  total_ceiling      NUMERIC(12,2) NOT NULL,
+  period_months      INT NOT NULL,
+  carry_over_allowed BOOLEAN NOT NULL DEFAULT TRUE,
+  allocated_amount   NUMERIC(12,2) NOT NULL,
+  starts_on          DATE NOT NULL,
+  ends_on            DATE NOT NULL,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (plan_id),
+  CHECK (ends_on >= starts_on),
+  CHECK (allocated_amount <= total_ceiling)
+);
+COMMENT ON TABLE public.seoul_budget_allocations IS
+  '월 한도와 총 한도를 함께 저장한다. 월 한도만 보면 총액을 넘고, 총액만 보면 한 달에 몰아 쓸 수 있다.';
+
+CREATE TABLE public.seoul_service_providers (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name            TEXT NOT NULL,
+  business_number TEXT,
+  category        TEXT,
+  address         TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.seoul_service_usages (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id        UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  allocation_id         UUID NOT NULL REFERENCES public.seoul_budget_allocations(id) ON DELETE CASCADE,
+  -- ★ 이 연결이 비어 있으면 "계획에 없던 지출" — 검토 대상이 된다 (자동 거절 아님)
+  requested_service_id  UUID REFERENCES public.seoul_requested_services(id) ON DELETE SET NULL,
+  domain_id             UUID REFERENCES public.seoul_service_domains(id) ON DELETE SET NULL,
+  provider_id           UUID REFERENCES public.seoul_service_providers(id) ON DELETE SET NULL,
+  usage_date            DATE NOT NULL,
+  amount                NUMERIC(12,2) NOT NULL CHECK (amount > 0),
+  description           TEXT,
+  -- 입력자와 결정자를 구분한다. 실무자가 대신 입력한 것과 대신 결정한 것은 전혀 다르다.
+  created_by            UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  decided_by            TEXT NOT NULL DEFAULT 'self'
+                          CHECK (decided_by IN ('self','self_with_support','suggested_accepted','by_supporter')),
+  settlement_status     TEXT NOT NULL DEFAULT 'pending'
+                          CHECK (settlement_status IN ('pending','accepted','rejected','recovered')),
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE public.seoul_receipts (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  usage_id       UUID NOT NULL REFERENCES public.seoul_service_usages(id) ON DELETE CASCADE,
+  provider_id    UUID REFERENCES public.seoul_service_providers(id) ON DELETE SET NULL,
+  -- private 버킷 경로만 저장. 조회 시 signed URL 생성 (CLAUDE.md Storage 규칙)
+  storage_path   TEXT NOT NULL,
+  issued_on      DATE,
+  amount         NUMERIC(12,2),
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMENT ON COLUMN public.seoul_receipts.storage_path IS
+  'receipts 버킷의 경로. 공개 URL 을 저장하지 않는다 — 버킷이 private 이므로 항상 signed URL 로 변환해 노출한다.';
+
+
+-- =====================================================================
+-- §10. 규칙 검증 결과 (감사 흔적)
+-- =====================================================================
+
+CREATE TABLE public.seoul_rule_checks (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  usage_id              UUID NOT NULL REFERENCES public.seoul_service_usages(id) ON DELETE CASCADE,
+  rule_id               UUID NOT NULL REFERENCES public.seoul_spending_rules(id) ON DELETE CASCADE,
+  check_result          TEXT NOT NULL CHECK (check_result IN ('pass','blocked','needs_review')),
+  -- ★ 시스템 판정과 사람 판단을 다른 컬럼에 둔다. 같은 칸에 쓰면 누가 정했는지 사라진다.
+  human_decision        TEXT CHECK (human_decision IN ('accepted','rejected','pending')),
+  human_decision_reason TEXT,
+  decided_by            UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  decided_at            TIMESTAMPTZ,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (usage_id, rule_id)
+);
+
+
+-- =====================================================================
+-- §11. 정산 · 모니터링
+-- =====================================================================
+
+CREATE TABLE public.seoul_settlements (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  allocation_id    UUID NOT NULL REFERENCES public.seoul_budget_allocations(id) ON DELETE CASCADE,
+  verified_by_id   UUID REFERENCES public.seoul_executing_agencies(id) ON DELETE SET NULL,
+  settled_period   TEXT NOT NULL,          -- '2025-03' 또는 '2025-01~2025-06'
+  accepted_amount  NUMERIC(12,2) NOT NULL DEFAULT 0,
+  rejected_amount  NUMERIC(12,2) NOT NULL DEFAULT 0,
+  recovered_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+  unused_amount    NUMERIC(12,2) NOT NULL DEFAULT 0,
+  note             TEXT,
+  settled_on       DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (allocation_id, settled_period)
+);
+COMMENT ON COLUMN public.seoul_settlements.unused_amount IS
+  '미사용은 실패가 아니다. 다만 "쓸 곳을 못 찾아서"인지 "필요가 없어서"인지는 다르므로 모니터링 기록과 함께 읽어야 한다.';
+
+CREATE TABLE public.seoul_monitoring_records (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id    UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  allocation_id     UUID REFERENCES public.seoul_budget_allocations(id) ON DELETE SET NULL,
+  caseworker_id     UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  monitoring_date   DATE NOT NULL DEFAULT CURRENT_DATE,
+  method            TEXT CHECK (method IN ('visit','phone','app','document')),
+  -- ★ 서울형에는 4+1 같은 정형 평가가 없다. 성과평가에 쓸 변화 기록은 사실상 여기뿐이다.
+  observed_change   TEXT,
+  -- 실무자의 관찰과 당사자 본인의 말을 다른 칸에 적는다
+  participant_voice TEXT,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 모니터링에서 확인한 개별 이용 건 (다대다)
+CREATE TABLE public.seoul_monitoring_usages (
+  monitoring_id UUID NOT NULL REFERENCES public.seoul_monitoring_records(id) ON DELETE CASCADE,
+  usage_id      UUID NOT NULL REFERENCES public.seoul_service_usages(id) ON DELETE CASCADE,
+  PRIMARY KEY (monitoring_id, usage_id)
+);
+
+
+-- =====================================================================
+-- §12. 제약 강제 — 트리거
+-- =====================================================================
+
+-- (1) 배타 규칙: 복지부 시범사업 참여자는 서울형 선정 불가
+--     테이블을 넘나드는 조건이라 CHECK 로는 표현할 수 없어 트리거로 둔다.
+CREATE OR REPLACE FUNCTION public.seoul_enforce_mohw_exclusivity()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_participant_id UUID;
+  v_in_mohw        BOOLEAN;
+BEGIN
+  IF NEW.is_selected IS NOT TRUE THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT a.participant_id INTO v_participant_id
+    FROM public.seoul_applications a WHERE a.id = NEW.application_id;
+
+  SELECT bs.participates_in_mohw_pilot INTO v_in_mohw
+    FROM public.seoul_benefit_status bs WHERE bs.participant_id = v_participant_id;
+
+  IF COALESCE(v_in_mohw, FALSE) THEN
+    RAISE EXCEPTION
+      '보건복지부 개인예산제 시범사업 참여자는 서울형 시범사업에 참여할 수 없습니다. (신청서 명시 사항)';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_seoul_mohw_exclusivity
+  BEFORE INSERT OR UPDATE ON public.seoul_selection_decisions
+  FOR EACH ROW EXECUTE FUNCTION public.seoul_enforce_mohw_exclusivity();
+
+
+-- (2) 동의 전제: 두 종류 동의가 모두 있어야 선정 가능
+CREATE OR REPLACE FUNCTION public.seoul_enforce_consent_precondition()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_agreed_count INT;
+BEGIN
+  IF NEW.is_selected IS NOT TRUE THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT count(*) INTO v_agreed_count
+    FROM public.seoul_consent_records c
+   WHERE c.application_id = NEW.application_id
+     AND c.is_agreed IS TRUE
+     AND c.withdrawn_at IS NULL;
+
+  IF v_agreed_count < 2 THEN
+    RAISE EXCEPTION
+      '개인정보 수집·이용 동의와 고유식별정보 별도 동의가 모두 있어야 선정할 수 있습니다. (현재 %건)', v_agreed_count;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_seoul_consent_precondition
+  BEFORE INSERT OR UPDATE ON public.seoul_selection_decisions
+  FOR EACH ROW EXECUTE FUNCTION public.seoul_enforce_consent_precondition();
+
+
+-- (3) 이의신청 기한 자동 계산 (통지일 + 차수별 일수)
+CREATE OR REPLACE FUNCTION public.seoul_set_appeal_due()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_notified_on DATE;
+  v_due_days    INT;
+BEGIN
+  IF NEW.due_on IS NOT NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT n.notified_on, c.appeal_due_days
+    INTO v_notified_on, v_due_days
+    FROM public.seoul_notifications n
+    JOIN public.seoul_plan_reviews      r ON r.id = n.review_id
+    JOIN public.seoul_utilization_plans p ON p.id = r.plan_id
+    JOIN public.seoul_cohorts           c ON c.id = p.cohort_id
+   WHERE n.id = NEW.notification_id;
+
+  NEW.due_on := v_notified_on + COALESCE(v_due_days, 14);
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_seoul_appeal_due
+  BEFORE INSERT ON public.seoul_appeals
+  FOR EACH ROW EXECUTE FUNCTION public.seoul_set_appeal_due();
+
+
+-- (4) 지출 한도와 금지 규칙
+--     ⚠️ 설계 원칙: 금지(prohibition)는 막고, 요건(criterion)은 기록만 한다.
+--        요건까지 자동 차단하면 말로 설명하기 어려운 당사자가 가장 불리해진다.
+CREATE OR REPLACE FUNCTION public.seoul_check_usage()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_alloc        RECORD;
+  v_month_spent  NUMERIC;
+  v_total_spent  NUMERIC;
+  v_rule         RECORD;
+  v_haystack     TEXT;
+BEGIN
+  SELECT * INTO v_alloc
+    FROM public.seoul_budget_allocations WHERE id = NEW.allocation_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION '예산 배정을 찾을 수 없습니다.';
+  END IF;
+
+  -- ★ 소유권 검사. RLS 가 가려 주는 것에 기대면 안 된다 —
+  --   두 참여자를 함께 담당하는 실무자에게는 양쪽 배정이 모두 보이므로
+  --   이 검사가 없으면 A 의 지출을 B 의 예산에서 차감할 수 있다.
+  IF v_alloc.participant_id <> NEW.participant_id THEN
+    RAISE EXCEPTION '예산 배정(%)의 소유자와 지출의 참여자(%)가 다릅니다.',
+      v_alloc.participant_id, NEW.participant_id;
+  END IF;
+
+  -- 이용일이 배정 기간 안에 있는지
+  IF NEW.usage_date < v_alloc.starts_on OR NEW.usage_date > v_alloc.ends_on THEN
+    RAISE EXCEPTION '이용일(%)이 예산 지원 기간(% ~ %) 밖입니다.',
+      NEW.usage_date, v_alloc.starts_on, v_alloc.ends_on;
+  END IF;
+
+  -- 총 한도 (환수된 건은 제외)
+  SELECT COALESCE(sum(u.amount), 0) INTO v_total_spent
+    FROM public.seoul_service_usages u
+   WHERE u.allocation_id = NEW.allocation_id
+     AND u.settlement_status <> 'recovered'
+     AND (TG_OP = 'INSERT' OR u.id <> NEW.id);
+
+  IF v_total_spent + NEW.amount > v_alloc.total_ceiling THEN
+    RAISE EXCEPTION '총 한도를 초과합니다. (한도 %원 / 기사용 %원 / 이번 %원)',
+      v_alloc.total_ceiling, v_total_spent, NEW.amount;
+  END IF;
+
+  -- 월 한도 — 이월 불가일 때만 차단, 이월 허용이면 통과(총 한도로만 관리)
+  IF NOT v_alloc.carry_over_allowed THEN
+    SELECT COALESCE(sum(u.amount), 0) INTO v_month_spent
+      FROM public.seoul_service_usages u
+     WHERE u.allocation_id = NEW.allocation_id
+       AND u.settlement_status <> 'recovered'
+       AND date_trunc('month', u.usage_date) = date_trunc('month', NEW.usage_date)
+       AND (TG_OP = 'INSERT' OR u.id <> NEW.id);
+
+    IF v_month_spent + NEW.amount > v_alloc.monthly_ceiling THEN
+      RAISE EXCEPTION '월 한도를 초과합니다. (한도 %원 / 이번 달 사용 %원 / 이번 %원)',
+        v_alloc.monthly_ceiling, v_month_spent, NEW.amount;
+    END IF;
+  END IF;
+
+  -- 금지 항목 키워드 검사 → block 만 차단
+  v_haystack := lower(coalesce(NEW.description, ''));
+  FOR v_rule IN
+    SELECT * FROM public.seoul_spending_rules
+     WHERE is_active
+       AND kind = 'prohibition'
+       AND enforcement = 'block'
+       AND (cohort_id IS NULL OR cohort_id = v_alloc.cohort_id)
+  LOOP
+    IF v_rule.keywords IS NOT NULL
+       AND EXISTS (SELECT 1 FROM unnest(v_rule.keywords) k WHERE v_haystack LIKE '%' || lower(k) || '%')
+    THEN
+      RAISE EXCEPTION '지원 불가 항목입니다: % (근거: %)', v_rule.label, coalesce(v_rule.source_note, '-');
+    END IF;
+  END LOOP;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_seoul_check_usage
+  BEFORE INSERT OR UPDATE ON public.seoul_service_usages
+  FOR EACH ROW EXECUTE FUNCTION public.seoul_check_usage();
+
+
+-- (5) 요건(criterion) 위반은 차단하지 않고 검토 목록에 남긴다
+--
+-- ★ SECURITY DEFINER 인 이유: 이 트리거는 시스템이 남기는 감사 기록이다.
+--   INVOKER 로 두면 seoul_rule_checks 의 쓰기 정책(담당자·관리자만)에 걸려
+--   당사자가 계획에 없는 지출을 기록하는 순간 지출 자체가 실패한다.
+--   플래그를 남기지 못한다고 당사자의 기록을 막는 것은 앞뒤가 바뀐 것이다.
+--   DEFINER 로 두어도 당사자가 이 표를 직접 고칠 수는 없다 — 정책은 그대로 유효하다.
+CREATE OR REPLACE FUNCTION public.seoul_flag_criteria()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_cohort_id UUID;
+BEGIN
+  SELECT cohort_id INTO v_cohort_id
+    FROM public.seoul_budget_allocations WHERE id = NEW.allocation_id;
+
+  -- 계획에 없는 지출 → must_be_in_plan 요건 플래그
+  IF NEW.requested_service_id IS NULL THEN
+    INSERT INTO public.seoul_rule_checks (usage_id, rule_id, check_result, human_decision)
+    SELECT NEW.id, r.id, 'needs_review', 'pending'
+      FROM public.seoul_spending_rules r
+     WHERE r.is_active
+       AND r.code = 'must_be_in_plan'
+       AND (r.cohort_id IS NULL OR r.cohort_id = v_cohort_id)
+    ON CONFLICT (usage_id, rule_id) DO NOTHING;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_seoul_flag_criteria
+  AFTER INSERT ON public.seoul_service_usages
+  FOR EACH ROW EXECUTE FUNCTION public.seoul_flag_criteria();
+
+
+-- =====================================================================
+-- §13. 뷰 — 잔액은 저장하지 않고 항상 계산한다
+-- =====================================================================
+
+CREATE OR REPLACE VIEW public.v_seoul_budget_balance AS
+SELECT
+  a.id                AS allocation_id,
+  a.participant_id,
+  a.cohort_id,
+  a.total_ceiling,
+  a.monthly_ceiling,
+  a.carry_over_allowed,
+  a.starts_on,
+  a.ends_on,
+  COALESCE(sum(u.amount) FILTER (WHERE u.settlement_status <> 'recovered'), 0) AS spent,
+  a.total_ceiling
+    - COALESCE(sum(u.amount) FILTER (WHERE u.settlement_status <> 'recovered'), 0) AS remaining,
+  count(u.id)                                                    AS usage_count,
+  count(u.id) FILTER (WHERE u.requested_service_id IS NULL)       AS unplanned_count
+FROM public.seoul_budget_allocations a
+LEFT JOIN public.seoul_service_usages u ON u.allocation_id = a.id
+GROUP BY a.id;
+
+COMMENT ON VIEW public.v_seoul_budget_balance IS
+  '잔액을 컬럼으로 복제하지 않는 이유: 트리거와 수동 보정이 공존하면 이중 반영이 생긴다. 느리면 인덱스를 걸지 값을 복제하지 않는다.';
+
+
+-- 월별 소진 현황 (이월 허용 여부와 무관하게 실무자가 보는 화면)
+CREATE OR REPLACE VIEW public.v_seoul_monthly_usage AS
+SELECT
+  a.id                                   AS allocation_id,
+  a.participant_id,
+  date_trunc('month', u.usage_date)::date AS month,
+  a.monthly_ceiling,
+  sum(u.amount) FILTER (WHERE u.settlement_status <> 'recovered') AS month_spent,
+  (sum(u.amount) FILTER (WHERE u.settlement_status <> 'recovered') > a.monthly_ceiling)
+                                          AS exceeds_monthly_ceiling
+FROM public.seoul_budget_allocations a
+JOIN public.seoul_service_usages u ON u.allocation_id = a.id
+GROUP BY a.id, date_trunc('month', u.usage_date);
+
+
+-- 계획에 없던 지출 — ⚠️ "물어볼 목록"이지 "거절 목록"이 아니다
+CREATE OR REPLACE VIEW public.v_seoul_unplanned_usages AS
+SELECT
+  u.id            AS usage_id,
+  u.participant_id,
+  u.usage_date,
+  u.amount,
+  u.description,
+  d.label         AS domain_label,
+  rc.human_decision,
+  rc.human_decision_reason
+FROM public.seoul_service_usages u
+LEFT JOIN public.seoul_service_domains d ON d.id = u.domain_id
+LEFT JOIN public.seoul_rule_checks rc
+       ON rc.usage_id = u.id
+      AND rc.rule_id = (SELECT id FROM public.seoul_spending_rules WHERE code = 'must_be_in_plan' LIMIT 1)
+WHERE u.requested_service_id IS NULL;
+
+COMMENT ON VIEW public.v_seoul_unplanned_usages IS
+  '⚠️ 계획에 없다는 이유만으로 자동 반려하지 않는다. 계획을 세울 때 예상하지 못한 좋은 기회가 생길 수 있고, 그것을 잡는 것이 개인예산제의 취지다. 이 뷰는 담당자가 물어보기 위한 목록이다.';
+
+
+-- 이의신청 기한 임박 — 권리구제가 기한 도과로 사라지지 않게
+CREATE OR REPLACE VIEW public.v_seoul_appeal_status AS
+SELECT
+  ap.id            AS appeal_id,
+  ap.participant_id,
+  ap.filed_on,
+  ap.due_on,
+  ap.outcome,
+  (ap.due_on - CURRENT_DATE) AS days_left,
+  (ap.outcome = 'pending' AND ap.due_on < CURRENT_DATE) AS is_overdue
+FROM public.seoul_appeals ap;
+
+
+-- 아직 이의신청이 가능한 부결·조건부 통지 (당사자 화면 안내용)
+CREATE OR REPLACE VIEW public.v_seoul_appealable_notifications AS
+SELECT
+  n.id                       AS notification_id,
+  n.participant_id,
+  n.notified_on,
+  r.decision,
+  r.reason,
+  (n.notified_on + c.appeal_due_days) AS appeal_deadline,
+  ((n.notified_on + c.appeal_due_days) >= CURRENT_DATE) AS still_appealable
+FROM public.seoul_notifications n
+JOIN public.seoul_plan_reviews      r ON r.id = n.review_id
+JOIN public.seoul_utilization_plans p ON p.id = r.plan_id
+JOIN public.seoul_cohorts           c ON c.id = p.cohort_id
+WHERE r.decision IN ('rejected','conditional')
+  AND NOT EXISTS (SELECT 1 FROM public.seoul_appeals a WHERE a.notification_id = n.id);
+
+
+-- 주도성 지표 — 성과평가용. ⚠️ 당사자 화면에는 절대 비율로 표시하지 않는다.
+CREATE OR REPLACE VIEW public.v_seoul_self_direction AS
+SELECT
+  a.participant_id,
+  a.id AS allocation_id,
+  p.authored_with_support                                            AS plan_authorship,
+  count(u.id)                                                        AS total_usages,
+  count(u.id) FILTER (WHERE u.decided_by = 'self')                   AS self_decided,
+  count(u.id) FILTER (WHERE u.decided_by = 'self_with_support')      AS self_with_support,
+  ROUND(
+    100.0 * count(u.id) FILTER (WHERE u.decided_by IN ('self','self_with_support'))
+    / NULLIF(count(u.id), 0), 1)                                     AS self_direction_pct
+FROM public.seoul_budget_allocations a
+JOIN public.seoul_utilization_plans  p ON p.id = a.plan_id
+LEFT JOIN public.seoul_service_usages u ON u.allocation_id = a.id
+GROUP BY a.participant_id, a.id, p.authored_with_support;
+
+COMMENT ON VIEW public.v_seoul_self_direction IS
+  '실무자 진단용 지표이지 당사자 점수가 아니다. 당사자 화면에는 비율이 아니라 "내가 고른 것 N개"처럼 보여준다.';
+
+
+-- 절차 진행 현황 한 줄 요약
+CREATE OR REPLACE VIEW public.v_seoul_pipeline AS
+SELECT
+  ap.participant_id,
+  ap.cohort_id,
+  ap.id                                  AS application_id,
+  ap.status                              AS application_status,
+  sd.is_selected,
+  pl.id                                  AS plan_id,
+  pl.status                              AS plan_status,
+  pr.decision                            AS review_decision,
+  n.notified_on,
+  al.id                                  AS allocation_id,
+  bal.spent,
+  bal.remaining
+FROM public.seoul_applications ap
+LEFT JOIN public.seoul_selection_decisions sd ON sd.application_id = ap.id
+LEFT JOIN public.seoul_utilization_plans   pl ON pl.application_id = ap.id
+LEFT JOIN public.seoul_plan_reviews        pr ON pr.plan_id = pl.id
+LEFT JOIN public.seoul_notifications        n ON n.review_id = pr.id
+LEFT JOIN public.seoul_budget_allocations  al ON al.plan_id = pl.id
+LEFT JOIN public.v_seoul_budget_balance   bal ON bal.allocation_id = al.id;
+
+
+-- =====================================================================
+-- §14. RLS — 모든 테이블에 활성화
+--
+-- ★ 설계 원칙: "본인에 관한 데이터"와 "본인이 쓰는 데이터"는 다르다.
+--
+--   본인이 쓰는 것   이용계획(작성중) · 지출 기록 · 이의신청 제기
+--                    → 참여자가 직접 INSERT/UPDATE 할 수 있어야 한다.
+--                      이게 안 되면 "당사자가 스스로 계획·선택·구매한다"는 제도의 전제가 깨진다.
+--
+--   본인에 관한 것   심의 결과 · 예산 배정 · 통지 · 선정 · 자격정보 · 이의신청 결과
+--                    → 참여자는 읽을 수만 있다.
+--                      자기 부결 사유를 못 보면 이의신청을 할 수 없으므로 읽기는 반드시 열되,
+--                      쓰기를 열면 스스로 한도를 올리거나 기한을 늘릴 수 있다.
+--
+--   ⚠️ 이 구분을 놓치고 "participant_id 가 있으면 본인 수정 가능"으로 일괄 처리했다가
+--      실제 테스트에서 참여자가 예산 한도를 240만 → 9999만원으로 올리고,
+--      이의신청 결과를 스스로 '인용'으로 바꾸고, 통지일을 2030년으로 옮겨
+--      이의신청 기한을 무한 연장할 수 있는 것이 확인되었다. 아래는 그 수정본이다.
+-- =====================================================================
+
+-- 헬퍼: 관리자인가
+CREATE OR REPLACE FUNCTION public.seoul_is_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+  );
+$$;
+
+-- 헬퍼: 읽기 권한 — 본인 / 담당 실무자 / 관리자
+CREATE OR REPLACE FUNCTION public.seoul_can_access(p_participant_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+  SELECT
+    auth.uid() = p_participant_id
+    OR public.seoul_is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.participants pt
+       WHERE pt.id = p_participant_id
+         AND pt.assigned_supporter_id = auth.uid()
+    );
+$$;
+
+-- 헬퍼: 행정 쓰기 권한 — 담당 실무자 / 관리자만 (본인은 제외)
+CREATE OR REPLACE FUNCTION public.seoul_is_staff_for(p_participant_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+  SELECT
+    public.seoul_is_admin()
+    OR EXISTS (
+      SELECT 1 FROM public.participants pt
+       WHERE pt.id = p_participant_id
+         AND pt.assigned_supporter_id = auth.uid()
+    );
+$$;
+COMMENT ON FUNCTION public.seoul_is_staff_for(UUID) IS
+  'seoul_can_access 와 달리 본인을 포함하지 않는다. 행정 기록(심의·배정·통지·자격)의 쓰기 판정에 쓴다.';
+
+
+-- ── 참조·코드 테이블: 로그인 사용자 읽기, 관리자만 쓰기 ──────────────
+DO $$
+DECLARE t TEXT;
+BEGIN
+  FOREACH t IN ARRAY ARRAY[
+    'seoul_cohorts','seoul_service_domains','seoul_spending_rules',
+    'seoul_administering_bodies','seoul_executing_agencies',
+    'seoul_review_committees','seoul_service_providers'
+  ] LOOP
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
+    EXECUTE format(
+      'CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (true)',
+      t || '_read', t);
+    EXECUTE format(
+      'CREATE POLICY %I ON public.%I FOR ALL TO authenticated
+         USING (public.seoul_is_admin()) WITH CHECK (public.seoul_is_admin())',
+      t || '_admin_write', t);
+  END LOOP;
+END $$;
+
+
+-- ── 그룹 A. 행정 기록 — 참여자는 읽기만 ─────────────────────────────
+--    자격정보·신청·동의·통지·예산배정·모니터링
+DO $$
+DECLARE t TEXT;
+BEGIN
+  FOREACH t IN ARRAY ARRAY[
+    'seoul_disability_profiles','seoul_benefit_status','seoul_proxies',
+    'seoul_applications','seoul_consent_records','seoul_notifications',
+    'seoul_budget_allocations','seoul_monitoring_records'
+  ] LOOP
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
+    -- 읽기: 본인도 볼 수 있어야 한다 (자기 예산이 얼마인지, 언제 통지받았는지)
+    EXECUTE format(
+      'CREATE POLICY %I ON public.%I FOR SELECT TO authenticated
+         USING (public.seoul_can_access(participant_id))',
+      t || '_select', t);
+    -- 쓰기: 담당 실무자·관리자만
+    EXECUTE format(
+      'CREATE POLICY %I ON public.%I FOR INSERT TO authenticated
+         WITH CHECK (public.seoul_is_staff_for(participant_id))',
+      t || '_insert', t);
+    EXECUTE format(
+      'CREATE POLICY %I ON public.%I FOR UPDATE TO authenticated
+         USING (public.seoul_is_staff_for(participant_id))
+         WITH CHECK (public.seoul_is_staff_for(participant_id))',
+      t || '_update', t);
+    EXECUTE format(
+      'CREATE POLICY %I ON public.%I FOR DELETE TO authenticated
+         USING (public.seoul_is_admin())',
+      t || '_delete', t);
+  END LOOP;
+END $$;
+
+
+-- ── 그룹 B. 당사자가 직접 쓰는 것 ───────────────────────────────────
+
+-- B-1. 이용계획 — 작성중(draft)일 때만 본인이 고칠 수 있다.
+--      제출한 뒤에도 고칠 수 있으면 심의 대상 문서가 사후 변조된다.
+ALTER TABLE public.seoul_utilization_plans ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY seoul_utilization_plans_select ON public.seoul_utilization_plans
+  FOR SELECT TO authenticated
+  USING (public.seoul_can_access(participant_id));
+
+CREATE POLICY seoul_utilization_plans_insert ON public.seoul_utilization_plans
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    public.seoul_is_staff_for(participant_id)
+    OR (auth.uid() = participant_id AND status = 'draft')
+  );
+
+CREATE POLICY seoul_utilization_plans_update ON public.seoul_utilization_plans
+  FOR UPDATE TO authenticated
+  USING (
+    public.seoul_is_staff_for(participant_id)
+    OR (auth.uid() = participant_id AND status IN ('draft','submitted'))
+  )
+  WITH CHECK (
+    public.seoul_is_staff_for(participant_id)
+    -- 본인은 draft 로 두거나 제출(submitted)까지만 할 수 있다.
+    -- 스스로 approved 로 바꾸는 것은 막는다.
+    OR (auth.uid() = participant_id AND status IN ('draft','submitted'))
+  );
+
+CREATE POLICY seoul_utilization_plans_delete ON public.seoul_utilization_plans
+  FOR DELETE TO authenticated
+  USING (public.seoul_is_admin());
+
+-- B-2. 지출 기록 — 정산 전(pending)까지만 본인이 고칠 수 있다.
+ALTER TABLE public.seoul_service_usages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY seoul_service_usages_select ON public.seoul_service_usages
+  FOR SELECT TO authenticated
+  USING (public.seoul_can_access(participant_id));
+
+CREATE POLICY seoul_service_usages_insert ON public.seoul_service_usages
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    public.seoul_is_staff_for(participant_id)
+    OR (auth.uid() = participant_id AND settlement_status = 'pending')
+  );
+
+CREATE POLICY seoul_service_usages_update ON public.seoul_service_usages
+  FOR UPDATE TO authenticated
+  USING (
+    public.seoul_is_staff_for(participant_id)
+    OR (auth.uid() = participant_id AND settlement_status = 'pending')
+  )
+  WITH CHECK (
+    public.seoul_is_staff_for(participant_id)
+    -- 본인이 자기 지출을 '인정'으로 바꿔 정산을 통과시키는 것을 막는다
+    OR (auth.uid() = participant_id AND settlement_status = 'pending')
+  );
+
+CREATE POLICY seoul_service_usages_delete ON public.seoul_service_usages
+  FOR DELETE TO authenticated
+  USING (
+    public.seoul_is_staff_for(participant_id)
+    OR (auth.uid() = participant_id AND settlement_status = 'pending')
+  );
+
+-- B-3. 이의신청 — 본인이 제기(INSERT)할 수 있어야 한다.
+--      단 결과(outcome)는 위원회가 정하므로 본인 UPDATE 는 막는다.
+ALTER TABLE public.seoul_appeals ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY seoul_appeals_select ON public.seoul_appeals
+  FOR SELECT TO authenticated
+  USING (public.seoul_can_access(participant_id));
+
+-- ★ 실무자만 대신 넣을 수 있다면 그것은 권리 구제가 아니다.
+CREATE POLICY seoul_appeals_insert ON public.seoul_appeals
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    public.seoul_can_access(participant_id)
+    AND outcome = 'pending'          -- 제기 시점에는 항상 미결 상태
+  );
+
+CREATE POLICY seoul_appeals_update ON public.seoul_appeals
+  FOR UPDATE TO authenticated
+  USING (public.seoul_is_staff_for(participant_id))
+  WITH CHECK (public.seoul_is_staff_for(participant_id));
+
+CREATE POLICY seoul_appeals_delete ON public.seoul_appeals
+  FOR DELETE TO authenticated
+  USING (public.seoul_is_admin());
+
+
+-- ── 그룹 C. 참여자를 간접 참조하는 테이블 ───────────────────────────
+
+-- 나의 상황 · 요청 서비스 — 계획이 draft 일 때만 본인이 고칠 수 있다
+ALTER TABLE public.seoul_self_narratives ENABLE ROW LEVEL SECURITY;
+CREATE POLICY seoul_self_narratives_select ON public.seoul_self_narratives
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_utilization_plans p
+                  WHERE p.id = plan_id AND public.seoul_can_access(p.participant_id)));
+CREATE POLICY seoul_self_narratives_write ON public.seoul_self_narratives
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_utilization_plans p
+                  WHERE p.id = plan_id
+                    AND (public.seoul_is_staff_for(p.participant_id)
+                         OR (auth.uid() = p.participant_id AND p.status = 'draft'))))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.seoul_utilization_plans p
+                  WHERE p.id = plan_id
+                    AND (public.seoul_is_staff_for(p.participant_id)
+                         OR (auth.uid() = p.participant_id AND p.status = 'draft'))));
+
+ALTER TABLE public.seoul_requested_services ENABLE ROW LEVEL SECURITY;
+CREATE POLICY seoul_requested_services_select ON public.seoul_requested_services
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_utilization_plans p
+                  WHERE p.id = plan_id AND public.seoul_can_access(p.participant_id)));
+CREATE POLICY seoul_requested_services_write ON public.seoul_requested_services
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_utilization_plans p
+                  WHERE p.id = plan_id
+                    AND (public.seoul_is_staff_for(p.participant_id)
+                         OR (auth.uid() = p.participant_id AND p.status = 'draft'))))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.seoul_utilization_plans p
+                  WHERE p.id = plan_id
+                    AND (public.seoul_is_staff_for(p.participant_id)
+                         OR (auth.uid() = p.participant_id AND p.status = 'draft'))));
+
+-- 영수증 — 본인이 올릴 수 있어야 한다 (정산 전까지)
+ALTER TABLE public.seoul_receipts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY seoul_receipts_select ON public.seoul_receipts
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_service_usages u
+                  WHERE u.id = usage_id AND public.seoul_can_access(u.participant_id)));
+CREATE POLICY seoul_receipts_write ON public.seoul_receipts
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_service_usages u
+                  WHERE u.id = usage_id
+                    AND (public.seoul_is_staff_for(u.participant_id)
+                         OR (auth.uid() = u.participant_id AND u.settlement_status = 'pending'))))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.seoul_service_usages u
+                  WHERE u.id = usage_id
+                    AND (public.seoul_is_staff_for(u.participant_id)
+                         OR (auth.uid() = u.participant_id AND u.settlement_status = 'pending'))));
+
+-- 모니터링–이용 연결 — 실무자 기록물
+ALTER TABLE public.seoul_monitoring_usages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY seoul_monitoring_usages_select ON public.seoul_monitoring_usages
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_monitoring_records m
+                  WHERE m.id = monitoring_id AND public.seoul_can_access(m.participant_id)));
+CREATE POLICY seoul_monitoring_usages_write ON public.seoul_monitoring_usages
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_monitoring_records m
+                  WHERE m.id = monitoring_id AND public.seoul_is_staff_for(m.participant_id)))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.seoul_monitoring_records m
+                  WHERE m.id = monitoring_id AND public.seoul_is_staff_for(m.participant_id)));
+
+
+-- ── 그룹 D. 결정 기록 — 당사자는 읽기만, 쓰기는 관리자 ──────────────
+--    ★ 읽기를 반드시 열어야 하는 이유: 자기 계획이 왜 부결됐는지 볼 수 없으면
+--      이의신청을 할 수 없다. 권리구제의 전제는 이유를 아는 것이다.
+
+ALTER TABLE public.seoul_selection_decisions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY seoul_selection_decisions_select ON public.seoul_selection_decisions
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_applications a
+                  WHERE a.id = application_id AND public.seoul_can_access(a.participant_id)));
+CREATE POLICY seoul_selection_decisions_write ON public.seoul_selection_decisions
+  FOR ALL TO authenticated
+  USING (public.seoul_is_admin()) WITH CHECK (public.seoul_is_admin());
+
+ALTER TABLE public.seoul_plan_reviews ENABLE ROW LEVEL SECURITY;
+CREATE POLICY seoul_plan_reviews_select ON public.seoul_plan_reviews
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_utilization_plans p
+                  WHERE p.id = plan_id AND public.seoul_can_access(p.participant_id)));
+CREATE POLICY seoul_plan_reviews_write ON public.seoul_plan_reviews
+  FOR ALL TO authenticated
+  USING (public.seoul_is_admin()) WITH CHECK (public.seoul_is_admin());
+
+ALTER TABLE public.seoul_settlements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY seoul_settlements_select ON public.seoul_settlements
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_budget_allocations a
+                  WHERE a.id = allocation_id AND public.seoul_can_access(a.participant_id)));
+CREATE POLICY seoul_settlements_write ON public.seoul_settlements
+  FOR ALL TO authenticated
+  USING (public.seoul_is_admin()) WITH CHECK (public.seoul_is_admin());
+
+-- 규칙 검증 결과 — 당사자는 자기 판정을 볼 수 있으나 뒤집을 수 없다
+ALTER TABLE public.seoul_rule_checks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY seoul_rule_checks_select ON public.seoul_rule_checks
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_service_usages u
+                  WHERE u.id = usage_id AND public.seoul_can_access(u.participant_id)));
+CREATE POLICY seoul_rule_checks_write ON public.seoul_rule_checks
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_service_usages u
+                  WHERE u.id = usage_id AND public.seoul_is_staff_for(u.participant_id)))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.seoul_service_usages u
+                  WHERE u.id = usage_id AND public.seoul_is_staff_for(u.participant_id)));
+COMMENT ON TABLE public.seoul_rule_checks IS
+  '당사자는 자기 지출의 검증 결과를 볼 수 있지만 판정을 바꿀 수는 없다 (읽기만).';
+
+
+-- =====================================================================
+-- §15. 인덱스
+-- =====================================================================
+
+CREATE INDEX idx_seoul_app_participant      ON public.seoul_applications (participant_id, cohort_id);
+CREATE INDEX idx_seoul_plan_participant     ON public.seoul_utilization_plans (participant_id, status);
+CREATE INDEX idx_seoul_plan_application     ON public.seoul_utilization_plans (application_id);
+CREATE INDEX idx_seoul_reqsvc_plan          ON public.seoul_requested_services (plan_id);
+CREATE INDEX idx_seoul_alloc_participant    ON public.seoul_budget_allocations (participant_id);
+-- 잔액 뷰가 매번 도는 집계라 이 인덱스가 사실상의 성능 보증이다
+CREATE INDEX idx_seoul_usage_alloc_date     ON public.seoul_service_usages (allocation_id, usage_date);
+CREATE INDEX idx_seoul_usage_participant    ON public.seoul_service_usages (participant_id, usage_date DESC);
+CREATE INDEX idx_seoul_usage_unplanned      ON public.seoul_service_usages (allocation_id)
+                                             WHERE requested_service_id IS NULL;
+CREATE INDEX idx_seoul_receipt_usage        ON public.seoul_receipts (usage_id);
+CREATE INDEX idx_seoul_rulecheck_usage      ON public.seoul_rule_checks (usage_id);
+CREATE INDEX idx_seoul_rulecheck_pending    ON public.seoul_rule_checks (human_decision)
+                                             WHERE human_decision = 'pending';
+CREATE INDEX idx_seoul_notif_participant    ON public.seoul_notifications (participant_id, notified_on DESC);
+CREATE INDEX idx_seoul_appeal_pending       ON public.seoul_appeals (due_on) WHERE outcome = 'pending';
+CREATE INDEX idx_seoul_monitor_participant  ON public.seoul_monitoring_records (participant_id, monitoring_date DESC);
+
+
+-- =====================================================================
+-- §16. 기관 확인이 필요한 항목 (설계 확정 전 반드시 채워야 함)
+-- =====================================================================
+--
+--  1. 월 미사용액 이월 가능 여부        → seoul_cohorts.carry_over_allowed
+--     잔액 계산과 차단 로직 전체가 여기 달려 있다. 현재 기본값 TRUE(총액만 강제).
+--  2. 이의신청 기한                     → seoul_cohorts.appeal_due_days (현재 14일 가정)
+--     확인된 14일이 서울형에도 같은지, 기산점이 통지일인지 수령일인지.
+--  3. 심의 주체와 구성                  → seoul_review_committees
+--     자치구인지 재단인지 별도 위원회인지, 의결정족수가 있는지.
+--  4. 계획 상태 단계                    → seoul_utilization_plans.status 7종
+--     조건부승인이 실제로 있는지, 재제출 절차가 별도인지.
+--  5. 지원 불가 항목 전체 목록          → seoul_spending_rules
+--     현재 3종(주류·담배·복권 / 세금·공과금 / 저축·부채상환)만 확인됨.
+--  6. 활동지원·긴급돌봄 예외의 정확한 범위
+--     "계획 미포함이어도 이용 가능"이 서울형에도 적용되는지.
+--  7. 정산 주기                         → seoul_settlements.settled_period
+--     월별인지 종료 후 일괄인지.
+--  8. 영수증 제출 의무 범위             → 전 건인지 일정 금액 이상인지.
+--  9. 3차(2026) 한도액                  → seoul_cohorts
+--     2025년 40~50만원으로 확인됨. 3차 확정값 필요.
+-- 10. 차수별 참여 배제 규칙 변경 여부
+--     복지부 시범사업 중복 참여 불가가 3차에도 유지되는지.
