@@ -5,7 +5,7 @@
 
 | 파일 | 내용 |
 |---|---|
-| `seoul_ontology.rdf` | 온톨로지 정본. 클래스 26 / 관계 46 / 속성 94 / 고아 노드 0 |
+| `seoul_ontology.rdf` | 온톨로지 정본. 클래스 26 / 관계 46 / 속성 120 / 고아 노드 0 |
 | `seoul_schema_draft.sql` | SQL 스키마 **초안**. ⚠️ 그대로 실행하지 마세요 |
 | `seoul_graph_overlay.sql` | 그래프 오버레이 — 외래키를 트리플로 투영해 경로 탐색을 가능하게 함 |
 | `verify_00_stubs.sql` | 검증용 스텁 (`profiles`·`participants`·`auth.uid()` + RLS) |
@@ -30,6 +30,35 @@
 
 참여자에서 나가는 화살표 8개(신청·동의·계획수립·이용·이의신청 등)가
 방사형으로 보이면 제대로 로드된 것입니다.
+
+### 라벨이 `English (한국어)` 인 이유
+
+Playground 검증기는 이름이 **ASCII 문자·숫자로 시작**할 것을 요구합니다.
+한글 이름만 쓰면 `must start with a letter or digit` 오류가 납니다.
+그렇다고 영어만 남기면 실무자가 화살표를 못 읽으므로 둘을 한 라벨에 넣었습니다.
+
+엣지 라벨이 길어 그림이 복잡하면 한쪽만 남길 수 있습니다.
+
+```bash
+# 영어만 남기기 (개발자용)
+sed -E 's|(<rdfs:label>[^<(]*) \([^<]*\)</rdfs:label>|\1</rdfs:label>|g' \
+    seoul_ontology.rdf > seoul_ontology_en.rdf
+
+# 한글만 남기기 (실무자용 — 단 Playground 검증은 통과하지 못함)
+sed -E 's|<rdfs:label>[^<(]*\(([^<]*)\)</rdfs:label>|<rdfs:label>\1</rdfs:label>|g' \
+    seoul_ontology.rdf > seoul_ontology_ko.rdf
+```
+
+### 식별자(🔑) 지정
+
+각 엔티티에 `...Id` 속성이 하나씩 있습니다. 로드 후 엔티티를 선택해
+그 속성의 열쇠 아이콘을 누르면 `has no identifier property` 오류가 사라집니다.
+SQL 에서는 이미 모든 테이블이 `id UUID PRIMARY KEY` 이므로 새로 만든 개념이 아니라
+그림에 드러낸 것입니다.
+
+> Playground 가 식별자 지정을 RDF 에 어떻게 기록하는지는 표준 OWL 밖의 규약이라
+> 파일만으로는 미리 넣을 수 없습니다. 한 엔티티에 지정한 뒤 **[Export RDF]** 로 받아
+> 공유해 주시면 나머지 25개도 파일에 미리 반영해 드리겠습니다.
 
 ---
 
@@ -75,10 +104,7 @@ su postgres -c "$PGBIN/pg_ctl -D $PGDIR stop"
 ```
 
 `✅` 개수는 표식을 출력하는 항목 수입니다. S1~S4(참여자가 **할 수 있어야** 하는 것)와
-G1~G4(엣지·경로·트리플)는 표식 대신 결과표를 출력하므로 눈으로 확인하세요.
-
-`보안 테스트 ✅ 11건`은 `❌/✅` 표식을 출력하는 항목 수입니다.
-S1~S4(참여자가 **할 수 있어야** 하는 것)는 표식 대신 건수를 출력하므로 눈으로 확인하세요 —
+G1~G4(엣지·경로·트리플)는 표식 대신 결과표를 출력하므로 눈으로 확인하세요 —
 이의신청이 접수되고 지출이 기록되면 통과입니다.
 
 ---
