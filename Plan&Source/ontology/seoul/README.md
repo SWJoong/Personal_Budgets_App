@@ -12,6 +12,8 @@
 | `verify_01_behaviour.sql` | 기능 테스트 13종 — 한도·금지항목·동의·배제규칙·기한 계산 |
 | `verify_02_rls.sql` | 보안 테스트 15종 — 참여자가 할 수 있어야/없어야 하는 것 |
 | `verify_03_graph.sql` | 그래프 테스트 5종 — 엣지 투영·경로 탐색·RDF 내보내기·RLS |
+| `make_diagram.py` → `seoul_ontology_diagram.md` | **한글 관계도** (Mermaid). RDF 에서 생성 |
+| `make_artifact.py` → `seoul_ontology_view.html` | **한글 관계도** (웹 페이지). RDF 에서 생성 |
 
 > **적용 순서**: `verify_00_stubs` → `seoul_schema_draft` → `seoul_graph_overlay` → 검증 스크립트
 > **요구 버전**: PostgreSQL **15 이상** (뷰의 `security_invoker` 옵션이 필요)
@@ -31,34 +33,39 @@
 참여자에서 나가는 화살표 8개(신청·동의·계획수립·이용·이의신청 등)가
 방사형으로 보이면 제대로 로드된 것입니다.
 
-### 라벨이 `English (한국어)` 인 이유
+### 라벨이 영문인 이유 — 그리고 한글은 어디에 있나
 
-Playground 검증기는 이름이 **ASCII 문자·숫자로 시작**할 것을 요구합니다.
-한글 이름만 쓰면 `must start with a letter or digit` 오류가 납니다.
-그렇다고 영어만 남기면 실무자가 화살표를 못 읽으므로 둘을 한 라벨에 넣었습니다.
+Playground 검증기에는 이름 규칙이 **세 가지**입니다.
 
-엣지 라벨이 길어 그림이 복잡하면 한쪽만 남길 수 있습니다.
+| 규칙 | 한글이 걸리는 지점 |
+|---|---|
+| ASCII 문자·숫자로 **시작** | `참여자` → 실패 |
+| ASCII 문자·숫자로 **끝** | `Participant (참여자)` → `)` 로 끝나 실패 |
+| **26자 이내** | `registeredAddress (주민등록상 주소)` = 30자 → 실패 |
+
+이 검증기는 한글을 letter 로 치지 않으므로 **라벨에 한글을 넣는 방법 자체가 없습니다.**
+그래서 라벨은 영문 식별자로 두고, 한글은 `rdfs:comment` 로 옮겼습니다.
+Playground 에서 노드를 클릭하면 DESCRIPTION 패널에 한글 이름과 설명이 나옵니다.
+
+**한글 그림은 도구 대신 직접 만듭니다.**
 
 ```bash
-# 영어만 남기기 (개발자용)
-sed -E 's|(<rdfs:label>[^<(]*) \([^<]*\)</rdfs:label>|\1</rdfs:label>|g' \
-    seoul_ontology.rdf > seoul_ontology_en.rdf
-
-# 한글만 남기기 (실무자용 — 단 Playground 검증은 통과하지 못함)
-sed -E 's|<rdfs:label>[^<(]*\(([^<]*)\)</rdfs:label>|<rdfs:label>\1</rdfs:label>|g' \
-    seoul_ontology.rdf > seoul_ontology_ko.rdf
+python3 make_diagram.py  > seoul_ontology_diagram.md   # Mermaid (GitHub 에서 렌더링)
+python3 make_artifact.py > seoul_ontology_view.html    # 웹 페이지
 ```
 
-### 식별자(🔑) 지정
+RDF 가 정본이고 두 산출물은 거기서 생성되므로 어긋날 수 없습니다.
+RDF 를 고쳤으면 다시 생성하세요.
 
-각 엔티티에 `...Id` 속성이 하나씩 있습니다. 로드 후 엔티티를 선택해
-그 속성의 열쇠 아이콘을 누르면 `has no identifier property` 오류가 사라집니다.
+### 식별자(🔑)
+
+각 엔티티에 `...Id` 속성이 있고, 표준 OWL 의 `owl:hasKey` 로 선언해 두었습니다.
 SQL 에서는 이미 모든 테이블이 `id UUID PRIMARY KEY` 이므로 새로 만든 개념이 아니라
 그림에 드러낸 것입니다.
 
-> Playground 가 식별자 지정을 RDF 에 어떻게 기록하는지는 표준 OWL 밖의 규약이라
-> 파일만으로는 미리 넣을 수 없습니다. 한 엔티티에 지정한 뒤 **[Export RDF]** 로 받아
-> 공유해 주시면 나머지 25개도 파일에 미리 반영해 드리겠습니다.
+> Playground 가 `owl:hasKey` 를 읽는지는 확인되지 않았습니다. 여전히
+> `has no identifier property` 가 나오면 한 엔티티에서 열쇠 아이콘을 누른 뒤
+> **[Export RDF]** 로 받아 공유해 주세요. 그 형식을 보고 나머지도 반영하겠습니다.
 
 ---
 

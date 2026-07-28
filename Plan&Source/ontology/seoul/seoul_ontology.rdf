@@ -63,7 +63,7 @@
     xmlns:seoul="http://armdeuri.kr/ontology/seoul#">
 
     <owl:Ontology rdf:about="http://armdeuri.kr/ontology/seoul">
-        <rdfs:label>Seoul Personal Budget Scheme Ontology (서울형 장애인 개인예산제 온톨로지)</rdfs:label>
+        <rdfs:label>Seoul Personal Budget Scheme Ontology</rdfs:label>
         <rdfs:comment xml:lang="ko">서울형 장애인 개인예산제 시범사업의 신청부터 정산까지를 모델링한다. 제도가 정한 것(한도·영역·금지항목·절차)은 코드값과 제약으로, 당사자가 쓰는 것(나의 상황·원하는 서비스)만 서술형으로 둔다.</rdfs:comment>
     </owl:Ontology>
 
@@ -74,119 +74,223 @@
     <!-- ── 1군. 참여자와 자격 ────────────────────────────────── -->
 
     <owl:Class rdf:about="#Participant">
-        <rdfs:label>Participant (참여자)</rdfs:label>        <rdfs:comment xml:lang="ko">서울형 시범사업에 참여하는 장애인 당사자. 서울시 거주 만 18세 이상 중증장애인. 신청·계획수립·이용·이의신청의 주체다. [기존 테이블: participants + profiles — 프로그램 간 공유되는 유일한 지점]</rdfs:comment>
+        <rdfs:label>Participant</rdfs:label>
+        <rdfs:comment xml:lang="ko">참여자 — 서울형 시범사업에 참여하는 장애인 당사자. 서울시 거주 만 18세 이상 중증장애인. 신청·계획수립·이용·이의신청의 주체다. [기존 테이블: participants + profiles — 프로그램 간 공유되는 유일한 지점]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#participantId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#Proxy">
-        <rdfs:label>Proxy (대리인)</rdfs:label>        <rdfs:comment xml:lang="ko">신청서에 당사자를 대신해 서명하는 사람. 신청서가 "신청자(대리인) 성명 / 신청자와의 관계"를 함께 받으므로 별도 노드로 둔다. ★ 대리 서명 자체가 기록되어야 나중에 "누가 결정했나"를 되짚을 수 있다. [신규 테이블: seoul_proxies]</rdfs:comment>
+        <rdfs:label>Proxy</rdfs:label>
+        <rdfs:comment xml:lang="ko">대리인 — 신청서에 당사자를 대신해 서명하는 사람. 신청서가 "신청자(대리인) 성명 / 신청자와의 관계"를 함께 받으므로 별도 노드로 둔다. ★ 대리 서명 자체가 기록되어야 나중에 "누가 결정했나"를 되짚을 수 있다. [신규 테이블: seoul_proxies]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#proxyId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#DisabilityProfile">
-        <rdfs:label>Disability Profile (장애 정보)</rdfs:label>        <rdfs:comment xml:lang="ko">주장애유형·장애정도·중복장애유형·중도장애 발생시기. 서울형 신청서의 고정 항목이며 참여 자격(중증) 판정의 근거. [신규 테이블: seoul_disability_profiles]</rdfs:comment>
+        <rdfs:label>Disability Profile</rdfs:label>
+        <rdfs:comment xml:lang="ko">장애 정보 — 주장애유형·장애정도·중복장애유형·중도장애 발생시기. 서울형 신청서의 고정 항목이며 참여 자격(중증) 판정의 근거. [신규 테이블: seoul_disability_profiles]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#disabilityProfileId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#BenefitStatus">
-        <rdfs:label>Benefit Status (수급 현황)</rdfs:label>        <rdfs:comment xml:lang="ko">공공부조 수급현황(기초생활/차상위/해당없음), 활동지원서비스 이용여부, 서울시 활동지원 추가지원 여부, 보건복지부 시범사업 참여여부. ★ 마지막 항목이 배타 규칙의 입력값이다 — 복지부 참여자는 서울형 참여 불가. [신규 테이블: seoul_benefit_status]</rdfs:comment>
+        <rdfs:label>Benefit Status</rdfs:label>
+        <rdfs:comment xml:lang="ko">수급 현황 — 공공부조 수급현황(기초생활/차상위/해당없음), 활동지원서비스 이용여부, 서울시 활동지원 추가지원 여부, 보건복지부 시범사업 참여여부. ★ 마지막 항목이 배타 규칙의 입력값이다 — 복지부 참여자는 서울형 참여 불가. [신규 테이블: seoul_benefit_status]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#benefitStatusId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <!-- ── 2군. 신청 ─────────────────────────────────────────── -->
 
     <owl:Class rdf:about="#Application">
-        <rdfs:label>Application (신청서)</rdfs:label>        <rdfs:comment xml:lang="ko">서울형 시범사업 참여 신청서. 접수번호·신청일·신청자 정보를 담는다. 절차 1단계(신청 접수). [신규 테이블: seoul_applications]</rdfs:comment>
+        <rdfs:label>Application</rdfs:label>
+        <rdfs:comment xml:lang="ko">신청서 — 서울형 시범사업 참여 신청서. 접수번호·신청일·신청자 정보를 담는다. 절차 1단계(신청 접수). [신규 테이블: seoul_applications]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#applicationId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#ConsentRecord">
-        <rdfs:label>Consent Record (개인정보 동의)</rdfs:label>        <rdfs:comment xml:lang="ko">개인정보 수집·이용 동의서. 서울형은 ①일반 개인정보(민감정보 포함) 동의와 ②고유식별정보(주민등록번호) 별도 동의 두 건을 각각 받는다. ★ 동의가 참여의 전제다 — 거부 시 불이익은 없으나 사업 참여는 불가하다고 서식에 명시되어 있다. 따라서 동의는 부가정보가 아니라 1급 개체다. [신규 테이블: seoul_consent_records]</rdfs:comment>
+        <rdfs:label>Consent Record</rdfs:label>
+        <rdfs:comment xml:lang="ko">개인정보 동의 — 개인정보 수집·이용 동의서. 서울형은 ①일반 개인정보(민감정보 포함) 동의와 ②고유식별정보(주민등록번호) 별도 동의 두 건을 각각 받는다. ★ 동의가 참여의 전제다 — 거부 시 불이익은 없으나 사업 참여는 불가하다고 서식에 명시되어 있다. 따라서 동의는 부가정보가 아니라 1급 개체다. [신규 테이블: seoul_consent_records]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#consentRecordId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#SelectionDecision">
-        <rdfs:label>Selection Decision (참여자 선정)</rdfs:label>        <rdfs:comment xml:lang="ko">신청자 중 참여자를 선정하는 결정. 절차 2단계. 선정/미선정과 사유, 결정 주체를 기록한다. [신규 테이블: seoul_selection_decisions]</rdfs:comment>
+        <rdfs:label>Selection Decision</rdfs:label>
+        <rdfs:comment xml:lang="ko">참여자 선정 — 신청자 중 참여자를 선정하는 결정. 절차 2단계. 선정/미선정과 사유, 결정 주체를 기록한다. [신규 테이블: seoul_selection_decisions]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#selectionDecisionId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <!-- ── 3군. 이용계획 ─────────────────────────────────────── -->
 
     <owl:Class rdf:about="#UtilizationPlan">
-        <rdfs:label>Utilization Plan (개인예산 이용계획)</rdfs:label>        <rdfs:comment xml:lang="ko">참여자가 예산을 어디에 쓸지 세운 계획(2매 내외). 절차 3단계. 심의를 거쳐 확정되며, 이용 제한 요건상 "개인별 수립한 이용계획에 포함되어야" 지출이 인정된다. [신규 테이블: seoul_utilization_plans]</rdfs:comment>
+        <rdfs:label>Utilization Plan</rdfs:label>
+        <rdfs:comment xml:lang="ko">개인예산 이용계획 — 참여자가 예산을 어디에 쓸지 세운 계획(2매 내외). 절차 3단계. 심의를 거쳐 확정되며, 이용 제한 요건상 "개인별 수립한 이용계획에 포함되어야" 지출이 인정된다. [신규 테이블: seoul_utilization_plans]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#utilizationPlanId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#SelfNarrative">
-        <rdfs:label>Self Narrative (나의 상황)</rdfs:label>        <rdfs:comment xml:lang="ko">이용계획서의 서술 5항목: 재능·강점·기술 / 장애로 인한 사회적 제한·어려움 / 원하는 변화와 지원 / 원하는 삶의 모습 / 시도하고 싶은 것. ★ 서울형에서 사람중심적 색채가 남아 있는 유일한 곳. 다만 PCP 처럼 자유 그래프가 아니라 5칸 고정이므로 노드 5개가 아닌 노드 1개 + 속성 5개로 둔다. [신규 테이블: seoul_self_narratives]</rdfs:comment>
+        <rdfs:label>Self Narrative</rdfs:label>
+        <rdfs:comment xml:lang="ko">나의 상황 — 이용계획서의 서술 5항목: 재능·강점·기술 / 장애로 인한 사회적 제한·어려움 / 원하는 변화와 지원 / 원하는 삶의 모습 / 시도하고 싶은 것. ★ 서울형에서 사람중심적 색채가 남아 있는 유일한 곳. 다만 PCP 처럼 자유 그래프가 아니라 5칸 고정이므로 노드 5개가 아닌 노드 1개 + 속성 5개로 둔다. [신규 테이블: seoul_self_narratives]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#selfNarrativeId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#RequestedService">
-        <rdfs:label>Requested Service (지원받고 싶은 서비스)</rdfs:label>        <rdfs:comment xml:lang="ko">이용계획서에 적는 희망 서비스. 서식상 3칸(구분 1·2·3)이므로 우선순위를 갖는다. 실제 지출이 이 항목에 대응하는지가 정산의 기준이 된다. [신규 테이블: seoul_requested_services]</rdfs:comment>
+        <rdfs:label>Requested Service</rdfs:label>
+        <rdfs:comment xml:lang="ko">지원받고 싶은 서비스 — 이용계획서에 적는 희망 서비스. 서식상 3칸(구분 1·2·3)이므로 우선순위를 갖는다. 실제 지출이 이 항목에 대응하는지가 정산의 기준이 된다. [신규 테이블: seoul_requested_services]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#requestedServiceId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#ServiceDomain">
-        <rdfs:label>Service Domain (서비스 영역)</rdfs:label>        <rdfs:comment xml:lang="ko">서울형이 정한 6개 지원 영역: 일상생활 / 사회생활 / 취·창업활동 / 자기개발 / 건강·안전 / 주거환경개선. ★ pcp_ontology 는 기관마다 분류가 달라 taxonomy+crosswalk 로 풀었지만, 서울형은 제도가 6종을 확정했으므로 코드 테이블로 고정한다. 이것이 두 모델을 나눈 이유 중 하나다. [신규 테이블: seoul_service_domains — 시드 6행]</rdfs:comment>
+        <rdfs:label>Service Domain</rdfs:label>
+        <rdfs:comment xml:lang="ko">서비스 영역 — 서울형이 정한 6개 지원 영역: 일상생활 / 사회생활 / 취·창업활동 / 자기개발 / 건강·안전 / 주거환경개선. ★ pcp_ontology 는 기관마다 분류가 달라 taxonomy+crosswalk 로 풀었지만, 서울형은 제도가 6종을 확정했으므로 코드 테이블로 고정한다. 이것이 두 모델을 나눈 이유 중 하나다. [신규 테이블: seoul_service_domains — 시드 6행]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#serviceDomainId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <!-- ── 4군. 심의와 권리구제 ──────────────────────────────── -->
 
     <owl:Class rdf:about="#PlanReview">
-        <rdfs:label>Plan Review (계획 심의)</rdfs:label>        <rdfs:comment xml:lang="ko">이용계획에 대한 심의. 절차 4단계(심의 및 통지). 승인·조건부승인·부결과 사유를 기록하고, 승인 시 예산 배정을 발생시킨다. [신규 테이블: seoul_plan_reviews]</rdfs:comment>
+        <rdfs:label>Plan Review</rdfs:label>
+        <rdfs:comment xml:lang="ko">계획 심의 — 이용계획에 대한 심의. 절차 4단계(심의 및 통지). 승인·조건부승인·부결과 사유를 기록하고, 승인 시 예산 배정을 발생시킨다. [신규 테이블: seoul_plan_reviews]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#planReviewId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#ReviewCommittee">
-        <rdfs:label>Review Committee (심의 주체)</rdfs:label>        <rdfs:comment xml:lang="ko">이용계획을 심의하고 이의신청을 재심하는 위원회. ⚠️ 서울형의 정확한 심의 주체·구성·의결정족수는 공개 자료로 확인되지 않았다 — 기관 확인 필요 항목. [신규 테이블: seoul_review_committees]</rdfs:comment>
+        <rdfs:label>Review Committee</rdfs:label>
+        <rdfs:comment xml:lang="ko">심의 주체 — 이용계획을 심의하고 이의신청을 재심하는 위원회. ⚠️ 서울형의 정확한 심의 주체·구성·의결정족수는 공개 자료로 확인되지 않았다 — 기관 확인 필요 항목. [신규 테이블: seoul_review_committees]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#reviewCommitteeId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#Notification">
-        <rdfs:label>Notification (결과 통지)</rdfs:label>        <rdfs:comment xml:lang="ko">심의 결과를 참여자에게 알리는 문서. ★ 통지일이 이의신청 기한의 기산점이므로 별도 노드로 둔다. 통지 없이 기한만 세면 권리구제가 형해화된다. [신규 테이블: seoul_notifications]</rdfs:comment>
+        <rdfs:label>Notification</rdfs:label>
+        <rdfs:comment xml:lang="ko">결과 통지 — 심의 결과를 참여자에게 알리는 문서. ★ 통지일이 이의신청 기한의 기산점이므로 별도 노드로 둔다. 통지 없이 기한만 세면 권리구제가 형해화된다. [신규 테이블: seoul_notifications]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#notificationId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#Appeal">
-        <rdfs:label>Appeal (이의신청)</rdfs:label>        <rdfs:comment xml:lang="ko">심의 결과에 대한 이의신청. 절차 5단계. 확인된 자료상 접수 후 14일 이내 처리·재통보. ★ 참여자 본인이 제기할 수 있어야 한다 — 실무자만 대신 넣을 수 있다면 그것은 권리구제가 아니다(RLS 에서 참여자 INSERT 허용). ⚠️ 14일 기준이 서울형에도 동일 적용되는지는 기관 확인 필요. [신규 테이블: seoul_appeals]</rdfs:comment>
+        <rdfs:label>Appeal</rdfs:label>
+        <rdfs:comment xml:lang="ko">이의신청 — 심의 결과에 대한 이의신청. 절차 5단계. 확인된 자료상 접수 후 14일 이내 처리·재통보. ★ 참여자 본인이 제기할 수 있어야 한다 — 실무자만 대신 넣을 수 있다면 그것은 권리구제가 아니다(RLS 에서 참여자 INSERT 허용). ⚠️ 14일 기준이 서울형에도 동일 적용되는지는 기관 확인 필요. [신규 테이블: seoul_appeals]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#appealId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <!-- ── 5군. 예산과 집행 ──────────────────────────────────── -->
 
     <owl:Class rdf:about="#BudgetAllocation">
-        <rdfs:label>Budget Allocation (예산 배정)</rdfs:label>        <rdfs:comment xml:lang="ko">심의 승인으로 확정된 참여자별 예산. 월 한도와 총 한도를 함께 가진다(월 40만원 × 6개월 = 240만원). ★ 두 한도를 모두 저장하는 이유: 월 한도만 보면 총액을 넘고, 총액만 보면 한 달에 몰아 쓸 수 있다. 차수마다 금액이 바뀌므로 상수가 아닌 행으로 저장한다. [신규 테이블: seoul_budget_allocations]</rdfs:comment>
+        <rdfs:label>Budget Allocation</rdfs:label>
+        <rdfs:comment xml:lang="ko">예산 배정 — 심의 승인으로 확정된 참여자별 예산. 월 한도와 총 한도를 함께 가진다(월 40만원 × 6개월 = 240만원). ★ 두 한도를 모두 저장하는 이유: 월 한도만 보면 총액을 넘고, 총액만 보면 한 달에 몰아 쓸 수 있다. 차수마다 금액이 바뀌므로 상수가 아닌 행으로 저장한다. [신규 테이블: seoul_budget_allocations]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#budgetAllocationId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#ServiceUsage">
-        <rdfs:label>Service Usage (서비스 이용)</rdfs:label>        <rdfs:comment xml:lang="ko">실제 지출·이용 건. 절차 6단계. 금액·일자·이용 내용과 어느 영역·어느 계획 항목에 대응하는지를 기록한다. [기존 테이블 활용: transactions 를 서울형 컬럼으로 확장하거나 seoul_service_usages 로 분리 — 설계문서 §5 참조]</rdfs:comment>
+        <rdfs:label>Service Usage</rdfs:label>
+        <rdfs:comment xml:lang="ko">서비스 이용 — 실제 지출·이용 건. 절차 6단계. 금액·일자·이용 내용과 어느 영역·어느 계획 항목에 대응하는지를 기록한다. [기존 테이블 활용: transactions 를 서울형 컬럼으로 확장하거나 seoul_service_usages 로 분리 — 설계문서 §5 참조]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#serviceUsageId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#Receipt">
-        <rdfs:label>Receipt (영수증)</rdfs:label>        <rdfs:comment xml:lang="ko">지출 증빙. 정산의 근거 서류. Storage 의 receipts 버킷(private)에 저장하고 signed URL 로만 노출한다. [기존 테이블: transactions.receipt_url + receipts 버킷]</rdfs:comment>
+        <rdfs:label>Receipt</rdfs:label>
+        <rdfs:comment xml:lang="ko">영수증 — 지출 증빙. 정산의 근거 서류. Storage 의 receipts 버킷(private)에 저장하고 signed URL 로만 노출한다. [기존 테이블: transactions.receipt_url + receipts 버킷]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#receiptId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#ServiceProvider">
-        <rdfs:label>Service Provider (서비스 제공처)</rdfs:label>        <rdfs:comment xml:lang="ko">참여자가 실제로 이용한 가게·기관·강사 등. 사업자번호가 있으면 함께 기록해 정산 검증에 쓴다. [신규 테이블: seoul_service_providers]</rdfs:comment>
+        <rdfs:label>Service Provider</rdfs:label>
+        <rdfs:comment xml:lang="ko">서비스 제공처 — 참여자가 실제로 이용한 가게·기관·강사 등. 사업자번호가 있으면 함께 기록해 정산 검증에 쓴다. [신규 테이블: seoul_service_providers]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#serviceProviderId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <!-- ── 6군. 규칙과 정산 ──────────────────────────────────── -->
 
     <owl:Class rdf:about="#SpendingRule">
-        <rdfs:label>Spending Rule (지출 규칙)</rdfs:label>        <rdfs:comment xml:lang="ko">두 종류를 한 클래스로 담는다. ①금지(prohibition): 주류·담배·복권, 세금·공과금, 저축·부채상환 — 제도가 정한 것이므로 시스템이 차단한다. ②요건(criterion): 장애 연관성, 목표 연관성, 계획 포함 여부 — 판단이 필요하므로 시스템은 플래그만 세우고 사람이 결정한다. ★ 이 구분이 핵심이다. pcp_ontology 에서는 "자동 거절 없음"을 원칙으로 삼았지만, 서울형의 금지 항목은 법정 제한이라 차단이 맞다. 반대로 요건 판단까지 자동화하면 말로 설명하기 어려운 당사자가 불리해진다. [신규 테이블: seoul_spending_rules]</rdfs:comment>
+        <rdfs:label>Spending Rule</rdfs:label>
+        <rdfs:comment xml:lang="ko">지출 규칙 — 두 종류를 한 클래스로 담는다. ①금지(prohibition): 주류·담배·복권, 세금·공과금, 저축·부채상환 — 제도가 정한 것이므로 시스템이 차단한다. ②요건(criterion): 장애 연관성, 목표 연관성, 계획 포함 여부 — 판단이 필요하므로 시스템은 플래그만 세우고 사람이 결정한다. ★ 이 구분이 핵심이다. pcp_ontology 에서는 "자동 거절 없음"을 원칙으로 삼았지만, 서울형의 금지 항목은 법정 제한이라 차단이 맞다. 반대로 요건 판단까지 자동화하면 말로 설명하기 어려운 당사자가 불리해진다. [신규 테이블: seoul_spending_rules]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#spendingRuleId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#RuleCheck">
-        <rdfs:label>Rule Check (규칙 검증 결과)</rdfs:label>        <rdfs:comment xml:lang="ko">지출 건마다 어떤 규칙에 걸렸는지, 그래서 어떻게 처리했는지를 남기는 감사 흔적. 통과/차단/검토필요와 실무자의 최종 판단·사유를 기록한다. ★ 결과만 남기고 근거를 안 남기면 이의신청 때 다툴 수 없다. [신규 테이블: seoul_rule_checks]</rdfs:comment>
+        <rdfs:label>Rule Check</rdfs:label>
+        <rdfs:comment xml:lang="ko">규칙 검증 결과 — 지출 건마다 어떤 규칙에 걸렸는지, 그래서 어떻게 처리했는지를 남기는 감사 흔적. 통과/차단/검토필요와 실무자의 최종 판단·사유를 기록한다. ★ 결과만 남기고 근거를 안 남기면 이의신청 때 다툴 수 없다. [신규 테이블: seoul_rule_checks]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#ruleCheckId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#Settlement">
-        <rdfs:label>Settlement (정산)</rdfs:label>        <rdfs:comment xml:lang="ko">참여 기간 종료 후(또는 월별) 집행액을 확정하는 절차. 절차 7단계. 인정액·불인정액·환수액을 기록한다. [신규 테이블: seoul_settlements]</rdfs:comment>
+        <rdfs:label>Settlement</rdfs:label>
+        <rdfs:comment xml:lang="ko">정산 — 참여 기간 종료 후(또는 월별) 집행액을 확정하는 절차. 절차 7단계. 인정액·불인정액·환수액을 기록한다. [신규 테이블: seoul_settlements]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#settlementId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#MonitoringRecord">
-        <rdfs:label>Monitoring Record (모니터링 기록)</rdfs:label>        <rdfs:comment xml:lang="ko">담당자가 이용 상황을 확인한 기록. 절차 7단계(모니터링). 서울형은 4+1 평가 같은 정형 평가 도구가 없으므로, 변화 기록은 모니터링 노트가 담당한다. [신규 테이블: seoul_monitoring_records]</rdfs:comment>
+        <rdfs:label>Monitoring Record</rdfs:label>
+        <rdfs:comment xml:lang="ko">모니터링 기록 — 담당자가 이용 상황을 확인한 기록. 절차 7단계(모니터링). 서울형은 4+1 평가 같은 정형 평가 도구가 없으므로, 변화 기록은 모니터링 노트가 담당한다. [신규 테이블: seoul_monitoring_records]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#monitoringRecordId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <!-- ── 7군. 기관과 담당자 ────────────────────────────────── -->
 
     <owl:Class rdf:about="#AdministeringBody">
-        <rdfs:label>Administering Body (시행 주체)</rdfs:label>        <rdfs:comment xml:lang="ko">서울시·관할 자치구·한국장애인재단. 사업을 설계하고 예산을 대며 선정·심의를 관장한다. [신규 테이블: seoul_administering_bodies]</rdfs:comment>
+        <rdfs:label>Administering Body</rdfs:label>
+        <rdfs:comment xml:lang="ko">시행 주체 — 서울시·관할 자치구·한국장애인재단. 사업을 설계하고 예산을 대며 선정·심의를 관장한다. [신규 테이블: seoul_administering_bodies]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#administeringBodyId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#ExecutingAgency">
-        <rdfs:label>Executing Agency (수행기관)</rdfs:label>        <rdfs:comment xml:lang="ko">신청 접수와 계획수립 지원, 모니터링을 맡는 복지관. 동의서에 열거된 8개 기관(남부·북부·시립서울·영등포·서대문농아인·노원시각·뇌성마비 등)이 여기 해당한다. 아름드리꿈터도 이 위치에 선다. [신규 테이블: seoul_executing_agencies]</rdfs:comment>
+        <rdfs:label>Executing Agency</rdfs:label>
+        <rdfs:comment xml:lang="ko">수행기관 — 신청 접수와 계획수립 지원, 모니터링을 맡는 복지관. 동의서에 열거된 8개 기관(남부·북부·시립서울·영등포·서대문농아인·노원시각·뇌성마비 등)이 여기 해당한다. 아름드리꿈터도 이 위치에 선다. [신규 테이블: seoul_executing_agencies]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#executingAgencyId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <owl:Class rdf:about="#Caseworker">
-        <rdfs:label>Caseworker (담당자)</rdfs:label>        <rdfs:comment xml:lang="ko">수행기관 소속 실무자. 계획수립을 돕고 모니터링한다. ★ 계획을 "대신 세우는" 사람이 아니라 "돕는" 사람이다 — 관계 이름을 assists 로 둔 이유. [기존 테이블: profiles(role=supporter)]</rdfs:comment>
+        <rdfs:label>Caseworker</rdfs:label>
+        <rdfs:comment xml:lang="ko">담당자 — 수행기관 소속 실무자. 계획수립을 돕고 모니터링한다. ★ 계획을 "대신 세우는" 사람이 아니라 "돕는" 사람이다 — 관계 이름을 assists 로 둔 이유. [기존 테이블: profiles(role=supporter)]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#caseworkerId"/>
+        </owl:hasKey>
     </owl:Class>
 
     <!-- ========================================================= -->
@@ -196,258 +300,339 @@
     <!-- ── 참여자 자격 ───────────────────────────────────────── -->
 
     <owl:ObjectProperty rdf:about="#hasDisabilityProfile">
-        <rdfs:label>hasDisabilityProfile (장애 정보를 가진다)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>hasDisabilityProfile</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="#DisabilityProfile"/>
+        <rdfs:comment xml:lang="ko">장애 정보를 가진다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#hasBenefitStatus">
-        <rdfs:label>hasBenefitStatus (수급 현황을 가진다)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>hasBenefitStatus</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="#BenefitStatus"/>
+        <rdfs:comment xml:lang="ko">수급 현황을 가진다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#actsFor">
-        <rdfs:label>actsFor (대리한다)</rdfs:label>        <rdfs:domain rdf:resource="#Proxy"/>
+        <rdfs:label>actsFor</rdfs:label>
+        <rdfs:domain rdf:resource="#Proxy"/>
         <rdfs:range rdf:resource="#Participant"/>
-        <rdfs:comment xml:lang="ko">대리인이 당사자를 대신한다. 관계(부·모·형제·활동지원사 등)를 속성으로 함께 기록한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">대리한다 — 대리인이 당사자를 대신한다. 관계(부·모·형제·활동지원사 등)를 속성으로 함께 기록한다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <!-- ── 신청 ──────────────────────────────────────────────── -->
 
     <owl:ObjectProperty rdf:about="#submits">
-        <rdfs:label>submits (신청한다)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>submits</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="#Application"/>
-        <rdfs:comment xml:lang="ko">★ 신청의 주체는 당사자다. 대리 서명이 있어도 신청인은 당사자로 남는다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">신청한다 — ★ 신청의 주체는 당사자다. 대리 서명이 있어도 신청인은 당사자로 남는다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#cosigns">
-        <rdfs:label>cosigns (대리 서명한다)</rdfs:label>        <rdfs:domain rdf:resource="#Proxy"/>
+        <rdfs:label>cosigns</rdfs:label>
+        <rdfs:domain rdf:resource="#Proxy"/>
         <rdfs:range rdf:resource="#Application"/>
+        <rdfs:comment xml:lang="ko">대리 서명한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#grants">
-        <rdfs:label>grants (동의한다)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>grants</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="#ConsentRecord"/>
-        <rdfs:comment xml:lang="ko">★ 동의의 주체도 당사자다. 대리인이 대신 체크한 경우 그 사실 자체를 속성으로 남긴다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">동의한다 — ★ 동의의 주체도 당사자다. 대리인이 대신 체크한 경우 그 사실 자체를 속성으로 남긴다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#includesConsent">
-        <rdfs:label>includesConsent (동의서를 포함한다)</rdfs:label>        <rdfs:domain rdf:resource="#Application"/>
+        <rdfs:label>includesConsent</rdfs:label>
+        <rdfs:domain rdf:resource="#Application"/>
         <rdfs:range rdf:resource="#ConsentRecord"/>
+        <rdfs:comment xml:lang="ko">동의서를 포함한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#receivedBy">
-        <rdfs:label>receivedBy (접수된다)</rdfs:label>        <rdfs:domain rdf:resource="#Application"/>
+        <rdfs:label>receivedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#Application"/>
         <rdfs:range rdf:resource="#ExecutingAgency"/>
+        <rdfs:comment xml:lang="ko">접수된다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#resultsIn">
-        <rdfs:label>resultsIn (선정 결과로 이어진다)</rdfs:label>        <rdfs:domain rdf:resource="#Application"/>
+        <rdfs:label>resultsIn</rdfs:label>
+        <rdfs:domain rdf:resource="#Application"/>
         <rdfs:range rdf:resource="#SelectionDecision"/>
+        <rdfs:comment xml:lang="ko">선정 결과로 이어진다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#decidedBy">
-        <rdfs:label>decidedBy (결정 주체)</rdfs:label>        <rdfs:domain rdf:resource="#SelectionDecision"/>
+        <rdfs:label>decidedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#SelectionDecision"/>
         <rdfs:range rdf:resource="#AdministeringBody"/>
+        <rdfs:comment xml:lang="ko">결정 주체</rdfs:comment>
     </owl:ObjectProperty>
 
     <!-- ── 이용계획 ──────────────────────────────────────────── -->
 
     <owl:ObjectProperty rdf:about="#authors">
-        <rdfs:label>authors (계획을 세운다)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>authors</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="#UtilizationPlan"/>
-        <rdfs:comment xml:lang="ko">★ 계획의 저자는 참여자다. 개인예산제는 "본인이 스스로 계획·선택·구매"하는 제도이므로 이 화살표가 없으면 제도의 전제가 데이터에서 사라진다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">계획을 세운다 — ★ 계획의 저자는 참여자다. 개인예산제는 "본인이 스스로 계획·선택·구매"하는 제도이므로 이 화살표가 없으면 제도의 전제가 데이터에서 사라진다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#assists">
-        <rdfs:label>assists (계획 수립을 돕는다)</rdfs:label>        <rdfs:domain rdf:resource="#Caseworker"/>
+        <rdfs:label>assists</rdfs:label>
+        <rdfs:domain rdf:resource="#Caseworker"/>
         <rdfs:range rdf:resource="#UtilizationPlan"/>
-        <rdfs:comment xml:lang="ko">돕는 것이지 대신 세우는 것이 아니다. authors 와 짝을 이룬다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">계획 수립을 돕는다 — 돕는 것이지 대신 세우는 것이 아니다. authors 와 짝을 이룬다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#basedOn">
-        <rdfs:label>basedOn (신청서에 근거한다)</rdfs:label>        <rdfs:domain rdf:resource="#UtilizationPlan"/>
+        <rdfs:label>basedOn</rdfs:label>
+        <rdfs:domain rdf:resource="#UtilizationPlan"/>
         <rdfs:range rdf:resource="#Application"/>
+        <rdfs:comment xml:lang="ko">신청서에 근거한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#describes">
-        <rdfs:label>describes (나의 상황을 담는다)</rdfs:label>        <rdfs:domain rdf:resource="#UtilizationPlan"/>
+        <rdfs:label>describes</rdfs:label>
+        <rdfs:domain rdf:resource="#UtilizationPlan"/>
         <rdfs:range rdf:resource="#SelfNarrative"/>
+        <rdfs:comment xml:lang="ko">나의 상황을 담는다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#requests">
-        <rdfs:label>requests (서비스를 요청한다)</rdfs:label>        <rdfs:domain rdf:resource="#UtilizationPlan"/>
+        <rdfs:label>requests</rdfs:label>
+        <rdfs:domain rdf:resource="#UtilizationPlan"/>
         <rdfs:range rdf:resource="#RequestedService"/>
+        <rdfs:comment xml:lang="ko">서비스를 요청한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#informs">
-        <rdfs:label>informs (서비스 선택의 근거가 된다)</rdfs:label>        <rdfs:domain rdf:resource="#SelfNarrative"/>
+        <rdfs:label>informs</rdfs:label>
+        <rdfs:domain rdf:resource="#SelfNarrative"/>
         <rdfs:range rdf:resource="#RequestedService"/>
-        <rdfs:comment xml:lang="ko">★ 서울형에서 철학과 지출을 잇는 유일한 화살표. "원하는 삶의 모습"과 "요청 서비스"가 이어지지 않으면 심의가 근거 없이 판단하게 된다. pcp_ontology 의 justifiesExpense 에 해당하는 자리다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">서비스 선택의 근거가 된다 — ★ 서울형에서 철학과 지출을 잇는 유일한 화살표. "원하는 삶의 모습"과 "요청 서비스"가 이어지지 않으면 심의가 근거 없이 판단하게 된다. pcp_ontology 의 justifiesExpense 에 해당하는 자리다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#classifiedAs">
-        <rdfs:label>classifiedAs (영역으로 분류된다)</rdfs:label>        <rdfs:domain rdf:resource="#RequestedService"/>
+        <rdfs:label>classifiedAs</rdfs:label>
+        <rdfs:domain rdf:resource="#RequestedService"/>
         <rdfs:range rdf:resource="#ServiceDomain"/>
+        <rdfs:comment xml:lang="ko">영역으로 분류된다</rdfs:comment>
     </owl:ObjectProperty>
 
     <!-- ── 심의와 권리구제 ───────────────────────────────────── -->
 
     <owl:ObjectProperty rdf:about="#reviewedBy">
-        <rdfs:label>reviewedBy (심의를 받는다)</rdfs:label>        <rdfs:domain rdf:resource="#UtilizationPlan"/>
+        <rdfs:label>reviewedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#UtilizationPlan"/>
         <rdfs:range rdf:resource="#PlanReview"/>
+        <rdfs:comment xml:lang="ko">심의를 받는다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#conductedBy">
-        <rdfs:label>conductedBy (심의 주체)</rdfs:label>        <rdfs:domain rdf:resource="#PlanReview"/>
+        <rdfs:label>conductedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#PlanReview"/>
         <rdfs:range rdf:resource="#ReviewCommittee"/>
+        <rdfs:comment xml:lang="ko">심의 주체</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#issues">
-        <rdfs:label>issues (통지를 발송한다)</rdfs:label>        <rdfs:domain rdf:resource="#PlanReview"/>
+        <rdfs:label>issues</rdfs:label>
+        <rdfs:domain rdf:resource="#PlanReview"/>
         <rdfs:range rdf:resource="#Notification"/>
+        <rdfs:comment xml:lang="ko">통지를 발송한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#sentTo">
-        <rdfs:label>sentTo (통지받는다)</rdfs:label>        <rdfs:domain rdf:resource="#Notification"/>
+        <rdfs:label>sentTo</rdfs:label>
+        <rdfs:domain rdf:resource="#Notification"/>
         <rdfs:range rdf:resource="#Participant"/>
+        <rdfs:comment xml:lang="ko">통지받는다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#files">
-        <rdfs:label>files (이의를 제기한다)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>files</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="#Appeal"/>
-        <rdfs:comment xml:lang="ko">★ 참여자 본인이 제기하는 것이 원칙. 화살표 방향이 곧 권리의 소재다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">이의를 제기한다 — ★ 참여자 본인이 제기하는 것이 원칙. 화살표 방향이 곧 권리의 소재다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#contests">
-        <rdfs:label>contests (통지에 이의를 단다)</rdfs:label>        <rdfs:domain rdf:resource="#Appeal"/>
+        <rdfs:label>contests</rdfs:label>
+        <rdfs:domain rdf:resource="#Appeal"/>
         <rdfs:range rdf:resource="#Notification"/>
-        <rdfs:comment xml:lang="ko">이의신청은 심의가 아니라 "통지"를 대상으로 건다. 통지일이 기산점이기 때문이다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">통지에 이의를 단다 — 이의신청은 심의가 아니라 "통지"를 대상으로 건다. 통지일이 기산점이기 때문이다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#appealReviewedBy">
-        <rdfs:label>appealReviewedBy (이의신청을 재심한다)</rdfs:label>        <rdfs:domain rdf:resource="#Appeal"/>
+        <rdfs:label>appealReviewedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#Appeal"/>
         <rdfs:range rdf:resource="#ReviewCommittee"/>
+        <rdfs:comment xml:lang="ko">이의신청을 재심한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <!-- ── 예산과 집행 ───────────────────────────────────────── -->
 
     <owl:ObjectProperty rdf:about="#authorizes">
-        <rdfs:label>authorizes (예산을 승인한다)</rdfs:label>        <rdfs:domain rdf:resource="#PlanReview"/>
+        <rdfs:label>authorizes</rdfs:label>
+        <rdfs:domain rdf:resource="#PlanReview"/>
         <rdfs:range rdf:resource="#BudgetAllocation"/>
+        <rdfs:comment xml:lang="ko">예산을 승인한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#allocatedTo">
-        <rdfs:label>allocatedTo (배정된다)</rdfs:label>        <rdfs:domain rdf:resource="#BudgetAllocation"/>
+        <rdfs:label>allocatedTo</rdfs:label>
+        <rdfs:domain rdf:resource="#BudgetAllocation"/>
         <rdfs:range rdf:resource="#Participant"/>
+        <rdfs:comment xml:lang="ko">배정된다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#fundedBy">
-        <rdfs:label>fundedBy (재원을 댄다)</rdfs:label>        <rdfs:domain rdf:resource="#BudgetAllocation"/>
+        <rdfs:label>fundedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#BudgetAllocation"/>
         <rdfs:range rdf:resource="#AdministeringBody"/>
+        <rdfs:comment xml:lang="ko">재원을 댄다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#uses">
-        <rdfs:label>uses (서비스를 이용한다)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>uses</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="#ServiceUsage"/>
-        <rdfs:comment xml:lang="ko">★ 이용의 주체도 당사자다. 실무자가 대신 입력했더라도 이용자는 당사자로 기록하고, 누가 입력·결정했는지는 속성으로 구분한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">서비스를 이용한다 — ★ 이용의 주체도 당사자다. 실무자가 대신 입력했더라도 이용자는 당사자로 기록하고, 누가 입력·결정했는지는 속성으로 구분한다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#drawsFrom">
-        <rdfs:label>drawsFrom (예산에서 차감된다)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceUsage"/>
+        <rdfs:label>drawsFrom</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="#BudgetAllocation"/>
+        <rdfs:comment xml:lang="ko">예산에서 차감된다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#fulfills">
-        <rdfs:label>fulfills (계획 항목을 이행한다)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceUsage"/>
+        <rdfs:label>fulfills</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="#RequestedService"/>
-        <rdfs:comment xml:lang="ko">★ 이용 제한 요건 "개인별 수립한 이용계획에 포함되어야 한다"를 검사하는 화살표. 이 연결이 비어 있는 지출이 곧 검토 대상이다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">계획 항목을 이행한다 — ★ 이용 제한 요건 "개인별 수립한 이용계획에 포함되어야 한다"를 검사하는 화살표. 이 연결이 비어 있는 지출이 곧 검토 대상이다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#providedBy">
-        <rdfs:label>providedBy (제공처)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceUsage"/>
+        <rdfs:label>providedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="#ServiceProvider"/>
+        <rdfs:comment xml:lang="ko">제공처</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#inDomain">
-        <rdfs:label>inDomain (영역에 속한다)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceUsage"/>
+        <rdfs:label>inDomain</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="#ServiceDomain"/>
+        <rdfs:comment xml:lang="ko">영역에 속한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#evidencedBy">
-        <rdfs:label>evidencedBy (영수증으로 증빙된다)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceUsage"/>
+        <rdfs:label>evidencedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="#Receipt"/>
+        <rdfs:comment xml:lang="ko">영수증으로 증빙된다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#issuedBy">
-        <rdfs:label>issuedBy (발행처)</rdfs:label>        <rdfs:domain rdf:resource="#Receipt"/>
+        <rdfs:label>issuedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#Receipt"/>
         <rdfs:range rdf:resource="#ServiceProvider"/>
+        <rdfs:comment xml:lang="ko">발행처</rdfs:comment>
     </owl:ObjectProperty>
 
     <!-- ── 규칙 검증 ─────────────────────────────────────────── -->
 
     <owl:ObjectProperty rdf:about="#checkedAgainst">
-        <rdfs:label>checkedAgainst (규칙 검증을 거친다)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceUsage"/>
+        <rdfs:label>checkedAgainst</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="#RuleCheck"/>
+        <rdfs:comment xml:lang="ko">규칙 검증을 거친다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#appliesRule">
-        <rdfs:label>appliesRule (적용된 규칙)</rdfs:label>        <rdfs:domain rdf:resource="#RuleCheck"/>
+        <rdfs:label>appliesRule</rdfs:label>
+        <rdfs:domain rdf:resource="#RuleCheck"/>
         <rdfs:range rdf:resource="#SpendingRule"/>
+        <rdfs:comment xml:lang="ko">적용된 규칙</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#restrictsDomain">
-        <rdfs:label>restrictsDomain (영역을 제한한다)</rdfs:label>        <rdfs:domain rdf:resource="#SpendingRule"/>
+        <rdfs:label>restrictsDomain</rdfs:label>
+        <rdfs:domain rdf:resource="#SpendingRule"/>
         <rdfs:range rdf:resource="#ServiceDomain"/>
-        <rdfs:comment xml:lang="ko">규칙이 특정 영역에만 적용될 때 연결한다(예: 주거환경개선의 공사비 상한). 전역 규칙은 이 연결이 없다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">영역을 제한한다 — 규칙이 특정 영역에만 적용될 때 연결한다(예: 주거환경개선의 공사비 상한). 전역 규칙은 이 연결이 없다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <!-- ── 모니터링과 정산 ───────────────────────────────────── -->
 
     <owl:ObjectProperty rdf:about="#monitors">
-        <rdfs:label>monitors (모니터링을 수행한다)</rdfs:label>        <rdfs:domain rdf:resource="#Caseworker"/>
+        <rdfs:label>monitors</rdfs:label>
+        <rdfs:domain rdf:resource="#Caseworker"/>
         <rdfs:range rdf:resource="#MonitoringRecord"/>
+        <rdfs:comment xml:lang="ko">모니터링을 수행한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#observes">
-        <rdfs:label>observes (대상 참여자)</rdfs:label>        <rdfs:domain rdf:resource="#MonitoringRecord"/>
+        <rdfs:label>observes</rdfs:label>
+        <rdfs:domain rdf:resource="#MonitoringRecord"/>
         <rdfs:range rdf:resource="#Participant"/>
+        <rdfs:comment xml:lang="ko">대상 참여자</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#reviewsUsage">
-        <rdfs:label>reviewsUsage (이용 내역을 확인한다)</rdfs:label>        <rdfs:domain rdf:resource="#MonitoringRecord"/>
+        <rdfs:label>reviewsUsage</rdfs:label>
+        <rdfs:domain rdf:resource="#MonitoringRecord"/>
         <rdfs:range rdf:resource="#ServiceUsage"/>
+        <rdfs:comment xml:lang="ko">이용 내역을 확인한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#settles">
-        <rdfs:label>settles (예산을 정산한다)</rdfs:label>        <rdfs:domain rdf:resource="#Settlement"/>
+        <rdfs:label>settles</rdfs:label>
+        <rdfs:domain rdf:resource="#Settlement"/>
         <rdfs:range rdf:resource="#BudgetAllocation"/>
+        <rdfs:comment xml:lang="ko">예산을 정산한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#aggregates">
-        <rdfs:label>aggregates (이용 내역을 집계한다)</rdfs:label>        <rdfs:domain rdf:resource="#Settlement"/>
+        <rdfs:label>aggregates</rdfs:label>
+        <rdfs:domain rdf:resource="#Settlement"/>
         <rdfs:range rdf:resource="#ServiceUsage"/>
+        <rdfs:comment xml:lang="ko">이용 내역을 집계한다</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#verifiedBy">
-        <rdfs:label>verifiedBy (검증 기관)</rdfs:label>        <rdfs:domain rdf:resource="#Settlement"/>
+        <rdfs:label>verifiedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#Settlement"/>
         <rdfs:range rdf:resource="#ExecutingAgency"/>
+        <rdfs:comment xml:lang="ko">검증 기관</rdfs:comment>
     </owl:ObjectProperty>
 
     <!-- ── 기관 구조 ─────────────────────────────────────────── -->
 
     <owl:ObjectProperty rdf:about="#employedBy">
-        <rdfs:label>employedBy (소속 기관)</rdfs:label>        <rdfs:domain rdf:resource="#Caseworker"/>
+        <rdfs:label>employedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#Caseworker"/>
         <rdfs:range rdf:resource="#ExecutingAgency"/>
+        <rdfs:comment xml:lang="ko">소속 기관</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#designatedBy">
-        <rdfs:label>designatedBy (지정 주체)</rdfs:label>        <rdfs:domain rdf:resource="#ExecutingAgency"/>
+        <rdfs:label>designatedBy</rdfs:label>
+        <rdfs:domain rdf:resource="#ExecutingAgency"/>
         <rdfs:range rdf:resource="#AdministeringBody"/>
+        <rdfs:comment xml:lang="ko">지정 주체</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#assignedTo">
-        <rdfs:label>assignedTo (담당자가 배정된다)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>assignedTo</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="#Caseworker"/>
+        <rdfs:comment xml:lang="ko">담당자가 배정된다</rdfs:comment>
     </owl:ObjectProperty>
 
     <!-- ========================================================= -->
@@ -457,554 +642,695 @@
     <!-- ── Participant ───────────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#participantName">
-        <rdfs:label>participantName (참여자 명)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>participantName</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">참여자 명</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#birthDate">
-        <rdfs:label>birthDate (생년월일)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>birthDate</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment xml:lang="ko">생년월일</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#gender">
-        <rdfs:label>gender (성별)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>gender</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">male | female</rdfs:comment>
+        <rdfs:comment xml:lang="ko">성별 — male | female</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#registeredAddress">
-        <rdfs:label>registeredAddress (주민등록상 주소)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>registeredAddress</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">도로명 주소. 서울시 거주 요건 확인에 쓰인다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">주민등록상 주소 — 도로명 주소. 서울시 거주 요건 확인에 쓰인다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#actualAddress">
-        <rdfs:label>actualAddress (실거주지)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>actualAddress</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">주민등록상 주소와 다를 경우만 기재.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">실거주지 — 주민등록상 주소와 다를 경우만 기재.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#contactNumber">
-        <rdfs:label>contactNumber (연락처)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>contactNumber</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">연락처</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#emergencyContact">
-        <rdfs:label>emergencyContact (비상연락망)</rdfs:label>        <rdfs:domain rdf:resource="#Participant"/>
+        <rdfs:label>emergencyContact</rdfs:label>
+        <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">비상연락망</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── DisabilityProfile ─────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#primaryDisabilityType">
-        <rdfs:label>primaryDisabilityType (주장애유형)</rdfs:label>        <rdfs:domain rdf:resource="#DisabilityProfile"/>
+        <rdfs:label>primaryDisabilityType</rdfs:label>
+        <rdfs:domain rdf:resource="#DisabilityProfile"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">주장애유형</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#disabilitySeverity">
-        <rdfs:label>disabilitySeverity (장애정도)</rdfs:label>        <rdfs:domain rdf:resource="#DisabilityProfile"/>
+        <rdfs:label>disabilitySeverity</rdfs:label>
+        <rdfs:domain rdf:resource="#DisabilityProfile"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">severe(심한 장애, 1~3급) | mild(심하지 않은 장애, 4~6급). ★ 서울형은 중증만 대상이므로 severe 가 자격 요건.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">장애정도 — severe(심한 장애, 1~3급) | mild(심하지 않은 장애, 4~6급). ★ 서울형은 중증만 대상이므로 severe 가 자격 요건.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#secondaryDisabilityType">
-        <rdfs:label>secondaryDisabilityType (중복장애유형)</rdfs:label>        <rdfs:domain rdf:resource="#DisabilityProfile"/>
+        <rdfs:label>secondaryDisabilityType</rdfs:label>
+        <rdfs:domain rdf:resource="#DisabilityProfile"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">중복장애유형</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#acquiredDisabilityAge">
-        <rdfs:label>acquiredDisabilityAge (중도장애 발생시기)</rdfs:label>        <rdfs:domain rdf:resource="#DisabilityProfile"/>
+        <rdfs:label>acquiredDisabilityAge</rdfs:label>
+        <rdfs:domain rdf:resource="#DisabilityProfile"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">none | under20 | 20s | 30s | 40s | 50s | 60s</rdfs:comment>
+        <rdfs:comment xml:lang="ko">중도장애 발생시기 — none | under20 | 20s | 30s | 40s | 50s | 60s</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── BenefitStatus ─────────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#publicAssistance">
-        <rdfs:label>publicAssistance (공공부조 수급현황)</rdfs:label>        <rdfs:domain rdf:resource="#BenefitStatus"/>
+        <rdfs:label>publicAssistance</rdfs:label>
+        <rdfs:domain rdf:resource="#BenefitStatus"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">basic_livelihood(기초생활수급) | near_poor(차상위·조건부수급) | none(해당없음)</rdfs:comment>
+        <rdfs:comment xml:lang="ko">공공부조 수급현황 — basic_livelihood(기초생활수급) | near_poor(차상위·조건부수급) | none(해당없음)</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#usesActivitySupport">
-        <rdfs:label>usesActivitySupport (활동지원서비스 이용여부)</rdfs:label>        <rdfs:domain rdf:resource="#BenefitStatus"/>
+        <rdfs:label>usesActivitySupport</rdfs:label>
+        <rdfs:domain rdf:resource="#BenefitStatus"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment xml:lang="ko">활동지원서비스 이용여부</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#usesSeoulAdditionalSupport">
-        <rdfs:label>usesSeoulAdditionalSupport (서울시 활동지원 추가지원 이용여부)</rdfs:label>        <rdfs:domain rdf:resource="#BenefitStatus"/>
+        <rdfs:label>usesSeoulAdditionalSupport</rdfs:label>
+        <rdfs:domain rdf:resource="#BenefitStatus"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment xml:lang="ko">서울시 활동지원 추가지원 이용여부</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#participatesInMohwPilot">
-        <rdfs:label>participatesInMohwPilot (보건복지부 시범사업 참여여부)</rdfs:label>        <rdfs:domain rdf:resource="#BenefitStatus"/>
+        <rdfs:label>participatesInMohwPilot</rdfs:label>
+        <rdfs:domain rdf:resource="#BenefitStatus"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment xml:lang="ko">★ true 이면 서울형 참여 불가. 신청서에 "보건복지부 시범사업 참여자의 경우, 서울형 시범사업 참여 불가"로 명시되어 있다. DB 에서 CHECK 제약으로 강제한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">보건복지부 시범사업 참여여부 — ★ true 이면 서울형 참여 불가. 신청서에 "보건복지부 시범사업 참여자의 경우, 서울형 시범사업 참여 불가"로 명시되어 있다. DB 에서 CHECK 제약으로 강제한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── Application ───────────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#receiptNumber">
-        <rdfs:label>receiptNumber (접수번호)</rdfs:label>        <rdfs:domain rdf:resource="#Application"/>
+        <rdfs:label>receiptNumber</rdfs:label>
+        <rdfs:domain rdf:resource="#Application"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">접수번호</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#applicationDate">
-        <rdfs:label>applicationDate (신청일)</rdfs:label>        <rdfs:domain rdf:resource="#Application"/>
+        <rdfs:label>applicationDate</rdfs:label>
+        <rdfs:domain rdf:resource="#Application"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment xml:lang="ko">신청일</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#cohort">
-        <rdfs:label>cohort (시범사업 차수)</rdfs:label>        <rdfs:domain rdf:resource="#Application"/>
+        <rdfs:label>cohort</rdfs:label>
+        <rdfs:domain rdf:resource="#Application"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">1차(2024) | 2차(2025) | 3차(2026). ★ 차수마다 한도액과 세부 규칙이 달라지므로 반드시 기록한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">시범사업 차수 — 1차(2024) | 2차(2025) | 3차(2026). ★ 차수마다 한도액과 세부 규칙이 달라지므로 반드시 기록한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#applicantSignature">
-        <rdfs:label>applicantSignature (신청자 서명)</rdfs:label>        <rdfs:domain rdf:resource="#Application"/>
+        <rdfs:label>applicantSignature</rdfs:label>
+        <rdfs:domain rdf:resource="#Application"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">서명 이미지 경로 또는 전자서명 값. 신청서 하단 "(서명 또는 인)".</rdfs:comment>
+        <rdfs:comment xml:lang="ko">신청자 서명 — 서명 이미지 경로 또는 전자서명 값. 신청서 하단 "(서명 또는 인)".</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── Proxy ─────────────────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#proxyName">
-        <rdfs:label>proxyName (대리인 성명)</rdfs:label>        <rdfs:domain rdf:resource="#Proxy"/>
+        <rdfs:label>proxyName</rdfs:label>
+        <rdfs:domain rdf:resource="#Proxy"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">대리인 성명</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#relationToParticipant">
-        <rdfs:label>relationToParticipant (신청자와의 관계)</rdfs:label>        <rdfs:domain rdf:resource="#Proxy"/>
+        <rdfs:label>relationToParticipant</rdfs:label>
+        <rdfs:domain rdf:resource="#Proxy"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">신청자와의 관계</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── ConsentRecord ─────────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#consentType">
-        <rdfs:label>consentType (동의 종류)</rdfs:label>        <rdfs:domain rdf:resource="#ConsentRecord"/>
+        <rdfs:label>consentType</rdfs:label>
+        <rdfs:domain rdf:resource="#ConsentRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">general(개인정보·민감정보 수집·이용) | unique_id(고유식별정보 별도 동의). 서식이 두 건을 따로 받으므로 행도 두 개다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">동의 종류 — general(개인정보·민감정보 수집·이용) | unique_id(고유식별정보 별도 동의). 서식이 두 건을 따로 받으므로 행도 두 개다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#isAgreed">
-        <rdfs:label>isAgreed (동의 여부)</rdfs:label>        <rdfs:domain rdf:resource="#ConsentRecord"/>
+        <rdfs:label>isAgreed</rdfs:label>
+        <rdfs:domain rdf:resource="#ConsentRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment xml:lang="ko">동의 여부</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#consentDate">
-        <rdfs:label>consentDate (동의일)</rdfs:label>        <rdfs:domain rdf:resource="#ConsentRecord"/>
+        <rdfs:label>consentDate</rdfs:label>
+        <rdfs:domain rdf:resource="#ConsentRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment xml:lang="ko">동의일</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#signedByProxy">
-        <rdfs:label>signedByProxy (대리 서명 여부)</rdfs:label>        <rdfs:domain rdf:resource="#ConsentRecord"/>
+        <rdfs:label>signedByProxy</rdfs:label>
+        <rdfs:domain rdf:resource="#ConsentRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment xml:lang="ko">★ 당사자 본인이 동의했는지 대리인이 대신했는지를 남긴다. 자기결정권이 핵심인 제도에서 이 구분이 사라지면 안 된다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">대리 서명 여부 — ★ 당사자 본인이 동의했는지 대리인이 대신했는지를 남긴다. 자기결정권이 핵심인 제도에서 이 구분이 사라지면 안 된다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#retentionPeriodNote">
-        <rdfs:label>retentionPeriodNote (보유·이용기간)</rdfs:label>        <rdfs:domain rdf:resource="#ConsentRecord"/>
+        <rdfs:label>retentionPeriodNote</rdfs:label>
+        <rdfs:domain rdf:resource="#ConsentRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">서식상 "사업 및 성과평가에 필요한 기간". 종료일이 특정되지 않으므로 파기 시점 관리를 위해 원문을 보존한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">보유·이용기간 — 서식상 "사업 및 성과평가에 필요한 기간". 종료일이 특정되지 않으므로 파기 시점 관리를 위해 원문을 보존한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#withdrawnAt">
-        <rdfs:label>withdrawnAt (동의 철회일)</rdfs:label>        <rdfs:domain rdf:resource="#ConsentRecord"/>
+        <rdfs:label>withdrawnAt</rdfs:label>
+        <rdfs:domain rdf:resource="#ConsentRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
-        <rdfs:comment xml:lang="ko">★ 서식에는 없지만 개인정보보호법상 철회권이 있으므로 필드를 둔다. 철회 시 이후 처리를 막는 근거가 된다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">동의 철회일 — ★ 서식에는 없지만 개인정보보호법상 철회권이 있으므로 필드를 둔다. 철회 시 이후 처리를 막는 근거가 된다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── SelectionDecision ─────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#isSelected">
-        <rdfs:label>isSelected (선정 여부)</rdfs:label>        <rdfs:domain rdf:resource="#SelectionDecision"/>
+        <rdfs:label>isSelected</rdfs:label>
+        <rdfs:domain rdf:resource="#SelectionDecision"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment xml:lang="ko">선정 여부</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#selectionReason">
-        <rdfs:label>selectionReason (선정·미선정 사유)</rdfs:label>        <rdfs:domain rdf:resource="#SelectionDecision"/>
+        <rdfs:label>selectionReason</rdfs:label>
+        <rdfs:domain rdf:resource="#SelectionDecision"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">선정·미선정 사유</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#selectionDate">
-        <rdfs:label>selectionDate (선정일)</rdfs:label>        <rdfs:domain rdf:resource="#SelectionDecision"/>
+        <rdfs:label>selectionDate</rdfs:label>
+        <rdfs:domain rdf:resource="#SelectionDecision"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment xml:lang="ko">선정일</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── UtilizationPlan ───────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#planStatus">
-        <rdfs:label>planStatus (계획 상태)</rdfs:label>        <rdfs:domain rdf:resource="#UtilizationPlan"/>
+        <rdfs:label>planStatus</rdfs:label>
+        <rdfs:domain rdf:resource="#UtilizationPlan"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">draft(작성중) | submitted(제출) | under_review(심의중) | approved(승인) | conditional(조건부승인) | rejected(부결) | under_appeal(이의신청중). ⚠️ 서울형 실제 운영 규정과 대조 필요.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">계획 상태 — draft(작성중) | submitted(제출) | under_review(심의중) | approved(승인) | conditional(조건부승인) | rejected(부결) | under_appeal(이의신청중). ⚠️ 서울형 실제 운영 규정과 대조 필요.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#planPeriodStart">
-        <rdfs:label>planPeriodStart (이용 시작일)</rdfs:label>        <rdfs:domain rdf:resource="#UtilizationPlan"/>
+        <rdfs:label>planPeriodStart</rdfs:label>
+        <rdfs:domain rdf:resource="#UtilizationPlan"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment xml:lang="ko">이용 시작일</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#planPeriodEnd">
-        <rdfs:label>planPeriodEnd (이용 종료일)</rdfs:label>        <rdfs:domain rdf:resource="#UtilizationPlan"/>
+        <rdfs:label>planPeriodEnd</rdfs:label>
+        <rdfs:domain rdf:resource="#UtilizationPlan"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment xml:lang="ko">확인된 자료상 참여기간 6개월.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">이용 종료일 — 확인된 자료상 참여기간 6개월.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#authoredWithSupport">
-        <rdfs:label>authoredWithSupport (작성 지원 수준)</rdfs:label>        <rdfs:domain rdf:resource="#UtilizationPlan"/>
+        <rdfs:label>authoredWithSupport</rdfs:label>
+        <rdfs:domain rdf:resource="#UtilizationPlan"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">self(스스로) | with_support(도움받아 함께) | by_supporter(지원자가 주로 작성). ★ 자동 추정 후 실무자가 한 번 클릭으로 보정. 개인예산제 성과평가에서 "얼마나 주도적이었나"의 1차 지표가 된다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">작성 지원 수준 — self(스스로) | with_support(도움받아 함께) | by_supporter(지원자가 주로 작성). ★ 자동 추정 후 실무자가 한 번 클릭으로 보정. 개인예산제 성과평가에서 "얼마나 주도적이었나"의 1차 지표가 된다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── SelfNarrative (5개 고정 항목) ─────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#strengthsTalents">
-        <rdfs:label>strengthsTalents (나의 재능·강점·기술)</rdfs:label>        <rdfs:domain rdf:resource="#SelfNarrative"/>
+        <rdfs:label>strengthsTalents</rdfs:label>
+        <rdfs:domain rdf:resource="#SelfNarrative"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">나의 재능·강점·기술</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#socialBarriers">
-        <rdfs:label>socialBarriers (장애로 인한 사회적 제한·어려움)</rdfs:label>        <rdfs:domain rdf:resource="#SelfNarrative"/>
+        <rdfs:label>socialBarriers</rdfs:label>
+        <rdfs:domain rdf:resource="#SelfNarrative"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">장애로 인한 사회적 제한·어려움</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#desiredChange">
-        <rdfs:label>desiredChange (내가 원하는 변화와 지원)</rdfs:label>        <rdfs:domain rdf:resource="#SelfNarrative"/>
+        <rdfs:label>desiredChange</rdfs:label>
+        <rdfs:domain rdf:resource="#SelfNarrative"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">내가 원하는 변화와 지원</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#desiredLife">
-        <rdfs:label>desiredLife (내가 원하는 삶의 모습)</rdfs:label>        <rdfs:domain rdf:resource="#SelfNarrative"/>
+        <rdfs:label>desiredLife</rdfs:label>
+        <rdfs:domain rdf:resource="#SelfNarrative"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">희망·꿈·바라는 바·관심사.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">내가 원하는 삶의 모습 — 희망·꿈·바라는 바·관심사.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#goalToTry">
-        <rdfs:label>goalToTry (시도하고 싶은 것)</rdfs:label>        <rdfs:domain rdf:resource="#SelfNarrative"/>
+        <rdfs:label>goalToTry</rdfs:label>
+        <rdfs:domain rdf:resource="#SelfNarrative"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">1~2년 내 이루고자 하는 목표. 목표 연관성 판단의 근거가 된다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">시도하고 싶은 것 — 1~2년 내 이루고자 하는 목표. 목표 연관성 판단의 근거가 된다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#writtenInFirstPerson">
-        <rdfs:label>writtenInFirstPerson (1인칭 작성 여부)</rdfs:label>        <rdfs:domain rdf:resource="#SelfNarrative"/>
+        <rdfs:label>writtenInFirstPerson</rdfs:label>
+        <rdfs:domain rdf:resource="#SelfNarrative"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment xml:lang="ko">★ 서식은 "나의 ~"로 되어 있는데 실제로는 실무자가 3인칭으로 대필하는 경우가 흔하다. 이 값을 남겨 두면 나중에 서식 취지가 지켜졌는지 점검할 수 있다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">1인칭 작성 여부 — ★ 서식은 "나의 ~"로 되어 있는데 실제로는 실무자가 3인칭으로 대필하는 경우가 흔하다. 이 값을 남겨 두면 나중에 서식 취지가 지켜졌는지 점검할 수 있다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── RequestedService ──────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#servicePriority">
-        <rdfs:label>servicePriority (우선순위)</rdfs:label>        <rdfs:domain rdf:resource="#RequestedService"/>
+        <rdfs:label>servicePriority</rdfs:label>
+        <rdfs:domain rdf:resource="#RequestedService"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-        <rdfs:comment xml:lang="ko">서식의 구분 1·2·3.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">우선순위 — 서식의 구분 1·2·3.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#serviceName">
-        <rdfs:label>serviceName (서비스 명)</rdfs:label>        <rdfs:domain rdf:resource="#RequestedService"/>
+        <rdfs:label>serviceName</rdfs:label>
+        <rdfs:domain rdf:resource="#RequestedService"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">서비스 명</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#estimatedCost">
-        <rdfs:label>estimatedCost (예상 비용)</rdfs:label>        <rdfs:domain rdf:resource="#RequestedService"/>
+        <rdfs:label>estimatedCost</rdfs:label>
+        <rdfs:domain rdf:resource="#RequestedService"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment xml:lang="ko">서식에는 없으나 심의와 한도 검증에 필요하다. 없으면 심의가 금액 감각 없이 판단하게 된다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">예상 비용 — 서식에는 없으나 심의와 한도 검증에 필요하다. 없으면 심의가 금액 감각 없이 판단하게 된다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#approvedForService">
-        <rdfs:label>approvedForService (심의 승인 여부)</rdfs:label>        <rdfs:domain rdf:resource="#RequestedService"/>
+        <rdfs:label>approvedForService</rdfs:label>
+        <rdfs:domain rdf:resource="#RequestedService"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment xml:lang="ko">항목 단위 승인. 조건부승인 시 일부만 승인되는 경우를 담는다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">심의 승인 여부 — 항목 단위 승인. 조건부승인 시 일부만 승인되는 경우를 담는다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── ServiceDomain ─────────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#domainCode">
-        <rdfs:label>domainCode (영역 코드)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceDomain"/>
+        <rdfs:label>domainCode</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceDomain"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">daily_living | social_life | employment | self_development | health_safety | housing</rdfs:comment>
+        <rdfs:comment xml:lang="ko">영역 코드 — daily_living | social_life | employment | self_development | health_safety | housing</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#domainLabel">
-        <rdfs:label>domainLabel (영역 이름)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceDomain"/>
+        <rdfs:label>domainLabel</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceDomain"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">영역 이름</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#domainDescription">
-        <rdfs:label>domainDescription (영역 설명)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceDomain"/>
+        <rdfs:label>domainDescription</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceDomain"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">영역 설명</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── PlanReview / Notification / Appeal ────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#reviewDecision">
-        <rdfs:label>reviewDecision (심의 결정)</rdfs:label>        <rdfs:domain rdf:resource="#PlanReview"/>
+        <rdfs:label>reviewDecision</rdfs:label>
+        <rdfs:domain rdf:resource="#PlanReview"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">approved | conditional | rejected</rdfs:comment>
+        <rdfs:comment xml:lang="ko">심의 결정 — approved | conditional | rejected</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#reviewReason">
-        <rdfs:label>reviewReason (결정 사유)</rdfs:label>        <rdfs:domain rdf:resource="#PlanReview"/>
+        <rdfs:label>reviewReason</rdfs:label>
+        <rdfs:domain rdf:resource="#PlanReview"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">★ 부결·조건부일 때 필수. 사유 없는 부결은 이의신청을 불가능하게 만든다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">결정 사유 — ★ 부결·조건부일 때 필수. 사유 없는 부결은 이의신청을 불가능하게 만든다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#reviewDate">
-        <rdfs:label>reviewDate (심의일)</rdfs:label>        <rdfs:domain rdf:resource="#PlanReview"/>
+        <rdfs:label>reviewDate</rdfs:label>
+        <rdfs:domain rdf:resource="#PlanReview"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment xml:lang="ko">심의일</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#notifiedOn">
-        <rdfs:label>notifiedOn (통지일)</rdfs:label>        <rdfs:domain rdf:resource="#Notification"/>
+        <rdfs:label>notifiedOn</rdfs:label>
+        <rdfs:domain rdf:resource="#Notification"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment xml:lang="ko">★ 이의신청 기한의 기산점.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">통지일 — ★ 이의신청 기한의 기산점.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#notificationMethod">
-        <rdfs:label>notificationMethod (통지 방법)</rdfs:label>        <rdfs:domain rdf:resource="#Notification"/>
+        <rdfs:label>notificationMethod</rdfs:label>
+        <rdfs:domain rdf:resource="#Notification"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">mail | sms | in_person | app. 동의서에 문자메시지 발송 목적이 포함되어 있다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">통지 방법 — mail | sms | in_person | app. 동의서에 문자메시지 발송 목적이 포함되어 있다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#isReadByParticipant">
-        <rdfs:label>isReadByParticipant (참여자 확인 여부)</rdfs:label>        <rdfs:domain rdf:resource="#Notification"/>
+        <rdfs:label>isReadByParticipant</rdfs:label>
+        <rdfs:domain rdf:resource="#Notification"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment xml:lang="ko">발송했다고 전달된 것은 아니다. 발달장애인 대상 사업이라면 확인 여부까지 봐야 한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">참여자 확인 여부 — 발송했다고 전달된 것은 아니다. 발달장애인 대상 사업이라면 확인 여부까지 봐야 한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#appealFiledOn">
-        <rdfs:label>appealFiledOn (이의신청일)</rdfs:label>        <rdfs:domain rdf:resource="#Appeal"/>
+        <rdfs:label>appealFiledOn</rdfs:label>
+        <rdfs:domain rdf:resource="#Appeal"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment xml:lang="ko">이의신청일</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#appealGround">
-        <rdfs:label>appealGround (이의 사유)</rdfs:label>        <rdfs:domain rdf:resource="#Appeal"/>
+        <rdfs:label>appealGround</rdfs:label>
+        <rdfs:domain rdf:resource="#Appeal"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">이의 사유</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#appealFiledBySelf">
-        <rdfs:label>appealFiledBySelf (본인 제기 여부)</rdfs:label>        <rdfs:domain rdf:resource="#Appeal"/>
+        <rdfs:label>appealFiledBySelf</rdfs:label>
+        <rdfs:domain rdf:resource="#Appeal"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment xml:lang="ko">본인 제기 여부</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#appealDueOn">
-        <rdfs:label>appealDueOn (처리 기한)</rdfs:label>        <rdfs:domain rdf:resource="#Appeal"/>
+        <rdfs:label>appealDueOn</rdfs:label>
+        <rdfs:domain rdf:resource="#Appeal"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment xml:lang="ko">확인된 자료상 접수 후 14일 이내 처리·재통보. ⚠️ 서울형 적용 여부 기관 확인 필요. 상수로 박지 말고 차수별 설정값으로 둔다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">처리 기한 — 확인된 자료상 접수 후 14일 이내 처리·재통보. ⚠️ 서울형 적용 여부 기관 확인 필요. 상수로 박지 말고 차수별 설정값으로 둔다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#appealOutcome">
-        <rdfs:label>appealOutcome (이의신청 결과)</rdfs:label>        <rdfs:domain rdf:resource="#Appeal"/>
+        <rdfs:label>appealOutcome</rdfs:label>
+        <rdfs:domain rdf:resource="#Appeal"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">pending | upheld(인용) | partially_upheld(일부 인용) | dismissed(기각)</rdfs:comment>
+        <rdfs:comment xml:lang="ko">이의신청 결과 — pending | upheld(인용) | partially_upheld(일부 인용) | dismissed(기각)</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── BudgetAllocation ──────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#totalCeiling">
-        <rdfs:label>totalCeiling (총 한도액)</rdfs:label>        <rdfs:domain rdf:resource="#BudgetAllocation"/>
+        <rdfs:label>totalCeiling</rdfs:label>
+        <rdfs:domain rdf:resource="#BudgetAllocation"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment xml:lang="ko">확인된 자료상 240만원(1·2차). 차수별로 다르므로 행에 저장한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">총 한도액 — 확인된 자료상 240만원(1·2차). 차수별로 다르므로 행에 저장한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#monthlyCeiling">
-        <rdfs:label>monthlyCeiling (월 한도액)</rdfs:label>        <rdfs:domain rdf:resource="#BudgetAllocation"/>
+        <rdfs:label>monthlyCeiling</rdfs:label>
+        <rdfs:domain rdf:resource="#BudgetAllocation"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment xml:lang="ko">확인된 자료상 40만원(2025년 40~50만원).</rdfs:comment>
+        <rdfs:comment xml:lang="ko">월 한도액 — 확인된 자료상 40만원(2025년 40~50만원).</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#periodMonths">
-        <rdfs:label>periodMonths (지원 개월수)</rdfs:label>        <rdfs:domain rdf:resource="#BudgetAllocation"/>
+        <rdfs:label>periodMonths</rdfs:label>
+        <rdfs:domain rdf:resource="#BudgetAllocation"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:comment xml:lang="ko">지원 개월수</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#carryOverAllowed">
-        <rdfs:label>carryOverAllowed (이월 허용 여부)</rdfs:label>        <rdfs:domain rdf:resource="#BudgetAllocation"/>
+        <rdfs:label>carryOverAllowed</rdfs:label>
+        <rdfs:domain rdf:resource="#BudgetAllocation"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment xml:lang="ko">⚠️ 월 미사용액을 다음 달로 넘길 수 있는지는 확인되지 않았다. 총 한도 내 사용 가능하다는 서술이 있으나 명확한 규정 확인 필요 — 기관 확인 항목. 잔액 계산 로직이 이 값에 따라 완전히 달라진다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">이월 허용 여부 — ⚠️ 월 미사용액을 다음 달로 넘길 수 있는지는 확인되지 않았다. 총 한도 내 사용 가능하다는 서술이 있으나 명확한 규정 확인 필요 — 기관 확인 항목. 잔액 계산 로직이 이 값에 따라 완전히 달라진다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#allocatedAmount">
-        <rdfs:label>allocatedAmount (배정 확정액)</rdfs:label>        <rdfs:domain rdf:resource="#BudgetAllocation"/>
+        <rdfs:label>allocatedAmount</rdfs:label>
+        <rdfs:domain rdf:resource="#BudgetAllocation"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment xml:lang="ko">배정 확정액</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── ServiceUsage ──────────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#usageDate">
-        <rdfs:label>usageDate (이용일)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceUsage"/>
+        <rdfs:label>usageDate</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment xml:lang="ko">이용일</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#usageAmount">
-        <rdfs:label>usageAmount (이용 금액)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceUsage"/>
+        <rdfs:label>usageAmount</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment xml:lang="ko">이용 금액</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#usageDescription">
-        <rdfs:label>usageDescription (이용 내용)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceUsage"/>
+        <rdfs:label>usageDescription</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">이용 내용</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#decidedBySelf">
-        <rdfs:label>decidedBySelf (결정 주체)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceUsage"/>
+        <rdfs:label>decidedBySelf</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">self | self_with_support | suggested_accepted | by_supporter. ★ 입력자(creator)와 결정자를 구분한다. 실무자가 대신 입력한 것과 실무자가 대신 결정한 것은 전혀 다르다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">결정 주체 — self | self_with_support | suggested_accepted | by_supporter. ★ 입력자(creator)와 결정자를 구분한다. 실무자가 대신 입력한 것과 실무자가 대신 결정한 것은 전혀 다르다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#settlementStatus">
-        <rdfs:label>settlementStatus (정산 상태)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceUsage"/>
+        <rdfs:label>settlementStatus</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">pending(검토대기) | accepted(인정) | rejected(불인정) | recovered(환수)</rdfs:comment>
+        <rdfs:comment xml:lang="ko">정산 상태 — pending(검토대기) | accepted(인정) | rejected(불인정) | recovered(환수)</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── Receipt / ServiceProvider ─────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#receiptStoragePath">
-        <rdfs:label>receiptStoragePath (영수증 저장 경로)</rdfs:label>        <rdfs:domain rdf:resource="#Receipt"/>
+        <rdfs:label>receiptStoragePath</rdfs:label>
+        <rdfs:domain rdf:resource="#Receipt"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">private 버킷 경로. 공개 URL 이 아니라 경로를 저장하고 조회 시 signed URL 을 생성한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">영수증 저장 경로 — private 버킷 경로. 공개 URL 이 아니라 경로를 저장하고 조회 시 signed URL 을 생성한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#receiptIssuedOn">
-        <rdfs:label>receiptIssuedOn (영수증 발행일)</rdfs:label>        <rdfs:domain rdf:resource="#Receipt"/>
+        <rdfs:label>receiptIssuedOn</rdfs:label>
+        <rdfs:domain rdf:resource="#Receipt"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment xml:lang="ko">영수증 발행일</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#receiptAmount">
-        <rdfs:label>receiptAmount (영수증 금액)</rdfs:label>        <rdfs:domain rdf:resource="#Receipt"/>
+        <rdfs:label>receiptAmount</rdfs:label>
+        <rdfs:domain rdf:resource="#Receipt"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment xml:lang="ko">이용 금액과 불일치하면 정산 검토 대상이 된다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">영수증 금액 — 이용 금액과 불일치하면 정산 검토 대상이 된다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#providerName">
-        <rdfs:label>providerName (제공처 이름)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceProvider"/>
+        <rdfs:label>providerName</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceProvider"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">제공처 이름</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#businessNumber">
-        <rdfs:label>businessNumber (사업자등록번호)</rdfs:label>        <rdfs:domain rdf:resource="#ServiceProvider"/>
+        <rdfs:label>businessNumber</rdfs:label>
+        <rdfs:domain rdf:resource="#ServiceProvider"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">사업자등록번호</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── SpendingRule / RuleCheck ──────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#ruleKind">
-        <rdfs:label>ruleKind (규칙 종류)</rdfs:label>        <rdfs:domain rdf:resource="#SpendingRule"/>
+        <rdfs:label>ruleKind</rdfs:label>
+        <rdfs:domain rdf:resource="#SpendingRule"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">prohibition(금지 — 시스템 차단) | criterion(요건 — 사람 판단). ★ 이 한 컬럼이 자동화 경계선이다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">규칙 종류 — prohibition(금지 — 시스템 차단) | criterion(요건 — 사람 판단). ★ 이 한 컬럼이 자동화 경계선이다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#ruleLabel">
-        <rdfs:label>ruleLabel (규칙 이름)</rdfs:label>        <rdfs:domain rdf:resource="#SpendingRule"/>
+        <rdfs:label>ruleLabel</rdfs:label>
+        <rdfs:domain rdf:resource="#SpendingRule"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">규칙 이름</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#ruleSourceNote">
-        <rdfs:label>ruleSourceNote (근거)</rdfs:label>        <rdfs:domain rdf:resource="#SpendingRule"/>
+        <rdfs:label>ruleSourceNote</rdfs:label>
+        <rdfs:domain rdf:resource="#SpendingRule"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">어느 지침 몇 조에서 온 규칙인지. 근거 없는 규칙은 이의신청에서 무너진다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">근거 — 어느 지침 몇 조에서 온 규칙인지. 근거 없는 규칙은 이의신청에서 무너진다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#ruleEnforcement">
-        <rdfs:label>ruleEnforcement (적용 방식)</rdfs:label>        <rdfs:domain rdf:resource="#SpendingRule"/>
+        <rdfs:label>ruleEnforcement</rdfs:label>
+        <rdfs:domain rdf:resource="#SpendingRule"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">block(저장 차단) | warn(경고 후 진행 가능) | flag(기록만, 검토 목록에 노출)</rdfs:comment>
+        <rdfs:comment xml:lang="ko">적용 방식 — block(저장 차단) | warn(경고 후 진행 가능) | flag(기록만, 검토 목록에 노출)</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#checkResult">
-        <rdfs:label>checkResult (검증 결과)</rdfs:label>        <rdfs:domain rdf:resource="#RuleCheck"/>
+        <rdfs:label>checkResult</rdfs:label>
+        <rdfs:domain rdf:resource="#RuleCheck"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">pass | blocked | needs_review</rdfs:comment>
+        <rdfs:comment xml:lang="ko">검증 결과 — pass | blocked | needs_review</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#humanDecision">
-        <rdfs:label>humanDecision (실무자 최종 판단)</rdfs:label>        <rdfs:domain rdf:resource="#RuleCheck"/>
+        <rdfs:label>humanDecision</rdfs:label>
+        <rdfs:domain rdf:resource="#RuleCheck"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">accepted | rejected | pending. ★ 시스템 판정과 사람 판단을 다른 컬럼에 둔다. 같은 칸에 쓰면 누가 정했는지 사라진다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">실무자 최종 판단 — accepted | rejected | pending. ★ 시스템 판정과 사람 판단을 다른 컬럼에 둔다. 같은 칸에 쓰면 누가 정했는지 사라진다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#humanDecisionReason">
-        <rdfs:label>humanDecisionReason (판단 사유)</rdfs:label>        <rdfs:domain rdf:resource="#RuleCheck"/>
+        <rdfs:label>humanDecisionReason</rdfs:label>
+        <rdfs:domain rdf:resource="#RuleCheck"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">판단 사유</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── Settlement / MonitoringRecord ─────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#settledPeriod">
-        <rdfs:label>settledPeriod (정산 대상 기간)</rdfs:label>        <rdfs:domain rdf:resource="#Settlement"/>
+        <rdfs:label>settledPeriod</rdfs:label>
+        <rdfs:domain rdf:resource="#Settlement"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">정산 대상 기간</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#acceptedAmount">
-        <rdfs:label>acceptedAmount (인정액)</rdfs:label>        <rdfs:domain rdf:resource="#Settlement"/>
+        <rdfs:label>acceptedAmount</rdfs:label>
+        <rdfs:domain rdf:resource="#Settlement"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment xml:lang="ko">인정액</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#rejectedAmount">
-        <rdfs:label>rejectedAmount (불인정액)</rdfs:label>        <rdfs:domain rdf:resource="#Settlement"/>
+        <rdfs:label>rejectedAmount</rdfs:label>
+        <rdfs:domain rdf:resource="#Settlement"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment xml:lang="ko">불인정액</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#recoveredAmount">
-        <rdfs:label>recoveredAmount (환수액)</rdfs:label>        <rdfs:domain rdf:resource="#Settlement"/>
+        <rdfs:label>recoveredAmount</rdfs:label>
+        <rdfs:domain rdf:resource="#Settlement"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment xml:lang="ko">환수액</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#unusedAmount">
-        <rdfs:label>unusedAmount (미사용액)</rdfs:label>        <rdfs:domain rdf:resource="#Settlement"/>
+        <rdfs:label>unusedAmount</rdfs:label>
+        <rdfs:domain rdf:resource="#Settlement"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment xml:lang="ko">★ 미사용은 실패가 아니다. 다만 "쓸 곳을 못 찾아서"인지 "필요가 없어서"인지는 다른 이야기이므로 모니터링 기록과 함께 읽어야 한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">미사용액 — ★ 미사용은 실패가 아니다. 다만 "쓸 곳을 못 찾아서"인지 "필요가 없어서"인지는 다른 이야기이므로 모니터링 기록과 함께 읽어야 한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#monitoringDate">
-        <rdfs:label>monitoringDate (모니터링 일자)</rdfs:label>        <rdfs:domain rdf:resource="#MonitoringRecord"/>
+        <rdfs:label>monitoringDate</rdfs:label>
+        <rdfs:domain rdf:resource="#MonitoringRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment xml:lang="ko">모니터링 일자</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#monitoringMethod">
-        <rdfs:label>monitoringMethod (확인 방법)</rdfs:label>        <rdfs:domain rdf:resource="#MonitoringRecord"/>
+        <rdfs:label>monitoringMethod</rdfs:label>
+        <rdfs:domain rdf:resource="#MonitoringRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">visit(방문) | phone(전화) | app(앱 기록 확인) | document(서류)</rdfs:comment>
+        <rdfs:comment xml:lang="ko">확인 방법 — visit(방문) | phone(전화) | app(앱 기록 확인) | document(서류)</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#observedChange">
-        <rdfs:label>observedChange (관찰된 변화)</rdfs:label>        <rdfs:domain rdf:resource="#MonitoringRecord"/>
+        <rdfs:label>observedChange</rdfs:label>
+        <rdfs:domain rdf:resource="#MonitoringRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">★ 서울형에는 4+1 같은 정형 평가가 없다. 성과평가에 쓸 변화 기록은 사실상 여기뿐이므로 자유 서술이라도 반드시 남긴다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">관찰된 변화 — ★ 서울형에는 4+1 같은 정형 평가가 없다. 성과평가에 쓸 변화 기록은 사실상 여기뿐이므로 자유 서술이라도 반드시 남긴다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#participantVoice">
-        <rdfs:label>participantVoice (참여자가 한 말)</rdfs:label>        <rdfs:domain rdf:resource="#MonitoringRecord"/>
+        <rdfs:label>participantVoice</rdfs:label>
+        <rdfs:domain rdf:resource="#MonitoringRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">실무자의 관찰과 당사자 본인의 말을 다른 칸에 적는다. 섞으면 누구의 평가인지 사라진다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">참여자가 한 말 — 실무자의 관찰과 당사자 본인의 말을 다른 칸에 적는다. 섞으면 누구의 평가인지 사라진다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── 기관 ──────────────────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#bodyName">
-        <rdfs:label>bodyName (기관명)</rdfs:label>        <rdfs:domain rdf:resource="#AdministeringBody"/>
+        <rdfs:label>bodyName</rdfs:label>
+        <rdfs:domain rdf:resource="#AdministeringBody"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">기관명</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#bodyRole">
-        <rdfs:label>bodyRole (역할)</rdfs:label>        <rdfs:domain rdf:resource="#AdministeringBody"/>
+        <rdfs:label>bodyRole</rdfs:label>
+        <rdfs:domain rdf:resource="#AdministeringBody"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">city(서울시) | district(자치구) | foundation(한국장애인재단)</rdfs:comment>
+        <rdfs:comment xml:lang="ko">역할 — city(서울시) | district(자치구) | foundation(한국장애인재단)</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#agencyName">
-        <rdfs:label>agencyName (수행기관명)</rdfs:label>        <rdfs:domain rdf:resource="#ExecutingAgency"/>
+        <rdfs:label>agencyName</rdfs:label>
+        <rdfs:domain rdf:resource="#ExecutingAgency"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">수행기관명</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#committeeName">
-        <rdfs:label>committeeName (위원회명)</rdfs:label>        <rdfs:domain rdf:resource="#ReviewCommittee"/>
+        <rdfs:label>committeeName</rdfs:label>
+        <rdfs:domain rdf:resource="#ReviewCommittee"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">위원회명</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#caseworkerName">
-        <rdfs:label>caseworkerName (담당자명)</rdfs:label>        <rdfs:domain rdf:resource="#Caseworker"/>
+        <rdfs:label>caseworkerName</rdfs:label>
+        <rdfs:domain rdf:resource="#Caseworker"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">담당자명</rdfs:comment>
     </owl:DatatypeProperty>
 
 
@@ -1016,185 +1342,185 @@
     <!-- ======================================================= -->
 
     <owl:DatatypeProperty rdf:about="#participantId">
-        <rdfs:label>participantId (참여자 식별자)</rdfs:label>
+        <rdfs:label>participantId</rdfs:label>
         <rdfs:domain rdf:resource="#Participant"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">참여자 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#proxyId">
-        <rdfs:label>proxyId (대리인 식별자)</rdfs:label>
+        <rdfs:label>proxyId</rdfs:label>
         <rdfs:domain rdf:resource="#Proxy"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">대리인 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#disabilityProfileId">
-        <rdfs:label>disabilityProfileId (장애 정보 식별자)</rdfs:label>
+        <rdfs:label>disabilityProfileId</rdfs:label>
         <rdfs:domain rdf:resource="#DisabilityProfile"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">장애 정보 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#benefitStatusId">
-        <rdfs:label>benefitStatusId (수급 현황 식별자)</rdfs:label>
+        <rdfs:label>benefitStatusId</rdfs:label>
         <rdfs:domain rdf:resource="#BenefitStatus"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">수급 현황 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#applicationId">
-        <rdfs:label>applicationId (신청서 식별자)</rdfs:label>
+        <rdfs:label>applicationId</rdfs:label>
         <rdfs:domain rdf:resource="#Application"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">신청서 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#consentRecordId">
-        <rdfs:label>consentRecordId (개인정보 동의 식별자)</rdfs:label>
+        <rdfs:label>consentRecordId</rdfs:label>
         <rdfs:domain rdf:resource="#ConsentRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">개인정보 동의 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#selectionDecisionId">
-        <rdfs:label>selectionDecisionId (참여자 선정 식별자)</rdfs:label>
+        <rdfs:label>selectionDecisionId</rdfs:label>
         <rdfs:domain rdf:resource="#SelectionDecision"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">참여자 선정 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#utilizationPlanId">
-        <rdfs:label>utilizationPlanId (개인예산 이용계획 식별자)</rdfs:label>
+        <rdfs:label>utilizationPlanId</rdfs:label>
         <rdfs:domain rdf:resource="#UtilizationPlan"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">개인예산 이용계획 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#selfNarrativeId">
-        <rdfs:label>selfNarrativeId (나의 상황 식별자)</rdfs:label>
+        <rdfs:label>selfNarrativeId</rdfs:label>
         <rdfs:domain rdf:resource="#SelfNarrative"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">나의 상황 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#requestedServiceId">
-        <rdfs:label>requestedServiceId (지원받고 싶은 서비스 식별자)</rdfs:label>
+        <rdfs:label>requestedServiceId</rdfs:label>
         <rdfs:domain rdf:resource="#RequestedService"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">지원받고 싶은 서비스 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#serviceDomainId">
-        <rdfs:label>serviceDomainId (서비스 영역 식별자)</rdfs:label>
+        <rdfs:label>serviceDomainId</rdfs:label>
         <rdfs:domain rdf:resource="#ServiceDomain"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">서비스 영역 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#planReviewId">
-        <rdfs:label>planReviewId (계획 심의 식별자)</rdfs:label>
+        <rdfs:label>planReviewId</rdfs:label>
         <rdfs:domain rdf:resource="#PlanReview"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">계획 심의 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#reviewCommitteeId">
-        <rdfs:label>reviewCommitteeId (심의 주체 식별자)</rdfs:label>
+        <rdfs:label>reviewCommitteeId</rdfs:label>
         <rdfs:domain rdf:resource="#ReviewCommittee"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">심의 주체 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#notificationId">
-        <rdfs:label>notificationId (결과 통지 식별자)</rdfs:label>
+        <rdfs:label>notificationId</rdfs:label>
         <rdfs:domain rdf:resource="#Notification"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">결과 통지 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#appealId">
-        <rdfs:label>appealId (이의신청 식별자)</rdfs:label>
+        <rdfs:label>appealId</rdfs:label>
         <rdfs:domain rdf:resource="#Appeal"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">이의신청 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#budgetAllocationId">
-        <rdfs:label>budgetAllocationId (예산 배정 식별자)</rdfs:label>
+        <rdfs:label>budgetAllocationId</rdfs:label>
         <rdfs:domain rdf:resource="#BudgetAllocation"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">예산 배정 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#serviceUsageId">
-        <rdfs:label>serviceUsageId (서비스 이용 식별자)</rdfs:label>
+        <rdfs:label>serviceUsageId</rdfs:label>
         <rdfs:domain rdf:resource="#ServiceUsage"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">서비스 이용 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#receiptId">
-        <rdfs:label>receiptId (영수증 식별자)</rdfs:label>
+        <rdfs:label>receiptId</rdfs:label>
         <rdfs:domain rdf:resource="#Receipt"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">영수증 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#serviceProviderId">
-        <rdfs:label>serviceProviderId (서비스 제공처 식별자)</rdfs:label>
+        <rdfs:label>serviceProviderId</rdfs:label>
         <rdfs:domain rdf:resource="#ServiceProvider"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">서비스 제공처 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#spendingRuleId">
-        <rdfs:label>spendingRuleId (지출 규칙 식별자)</rdfs:label>
+        <rdfs:label>spendingRuleId</rdfs:label>
         <rdfs:domain rdf:resource="#SpendingRule"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">지출 규칙 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#ruleCheckId">
-        <rdfs:label>ruleCheckId (규칙 검증 결과 식별자)</rdfs:label>
+        <rdfs:label>ruleCheckId</rdfs:label>
         <rdfs:domain rdf:resource="#RuleCheck"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">규칙 검증 결과 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#settlementId">
-        <rdfs:label>settlementId (정산 식별자)</rdfs:label>
+        <rdfs:label>settlementId</rdfs:label>
         <rdfs:domain rdf:resource="#Settlement"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">정산 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#monitoringRecordId">
-        <rdfs:label>monitoringRecordId (모니터링 기록 식별자)</rdfs:label>
+        <rdfs:label>monitoringRecordId</rdfs:label>
         <rdfs:domain rdf:resource="#MonitoringRecord"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">모니터링 기록 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#administeringBodyId">
-        <rdfs:label>administeringBodyId (시행 주체 식별자)</rdfs:label>
+        <rdfs:label>administeringBodyId</rdfs:label>
         <rdfs:domain rdf:resource="#AdministeringBody"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">시행 주체 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#executingAgencyId">
-        <rdfs:label>executingAgencyId (수행기관 식별자)</rdfs:label>
+        <rdfs:label>executingAgencyId</rdfs:label>
         <rdfs:domain rdf:resource="#ExecutingAgency"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">수행기관 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#caseworkerId">
-        <rdfs:label>caseworkerId (담당자 식별자)</rdfs:label>
+        <rdfs:label>caseworkerId</rdfs:label>
         <rdfs:domain rdf:resource="#Caseworker"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">담당자 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
 </rdf:RDF>
