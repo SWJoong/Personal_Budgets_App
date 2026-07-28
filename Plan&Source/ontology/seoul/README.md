@@ -7,9 +7,14 @@
 |---|---|
 | `seoul_ontology.rdf` | 온톨로지 정본. 클래스 26 / 관계 46 / 속성 94 / 고아 노드 0 |
 | `seoul_schema_draft.sql` | SQL 스키마 **초안**. ⚠️ 그대로 실행하지 마세요 |
-| `verify_00_stubs.sql` | 검증용 스텁 (`profiles`·`participants`·`auth.uid()`) |
+| `seoul_graph_overlay.sql` | 그래프 오버레이 — 외래키를 트리플로 투영해 경로 탐색을 가능하게 함 |
+| `verify_00_stubs.sql` | 검증용 스텁 (`profiles`·`participants`·`auth.uid()` + RLS) |
 | `verify_01_behaviour.sql` | 기능 테스트 13종 — 한도·금지항목·동의·배제규칙·기한 계산 |
 | `verify_02_rls.sql` | 보안 테스트 15종 — 참여자가 할 수 있어야/없어야 하는 것 |
+| `verify_03_graph.sql` | 그래프 테스트 5종 — 엣지 투영·경로 탐색·RDF 내보내기·RLS |
+
+> **적용 순서**: `verify_00_stubs` → `seoul_schema_draft` → `seoul_graph_overlay` → 검증 스크립트
+> **요구 버전**: PostgreSQL **15 이상** (뷰의 `security_invoker` 옵션이 필요)
 
 ---
 
@@ -62,11 +67,15 @@ su postgres -c "$PGBIN/pg_ctl -D $PGDIR stop"
 ### 마지막 실행 결과 (2026-07-28, PostgreSQL 16.13)
 
 ```
-✅ 스키마 — 에러 0
-기능 테스트 : 13종 실행, 의도된 차단 7건
-보안 테스트 : ✅ 11건 / ❌ 0건
-객체       : 테이블 26 / 뷰 7 / 정책 74 / RLS미적용 0
+✅ 스키마 실행 · ✅ 그래프 오버레이 실행
+기능 T1~T13  : 13종, 의도된 차단 7건
+보안 S1~S15  : ✅ 11 / ❌ 0
+그래프 G1~G5 : ✅ 3 / ❌ 0, 예기치 못한 오류 0건
+객체         : 테이블 26 / 뷰 12 / RLS미적용 0 / security_invoker 미적용 뷰 없음
 ```
+
+`✅` 개수는 표식을 출력하는 항목 수입니다. S1~S4(참여자가 **할 수 있어야** 하는 것)와
+G1~G4(엣지·경로·트리플)는 표식 대신 결과표를 출력하므로 눈으로 확인하세요.
 
 `보안 테스트 ✅ 11건`은 `❌/✅` 표식을 출력하는 항목 수입니다.
 S1~S4(참여자가 **할 수 있어야** 하는 것)는 표식 대신 건수를 출력하므로 눈으로 확인하세요 —

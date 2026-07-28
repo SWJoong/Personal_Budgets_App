@@ -706,7 +706,8 @@ CREATE TRIGGER trg_seoul_flag_criteria
 -- §13. 뷰 — 잔액은 저장하지 않고 항상 계산한다
 -- =====================================================================
 
-CREATE OR REPLACE VIEW public.v_seoul_budget_balance AS
+CREATE OR REPLACE VIEW public.v_seoul_budget_balance
+  WITH (security_invoker = true) AS
 SELECT
   a.id                AS allocation_id,
   a.participant_id,
@@ -730,7 +731,8 @@ COMMENT ON VIEW public.v_seoul_budget_balance IS
 
 
 -- 월별 소진 현황 (이월 허용 여부와 무관하게 실무자가 보는 화면)
-CREATE OR REPLACE VIEW public.v_seoul_monthly_usage AS
+CREATE OR REPLACE VIEW public.v_seoul_monthly_usage
+  WITH (security_invoker = true) AS
 SELECT
   a.id                                   AS allocation_id,
   a.participant_id,
@@ -745,7 +747,8 @@ GROUP BY a.id, date_trunc('month', u.usage_date);
 
 
 -- 계획에 없던 지출 — ⚠️ "물어볼 목록"이지 "거절 목록"이 아니다
-CREATE OR REPLACE VIEW public.v_seoul_unplanned_usages AS
+CREATE OR REPLACE VIEW public.v_seoul_unplanned_usages
+  WITH (security_invoker = true) AS
 SELECT
   u.id            AS usage_id,
   u.participant_id,
@@ -767,7 +770,8 @@ COMMENT ON VIEW public.v_seoul_unplanned_usages IS
 
 
 -- 이의신청 기한 임박 — 권리구제가 기한 도과로 사라지지 않게
-CREATE OR REPLACE VIEW public.v_seoul_appeal_status AS
+CREATE OR REPLACE VIEW public.v_seoul_appeal_status
+  WITH (security_invoker = true) AS
 SELECT
   ap.id            AS appeal_id,
   ap.participant_id,
@@ -780,7 +784,8 @@ FROM public.seoul_appeals ap;
 
 
 -- 아직 이의신청이 가능한 부결·조건부 통지 (당사자 화면 안내용)
-CREATE OR REPLACE VIEW public.v_seoul_appealable_notifications AS
+CREATE OR REPLACE VIEW public.v_seoul_appealable_notifications
+  WITH (security_invoker = true) AS
 SELECT
   n.id                       AS notification_id,
   n.participant_id,
@@ -798,7 +803,8 @@ WHERE r.decision IN ('rejected','conditional')
 
 
 -- 주도성 지표 — 성과평가용. ⚠️ 당사자 화면에는 절대 비율로 표시하지 않는다.
-CREATE OR REPLACE VIEW public.v_seoul_self_direction AS
+CREATE OR REPLACE VIEW public.v_seoul_self_direction
+  WITH (security_invoker = true) AS
 SELECT
   a.participant_id,
   a.id AS allocation_id,
@@ -819,7 +825,8 @@ COMMENT ON VIEW public.v_seoul_self_direction IS
 
 
 -- 절차 진행 현황 한 줄 요약
-CREATE OR REPLACE VIEW public.v_seoul_pipeline AS
+CREATE OR REPLACE VIEW public.v_seoul_pipeline
+  WITH (security_invoker = true) AS
 SELECT
   ap.participant_id,
   ap.cohort_id,
