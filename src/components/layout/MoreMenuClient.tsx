@@ -13,6 +13,14 @@ interface FileLink {
   file_type: string
 }
 
+function SoonBadge() {
+  return (
+    <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+      준비중
+    </span>
+  )
+}
+
 function SectionToggle({
   title,
   open,
@@ -74,7 +82,10 @@ export default function MoreMenuClient({
                   <span className="text-xs font-bold text-violet-200">올해 나의 지원 목표 확인하기</span>
                 </div>
               </div>
-              <span className="text-2xl">▸</span>
+              <div className="flex items-center gap-2">
+                <SoonBadge />
+                <span className="text-2xl">▸</span>
+              </div>
             </Link>
             <Link
               href="/evaluations"
@@ -87,7 +98,10 @@ export default function MoreMenuClient({
                   <span className="text-xs font-bold text-zinc-400">나의 한 달 활동 이야기 보기</span>
                 </div>
               </div>
-              <span className="text-2xl">▸</span>
+              <div className="flex items-center gap-2">
+                <SoonBadge />
+                <span className="text-2xl">▸</span>
+              </div>
             </Link>
           </div>
         )}
@@ -100,29 +114,33 @@ export default function MoreMenuClient({
           <div className="grid grid-cols-2 gap-3">
             <Link
               href="/plan"
-              className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
+              className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
             >
+              <div className="absolute top-2 right-2"><SoonBadge /></div>
               <span className="text-3xl group-hover:scale-110 transition-transform">🤔</span>
               <span className="text-sm font-black text-zinc-800">오늘 계획</span>
             </Link>
             <Link
               href="/calendar"
-              className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
+              className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
             >
+              <div className="absolute top-2 right-2"><SoonBadge /></div>
               <span className="text-3xl group-hover:scale-110 transition-transform">📅</span>
               <span className="text-sm font-black text-zinc-800">달력</span>
             </Link>
             <Link
               href="/map"
-              className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
+              className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
             >
+              <div className="absolute top-2 right-2"><SoonBadge /></div>
               <span className="text-3xl group-hover:scale-110 transition-transform">🗺️</span>
               <span className="text-sm font-black text-zinc-800">사용 장소 지도</span>
             </Link>
             <Link
               href="/gallery"
-              className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
+              className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
             >
+              <div className="absolute top-2 right-2"><SoonBadge /></div>
               <span className="text-3xl group-hover:scale-110 transition-transform">📸</span>
               <span className="text-sm font-black text-zinc-800">사진 모아보기</span>
             </Link>

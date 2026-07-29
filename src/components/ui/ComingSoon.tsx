@@ -38,7 +38,7 @@ export default function ComingSoon({
         <div className="flex flex-col gap-2">
           <h2 className="text-xl font-bold tracking-tight leading-relaxed">준비하고 있어요</h2>
           <p className="text-zinc-500 font-medium leading-relaxed">
-            {description ?? '이 화면은 곧 새로운 모습으로 다시 찾아와요. 조금만 기다려 주세요.'}
+            {description ?? '이 화면은 아직 다 만들지 못했어요. 나중에 다시 열어 볼게요.'}
           </p>
         </div>
         <Link

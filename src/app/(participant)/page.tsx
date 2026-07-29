@@ -36,7 +36,7 @@ export default async function Home() {
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-bold tracking-tight">반가워요!</h2>
             <p className="text-zinc-500 font-medium leading-relaxed">
-              아직 예산 정보가 없어요.<br />지원자 선생님에게 말씀해 주세요.
+              아직 예산 정보가 없어요.<br />담당 선생님에게 말씀해 주세요.
             </p>
           </div>
         </main>
@@ -72,7 +72,7 @@ export default async function Home() {
         {!balance ? (
           <section className="p-8 rounded-3xl bg-zinc-100 text-center">
             <p className="text-zinc-500 font-medium leading-relaxed">
-              아직 배정된 예산이 없어요.<br />심의가 끝나면 여기에 나와요.
+              아직 정해진 예산이 없어요.<br />선생님들이 확인하면 여기에 나와요.
             </p>
           </section>
         ) : (
@@ -86,7 +86,7 @@ export default async function Home() {
         )}
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-bold text-zinc-500">최근 사용한 내역</h2>
+          <h2 className="text-sm font-bold text-zinc-500">최근에 쓴 돈</h2>
           {recentUsages && recentUsages.length > 0 ? (
             <ul className="flex flex-col gap-2">
               {recentUsages.map((u) => (
@@ -100,7 +100,7 @@ export default async function Home() {
               ))}
             </ul>
           ) : (
-            <p className="text-zinc-400 text-sm leading-relaxed">아직 사용한 내역이 없어요.</p>
+            <p className="text-zinc-400 text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
           )}
         </section>
       </main>

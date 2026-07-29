@@ -84,6 +84,11 @@ INSERT INTO public.seoul_notifications (id, review_id, participant_id, notified_
 VALUES ('5f5f0000-0000-0000-0000-000000000001','5d5d0000-0000-0000-0000-000000000001',
         '51111111-1111-1111-1111-111111111111','2025-03-03','sms');
 
+-- S20 픽스처: 관리자만 봐야 하는 실제 초대 행 (비관리자에게 안 보여야 의미가 있다).
+INSERT INTO public.user_invitations (id, email, role, invited_by) VALUES
+  ('5c5c0000-0000-0000-0000-000000000001','future-supporter@test.local','supporter',
+   '00000000-0000-0000-0000-000000000001');
+
 
 \echo '=== 참여자A 로그인 — 반드시 되어야 하는 것 ==='
 SET ROLE alice;
@@ -143,6 +148,30 @@ SELECT '   참여자B 신청서: ' || count(*) || CASE WHEN count(*)=0 THEN '  �
 UPDATE public.seoul_utilization_plans SET status='approved';
 SELECT '   계획 상태: ' || status || CASE WHEN status<>'approved' THEN '  ✅ 방어됨' ELSE '  ❌ 뚫림' END
   FROM public.seoul_utilization_plans WHERE participant_id='51111111-1111-1111-1111-111111111111';
+\echo '── S18. 자기 담당 실무자·이름을 스스로 변경 (protect_participant_fields 트리거, 01_core.sql 아님 — 02_core_rls.sql §)'
+UPDATE public.participants
+   SET assigned_supporter_id = '00000000-0000-0000-0000-000000000001', -- 관리자로 바꿔치기 시도
+       name = '이름해킹시도'
+ WHERE id = '51111111-1111-1111-1111-111111111111';
+SELECT '   담당자: ' || assigned_supporter_id::text ||
+       CASE WHEN assigned_supporter_id = '00000000-0000-0000-0000-000000000002' THEN '  ✅ 방어됨' ELSE '  ❌ 뚫림' END
+  FROM public.participants WHERE id = '51111111-1111-1111-1111-111111111111';
+SELECT '   이름: ' || name || CASE WHEN name = '참여자A' THEN '  ✅ 방어됨' ELSE '  ❌ 뚫림' END
+  FROM public.participants WHERE id = '51111111-1111-1111-1111-111111111111';
+\echo '── S19. 자기 profiles.role/is_super_admin 을 스스로 admin 으로 (protect_profile_role 트리거)'
+UPDATE public.profiles SET role = 'admin', is_super_admin = TRUE
+ WHERE id = 'aaaa1111-1111-1111-1111-111111111111';
+SELECT '   role: ' || role || CASE WHEN role = 'participant' THEN '  ✅ 방어됨' ELSE '  ❌ 뚫림' END
+  FROM public.profiles WHERE id = 'aaaa1111-1111-1111-1111-111111111111';
+SELECT '   is_super_admin: ' || is_super_admin::text ||
+       CASE WHEN is_super_admin = FALSE THEN '  ✅ 방어됨' ELSE '  ❌ 뚫림' END
+  FROM public.profiles WHERE id = 'aaaa1111-1111-1111-1111-111111111111';
+\echo '── S20. 비관리자가 초대 목록을 읽거나 몰래 써넣기 (user_invitations_admin_all 정책)'
+SELECT '   보이는 초대 건수: ' || count(*) || CASE WHEN count(*)=0 THEN '  ✅ 방어됨(실제로는 1건 존재)' ELSE '  ❌ 뚫림' END
+  FROM public.user_invitations;
+INSERT INTO public.user_invitations (email, role) VALUES ('sneaky-admin@test.local','admin');
+SELECT '   몰래 넣은 초대 성공 건수: ' || count(*) || CASE WHEN count(*)=0 THEN '  ✅ 방어됨' ELSE '  ❌ 뚫림' END
+  FROM public.user_invitations WHERE email='sneaky-admin@test.local';
 RESET ROLE;
 
 \echo ''

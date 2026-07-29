@@ -45,7 +45,7 @@ function DemoLoginSection() {
             className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-400 transition-all font-bold text-sm text-zinc-700 disabled:opacity-60 min-h-[44px]"
           >
             <span>{emoji}</span>
-            {pending && pendingRole === role ? "로그인 중..." : label}
+            {pending && pendingRole === role ? "들어가는 중..." : label}
           </button>
         ))}
       </div>

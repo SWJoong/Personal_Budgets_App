@@ -1,5 +1,6 @@
 -- 그래프 오버레이 검증 — 실제 사례로 "꿈에서 돈까지" 경로가 이어지는지 확인
--- 실행 순서: verify_00_stubs → seoul_schema_draft → seoul_graph_overlay → 이 파일
+-- 실행 순서: verify_00_auth_stub.sql → supabase/seoul/00~05 → verify_01_behaviour.sql
+--          → verify_02_rls.sql → 이 파일 (README 재현 절차대로 같은 DB 에서 순서대로)
 \set ON_ERROR_STOP off
 \pset pager off
 
@@ -27,9 +28,11 @@ INSERT INTO public.seoul_executing_agencies (id, name, designated_by_id) VALUES
 INSERT INTO public.seoul_review_committees (id, name, administering_body_id) VALUES
   ('c1000000-0000-0000-0000-000000000001','서울형 개인예산 심의위원회','b0000000-0000-0000-0000-000000000001');
 
+-- code 는 verify_01_behaviour.sql 의 cohort('2025_2')와 겹치면 UNIQUE 위반으로 조용히 실패하고
+-- 그 뒤 이 파일의 모든 FK 참조가 연쇄로 깨진다 — 실제로 한 번 겪은 결함이라 이름을 분리해 둔다.
 INSERT INTO public.seoul_cohorts (id, code, name, period_months, monthly_ceiling, total_ceiling,
                                   carry_over_allowed, appeal_due_days, starts_on, ends_on)
-VALUES ('c2000000-0000-0000-0000-000000000001','2025_2','2차(2025)',6,400000,2400000,TRUE,14,'2025-01-01','2025-06-30');
+VALUES ('c2000000-0000-0000-0000-000000000001','test_2025_graph','2차(2025)',6,400000,2400000,TRUE,14,'2025-01-01','2025-06-30');
 
 INSERT INTO public.seoul_benefit_status (participant_id, public_assistance, participates_in_mohw_pilot)
 VALUES ('10000000-0000-0000-0000-000000000001','basic_livelihood',FALSE);

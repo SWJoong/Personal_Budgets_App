@@ -13,6 +13,7 @@ interface AdminSidebarProps {
 interface SubItem {
   name: string
   href: string
+  soon?: boolean
 }
 
 interface MenuItem {
@@ -20,8 +21,11 @@ interface MenuItem {
   href: string
   icon: string
   sub?: SubItem[]
+  soon?: boolean
 }
 
+// soon: true 인 항목은 화면은 있으나 서울형 데이터 모델로 아직 다시 만들지 않은 라우트
+// (ComingSoon 플레이스홀더로 이어짐). 사이드바에 "준비중" 표시로 미리 알린다.
 const menuItems: MenuItem[] = [
   { name: '관리자 대시보드', href: '/admin', icon: '📊' },
   {
@@ -31,24 +35,32 @@ const menuItems: MenuItem[] = [
     sub: [
       { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
       { name: '📋 전체 목록',      href: '/admin/participants' },
-      { name: '📊 통합 현황',      href: '/supporter/participants' },
+      { name: '📊 통합 현황',      href: '/supporter/participants', soon: true },
     ],
   },
-  { name: '영수증 검토 대기', href: '/supporter/review',       icon: '🧾' },
-  { name: '회계/거래장부',    href: '/supporter/transactions', icon: '📒' },
-  { name: '증빙/서류 보관함', href: '/supporter/documents',    icon: '📁' },
-  { name: '계획과 평가',      href: '/supporter/evaluations',  icon: '📋' },
-  { name: '활동 지도',        href: '/supporter/map',          icon: '🗺️' },
-  { name: '시스템 설정',      href: '/admin/settings',         icon: '⚙️' },
+  { name: '영수증 검토 대기', href: '/supporter/review',       icon: '🧾', soon: true },
+  { name: '회계/거래장부',    href: '/supporter/transactions', icon: '📒', soon: true },
+  { name: '증빙/서류 보관함', href: '/supporter/documents',    icon: '📁', soon: true },
+  { name: '계획과 평가',      href: '/supporter/evaluations',  icon: '📋', soon: true },
+  { name: '활동 지도',        href: '/supporter/map',          icon: '🗺️', soon: true },
+  { name: '시스템 설정',      href: '/admin/settings',         icon: '⚙️', soon: true },
 ]
 
 const quickItems: SubItem[] = [
   { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
-  { name: '🧾 영수증 검토',    href: '/supporter/review' },
-  { name: '📊 예산 배정',      href: '/admin/participants' },
-  { name: '📋 평가 작성',      href: '/supporter/evaluations' },
-  { name: '😊 피드백 확인',    href: '/admin/feedback' },
+  { name: '🧾 영수증 검토',    href: '/supporter/review', soon: true },
+  { name: '👥 당사자 목록 보기', href: '/admin/participants' },
+  { name: '📋 평가 작성',      href: '/supporter/evaluations', soon: true },
+  { name: '😊 피드백 확인',    href: '/admin/feedback', soon: true },
 ]
+
+function SoonBadge() {
+  return (
+    <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 ring-1 ring-amber-400/30">
+      준비중
+    </span>
+  )
+}
 
 export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps) {
   const pathname = usePathname()
@@ -112,6 +124,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                   {!collapsed && (
                     <>
                       <span className="text-sm truncate flex-1">{item.name}</span>
+                      {item.soon && <SoonBadge />}
                       {isActive && (
                         <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse-gentle shrink-0" />
                       )}
@@ -137,13 +150,14 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                     <Link
                       key={sub.href}
                       href={sub.href}
-                      className={`text-xs px-3 py-2 rounded-lg transition-all ${
+                      className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg transition-all ${
                         pathname === sub.href
                           ? 'bg-white/10 text-white font-bold'
                           : 'text-slate-400 hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      {sub.name}
+                      <span className="truncate">{sub.name}</span>
+                      {sub.soon && <SoonBadge />}
                     </Link>
                   ))}
                 </div>
@@ -171,9 +185,10 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                 <Link
                   key={q.href}
                   href={q.href}
-                  className="text-xs px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-all"
+                  className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-all"
                 >
-                  {q.name}
+                  <span className="truncate">{q.name}</span>
+                  {q.soon && <SoonBadge />}
                 </Link>
               ))}
             </div>

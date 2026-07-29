@@ -21,18 +21,20 @@ const HOME_BY_ROLE: Record<DemoRole, string> = {
 
 export async function demoSignIn(role: DemoRole): Promise<{ error: string } | never> {
   if (process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED !== 'true') {
-    return { error: '데모 로그인이 비활성화되어 있습니다.' }
+    return { error: '지금은 데모 계정을 쓸 수 없어요.' }
   }
 
   const { email, password } = CREDENTIALS[role]
   if (!email || !password) {
-    return { error: '이 역할의 데모 계정이 아직 설정되지 않았습니다. (scripts/seed-demo-auth.mjs 참고)' }
+    console.error(`demoSignIn: missing credentials for role="${role}" — run scripts/seed-demo-auth.mjs`)
+    return { error: '이 데모 계정은 아직 준비되지 않았어요.' }
   }
 
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) {
-    return { error: '데모 로그인에 실패했습니다: ' + error.message }
+    console.error(`demoSignIn failed for role="${role}":`, error.message)
+    return { error: '들어가지 못했어요. 다시 눌러 주세요.' }
   }
 
   redirect(HOME_BY_ROLE[role])

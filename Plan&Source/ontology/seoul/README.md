@@ -10,15 +10,17 @@
 | `to_korean_labels.py` | Playground 내보내기 파일의 라벨을 한글로 변환 |
 | `seoul_schema_draft.sql` | SQL 스키마 **초안**. ⚠️ 그대로 실행하지 마세요 |
 | `seoul_graph_overlay.sql` | 그래프 오버레이 — 외래키를 트리플로 투영해 경로 탐색을 가능하게 함 |
-| `verify_00_stubs.sql` | 검증용 스텁 (`profiles`·`participants`·`auth.uid()` + RLS) |
+| `verify_00_auth_stub.sql` | 검증용 auth 스텁 (`auth.users`·`auth.uid()`). `claude/seoul-personal-budget-rebuild` 브랜치의 신원 모델(`participants.auth_user_id`)에 맞춰 재작성됨 — 실제 코어는 `supabase/seoul/01_core.sql` 이 정본 |
 | `verify_01_behaviour.sql` | 기능 테스트 13종 — 한도·금지항목·동의·배제규칙·기한 계산 |
-| `verify_02_rls.sql` | 보안 테스트 15종 — 참여자가 할 수 있어야/없어야 하는 것 |
+| `verify_02_rls.sql` | 보안 테스트 20종 — 참여자가 할 수 있어야/없어야 하는 것 + 본인 권한 상승 차단 + 초대 목록 비공개 |
 | `verify_03_graph.sql` | 그래프 테스트 5종 — 엣지 투영·경로 탐색·RDF 내보내기·RLS |
 | `make_diagram.py` → `seoul_ontology_diagram.md` | **한글 관계도** (Mermaid). RDF 에서 생성 |
 | `make_artifact.py` → `seoul_ontology_view.html` | **한글 관계도** (웹 페이지). RDF 에서 생성 |
 
-> **적용 순서**: `verify_00_stubs` → `seoul_schema_draft` → `seoul_graph_overlay` → 검증 스크립트
+> **적용 순서**: `verify_00_auth_stub` → `supabase/seoul/00~05` → 검증 스크립트(`verify_01`→`verify_02`→`verify_03`)
 > **요구 버전**: PostgreSQL **15 이상** (뷰의 `security_invoker` 옵션이 필요)
+> `seoul_schema_draft.sql`/`seoul_graph_overlay.sql` 은 이 폴더의 **설계 초안 기록**으로 남아 있을 뿐 실행 대상이
+> 아닙니다 — 실제 코어·서울형 스키마의 정본은 `supabase/seoul/01_core.sql`~`05_seoul_graph.sql` 입니다.
 
 ---
 
@@ -89,43 +91,58 @@ SQL 에서는 이미 모든 테이블이 `id UUID PRIMARY KEY` 이므로 새로 
 
 ## 검증 재현하기
 
-SQL 초안은 실제 PostgreSQL 16 에서 실행·테스트했습니다. 재현 절차입니다.
+SQL 은 실제 PostgreSQL 16 에서 실행·테스트했습니다. `claude/seoul-personal-budget-rebuild` 브랜치의
+신원 모델(`participants.auth_user_id`) 재작성 이후 재현 절차입니다 — 코어·서울형 스키마는
+이 폴더가 아니라 `supabase/seoul/00_extensions.sql`~`05_seoul_graph.sql` 이 정본입니다.
 
 ```bash
 PGBIN=$(ls -d /usr/lib/postgresql/*/bin | head -1)
 PGDIR=/var/lib/postgresql/tmpcluster
+SEOUL=$(pwd)                          # 이 폴더 (Plan&Source/ontology/seoul)
+CORE=$SEOUL/../../../supabase/seoul   # 정본 스키마 위치
 
 # 1. 임시 클러스터 기동
 mkdir -p "$PGDIR" && chown postgres:postgres "$PGDIR"
 su postgres -c "$PGBIN/initdb -D $PGDIR -U postgres --auth=trust"
 su postgres -c "$PGBIN/pg_ctl -D $PGDIR -o '-k /tmp -p 55432 -c listen_addresses=\"\"' -l /tmp/pg.log start"
 
-# 2. 데이터베이스 생성 후 순서대로 실행
+# 2. 데이터베이스 생성 후 순서대로 실행 (auth 스텁 → 코어·서울형 스키마 → 검증 3종)
 su postgres -c "$PGBIN/psql -h /tmp -p 55432 -U postgres -c 'CREATE DATABASE t'"
 P="su postgres -c \"$PGBIN/psql -h /tmp -p 55432 -U postgres -d t -q\""
-eval "$P -v ON_ERROR_STOP=1 -f verify_00_stubs.sql"
-eval "$P -v ON_ERROR_STOP=1 -f seoul_schema_draft.sql"
-eval "$P -f verify_01_behaviour.sql"    # 기능 13종
-eval "$P -f verify_02_rls.sql"          # 보안 15종
+eval "$P -v ON_ERROR_STOP=1 -f $SEOUL/verify_00_auth_stub.sql"
+eval "$P -v ON_ERROR_STOP=1 -f $CORE/00_extensions.sql"
+eval "$P -v ON_ERROR_STOP=1 -f $CORE/01_core.sql"
+eval "$P -v ON_ERROR_STOP=1 -f $CORE/02_core_rls.sql"
+eval "$P -v ON_ERROR_STOP=1 -f $CORE/03_seoul_schema.sql"
+eval "$P -v ON_ERROR_STOP=1 -f $CORE/04_seoul_rls.sql"
+eval "$P -v ON_ERROR_STOP=1 -f $CORE/05_seoul_graph.sql"
+eval "$P -f $SEOUL/verify_01_behaviour.sql"    # 기능 13종
+eval "$P -f $SEOUL/verify_02_rls.sql"          # 보안 20종
+eval "$P -f $SEOUL/verify_03_graph.sql"        # 그래프 5종
 
 # 3. 정리
 su postgres -c "$PGBIN/pg_ctl -D $PGDIR stop"
 ```
 
+세 검증 파일은 **같은 DB 에서 순서대로** 실행되도록 픽스처 ID·업무키(예: `seoul_cohorts.code`)를
+서로 겹치지 않게 맞춰 두었습니다. 하나라도 순서를 바꾸거나 건너뛰면 FK 참조가 깨질 수 있습니다.
+
 `verify_01` 은 차단되어야 할 동작에서 **의도적으로 ERROR 를 냅니다.**
 에러가 안 나면 그게 문제입니다. 각 테스트 앞의 `── Tn.` 주석에 기대 동작이 적혀 있습니다.
 
-`verify_02` 는 결과에 `✅ 방어됨` / `❌ 뚫림` 을 직접 출력합니다.
-`❌` 가 하나라도 나오면 RLS 정책이 깨진 것입니다.
+`verify_02` 도 일부 차단 테스트가 RLS 위반 ERROR 로 나타납니다(정상). 최종 판정은 각 테스트의
+`✅ 방어됨` / `❌ 뚫림` 출력으로 봅니다. `❌` 가 하나라도 나오면 RLS 정책이 깨진 것입니다.
 
-### 마지막 실행 결과 (2026-07-28, PostgreSQL 16.13)
+### 마지막 실행 결과 (2026-07-29, PostgreSQL 16.13 — 신원 모델 재작성 + S18~S20 추가 후)
 
 ```
-✅ 스키마 실행 · ✅ 그래프 오버레이 실행
+✅ auth 스텁 · ✅ 코어·서울형 스키마(00~05) 실행
 기능 T1~T13  : 13종, 의도된 차단 7건
-보안 S1~S15  : ✅ 11 / ❌ 0
+보안 S1~S20  : ✅ 22 / ❌ 0  (신규: S18 담당자·이름 자기변경 차단, S19 role 자기승격 차단,
+                              S20 초대 목록 비공개 — 전부 트리거·정책 코드는 이미 있었으나
+                              이번에 처음 테스트로 고정됨)
 그래프 G1~G5 : ✅ 3 / ❌ 0, 예기치 못한 오류 0건
-객체         : 테이블 26 / 뷰 12 / RLS미적용 0 / security_invoker 미적용 뷰 없음
+객체         : 공개 스키마 테이블 41 / 뷰 12 / RLS 미적용 테이블 0 / security_invoker 미적용 뷰 0
 ```
 
 `✅` 개수는 표식을 출력하는 항목 수입니다. S1~S4(참여자가 **할 수 있어야** 하는 것)와
