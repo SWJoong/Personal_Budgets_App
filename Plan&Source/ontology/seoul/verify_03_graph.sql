@@ -4,12 +4,21 @@
 \pset pager off
 
 -- ── 시나리오: 웹툰 작가가 되고 싶은 김민수 ──────────────────────────
+-- profiles.id 가 auth.users(id) 를 FK 로 참조하므로 먼저 로그인 계정을 만든다.
+-- 김민수의 "로그인 id"(b1000000...)와 "참여자 내부 키"(10000000...0001)를 고의로
+-- 다르게 둔다 — G5 가 이 구분이 실제로 지켜지는지 검증한다.
+INSERT INTO auth.users (id, email) VALUES
+  ('00000000-0000-0000-0000-0000000000a1','admin@test.local'),
+  ('00000000-0000-0000-0000-0000000000a2','supporter@test.local'),
+  ('b1000000-0000-0000-0000-000000000001','minsu-login@test.local');
 INSERT INTO public.profiles (id, role, name) VALUES
   ('00000000-0000-0000-0000-0000000000a1','admin','관리자'),
   ('00000000-0000-0000-0000-0000000000a2','supporter','박담당'),
-  ('10000000-0000-0000-0000-000000000001','participant','김민수');
-INSERT INTO public.participants (id, assigned_supporter_id)
-  VALUES ('10000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000a2');
+  ('b1000000-0000-0000-0000-000000000001','participant','김민수')
+ON CONFLICT (id) DO UPDATE SET role = EXCLUDED.role, name = EXCLUDED.name;
+INSERT INTO public.participants (id, name, auth_user_id, assigned_supporter_id)
+  VALUES ('10000000-0000-0000-0000-000000000001','김민수','b1000000-0000-0000-0000-000000000001',
+          '00000000-0000-0000-0000-0000000000a2');
 
 INSERT INTO public.seoul_administering_bodies (id, name, body_role) VALUES
   ('b0000000-0000-0000-0000-000000000001','서울특별시','city');
@@ -175,13 +184,17 @@ GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public, auth TO authenticated;
 DO $$ BEGIN CREATE ROLE bob LOGIN; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 GRANT authenticated TO bob;
 
--- 김민수와 무관한 다른 참여자를 만든다
+-- 김민수와 무관한 다른 참여자를 만든다 (로그인 id 와 참여자 내부 키를 여기서도 분리해 둔다)
+INSERT INTO auth.users (id, email) VALUES
+  ('90000000-0000-0000-0000-000000000009','namnami-login@test.local');
 INSERT INTO public.profiles (id, role, name) VALUES
-  ('10000000-0000-0000-0000-000000000009','participant','남남이');
-INSERT INTO public.participants (id) VALUES ('10000000-0000-0000-0000-000000000009');
+  ('90000000-0000-0000-0000-000000000009','participant','남남이')
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO public.participants (id, name, auth_user_id) VALUES
+  ('10000000-0000-0000-0000-000000000009','남남이','90000000-0000-0000-0000-000000000009');
 
 SET ROLE bob;
-SET request.jwt.claim.sub = '10000000-0000-0000-0000-000000000009';
+SET request.jwt.claim.sub = '90000000-0000-0000-0000-000000000009';  -- 남남이의 로그인 id (참여자 내부 키 아님)
 -- 개인정보를 담은 엣지와 공개 기관정보 엣지를 구분해서 센다.
 -- (수행기관이 어느 지자체 지정인지는 공개 정보이므로 보여도 된다)
 SELECT '   남남이에게 보이는 개인정보 엣지: ' || count(*) ||
@@ -199,7 +212,7 @@ SELECT '   남남이가 김민수를 탐색한 결과: ' || count(*) ||
 RESET ROLE;
 
 SET ROLE bob;
-SET request.jwt.claim.sub = '10000000-0000-0000-0000-000000000001';
+SET request.jwt.claim.sub = 'b1000000-0000-0000-0000-000000000001';  -- ★ 김민수의 로그인 id. participants.id 와 다른 값인데도 본인 그래프가 보여야 진짜 수정이 검증된다.
 SELECT '   김민수 본인이 보는 엣지 수: ' || count(*) ||
        CASE WHEN count(*)>0 THEN '   ✅ 본인 그래프는 보임' ELSE '   ❌ 본인도 막힘' END
   FROM public.v_seoul_graph_edges;

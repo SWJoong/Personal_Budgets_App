@@ -1,7 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import { Database } from '@/types/database'
+import { createClient } from '@/utils/supabase/server'
 import { SupporterLayoutClient } from './SupporterLayoutClient'
 
 export const dynamic = 'force-dynamic'
@@ -11,35 +9,22 @@ export default async function SupporterLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
 
-  if (!isDemoMode) {
-    const cookieStore = await cookies()
-    const supabase = createServerClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll() },
-          setAll() {}
-        },
-      }
-    )
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      redirect('/login')
-    }
-
-    const { data: userData } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if ((userData as any)?.role === 'participant') {
-      redirect('/')
-    }
+  // 허용 목록으로 바꾼다 — 예전에는 role==='participant' 만 걸러냈으므로
+  // profiles 행이 아직 없는(트리거 미적용 등) 사용자는 그냥 통과했다.
+  if (profile?.role !== 'admin' && profile?.role !== 'supporter') {
+    redirect('/')
   }
 
   return <SupporterLayoutClient>{children}</SupporterLayoutClient>

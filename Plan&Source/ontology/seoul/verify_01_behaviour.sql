@@ -1,14 +1,25 @@
 \set ON_ERROR_STOP off
 \pset pager off
 -- 기초 데이터
+-- profiles.id 가 이제 auth.users(id) 를 FK 로 참조하므로(01_core.sql), 먼저 로그인 계정을 만든다.
+-- 이 파일은 RLS 를 테스트하지 않으므로(슈퍼유저로 실행 — 정책 우회) participants.id 를
+-- auth 계정과 다르게 둘 필요는 없다. 신원 모델 자체의 검증은 verify_02_rls.sql 담당.
+INSERT INTO auth.users (id, email) VALUES
+  ('00000000-0000-0000-0000-000000000001','admin@test.local'),
+  ('00000000-0000-0000-0000-000000000002','supporter@test.local'),
+  ('11111111-1111-1111-1111-111111111111','participant-a@test.local'),
+  ('22222222-2222-2222-2222-222222222222','participant-b@test.local');
+-- auth.users 삽입이 handle_new_user() 트리거를 태워 이미 기본 role(participant)로
+-- profiles 행을 만들어 두었으므로, 여기서는 의도한 role/name 으로 덮어쓴다.
 INSERT INTO public.profiles (id, role, name) VALUES
   ('00000000-0000-0000-0000-000000000001','admin','관리자'),
   ('00000000-0000-0000-0000-000000000002','supporter','실무자'),
   ('11111111-1111-1111-1111-111111111111','participant','참여자A'),
-  ('22222222-2222-2222-2222-222222222222','participant','참여자B(복지부중복)');
-INSERT INTO public.participants (id, assigned_supporter_id) VALUES
-  ('11111111-1111-1111-1111-111111111111','00000000-0000-0000-0000-000000000002'),
-  ('22222222-2222-2222-2222-222222222222','00000000-0000-0000-0000-000000000002');
+  ('22222222-2222-2222-2222-222222222222','participant','참여자B(복지부중복)')
+ON CONFLICT (id) DO UPDATE SET role = EXCLUDED.role, name = EXCLUDED.name;
+INSERT INTO public.participants (id, name, assigned_supporter_id) VALUES
+  ('11111111-1111-1111-1111-111111111111','참여자A','00000000-0000-0000-0000-000000000002'),
+  ('22222222-2222-2222-2222-222222222222','참여자B','00000000-0000-0000-0000-000000000002');
 INSERT INTO public.seoul_cohorts (id, code, name, period_months, monthly_ceiling, total_ceiling, carry_over_allowed, appeal_due_days, starts_on, ends_on)
 VALUES ('cccccccc-0000-0000-0000-000000000001','2025_2','2차(2025)',6,400000,2400000,FALSE,14,'2025-01-01','2025-06-30');
 INSERT INTO public.seoul_benefit_status (participant_id, participates_in_mohw_pilot) VALUES
