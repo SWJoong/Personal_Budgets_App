@@ -35,15 +35,18 @@ export default function ReceiptClient({
   allocationId,
   requestedServices,
   usages,
+  remaining,
 }: {
   participantId: string
   allocationId: string | null
   requestedServices: { id: string; service_name: string }[]
   usages: { id: string; usage_date: string; amount: number; description: string | null; settlement_status: string }[]
+  remaining: number | null
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [ocrLoading, setOcrLoading] = useState(false)
+  const [ocrNotice, setOcrNotice] = useState('')
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -87,6 +90,7 @@ export default function ReceiptClient({
 
   async function handlePhotoSelected(file: File) {
     setError('')
+    setOcrNotice('')
     const { base64, mimeType } = await fileToBase64(file)
     setPhoto({ base64, mimeType, previewUrl: URL.createObjectURL(file) })
 
@@ -97,6 +101,8 @@ export default function ReceiptClient({
         if (result.data.amount) setAmount(String(result.data.amount))
         if (result.data.date) setDate(result.data.date)
         if (result.data.store) setDescription(result.data.store)
+      } else {
+        setOcrNotice('사진에서 내용을 읽지 못했어요. 아래 칸에 직접 입력해 주세요.')
       }
     } finally {
       setOcrLoading(false)
@@ -178,6 +184,7 @@ export default function ReceiptClient({
                 <img src={photo.previewUrl} alt="영수증 미리보기" className="w-full max-h-48 object-contain rounded-xl ring-1 ring-zinc-200" />
               )}
               {ocrLoading && <p className="text-xs text-zinc-400">사진에서 읽어오는 중...</p>}
+              {!ocrLoading && ocrNotice && <p className="text-xs text-amber-600 leading-relaxed">{ocrNotice}</p>}
             </div>
 
             <div className="flex flex-col gap-1">
@@ -191,7 +198,12 @@ export default function ReceiptClient({
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500 font-medium">얼마 썼어요? (원)</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs text-zinc-500 font-medium">얼마 썼어요? (원)</label>
+                {remaining !== null && (
+                  <span className="text-xs text-zinc-400">남은 예산 {won(remaining)}</span>
+                )}
+              </div>
               <input
                 type="number"
                 value={amount}

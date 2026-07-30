@@ -603,8 +603,10 @@ BEGIN
   --   두 참여자를 함께 담당하는 실무자에게는 양쪽 배정이 모두 보이므로
   --   이 검사가 없으면 A 의 지출을 B 의 예산에서 차감할 수 있다.
   IF v_alloc.participant_id <> NEW.participant_id THEN
-    RAISE EXCEPTION '예산 배정(%)의 소유자와 지출의 참여자(%)가 다릅니다.',
-      v_alloc.participant_id, NEW.participant_id;
+    -- 이 예산 배정은 다른 참여자의 것이다 — 두 참여자를 함께 담당하는 실무자가
+    -- 화면에서 참여자를 잘못 고르면 여기서 걸린다. 원문 UUID는 사람이 읽어도
+    -- 아무 의미가 없으므로 메시지에 넣지 않는다.
+    RAISE EXCEPTION '이 예산 배정은 다른 참여자의 것이라 지출을 기록할 수 없습니다.';
   END IF;
 
   -- 이용일이 배정 기간 안에 있는지
@@ -621,8 +623,13 @@ BEGIN
      AND (TG_OP = 'INSERT' OR u.id <> NEW.id);
 
   IF v_total_spent + NEW.amount > v_alloc.total_ceiling THEN
+    -- 트리거 예외 메시지는 그대로 화면에 노출된다(friendlyDbError 는 이 메시지를
+    -- 사람이 이미 쓴 것으로 보고 통과시킨다) — 그래서 천단위 구분과 소수점 정리를
+    -- 여기서 직접 한다. to_char 없이 NUMERIC 을 그대로 넣으면 "2400000.00원"처럼 나온다.
     RAISE EXCEPTION '총 한도를 초과합니다. (한도 %원 / 기사용 %원 / 이번 %원)',
-      v_alloc.total_ceiling, v_total_spent, NEW.amount;
+      to_char(v_alloc.total_ceiling, 'FM999,999,999,999'),
+      to_char(v_total_spent, 'FM999,999,999,999'),
+      to_char(NEW.amount, 'FM999,999,999,999');
   END IF;
 
   -- 월 한도 — 이월 불가일 때만 차단, 이월 허용이면 통과(총 한도로만 관리)
@@ -636,7 +643,9 @@ BEGIN
 
     IF v_month_spent + NEW.amount > v_alloc.monthly_ceiling THEN
       RAISE EXCEPTION '월 한도를 초과합니다. (한도 %원 / 이번 달 사용 %원 / 이번 %원)',
-        v_alloc.monthly_ceiling, v_month_spent, NEW.amount;
+        to_char(v_alloc.monthly_ceiling, 'FM999,999,999,999'),
+        to_char(v_month_spent, 'FM999,999,999,999'),
+        to_char(NEW.amount, 'FM999,999,999,999');
     END IF;
   END IF;
 

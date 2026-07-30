@@ -11,6 +11,8 @@ interface ReviewItem {
   usageDate: string
   amount: number
   description: string | null
+  placeName: string | null
+  receiptUrl: string | null
 }
 
 const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
@@ -63,8 +65,19 @@ export default function ReviewQueueClient({ items }: { items: ReviewItem[] }) {
           <div className="flex flex-col gap-0.5">
             <span className="font-bold">{item.participantName}</span>
             <span className="text-sm text-zinc-500">{item.description ?? '활동'} · {item.usageDate}</span>
+            {item.placeName && <span className="text-xs text-zinc-400">장소: {item.placeName}</span>}
             {item.ruleLabel && <span className="text-xs text-zinc-400">확인 이유: {item.ruleLabel}</span>}
           </div>
+          {item.receiptUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.receiptUrl}
+              alt="영수증 사진"
+              className="w-full max-h-56 object-contain rounded-xl ring-1 ring-zinc-200 bg-zinc-50"
+            />
+          ) : (
+            <p className="text-xs text-zinc-400 p-3 rounded-xl bg-zinc-50 text-center">영수증 사진이 없어요.</p>
+          )}
           <input
             type="text"
             value={notes[item.id] ?? ''}

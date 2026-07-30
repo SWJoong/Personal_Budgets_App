@@ -40,13 +40,26 @@ export async function decideRuleCheck(id: string, input: { decision: 'accepted' 
         decided_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .select('id')
+      .select('id, usage_id')
       .maybeSingle()
 
     if (error) return { error: `처리 실패: ${error.message}` }
     if (!data) return { error: '수정할 권한이 없거나 존재하지 않는 항목이에요.' }
 
+    // 여기서 그친 채 두면 참여자 화면(지출 목록)은 검토 결과와 무관하게 계속
+    // "확인 중"으로 남는다 — 실무자의 결정이 참여자가 보는 상태에도 반영되어야 한다.
+    // 이미 정산(recovered 등)이 끝난 건은 건드리지 않는다.
+    const { error: usageError } = await supabase
+      .from('seoul_service_usages')
+      .update({ settlement_status: input.decision === 'accepted' ? 'accepted' : 'rejected' })
+      .eq('id', data.usage_id)
+      .eq('settlement_status', 'pending')
+
+    if (usageError) return { error: `검토는 저장됐지만 지출 상태 반영에 실패했어요: ${usageError.message}` }
+
     revalidatePath('/supporter/review')
+    revalidatePath('/receipt')
+    revalidatePath('/calendar')
     return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : '오류가 발생했습니다.' }

@@ -47,8 +47,11 @@ export async function recordServiceUsage(input: ServiceUsageInput) {
 
   let decidedBy = input.decidedBy
   if (!decidedBy) {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    decidedBy = profile?.role === 'participant' ? 'self' : 'by_supporter'
+    const { data: profile, error: profileError } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    // 역할을 못 읽으면 'by_supporter' 로 조용히 넘어가지 않는다 — v_seoul_self_direction(주도성
+    // 지표)이 실제 참여자 본인 입력을 지원자 입력으로 잘못 셀 수 있다.
+    if (profileError || !profile) return { error: '사용자 정보를 확인할 수 없어요. 잠시 후 다시 시도해 주세요.' }
+    decidedBy = profile.role === 'participant' ? 'self' : 'by_supporter'
   }
 
   const { data: usage, error } = await supabase
@@ -87,6 +90,8 @@ export async function recordServiceUsage(input: ServiceUsageInput) {
       .insert({ usage_id: usage.id, provider_id: input.providerId || null, storage_path: path })
 
     if (receiptError) {
+      // 방금 올린 파일이 어떤 seoul_receipts 행에서도 참조되지 못한 채 버킷에 남는 것을 막는다.
+      await admin.storage.from('receipts').remove([path])
       return { success: true, usageId: usage.id as string, error: `지출은 기록됐지만 영수증 정보 저장에 실패했어요: ${receiptError.message}` }
     }
   }

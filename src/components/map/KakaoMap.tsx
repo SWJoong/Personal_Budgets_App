@@ -315,7 +315,7 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-50/90 gap-2">
           <span className="text-3xl">📍</span>
           <p className="text-sm font-bold text-zinc-500">장소 정보가 있는 내역이 없습니다.</p>
-          <p className="text-xs text-zinc-400">계획 세울 때 장소를 검색하면 지도에 표시됩니다.</p>
+          <p className="text-xs text-zinc-400">지출을 기록할 때 장소를 검색해 등록하면 지도에 표시됩니다.</p>
         </div>
       )}
       {(validTx.length > 0 || validPlans.length > 0) && (

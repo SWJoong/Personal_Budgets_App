@@ -26,7 +26,7 @@ export default async function ReceiptPage() {
 
   const { data: allocation } = await supabase
     .from('seoul_budget_allocations')
-    .select('id')
+    .select('id, plan_id')
     .eq('participant_id', participant.id)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -34,17 +34,20 @@ export default async function ReceiptPage() {
 
   let requestedServices: { id: string; service_name: string }[] = []
   let usages: { id: string; usage_date: string; amount: number; description: string | null; settlement_status: string }[] = []
+  let remaining: number | null = null
 
   if (allocation) {
-    const [{ data: plan }, { data: usageRows }] = await Promise.all([
-      supabase.from('seoul_utilization_plans').select('id').eq('participant_id', participant.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    // requestedServices 는 이 배정이 실제로 속한 계획(allocation.plan_id) 기준으로 가져온다 —
+    // 참여자 이름으로 "가장 최근 계획"을 다시 찾으면 여러 차수를 거친 경우 배정과 다른
+    // 계획의 항목이 섞여 나올 수 있다.
+    const [{ data: rs }, { data: usageRows }, { data: balance }] = await Promise.all([
+      supabase.from('seoul_requested_services').select('id, service_name').eq('plan_id', allocation.plan_id).eq('approved_for_service', true),
       supabase.from('seoul_service_usages').select('id, usage_date, amount, description, settlement_status').eq('allocation_id', allocation.id).order('usage_date', { ascending: false }).limit(20),
+      supabase.from('v_seoul_budget_balance').select('remaining').eq('allocation_id', allocation.id).maybeSingle(),
     ])
+    requestedServices = rs ?? []
     usages = usageRows ?? []
-    if (plan) {
-      const { data: rs } = await supabase.from('seoul_requested_services').select('id, service_name').eq('plan_id', plan.id).eq('approved_for_service', true)
-      requestedServices = rs ?? []
-    }
+    remaining = balance ? Number(balance.remaining) : null
   }
 
   return (
@@ -53,6 +56,7 @@ export default async function ReceiptPage() {
       allocationId={allocation?.id ?? null}
       requestedServices={requestedServices}
       usages={usages}
+      remaining={remaining}
     />
   )
 }
