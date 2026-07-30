@@ -14,6 +14,7 @@
 | `verify_01_behaviour.sql` | 기능 테스트 13종 — 한도·금지항목·동의·배제규칙·기한 계산 |
 | `verify_02_rls.sql` | 보안 테스트 20종 — 참여자가 할 수 있어야/없어야 하는 것 + 본인 권한 상승 차단 + 초대 목록 비공개 |
 | `verify_03_graph.sql` | 그래프 테스트 5종 — 엣지 투영·경로 탐색·RDF 내보내기·RLS |
+| `verify_04_phase2.sql` | Phase 2(신청·동의·선정·계획·심의·통지) 테스트 14종 — `src/app/actions/{application,selection,utilizationPlan,planReview}.ts` 가 딛고 선 DB 동작 확인. `mark_notification_read` RPC 경계 포함 |
 | `make_diagram.py` → `seoul_ontology_diagram.md` | **한글 관계도** (Mermaid). RDF 에서 생성 |
 | `make_artifact.py` → `seoul_ontology_view.html` | **한글 관계도** (웹 페이지). RDF 에서 생성 |
 
@@ -119,6 +120,7 @@ eval "$P -v ON_ERROR_STOP=1 -f $CORE/05_seoul_graph.sql"
 eval "$P -f $SEOUL/verify_01_behaviour.sql"    # 기능 13종
 eval "$P -f $SEOUL/verify_02_rls.sql"          # 보안 20종
 eval "$P -f $SEOUL/verify_03_graph.sql"        # 그래프 5종
+eval "$P -f $SEOUL/verify_04_phase2.sql"       # Phase 2 백엔드 14종
 
 # 3. 정리
 su postgres -c "$PGBIN/pg_ctl -D $PGDIR stop"
@@ -133,16 +135,16 @@ su postgres -c "$PGBIN/pg_ctl -D $PGDIR stop"
 `verify_02` 도 일부 차단 테스트가 RLS 위반 ERROR 로 나타납니다(정상). 최종 판정은 각 테스트의
 `✅ 방어됨` / `❌ 뚫림` 출력으로 봅니다. `❌` 가 하나라도 나오면 RLS 정책이 깨진 것입니다.
 
-### 마지막 실행 결과 (2026-07-29, PostgreSQL 16.13 — 신원 모델 재작성 + S18~S20 추가 후)
+### 마지막 실행 결과 (2026-07-30, PostgreSQL 16.13 — Phase 2 백엔드 추가 후)
 
 ```
 ✅ auth 스텁 · ✅ 코어·서울형 스키마(00~05) 실행
-기능 T1~T13  : 13종, 의도된 차단 7건
-보안 S1~S20  : ✅ 22 / ❌ 0  (신규: S18 담당자·이름 자기변경 차단, S19 role 자기승격 차단,
-                              S20 초대 목록 비공개 — 전부 트리거·정책 코드는 이미 있었으나
-                              이번에 처음 테스트로 고정됨)
-그래프 G1~G5 : ✅ 3 / ❌ 0, 예기치 못한 오류 0건
-객체         : 공개 스키마 테이블 41 / 뷰 12 / RLS 미적용 테이블 0 / security_invoker 미적용 뷰 0
+기능 T1~T13   : 13종, 의도된 차단 7건
+보안 S1~S20   : ✅ 22 / ❌ 0
+그래프 G1~G5  : ✅ 3 / ❌ 0, 예기치 못한 오류 0건
+Phase2 P1~P14 : ✅ 14 / ❌ 0 (신규 — 신청→동의→선정→계획→나의상황→요청서비스→
+                제출→심의→통지 전 과정 + mark_notification_read RPC 경계 3종)
+객체          : 공개 스키마 테이블 41 / 뷰 12 / RLS 미적용 테이블 0 / security_invoker 미적용 뷰 0
 ```
 
 `✅` 개수는 표식을 출력하는 항목 수입니다. S1~S4(참여자가 **할 수 있어야** 하는 것)와

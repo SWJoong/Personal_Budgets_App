@@ -88,6 +88,33 @@ BEGIN
 END $$;
 
 
+-- ── 통지 확인 — 당사자 본인이 "읽음"만 기록할 수 있는 좁은 통로 ─────────
+--    seoul_notifications 는 그룹 A(행정 기록)라 UPDATE 는 실무자·관리자 전용이다.
+--    하지만 "확인했는지"는 당사자가 앱을 열었을 때만 알 수 있는 사실이라
+--    실무자가 대신 기록할 수 없다. 그렇다고 그룹 A 정책 자체를 참여자에게 열면
+--    통지 내용·발송 방법까지 스스로 고칠 수 있게 된다 — 그래서 이 두 컬럼만
+--    다루는 RPC 하나로 좁힌다 (01_core.sql 의 participants_autolink 와 같은 패턴).
+CREATE OR REPLACE FUNCTION public.mark_notification_read(p_notification_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+  UPDATE public.seoul_notifications
+     SET is_read_by_participant = TRUE,
+         read_at = COALESCE(read_at, NOW())
+   WHERE id = p_notification_id
+     AND public.seoul_is_self(participant_id);
+
+  RETURN FOUND;
+END;
+$$;
+COMMENT ON FUNCTION public.mark_notification_read(UUID) IS
+  '당사자 본인의 통지만, is_read_by_participant/read_at 두 컬럼만 바꾼다. 그 외 그룹 A 쓰기 정책은 그대로 실무자·관리자 전용이다.';
+GRANT EXECUTE ON FUNCTION public.mark_notification_read(UUID) TO authenticated;
+
+
 -- ── 그룹 B. 당사자가 직접 쓰는 것 ───────────────────────────────────
 
 -- B-1. 이용계획 — 작성중(draft)일 때만 본인이 고칠 수 있다.
