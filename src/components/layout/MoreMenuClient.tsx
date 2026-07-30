@@ -78,14 +78,11 @@ export default function MoreMenuClient({
               <div className="flex items-center gap-4">
                 <span className="text-3xl group-hover:scale-110 transition-transform">🎯</span>
                 <div className="flex flex-col">
-                  <span className="text-lg font-black">내 목표 보기</span>
-                  <span className="text-xs font-bold text-violet-200">올해 나의 지원 목표 확인하기</span>
+                  <span className="text-lg font-black">내 이용계획</span>
+                  <span className="text-xs font-bold text-violet-200">이용계획 작성하고 심의 결과 보기</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <SoonBadge />
-                <span className="text-2xl">▸</span>
-              </div>
+              <span className="text-2xl">▸</span>
             </Link>
             <Link
               href="/evaluations"

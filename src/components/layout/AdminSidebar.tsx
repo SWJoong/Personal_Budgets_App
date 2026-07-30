@@ -38,6 +38,16 @@ const menuItems: MenuItem[] = [
       { name: '📊 통합 현황',      href: '/supporter/participants', soon: true },
     ],
   },
+  {
+    name: '신청 · 선정',
+    href: '/supporter/applications',
+    icon: '📝',
+    sub: [
+      { name: '➕ 신청서 접수', href: '/supporter/applications/new' },
+      { name: '📋 전체 목록',   href: '/supporter/applications' },
+    ],
+  },
+  { name: '이용계획 · 심의', href: '/supporter/plans',        icon: '🎯' },
   { name: '영수증 검토 대기', href: '/supporter/review',       icon: '🧾', soon: true },
   { name: '회계/거래장부',    href: '/supporter/transactions', icon: '📒', soon: true },
   { name: '증빙/서류 보관함', href: '/supporter/documents',    icon: '📁', soon: true },
@@ -48,6 +58,7 @@ const menuItems: MenuItem[] = [
 
 const quickItems: SubItem[] = [
   { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
+  { name: '📝 신청서 접수',    href: '/supporter/applications/new' },
   { name: '🧾 영수증 검토',    href: '/supporter/review', soon: true },
   { name: '👥 당사자 목록 보기', href: '/admin/participants' },
   { name: '📋 평가 작성',      href: '/supporter/evaluations', soon: true },

@@ -5,10 +5,25 @@ import { assertStaff } from '@/utils/supabase/staff'
 import { friendlyDbError } from '@/utils/supabase/errors'
 import { revalidatePath } from 'next/cache'
 
+/** 실무자용 계획 목록 — 참여자별 상세 정보는 화면에서 별도로 붙인다 */
+export async function getUtilizationPlans() {
+  try {
+    const { supabase } = await assertStaff()
+    const { data, error } = await supabase
+      .from('seoul_utilization_plans')
+      .select('id, participant_id, cohort_id, status, plan_period_start, plan_period_end, created_at')
+      .order('created_at', { ascending: false })
+
+    if (error) return { error: error.message, plans: [] }
+    return { plans: data ?? [] }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : '오류가 발생했습니다.', plans: [] }
+  }
+}
+
 export interface UtilizationPlanInput {
   participantId: string
   applicationId: string
-  cohortId: string
   authoredWithSupport?: 'self' | 'with_support' | 'by_supporter'
   assistedById?: string
   planPeriodStart?: string
@@ -22,6 +37,10 @@ export interface UtilizationPlanInput {
  * 이미 "본인은 draft 상태로만 만들 수 있다"를 강제하므로, 여기서는 로그인
  * 여부만 확인하고 나머지는 정책에 맡긴다 — 참여자 화면·실무자 화면 양쪽에서
  * 같은 함수를 그대로 쓸 수 있다.
+ *
+ * cohort_id 는 호출자가 넘기지 않는다 — 신청서가 이미 차수를 알고 있으므로
+ * 여기서 그대로 물려받는다. 호출자가 따로 넘기면 신청서와 다른 차수를 실수로
+ * 넣을 수 있다.
  */
 export async function createUtilizationPlan(input: UtilizationPlanInput) {
   const supabase = await createClient()
@@ -30,7 +49,7 @@ export async function createUtilizationPlan(input: UtilizationPlanInput) {
 
   const { data: application } = await supabase
     .from('seoul_applications')
-    .select('status')
+    .select('status, cohort_id')
     .eq('id', input.applicationId)
     .maybeSingle()
 
@@ -43,7 +62,7 @@ export async function createUtilizationPlan(input: UtilizationPlanInput) {
     .insert({
       participant_id: input.participantId,
       application_id: input.applicationId,
-      cohort_id: input.cohortId,
+      cohort_id: application.cohort_id,
       authored_with_support: input.authoredWithSupport || 'with_support',
       assisted_by_id: input.assistedById || null,
       plan_period_start: input.planPeriodStart || null,
