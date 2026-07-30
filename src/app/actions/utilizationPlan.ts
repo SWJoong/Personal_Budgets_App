@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { assertStaff } from '@/utils/supabase/staff'
+import { friendlyDbError } from '@/utils/supabase/errors'
 import { revalidatePath } from 'next/cache'
 
 export interface UtilizationPlanInput {
@@ -51,7 +52,7 @@ export async function createUtilizationPlan(input: UtilizationPlanInput) {
     .select('id')
     .single()
 
-  if (error || !data) return { error: `계획 생성 실패: ${error?.message}` }
+  if (error || !data) return { error: `계획 생성 실패: ${friendlyDbError(error)}` }
 
   revalidatePath('/plan')
   revalidatePath('/supporter/plans')
@@ -77,12 +78,17 @@ export async function updateUtilizationPlan(
   if (input.planPeriodStart !== undefined) updateData.plan_period_start = input.planPeriodStart || null
   if (input.planPeriodEnd !== undefined) updateData.plan_period_end = input.planPeriodEnd || null
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('seoul_utilization_plans')
     .update(updateData)
     .eq('id', planId)
+    .select('id')
+    .maybeSingle()
 
-  if (error) return { error: `계획 수정 실패: ${error.message}` }
+  if (error) return { error: `계획 수정 실패: ${friendlyDbError(error)}` }
+  // 본인은 draft/submitted 상태일 때만 고칠 수 있다(RLS). 이미 심의가 끝난 계획이면
+  // 에러 없이 조용히 0행이 되므로, 행이 실제로 돌아왔는지 반드시 확인한다.
+  if (!data) return { error: '지금은 이 계획을 수정할 수 없어요. 이미 심의가 진행됐을 수 있어요.' }
 
   revalidatePath('/plan')
   revalidatePath('/supporter/plans')
@@ -95,12 +101,15 @@ export async function submitUtilizationPlan(planId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.' }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('seoul_utilization_plans')
     .update({ status: 'submitted' })
     .eq('id', planId)
+    .select('id')
+    .maybeSingle()
 
-  if (error) return { error: `제출 실패: ${error.message}` }
+  if (error) return { error: `제출 실패: ${friendlyDbError(error)}` }
+  if (!data) return { error: '이미 제출됐거나 지금은 제출할 수 없는 상태예요.' }
 
   revalidatePath('/plan')
   revalidatePath('/supporter/plans')
@@ -123,7 +132,7 @@ export async function upsertSelfNarrative(input: SelfNarrativeInput) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.' }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('seoul_self_narratives')
     .upsert(
       {
@@ -138,8 +147,13 @@ export async function upsertSelfNarrative(input: SelfNarrativeInput) {
       },
       { onConflict: 'plan_id' }
     )
+    .select('plan_id')
+    .maybeSingle()
 
-  if (error) return { error: `작성 실패: ${error.message}` }
+  // 계획이 draft 가 아니면(이미 제출·심의 진행) 본인은 더 못 고친다 — RLS 가
+  // 이 경우 "new row violates row-level security policy" 같은 원문 에러를 낸다.
+  if (error) return { error: `작성 실패: ${friendlyDbError(error)}` }
+  if (!data) return { error: '지금은 이 계획을 수정할 수 없어요. 이미 제출됐을 수 있어요.' }
 
   revalidatePath('/plan')
   return { success: true }
@@ -159,7 +173,7 @@ export async function upsertRequestedService(input: RequestedServiceInput) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.' }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('seoul_requested_services')
     .upsert(
       {
@@ -171,8 +185,11 @@ export async function upsertRequestedService(input: RequestedServiceInput) {
       },
       { onConflict: 'plan_id,priority' }
     )
+    .select('id')
+    .maybeSingle()
 
-  if (error) return { error: `요청 서비스 저장 실패: ${error.message}` }
+  if (error) return { error: `요청 서비스 저장 실패: ${friendlyDbError(error)}` }
+  if (!data) return { error: '지금은 이 계획을 수정할 수 없어요. 이미 제출됐을 수 있어요.' }
 
   revalidatePath('/plan')
   return { success: true }
@@ -183,8 +200,15 @@ export async function deleteRequestedService(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.' }
 
-  const { error } = await supabase.from('seoul_requested_services').delete().eq('id', id)
-  if (error) return { error: `삭제 실패: ${error.message}` }
+  const { data, error } = await supabase
+    .from('seoul_requested_services')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle()
+
+  if (error) return { error: `삭제 실패: ${friendlyDbError(error)}` }
+  if (!data) return { error: '삭제할 권한이 없거나 이미 삭제됐어요.' }
 
   revalidatePath('/plan')
   return { success: true }
@@ -195,15 +219,18 @@ export async function reviewRequestedService(id: string, input: { approvedForSer
   try {
     const { supabase } = await assertStaff()
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('seoul_requested_services')
       .update({
         approved_for_service: input.approvedForService,
         review_note: input.reviewNote || null,
       })
       .eq('id', id)
+      .select('id')
+      .maybeSingle()
 
-    if (error) return { error: `검토 결과 저장 실패: ${error.message}` }
+    if (error) return { error: `검토 결과 저장 실패: ${friendlyDbError(error)}` }
+    if (!data) return { error: '수정할 권한이 없거나 존재하지 않는 항목이에요.' }
 
     revalidatePath('/supporter/plans')
     return { success: true }

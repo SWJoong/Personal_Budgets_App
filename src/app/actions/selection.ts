@@ -37,12 +37,15 @@ export async function decideSelection(input: SelectionInput) {
 
     if (error) return { error: `선정 결정 실패: ${error.message}` }
 
-    const { error: statusError } = await supabase
+    const { data: statusRow, error: statusError } = await supabase
       .from('seoul_applications')
       .update({ status: input.isSelected ? 'selected' : 'not_selected' })
       .eq('id', input.applicationId)
+      .select('id')
+      .maybeSingle()
 
     if (statusError) return { error: `선정은 저장됐지만 신청서 상태 갱신에 실패했어요: ${statusError.message}` }
+    if (!statusRow) return { error: '선정은 저장됐지만 해당 신청서를 찾을 수 없어 상태를 갱신하지 못했어요.' }
 
     revalidatePath('/supporter/applications')
     return { success: true }

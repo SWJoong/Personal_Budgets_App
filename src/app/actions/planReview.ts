@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { assertAdmin, assertStaff } from '@/utils/supabase/staff'
+import { friendlyDbError } from '@/utils/supabase/errors'
 import { revalidatePath } from 'next/cache'
 
 export interface PlanReviewInput {
@@ -38,14 +39,17 @@ export async function decidePlanReview(input: PlanReviewInput) {
       .select('id')
       .single()
 
-    if (error || !data) return { error: `심의 등록 실패: ${error?.message}` }
+    if (error || !data) return { error: `심의 등록 실패: ${friendlyDbError(error)}` }
 
-    const { error: statusError } = await supabase
+    const { data: statusRow, error: statusError } = await supabase
       .from('seoul_utilization_plans')
       .update({ status: input.decision })
       .eq('id', input.planId)
+      .select('id')
+      .maybeSingle()
 
     if (statusError) return { error: `심의는 저장됐지만 계획 상태 갱신에 실패했어요: ${statusError.message}` }
+    if (!statusRow) return { error: '심의는 저장됐지만 해당 계획을 찾을 수 없어 상태를 갱신하지 못했어요.' }
 
     revalidatePath('/supporter/reviews')
     revalidatePath('/plan')
@@ -78,7 +82,7 @@ export async function sendNotification(input: NotificationInput) {
       .select('id')
       .single()
 
-    if (error || !data) return { error: `통지 등록 실패: ${error?.message}` }
+    if (error || !data) return { error: `통지 등록 실패: ${friendlyDbError(error)}` }
 
     revalidatePath('/supporter/reviews')
     return { success: true, notificationId: data.id as string }
