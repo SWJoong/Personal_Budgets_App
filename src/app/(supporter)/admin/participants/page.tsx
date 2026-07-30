@@ -83,21 +83,26 @@ export default async function AdminParticipantsPage() {
           ) : (
             <ul className="flex flex-col gap-2">
               {rows.map((p) => (
-                <li key={p.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="font-bold text-zinc-900">{p.name}</span>
-                    <span className="text-xs text-zinc-400">{p.email}</span>
-                    {p.supporter?.name && (
-                      <span className="text-[11px] text-zinc-400 mt-0.5">담당: {p.supporter.name}</span>
-                    )}
-                  </div>
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                      p.auth_user_id ? 'bg-green-50 text-green-600' : 'bg-zinc-100 text-zinc-400'
-                    }`}
+                <li key={p.id}>
+                  <Link
+                    href={`/admin/participants/${p.id}`}
+                    className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-400 transition-all flex items-center justify-between"
                   >
-                    {p.auth_user_id ? '연결됨' : '로그인 대기'}
-                  </span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-zinc-900">{p.name}</span>
+                      <span className="text-xs text-zinc-400">{p.email}</span>
+                      {p.supporter?.name && (
+                        <span className="text-[11px] text-zinc-400 mt-0.5">담당: {p.supporter.name}</span>
+                      )}
+                    </div>
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                        p.auth_user_id ? 'bg-green-50 text-green-600' : 'bg-zinc-100 text-zinc-400'
+                      }`}
+                    >
+                      {p.auth_user_id ? '연결됨' : '로그인 대기'}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>

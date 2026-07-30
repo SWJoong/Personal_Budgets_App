@@ -11,6 +11,7 @@ import {
   submitUtilizationPlan,
 } from '@/app/actions/utilizationPlan'
 import { markNotificationRead } from '@/app/actions/planReview'
+import { fileAppeal } from '@/app/actions/appeal'
 
 interface Plan {
   id: string
@@ -45,6 +46,19 @@ interface Notification {
   is_read_by_participant: boolean
 }
 
+interface Appeal {
+  id: string
+  outcome: string
+  outcome_reason: string | null
+}
+
+const APPEAL_OUTCOME_LABEL: Record<string, string> = {
+  pending: '아직 확인하고 있어요',
+  upheld: '다시 확인해서 바꿨어요',
+  partially_upheld: '다시 확인해서 일부 바꿨어요',
+  dismissed: '다시 확인했지만 그대로예요',
+}
+
 const STATUS_LABEL: Record<string, string> = {
   draft: '작성 중',
   submitted: '제출 완료 — 선생님들이 확인할 거예요',
@@ -71,6 +85,7 @@ export default function MyPlanClient({
   requestedServices,
   latestReview,
   notification,
+  appeal,
 }: {
   participantId: string
   selectedApplicationId: string | null
@@ -79,10 +94,13 @@ export default function MyPlanClient({
   requestedServices: RequestedService[]
   latestReview: Review | null
   notification: Notification | null
+  appeal: Appeal | null
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState('')
+  const [appealGround, setAppealGround] = useState('')
+  const [showAppealForm, setShowAppealForm] = useState(false)
 
   const [form, setForm] = useState<Narrative>({
     strengths_talents: narrative?.strengths_talents ?? '',
@@ -199,6 +217,33 @@ export default function MyPlanClient({
     })
   }
 
+  /**
+   * 이의신청 — 당사자 본인이 직접 낼 수 있어야 한다는 원칙(RLS 로 이미 보장됨).
+   * 톤 원칙: "이의신청"이라는 법률 용어 대신 "다시 봐달라고 요청하기"로 풀어
+   * 쓴다. 불이익 걱정 없이 편하게 요청할 수 있다는 안내 문구를 함께 둔다.
+   */
+  function handleFileAppeal() {
+    if (!notification || !appealGround.trim()) {
+      setError('어떤 점을 다시 봐달라는 건지 적어주세요.')
+      return
+    }
+    setError('')
+    startTransition(async () => {
+      const result = await fileAppeal({
+        notificationId: notification.id,
+        participantId,
+        ground: appealGround.trim(),
+      })
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+      setAppealGround('')
+      setShowAppealForm(false)
+      router.refresh()
+    })
+  }
+
   const isDraft = plan?.status === 'draft'
   const isDecided = plan && ['approved', 'conditional', 'rejected'].includes(plan.status)
 
@@ -254,6 +299,48 @@ export default function MyPlanClient({
                   >
                     확인했어요
                   </button>
+                )}
+
+                {latestReview.decision !== 'approved' && notification && (
+                  <div className="mt-4 pt-4 border-t border-zinc-200 flex flex-col gap-3">
+                    {appeal ? (
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-bold text-zinc-700">다시 봐달라고 요청했어요</span>
+                        <span className="text-xs text-zinc-500 leading-relaxed">{APPEAL_OUTCOME_LABEL[appeal.outcome] ?? appeal.outcome}</span>
+                        {appeal.outcome_reason && (
+                          <p className="text-xs text-zinc-500 leading-relaxed mt-1">{appeal.outcome_reason}</p>
+                        )}
+                      </div>
+                    ) : showAppealForm ? (
+                      <>
+                        <p className="text-xs text-zinc-500 leading-relaxed">
+                          결과가 이상하다고 느끼면 편하게 다시 봐달라고 요청할 수 있어요.
+                          요청한다고 불이익이 생기지 않아요.
+                        </p>
+                        <textarea
+                          value={appealGround}
+                          onChange={(e) => setAppealGround(e.target.value)}
+                          placeholder="어떤 점을 다시 봐주면 좋을지 적어주세요"
+                          rows={3}
+                          className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm leading-relaxed focus:ring-zinc-400 focus:outline-none resize-none"
+                        />
+                        <button
+                          onClick={handleFileAppeal}
+                          disabled={pending}
+                          className="px-6 py-3 min-h-[44px] rounded-xl bg-zinc-900 text-white font-bold disabled:opacity-50"
+                        >
+                          요청 보내기
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setShowAppealForm(true)}
+                        className="px-6 py-3 min-h-[44px] rounded-xl bg-white ring-1 ring-zinc-300 text-zinc-700 font-bold"
+                      >
+                        다시 봐달라고 요청하기
+                      </button>
+                    )}
+                  </div>
                 )}
               </section>
             )}

@@ -49,6 +49,7 @@ export default async function MyPlanPage() {
   let requestedServices: { id: string; priority: number; service_name: string; estimated_cost: number | null }[] = []
   let latestReview: { id: string; decision: string; reason: string | null } | null = null
   let notification: { id: string; is_read_by_participant: boolean } | null = null
+  let appeal: { id: string; outcome: string; outcome_reason: string | null } | null = null
 
   if (plan) {
     const [{ data: n }, { data: rs }, { data: reviews }] = await Promise.all([
@@ -67,6 +68,15 @@ export default async function MyPlanPage() {
         .eq('review_id', latestReview.id)
         .maybeSingle()
       notification = notif ?? null
+
+      if (notification) {
+        const { data: existingAppeal } = await supabase
+          .from('seoul_appeals')
+          .select('id, outcome, outcome_reason')
+          .eq('notification_id', notification.id)
+          .maybeSingle()
+        appeal = existingAppeal ?? null
+      }
     }
   }
 
@@ -79,6 +89,7 @@ export default async function MyPlanPage() {
       requestedServices={requestedServices}
       latestReview={latestReview}
       notification={notification}
+      appeal={appeal}
     />
   )
 }
