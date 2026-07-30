@@ -16,11 +16,11 @@ type NavItem = {
 // soon: true 인 항목은 아직 서울형 데이터로 다시 만들지 않아 ComingSoon 화면으로 이어진다.
 const NAV_ITEMS: NavItem[] = [
   { href: '/',         icon: '🏠', label: '홈' },
-  { href: '/receipt',  icon: '🧾', label: '영수증', soon: true },
-  { href: '/calendar', icon: '📅', label: '달력', soon: true },
+  { href: '/receipt',  icon: '🧾', label: '영수증' },
+  { href: '/calendar', icon: '📅', label: '달력' },
   { href: '/plan',     icon: '🤔', label: '나의 계획', soon: true },
-  { href: '/gallery',  icon: '📸', label: '사진 모아보기', soon: true },
-  { href: '/map',      icon: '🗺️', label: '사용 장소 지도', soon: true },
+  { href: '/gallery',  icon: '📸', label: '사진 모아보기' },
+  { href: '/map',      icon: '🗺️', label: '사용 장소 지도' },
   {
     href: '/more',
     icon: '⚙️',

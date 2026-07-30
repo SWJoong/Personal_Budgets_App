@@ -36,25 +36,24 @@ export function TabBar() {
 
   // 역할별 탭 구성
   // soon: true 인 탭은 아직 서울형 데이터로 다시 만들지 않아 ComingSoon 화면으로 이어진다.
-  const participantTabs = [
+  type Tab = { name: string; href: string; icon: string; soon?: boolean }
+  const participantTabs: Tab[] = [
     { name: '홈', href: '/', icon: '🏠' },
-    { name: '영수증', href: '/receipt', icon: '🧾', soon: true },
+    { name: '영수증', href: '/receipt', icon: '🧾' },
     { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
-  const supporterTabs = [
+  const supporterTabs: Tab[] = [
     { name: '당사자', href: '/supporter', icon: '👥' },
+    { name: '확인 필요', href: '/supporter/review', icon: '🧾' },
     { name: '내역 관리', href: '/supporter/transactions', icon: '📊', soon: true },
-    { name: '영수증 확인', href: '/receipt', icon: '🧾', soon: true },
-    { name: '달력', href: '/calendar', icon: '📅', soon: true },
     { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
-  const adminTabs = [
+  const adminTabs: Tab[] = [
     { name: '당사자 관리', href: '/admin/participants', icon: '👥' },
+    { name: '확인 필요', href: '/supporter/review', icon: '🧾' },
     { name: '내역 관리', href: '/supporter/transactions', icon: '📊', soon: true },
-    { name: '영수증 확인', href: '/receipt', icon: '🧾', soon: true },
-    { name: '달력', href: '/calendar', icon: '📅', soon: true },
     { name: '더보기', href: '/more', icon: '⚙' },
   ]
 

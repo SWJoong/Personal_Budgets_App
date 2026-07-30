@@ -119,25 +119,22 @@ export default function MoreMenuClient({
             </Link>
             <Link
               href="/calendar"
-              className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
+              className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
             >
-              <div className="absolute top-2 right-2"><SoonBadge /></div>
               <span className="text-3xl group-hover:scale-110 transition-transform">📅</span>
               <span className="text-sm font-black text-zinc-800">달력</span>
             </Link>
             <Link
               href="/map"
-              className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
+              className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
             >
-              <div className="absolute top-2 right-2"><SoonBadge /></div>
               <span className="text-3xl group-hover:scale-110 transition-transform">🗺️</span>
               <span className="text-sm font-black text-zinc-800">사용 장소 지도</span>
             </Link>
             <Link
               href="/gallery"
-              className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
+              className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
             >
-              <div className="absolute top-2 right-2"><SoonBadge /></div>
               <span className="text-3xl group-hover:scale-110 transition-transform">📸</span>
               <span className="text-sm font-black text-zinc-800">사진 모아보기</span>
             </Link>

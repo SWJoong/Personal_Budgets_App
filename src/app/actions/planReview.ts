@@ -51,6 +51,50 @@ export async function decidePlanReview(input: PlanReviewInput) {
     if (statusError) return { error: `심의는 저장됐지만 계획 상태 갱신에 실패했어요: ${statusError.message}` }
     if (!statusRow) return { error: '심의는 저장됐지만 해당 계획을 찾을 수 없어 상태를 갱신하지 못했어요.' }
 
+    // 승인·조건부승인이면 예산을 배정한다 — seoul_service_usages.allocation_id 가
+    // NOT NULL 이라 이 행이 없으면 집행(Phase 3) 자체가 불가능하다. 차수의 기본
+    // 한도를 그대로 물려받고, 계획에 기간이 있으면 그걸 쓰고 없으면 차수 기간을 쓴다.
+    if (input.decision === 'approved' || input.decision === 'conditional') {
+      const { data: plan } = await supabase
+        .from('seoul_utilization_plans')
+        .select('participant_id, cohort_id, plan_period_start, plan_period_end')
+        .eq('id', input.planId)
+        .single()
+
+      if (plan) {
+        const { data: cohort } = await supabase
+          .from('seoul_cohorts')
+          .select('monthly_ceiling, total_ceiling, period_months, carry_over_allowed, starts_on, ends_on')
+          .eq('id', plan.cohort_id)
+          .single()
+
+        if (cohort) {
+          const { error: allocationError } = await supabase
+            .from('seoul_budget_allocations')
+            .upsert(
+              {
+                participant_id: plan.participant_id,
+                plan_id: input.planId,
+                review_id: data.id,
+                cohort_id: plan.cohort_id,
+                monthly_ceiling: cohort.monthly_ceiling,
+                total_ceiling: cohort.total_ceiling,
+                period_months: cohort.period_months,
+                carry_over_allowed: cohort.carry_over_allowed,
+                allocated_amount: cohort.total_ceiling,
+                starts_on: plan.plan_period_start || cohort.starts_on,
+                ends_on: plan.plan_period_end || cohort.ends_on,
+              },
+              { onConflict: 'plan_id' }
+            )
+
+          if (allocationError) {
+            return { error: `심의는 저장됐지만 예산 배정에 실패했어요: ${allocationError.message}` }
+          }
+        }
+      }
+    }
+
     revalidatePath('/supporter/reviews')
     revalidatePath('/plan')
     return { success: true, reviewId: data.id as string }

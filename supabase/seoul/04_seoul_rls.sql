@@ -28,13 +28,14 @@
 -- =====================================================================
 
 -- ── 참조·코드 테이블: 로그인 사용자 읽기, 관리자만 쓰기 ──────────────
+--    (제도 파라미터·차수 등 — 실무 중 즉흥적으로 늘어나지 않는 것들)
 DO $$
 DECLARE t TEXT;
 BEGIN
   FOREACH t IN ARRAY ARRAY[
     'seoul_cohorts','seoul_service_domains','seoul_spending_rules',
     'seoul_administering_bodies','seoul_executing_agencies',
-    'seoul_review_committees','seoul_service_providers'
+    'seoul_review_committees'
   ] LOOP
     EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_read', t);
@@ -48,6 +49,25 @@ BEGIN
       t || '_admin_write', t);
   END LOOP;
 END $$;
+
+-- ── seoul_service_providers 는 예외 — 참여자·실무자가 지출을 기록하며
+--    "이용 장소"를 그 자리에서 새로 등록한다(카카오 장소검색 결과 저장).
+--    관리자가 미리 다 심어두는 제도 파라미터가 아니라 실사용 중 자라나는
+--    디렉터리다. 그래서 INSERT 는 로그인만 하면 열고, 이미 있는 장소 정보를
+--    함부로 바꾸거나 지우는 것만 관리자로 제한한다.
+ALTER TABLE public.seoul_service_providers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS seoul_service_providers_read ON public.seoul_service_providers;
+CREATE POLICY seoul_service_providers_read ON public.seoul_service_providers
+  FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS seoul_service_providers_insert ON public.seoul_service_providers;
+CREATE POLICY seoul_service_providers_insert ON public.seoul_service_providers
+  FOR INSERT TO authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS seoul_service_providers_admin_write ON public.seoul_service_providers;
+CREATE POLICY seoul_service_providers_admin_write ON public.seoul_service_providers
+  FOR UPDATE TO authenticated USING (public.seoul_is_admin()) WITH CHECK (public.seoul_is_admin());
+DROP POLICY IF EXISTS seoul_service_providers_admin_delete ON public.seoul_service_providers;
+CREATE POLICY seoul_service_providers_admin_delete ON public.seoul_service_providers
+  FOR DELETE TO authenticated USING (public.seoul_is_admin());
 
 
 -- ── 그룹 A. 행정 기록 — 참여자는 읽기만 ─────────────────────────────

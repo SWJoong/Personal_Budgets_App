@@ -361,8 +361,14 @@ CREATE TABLE IF NOT EXISTS public.seoul_service_providers (
   business_number TEXT,
   category        TEXT,
   address         TEXT,
+  -- 카카오 장소검색(searchPlaces, src/app/actions/geocode.ts) 결과를 그대로 저장한다.
+  -- Phase 3 지도 화면이 이 좌표로 마커를 찍는다 — 없으면 지도에 못 나온다.
+  lat             DOUBLE PRECISION,
+  lng             DOUBLE PRECISION,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE public.seoul_service_providers ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION;
+ALTER TABLE public.seoul_service_providers ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION;
 
 CREATE TABLE IF NOT EXISTS public.seoul_service_usages (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
