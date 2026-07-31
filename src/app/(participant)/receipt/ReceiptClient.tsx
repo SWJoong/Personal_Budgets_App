@@ -36,12 +36,14 @@ export default function ReceiptClient({
   requestedServices,
   usages,
   remaining,
+  spendingRules,
 }: {
   participantId: string
   allocationId: string | null
   requestedServices: { id: string; service_name: string }[]
   usages: { id: string; usage_date: string; amount: number; description: string | null; settlement_status: string }[]
   remaining: number | null
+  spendingRules: string[]
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -164,6 +166,28 @@ export default function ReceiptClient({
               <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium leading-relaxed">
                 {error}
               </div>
+            )}
+
+            {/* 막는 장치가 아니라 미리 알려주는 안내다. 기본은 접어 두어 기록을
+                방해하지 않고, 궁금할 때 펼쳐 보게 한다(쉬운 정보 원칙: 한 번에
+                많은 글을 보여주지 않기). */}
+            {spendingRules.length > 0 && (
+              <details className="rounded-2xl bg-white ring-1 ring-zinc-200 overflow-hidden">
+                <summary className="p-4 text-sm font-bold text-zinc-700 cursor-pointer min-h-[44px] flex items-center leading-relaxed">
+                  💡 지원이 어려운 것도 있어요
+                </summary>
+                <div className="px-4 pb-4 flex flex-col gap-2">
+                  <ul className="flex flex-col gap-1.5">
+                    {spendingRules.map((label) => (
+                      <li key={label} className="text-sm text-zinc-600 leading-relaxed">· {label}</li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-zinc-500 leading-relaxed bg-zinc-50 rounded-xl p-3">
+                    그래도 꼭 필요한 것이면 지원받을 수 있어요.
+                    담당 선생님과 먼저 이야기해 보세요.
+                  </p>
+                </div>
+              </details>
             )}
 
             <div className="flex flex-col gap-2">

@@ -88,7 +88,20 @@ ON CONFLICT (code) DO NOTHING;
 
 
 -- =====================================================================
--- §3. 지출 규칙 — 금지(차단) vs 요건(사람 판단)
+-- §3. 지출 규칙 — 시스템은 명시하고 기록한다. 판정은 사람이 한다.
+--
+-- ★ 설계 근거 (기관 확인 완료):
+--   지원 불가 여부는 수행기관이 작성한 서류를 근거로 심사처가 결정한다.
+--   결정 전에 당사자와 수행기관 담당자가 이야기를 나누는 과정에서 대부분
+--   자정되므로, 앱이 엄격하게 판정할 필요가 없다. 개인예산계획 신청과
+--   이의신청은 '기록'이 목적이다.
+--   → 따라서 이 표의 규칙들은 화면에 **명시**하고 걸리면 **기록**할 뿐,
+--     지출을 막지 않는다. 3차 안내문도 "단, 꼭 필요한 서비스라고 인정되는
+--     경우 제한적으로 지원될 수 있습니다"라고 예외를 명시한다.
+--
+--   enforcement='block' 메커니즘 자체는 남겨 둔다 — 차수마다 운영이 다를 수
+--   있고 제도 파라미터는 데이터여야 하기 때문이다. 다만 서울형 시드는 어떤
+--   규칙도 block 을 쓰지 않는다.
 -- =====================================================================
 
 CREATE TABLE IF NOT EXISTS public.seoul_spending_rules (
@@ -107,22 +120,49 @@ CREATE TABLE IF NOT EXISTS public.seoul_spending_rules (
   UNIQUE NULLS NOT DISTINCT (cohort_id, code)
 );
 COMMENT ON TABLE public.seoul_spending_rules IS
-  '금지 항목은 제도가 정한 것이므로 차단한다. 반면 장애 연관성·목표 연관성 같은 요건은 판단이 필요하므로 플래그만 세운다. 요건까지 자동 차단하면 말로 설명하기 어려운 당사자가 가장 불리해진다.';
+  '지원 불가 항목은 화면에 명시하고 걸리면 기록한다. 막지는 않는다 — 최종 판단은 수행기관 서류를 근거로 심사처가 하고, 그 전에 당사자와 담당자의 대화에서 대부분 자정된다(기관 확인). 앱이 먼저 막으면 말로 설명하기 어려운 당사자가 가장 불리해진다.';
 
+-- 이전 시드(주류·담배·복권 / 세금·공과금 / 저축·부채상환)는 서울형 안내문에 없는
+-- 항목인데 source_note 에는 '서울형 시범사업 지원 불가 항목'이라고 적혀 있었다.
+-- 근거 없는 규칙은 이의신청에서 무너지므로 비활성화한다.
+-- ★ DELETE 하지 않는 이유: seoul_rule_checks.rule_id 가 ON DELETE CASCADE 라
+--   지우면 이미 남은 검토 이력까지 함께 사라진다.
+UPDATE public.seoul_spending_rules
+   SET is_active = FALSE
+ WHERE code IN ('no_alcohol_tobacco_lottery','no_tax_utility','no_saving_debt')
+   AND source_note = '서울형 시범사업 지원 불가 항목';
+
+-- 3차(2026) 모집 안내문 "지원이 어려운 서비스" 5종을 그대로 옮긴다.
+-- keywords 는 걸러내기용이 아니라 "이야기해 볼 만한 것"을 담당자 눈에 띄게 하는 용도다.
+-- ⑤(필요성 설명 부족)는 전적으로 사람 판단이라 키워드가 없다.
 INSERT INTO public.seoul_spending_rules (code, label, kind, enforcement, keywords, source_note) VALUES
-  ('no_alcohol_tobacco_lottery', '주류·담배·복권 구입 불가', 'prohibition', 'block',
-     ARRAY['주류','술','담배','전자담배','복권','로또'], '서울형 시범사업 지원 불가 항목'),
-  ('no_tax_utility',            '세금·공과금 불가',        'prohibition', 'block',
-     ARRAY['세금','국세','지방세','공과금','과태료','범칙금'], '서울형 시범사업 지원 불가 항목'),
-  ('no_saving_debt',            '저축·부채상환 불가',      'prohibition', 'block',
-     ARRAY['저축','적금','예금','대출','상환','이자'], '서울형 시범사업 지원 불가 항목'),
+  ('excluded_other_scheme',  '이미 다른 제도로 지원하는 서비스', 'prohibition', 'flag',
+     ARRAY['활동지원','활동보조','보조기기','보장구'],
+     '2026년 3차 모집 안내문 「지원이 어려운 서비스」①'),
+  ('excluded_daily_goods',   '일상생활 물품·주거 비용',          'prohibition', 'flag',
+     ARRAY['음식','식료품','식비','옷','의류','기저귀','위생용품','월세','관리비','주거비'],
+     '2026년 3차 모집 안내문 「지원이 어려운 서비스」②'),
+  ('excluded_leisure',       '단순 여가·오락성 지출',            'prohibition', 'flag',
+     ARRAY['여행','관광','취미','오락','레저'],
+     '2026년 3차 모집 안내문 「지원이 어려운 서비스」③'),
+  ('excluded_medical',       '병원비·약값 등 치료비',            'prohibition', 'flag',
+     ARRAY['병원비','진료비','약값','약제비','치료비','입원비'],
+     '2026년 3차 모집 안내문 「지원이 어려운 서비스」④'),
+  ('excluded_unexplained',   '필요성 설명이 부족한 경우',        'criterion',   'flag',  NULL,
+     '2026년 3차 모집 안내문 「지원이 어려운 서비스」⑤ — 전적으로 심사처 판단 사항'),
   ('must_relate_to_disability', '장애 연관성이 있어야 함', 'criterion',   'flag',  NULL,
      '이용 제한 요건 — 담당자·심의 판단 사항'),
   ('must_relate_to_goal',       '목표 연관성이 있어야 함', 'criterion',   'flag',  NULL,
      '이용 제한 요건 — 담당자·심의 판단 사항'),
   ('must_be_in_plan',           '이용계획에 포함되어야 함','criterion',   'warn',  NULL,
      '이용 제한 요건. 활동지원·발달장애인 긴급돌봄은 미포함이어도 이용 가능하다는 예외가 있음 — 기관 확인 필요')
-ON CONFLICT (cohort_id, code) DO NOTHING;
+ON CONFLICT (cohort_id, code) DO UPDATE
+  SET label       = EXCLUDED.label,
+      kind        = EXCLUDED.kind,
+      enforcement = EXCLUDED.enforcement,
+      keywords    = EXCLUDED.keywords,
+      source_note = EXCLUDED.source_note,
+      is_active   = TRUE;
 
 
 -- =====================================================================
@@ -456,7 +496,11 @@ CREATE TABLE IF NOT EXISTS public.seoul_rule_checks (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   usage_id              UUID NOT NULL REFERENCES public.seoul_service_usages(id) ON DELETE CASCADE,
   rule_id               UUID NOT NULL REFERENCES public.seoul_spending_rules(id) ON DELETE CASCADE,
-  check_result          TEXT NOT NULL CHECK (check_result IN ('pass','blocked','needs_review')),
+  -- 'blocked' 을 두지 않는 이유: 차단은 RAISE EXCEPTION 으로 이뤄지고 그 순간
+  -- 트랜잭션 전체가 롤백되므로 이 표에 'blocked' 행이 남는 일은 원리적으로 없다.
+  -- 값만 정의해 두면 "차단 이력이 남는다"는 착각을 준다. 지원 불가 항목은
+  -- 차단이 아니라 needs_review 로 기록된다(§3, seoul_flag_criteria 참조).
+  check_result          TEXT NOT NULL CHECK (check_result IN ('pass','needs_review')),
   -- ★ 시스템 판정과 사람 판단을 다른 컬럼에 둔다. 같은 칸에 쓰면 누가 정했는지 사라진다.
   human_decision        TEXT CHECK (human_decision IN ('accepted','rejected','pending')),
   human_decision_reason TEXT,
@@ -465,6 +509,11 @@ CREATE TABLE IF NOT EXISTS public.seoul_rule_checks (
   created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (usage_id, rule_id)
 );
+
+-- 이미 배포된 DB 의 CHECK 갱신 ('blocked' 제거). 저장된 적이 없는 값이라 데이터 손실은 없다.
+ALTER TABLE public.seoul_rule_checks DROP CONSTRAINT IF EXISTS seoul_rule_checks_check_result_check;
+ALTER TABLE public.seoul_rule_checks ADD  CONSTRAINT seoul_rule_checks_check_result_check
+  CHECK (check_result IN ('pass','needs_review'));
 
 
 -- =====================================================================
@@ -695,7 +744,15 @@ BEGIN
     END IF;
   END IF;
 
-  -- 금지 항목 키워드 검사 → block 만 차단
+  -- 지원 불가 항목 키워드 검사 — enforcement='block' 인 규칙만 차단한다.
+  --
+  -- ★ 서울형 시드는 어떤 규칙도 block 을 쓰지 않으므로 실제로는 여기서 아무것도
+  --   막히지 않는다(§3 설계 근거 참조). 걸린 항목은 seoul_flag_criteria() 가
+  --   검토 대기열에 기록하고, 최종 판단은 심사처가 한다.
+  --
+  -- ⚠️ 이 경로를 쓰려면(차수별로 특정 항목만 막고 싶다면) 대가를 알고 써야 한다:
+  --   RAISE EXCEPTION 은 트랜잭션 전체를 되돌리므로 "무엇이 왜 막혔는지"를 어디에도
+  --   남길 수 없다. 이력이 필요하면 앱 레이어에서 미리 확인해 안내해야 한다.
   v_haystack := lower(coalesce(NEW.description, ''));
   FOR v_rule IN
     SELECT * FROM public.seoul_spending_rules
@@ -736,6 +793,7 @@ SET search_path = public, pg_temp
 AS $$
 DECLARE
   v_cohort_id UUID;
+  v_haystack  TEXT;
 BEGIN
   SELECT cohort_id INTO v_cohort_id
     FROM public.seoul_budget_allocations WHERE id = NEW.allocation_id;
@@ -748,6 +806,26 @@ BEGIN
      WHERE r.is_active
        AND r.code = 'must_be_in_plan'
        AND (r.cohort_id IS NULL OR r.cohort_id = v_cohort_id)
+    ON CONFLICT (usage_id, rule_id) DO NOTHING;
+  END IF;
+
+  -- 지원 불가 항목 키워드에 걸리면 막지 않고 검토 대기열에 남긴다.
+  --
+  -- ★ 이것이 "차단하면 이력이 안 남는다"를 푸는 방식이다. 트리거가 RAISE EXCEPTION
+  --   으로 막으면 롤백 때문에 어떤 기록도 남길 수 없지만, 기록으로 바꾸면 무엇이
+  --   왜 걸렸는지가 그대로 남아 담당자·심사처가 볼 수 있다.
+  --   기록이 판정은 아니다 — human_decision='pending' 으로 두고 사람이 정한다.
+  v_haystack := lower(coalesce(NEW.description, ''));
+  IF v_haystack <> '' THEN
+    INSERT INTO public.seoul_rule_checks (usage_id, rule_id, check_result, human_decision)
+    SELECT NEW.id, r.id, 'needs_review', 'pending'
+      FROM public.seoul_spending_rules r
+     WHERE r.is_active
+       AND r.kind = 'prohibition'
+       AND r.enforcement <> 'block'      -- block 은 위 트리거가 이미 막아 여기 오지 않는다
+       AND r.keywords IS NOT NULL
+       AND (r.cohort_id IS NULL OR r.cohort_id = v_cohort_id)
+       AND EXISTS (SELECT 1 FROM unnest(r.keywords) k WHERE v_haystack LIKE '%' || lower(k) || '%')
     ON CONFLICT (usage_id, rule_id) DO NOTHING;
   END IF;
 

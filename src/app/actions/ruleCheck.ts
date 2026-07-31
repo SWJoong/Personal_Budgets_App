@@ -1,14 +1,16 @@
 'use server'
 
+import { createClient } from '@/utils/supabase/server'
 import { assertStaff } from '@/utils/supabase/staff'
 import { revalidatePath } from 'next/cache'
 
 /**
- * 요건(criterion) 위반 플래그 검토 — 실무자 전용.
+ * 규칙 플래그 검토 — 실무자 전용.
  *
- * 금지(prohibition)는 trg_seoul_check_usage 가 이미 막았으므로 여기 올 일이
- * 없다. 여기 쌓이는 것은 "계획에 없는 지출" 같은 요건 미충족뿐이다 — 자동
- * 거절이 아니라 사람이 판단하라고 남겨둔 것(1차 설계 원칙).
+ * 여기 쌓이는 것은 "계획에 없는 지출"과 "지원이 어려운 서비스 키워드에 걸린 지출"
+ * 두 가지다. 어느 쪽도 시스템이 거절한 것이 아니다 — 지원 불가 여부는 수행기관
+ * 서류를 근거로 심사처가 정하고, 그 전에 당사자와 담당자의 대화에서 대부분
+ * 자정된다(기관 확인). 앱의 역할은 판정이 아니라 기록과 명시다.
  */
 export async function getRuleChecks(onlyPending = true) {
   try {
@@ -64,4 +66,34 @@ export async function decideRuleCheck(id: string, input: { decision: 'accepted' 
   } catch (e) {
     return { error: e instanceof Error ? e.message : '오류가 발생했습니다.' }
   }
+}
+
+export interface SpendingRuleRow {
+  code: string
+  label: string
+  kind: string
+  source_note: string | null
+}
+
+/**
+ * 지원이 어려운 서비스 목록 — 화면에 **명시**하기 위한 조회.
+ *
+ * 판정 근거가 아니라 안내 문구다. 당사자와 담당자가 지출 전에 이야기를 나눌 때
+ * 쓰라고 보여준다 — 이 대화에서 대부분 자정되고, 최종 판단은 심사처가 한다.
+ * 로그인만 되어 있으면 볼 수 있다(제도 안내이지 개인정보가 아니다).
+ */
+export async function getSpendingRules(): Promise<{ error?: string; rules: SpendingRuleRow[] }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.', rules: [] }
+
+  const { data, error } = await supabase
+    .from('seoul_spending_rules')
+    .select('code, label, kind, source_note')
+    .eq('is_active', true)
+    .eq('kind', 'prohibition')
+    .order('code')
+
+  if (error) return { error: error.message, rules: [] }
+  return { rules: (data ?? []) as SpendingRuleRow[] }
 }

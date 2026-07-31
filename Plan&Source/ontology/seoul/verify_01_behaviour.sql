@@ -66,9 +66,15 @@ VALUES ('11111111-1111-1111-1111-111111111111','eeeeeeee-0000-0000-0000-00000000
 INSERT INTO public.seoul_service_usages (participant_id, allocation_id, usage_date, amount, description)
 VALUES ('11111111-1111-1111-1111-111111111111','eeeeeeee-0000-0000-0000-000000000001','2025-01-20',200000,'미술 재료');
 
-\echo '── T8. 금지 항목(주류) → 차단되어야 함'
-INSERT INTO public.seoul_service_usages (participant_id, allocation_id, usage_date, amount, description)
-VALUES ('11111111-1111-1111-1111-111111111111','eeeeeeee-0000-0000-0000-000000000001','2025-02-01',20000,'마트에서 주류 구입');
+-- T8 은 원래 "금지 항목(주류) → 차단"이었다. 기관 확인 결과 지원 불가 여부는
+-- 수행기관 서류를 근거로 심사처가 정하고 그 전에 담당자와의 대화에서 자정되므로,
+-- 앱은 명시·기록만 하고 막지 않는다(§3 설계 근거). 따라서 이제 기록되어야 한다.
+-- 지원 불가 항목이 기록으로 남는지는 verify_07_spending_rules.sql 이 따로 본다.
+\echo '── T8. 지원 불가 항목(여가성) → 막지 않고 기록되어야 함'
+INSERT INTO public.seoul_service_usages (id, participant_id, allocation_id, usage_date, amount, description)
+VALUES ('ee800000-0000-0000-0000-000000000008','11111111-1111-1111-1111-111111111111','eeeeeeee-0000-0000-0000-000000000001','2025-02-01',20000,'주말 여행 경비');
+SELECT '   기록: ' || count(*) || '건  ' || CASE WHEN count(*)=1 THEN '✅ (막지 않음)' ELSE '❌' END
+  FROM public.seoul_service_usages WHERE id = 'ee800000-0000-0000-0000-000000000008';
 
 \echo '── T9. 기간 밖 이용일 → 차단되어야 함'
 INSERT INTO public.seoul_service_usages (participant_id, allocation_id, usage_date, amount, description)

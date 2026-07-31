@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
+import { getSpendingRules } from '@/app/actions/ruleCheck'
 import ReceiptClient from './ReceiptClient'
 
 export default async function ReceiptPage() {
@@ -50,6 +51,10 @@ export default async function ReceiptPage() {
     remaining = balance ? Number(balance.remaining) : null
   }
 
+  // 지원이 어려운 서비스는 막는 장치가 아니라 미리 알려주는 안내다 —
+  // 담당 선생님과 이야기해 볼 거리를 지출 기록 전에 보여준다.
+  const { rules } = await getSpendingRules()
+
   return (
     <ReceiptClient
       participantId={participant.id}
@@ -57,6 +62,7 @@ export default async function ReceiptPage() {
       requestedServices={requestedServices}
       usages={usages}
       remaining={remaining}
+      spendingRules={rules.map((r) => r.label)}
     />
   )
 }
