@@ -93,6 +93,73 @@ export async function updateApplicationStatus(applicationId: string, status: App
   }
 }
 
+export type PublicAssistance = 'basic_livelihood' | 'near_poor' | 'none'
+
+export interface BenefitStatusInput {
+  participantId: string
+  publicAssistance: PublicAssistance
+  usesActivitySupport?: boolean
+  usesSeoulAdditionalSupport?: boolean
+  participatesInMohwPilot?: boolean
+}
+
+/**
+ * 공공부조 수급현황 기록 (실무자 전용) — 신청서 §신청자 정보의 항목이다.
+ *
+ * 이 값이 본인부담금 면제 판정의 유일한 입력이다. 3차(2026) 안내문:
+ * "기초생활수급자·차상위계층 본인부담금 없음(0원) / 그 외 지원액의 10%(최대 24만 원)".
+ * 배정이 만들어질 때 seoul_set_copay() 트리거가 이 표를 읽어 면제 여부를 정하므로,
+ * 심의 승인 전에 기록해 두어야 한다. 없으면 배정이 'unverified' 로 남고 화면이
+ * "확인 전"임을 알린다 — 조용히 면제 처리하거나 조용히 부과하지 않는다.
+ */
+export async function recordBenefitStatus(input: BenefitStatusInput) {
+  try {
+    const { supabase } = await assertStaff()
+
+    const { data, error } = await supabase
+      .from('seoul_benefit_status')
+      .upsert(
+        {
+          participant_id: input.participantId,
+          public_assistance: input.publicAssistance,
+          uses_activity_support: input.usesActivitySupport ?? false,
+          uses_seoul_additional_support: input.usesSeoulAdditionalSupport ?? false,
+          participates_in_mohw_pilot: input.participatesInMohwPilot ?? false,
+        },
+        { onConflict: 'participant_id' }
+      )
+      .select('id')
+      .maybeSingle()
+
+    if (error) return { error: `수급현황 기록 실패: ${friendlyDbError(error)}` }
+    if (!data) return { error: '이 당사자의 정보를 수정할 권한이 없거나 존재하지 않아요.' }
+
+    revalidatePath('/supporter/applications')
+    revalidatePath('/admin/participants')
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : '오류가 발생했습니다.' }
+  }
+}
+
+/** 수급현황 조회 — 없으면 null (아직 안 받은 상태와 'none' 을 구분해야 한다) */
+export async function getBenefitStatus(participantId: string) {
+  try {
+    const { supabase } = await assertStaff()
+
+    const { data, error } = await supabase
+      .from('seoul_benefit_status')
+      .select('public_assistance, uses_activity_support, uses_seoul_additional_support, participates_in_mohw_pilot')
+      .eq('participant_id', participantId)
+      .maybeSingle()
+
+    if (error) return { error: error.message, benefitStatus: null }
+    return { benefitStatus: data }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : '오류가 발생했습니다.', benefitStatus: null }
+  }
+}
+
 export interface ConsentInput {
   applicationId: string
   participantId: string

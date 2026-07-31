@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { createApplication } from '@/app/actions/application'
+import { createApplication, recordBenefitStatus, type PublicAssistance } from '@/app/actions/application'
 
 interface ParticipantOption {
   id: string
@@ -31,6 +31,11 @@ export default function NewApplicationPage() {
   const [participantId, setParticipantId] = useState('')
   const [cohortId, setCohortId] = useState('')
   const [receiptNumber, setReceiptNumber] = useState('')
+  // 신청서 §신청자 정보의 "공공부조 수급현황". 본인부담금 면제 판정의 유일한 입력이라
+  // 접수 시점에 받아 둔다 — 심의 승인 때 배정이 만들어지면서 면제 여부가 확정된다.
+  const [publicAssistance, setPublicAssistance] = useState<PublicAssistance | ''>('')
+  const [usesActivitySupport, setUsesActivitySupport] = useState(false)
+  const [participatesInMohwPilot, setParticipatesInMohwPilot] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -75,9 +80,26 @@ export default function NewApplicationPage() {
 
       if (result.error) {
         setError(result.error)
-      } else {
-        router.push(`/supporter/applications/${result.applicationId}`)
+        return
       }
+
+      // 수급현황은 신청서와 별개 표(seoul_benefit_status)라 따로 저장한다.
+      // 여기서 실패해도 신청서 자체는 이미 접수됐으므로 되돌리지 않고 알리기만 한다 —
+      // 접수를 통째로 무르는 것보다 "수급현황만 다시 입력"이 실무자에게 덜 파괴적이다.
+      if (publicAssistance) {
+        const benefitResult = await recordBenefitStatus({
+          participantId,
+          publicAssistance,
+          usesActivitySupport,
+          participatesInMohwPilot,
+        })
+        if (benefitResult.error) {
+          setError(`신청서는 접수됐지만 수급현황 저장에 실패했어요: ${benefitResult.error}`)
+          return
+        }
+      }
+
+      router.push(`/supporter/applications/${result.applicationId}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : '저장에 실패했습니다.')
     } finally {
@@ -162,6 +184,54 @@ export default function NewApplicationPage() {
                 className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
               />
             </div>
+          </fieldset>
+
+          <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200">
+            <legend className="text-xs font-black text-zinc-400 uppercase tracking-widest px-1">수급 현황</legend>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-zinc-500 font-medium">공공부조 수급현황</label>
+              <select
+                value={publicAssistance}
+                onChange={(e) => setPublicAssistance(e.target.value as PublicAssistance | '')}
+                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+              >
+                <option value="">아직 확인 못함</option>
+                <option value="basic_livelihood">기초생활수급</option>
+                <option value="near_poor">차상위(조건부수급)</option>
+                <option value="none">해당없음</option>
+              </select>
+              <p className="text-[11px] text-zinc-400 leading-relaxed mt-1">
+                기초생활수급·차상위는 본인부담금이 면제됩니다. 비워 두면 예산 승인 시
+                &lsquo;확인 전&rsquo;으로 남고, 당사자 화면에도 그렇게 표시됩니다.
+              </p>
+            </div>
+
+            <label className="flex items-center gap-3 min-h-[44px] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={usesActivitySupport}
+                onChange={(e) => setUsesActivitySupport(e.target.checked)}
+                className="w-5 h-5 rounded accent-zinc-900"
+              />
+              <span className="text-sm text-zinc-700 font-medium">장애인 활동지원서비스 이용 중</span>
+            </label>
+
+            <label className="flex items-center gap-3 min-h-[44px] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={participatesInMohwPilot}
+                onChange={(e) => setParticipatesInMohwPilot(e.target.checked)}
+                className="w-5 h-5 rounded accent-zinc-900"
+              />
+              <span className="text-sm text-zinc-700 font-medium">보건복지부 개인예산제 시범사업 참여 중</span>
+            </label>
+            {participatesInMohwPilot && (
+              <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg p-3 leading-relaxed">
+                복지부 시범사업 참여자는 서울형에 참여할 수 없습니다. 이대로 저장하면
+                선정 단계에서 막힙니다.
+              </p>
+            )}
           </fieldset>
 
           <button

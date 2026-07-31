@@ -12,12 +12,18 @@
 --    자체 픽스처 cohort를 쓰므로 이 값과 결합되어 있지 않다.)
 -- =====================================================================
 
+-- 본인부담금은 3차(2026)에 신설됐다. 모집 안내문:
+--   "기초생활수급자·차상위계층 본인부담금 없음(0원) / 그 외 참여자 지원액의 10%(최대 24만 원)"
+-- 승인금액 240만원 × 10% = 24만원이라 상한과 정확히 맞아떨어진다.
 INSERT INTO public.seoul_cohorts
-  (code, name, period_months, monthly_ceiling, total_ceiling, carry_over_allowed, appeal_due_days, starts_on, ends_on, is_active)
+  (code, name, period_months, monthly_ceiling, total_ceiling, carry_over_allowed,
+   copay_rate, copay_max, appeal_due_days, starts_on, ends_on, is_active)
 VALUES
-  ('2026_3', '서울형 장애인 개인예산제 3차 시범사업', 6, 400000, 2400000, TRUE, 14,
-   '2026-01-01', '2026-12-31', TRUE)
-ON CONFLICT (code) DO NOTHING;
+  ('2026_3', '서울형 장애인 개인예산제 3차 시범사업', 6, 400000, 2400000, TRUE,
+   0.10, 240000, 14, '2026-01-01', '2026-12-31', TRUE)
+ON CONFLICT (code) DO UPDATE
+  SET copay_rate = EXCLUDED.copay_rate,
+      copay_max  = EXCLUDED.copay_max;
 
 -- 아래 세 테이블은 원본 초안(seoul_schema_draft.sql)에 자연키/UNIQUE 가 없어
 -- ON CONFLICT 를 못 쓴다. WHERE NOT EXISTS 로 재실행 안전성을 대신한다.

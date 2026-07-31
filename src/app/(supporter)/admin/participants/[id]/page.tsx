@@ -20,7 +20,7 @@ export default async function ParticipantDetailPage({ params }: { params: Promis
 
   const { data: allocation } = await supabase
     .from('seoul_budget_allocations')
-    .select('id')
+    .select('id, allocated_amount, copay_amount, copay_status')
     .eq('participant_id', id)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -42,6 +42,9 @@ export default async function ParticipantDetailPage({ params }: { params: Promis
         <ParticipantDetailClient
           participantId={participant.id}
           allocationId={allocation?.id ?? null}
+          allocatedAmount={allocation ? Number(allocation.allocated_amount) : null}
+          copayAmount={allocation ? Number(allocation.copay_amount) : null}
+          copayStatus={allocation?.copay_status ?? null}
           monitoringRecords={records}
           settlements={settlements}
           appeals={appeals}

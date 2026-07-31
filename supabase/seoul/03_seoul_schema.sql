@@ -29,18 +29,38 @@ CREATE TABLE IF NOT EXISTS public.seoul_cohorts (
   period_months        INT  NOT NULL,                 -- 확인된 자료: 6
   monthly_ceiling      NUMERIC(12,2) NOT NULL,        -- 확인된 자료: 400,000 (2025년 40~50만)
   total_ceiling        NUMERIC(12,2) NOT NULL,        -- 확인된 자료: 2,400,000
-  -- ⚠️ 월 미사용액 이월 가능 여부는 공개 자료로 확인되지 않았다. 기관 확인 항목.
-  --    TRUE  = 총액만 강제, 월 초과는 경고만  (기본값 — 잘못 막으면 당사자가 즉시 손해)
-  --    FALSE = 월 한도도 하드 차단
+  -- 월 미사용액 이월 — 3차(2026) 모집 안내문 기준으로 TRUE 가 제도와 맞는다.
+  --   근거 ①: 안내문이 한도를 "총 240만원 한도 내에서"로만 적고 월 상한을 쓰지 않는다.
+  --   근거 ②: 같은 안내문 Q3 — "개인예산은 참여자에게 현금으로 지급되지 않습니다.
+  --           수행기관인 한국장애인재단에서 서비스 제공기관(인)에 비용을 대신 지급합니다."
+  --           월별로 지급되는 돈이 없으므로 "이번 달 미사용액을 다음 달로 넘긴다"는
+  --           개념 자체가 성립하지 않는다. 총액 한도를 차감해 나가는 구조다.
+  --   따라서 "월 40만원 × 6개월"(2차 언론보도)은 총액 산정 산식이지 집행 상한이 아니다.
+  --    TRUE  = 총액만 강제, 월 초과는 경고만  (3차 기준 기본값)
+  --    FALSE = 월 한도도 하드 차단 (월별 지급 방식으로 바뀌는 차수가 생기면 사용)
   carry_over_allowed   BOOLEAN NOT NULL DEFAULT TRUE,
+  -- 본인부담금 — 3차(2026)에 신설. 1·2차에는 없었으므로 기본값 0 이다.
+  --   3차 안내문: "기초생활수급자·차상위계층 본인부담금 없음(0원) /
+  --                그 외 참여자 지원액의 10%(최대 24만 원)"
+  --   승인금액(allocated_amount)에 rate 를 곱하고 max 로 자른다. 산정은
+  --   seoul_set_copay() 트리거가 하며 결과는 배정 행에 고정된다(§9 참조).
+  copay_rate           NUMERIC(5,4)  NOT NULL DEFAULT 0,   -- 3차: 0.10
+  copay_max            NUMERIC(12,2),                      -- 3차: 240000. NULL = 상한 없음
   appeal_due_days      INT  NOT NULL DEFAULT 14,      -- ⚠️ 서울형 적용 여부 확인 필요
   starts_on            DATE,
   ends_on              DATE,
   is_active            BOOLEAN NOT NULL DEFAULT TRUE,
   created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+-- 이미 배포된 DB 를 위한 추가 (재실행 안전)
+ALTER TABLE public.seoul_cohorts ADD COLUMN IF NOT EXISTS copay_rate NUMERIC(5,4) NOT NULL DEFAULT 0;
+ALTER TABLE public.seoul_cohorts ADD COLUMN IF NOT EXISTS copay_max  NUMERIC(12,2);
+
 COMMENT ON TABLE  public.seoul_cohorts IS '시범사업 차수별 제도 파라미터. 금액·기간·기한을 코드가 아닌 데이터로 둔다.';
-COMMENT ON COLUMN public.seoul_cohorts.carry_over_allowed IS '기관 확인 필요. 잔액 계산 로직 전체가 이 값에 좌우된다.';
+COMMENT ON COLUMN public.seoul_cohorts.carry_over_allowed IS
+  '3차 안내문 기준 TRUE 가 제도와 일치(현금 월별 지급이 아니라 총액 차감 구조). 월별 지급 차수가 생기면 FALSE.';
+COMMENT ON COLUMN public.seoul_cohorts.copay_rate IS '본인부담률. 3차 0.10, 1·2차 0(제도에 없었음).';
+COMMENT ON COLUMN public.seoul_cohorts.copay_max  IS '본인부담금 상한. 3차 240000. NULL 이면 상한 없음.';
 
 
 -- =====================================================================
@@ -344,7 +364,18 @@ CREATE TABLE IF NOT EXISTS public.seoul_budget_allocations (
   total_ceiling      NUMERIC(12,2) NOT NULL,
   period_months      INT NOT NULL,
   carry_over_allowed BOOLEAN NOT NULL DEFAULT TRUE,
-  allocated_amount   NUMERIC(12,2) NOT NULL,
+  allocated_amount   NUMERIC(12,2) NOT NULL,   -- 승인금액. 본인부담금 산정 기준이 된다.
+  -- 본인부담금 — seoul_set_copay() 트리거가 채운다. 직접 넣은 값은 덮어쓰인다.
+  --   잔액(remaining)처럼 계속 변하는 값이 아니라 승인 시점에 확정되는 값이라
+  --   뷰로 계산하지 않고 행에 고정한다. 나중에 수급 자격이 바뀌어도 이미 승인된
+  --   배정의 부담금은 그대로여야 하기 때문이다.
+  copay_amount       NUMERIC(12,2) NOT NULL DEFAULT 0,
+  -- 금액만 두면 "0원"이 면제인지 제도 자체가 없는 차수인지 구분되지 않는다.
+  --   unverified = 수급 구분을 아직 못 받은 상태. 면제 대상일 수도 있으므로
+  --   금액은 부과 기준으로 계산해 두되 화면에서 "확인 전"임을 반드시 알린다.
+  copay_status       TEXT NOT NULL DEFAULT 'not_applicable'
+                       CHECK (copay_status IN ('not_applicable','exempt_basic_livelihood',
+                                               'exempt_near_poor','charged','unverified')),
   starts_on          DATE NOT NULL,
   ends_on            DATE NOT NULL,
   created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -352,8 +383,21 @@ CREATE TABLE IF NOT EXISTS public.seoul_budget_allocations (
   CHECK (ends_on >= starts_on),
   CHECK (allocated_amount <= total_ceiling)
 );
+
+-- 이미 배포된 DB 를 위한 추가 (재실행 안전)
+ALTER TABLE public.seoul_budget_allocations
+  ADD COLUMN IF NOT EXISTS copay_amount NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE public.seoul_budget_allocations
+  ADD COLUMN IF NOT EXISTS copay_status TEXT NOT NULL DEFAULT 'not_applicable';
+DO $$ BEGIN
+  ALTER TABLE public.seoul_budget_allocations ADD CONSTRAINT seoul_budget_allocations_copay_status_check
+    CHECK (copay_status IN ('not_applicable','exempt_basic_livelihood','exempt_near_poor','charged','unverified'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
 COMMENT ON TABLE public.seoul_budget_allocations IS
   '월 한도와 총 한도를 함께 저장한다. 월 한도만 보면 총액을 넘고, 총액만 보면 한 달에 몰아 쓸 수 있다.';
+COMMENT ON COLUMN public.seoul_budget_allocations.copay_amount IS
+  '승인 시점에 확정되는 본인부담금. seoul_set_copay() 가 산정하며 수기 입력은 덮어쓰인다.';
 
 CREATE TABLE IF NOT EXISTS public.seoul_service_providers (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -622,12 +666,14 @@ BEGIN
      AND u.settlement_status <> 'recovered'
      AND (TG_OP = 'INSERT' OR u.id <> NEW.id);
 
-  IF v_total_spent + NEW.amount > v_alloc.total_ceiling THEN
+  -- 기준은 승인금액이다 — 차수 상한(total_ceiling)이 아니라 이 사람에게 실제로
+  -- 승인된 금액까지만 쓸 수 있다. v_seoul_budget_balance.remaining 과 같은 축.
+  IF v_total_spent + NEW.amount > v_alloc.allocated_amount THEN
     -- 트리거 예외 메시지는 그대로 화면에 노출된다(friendlyDbError 는 이 메시지를
     -- 사람이 이미 쓴 것으로 보고 통과시킨다) — 그래서 천단위 구분과 소수점 정리를
     -- 여기서 직접 한다. to_char 없이 NUMERIC 을 그대로 넣으면 "2400000.00원"처럼 나온다.
-    RAISE EXCEPTION '총 한도를 초과합니다. (한도 %원 / 기사용 %원 / 이번 %원)',
-      to_char(v_alloc.total_ceiling, 'FM999,999,999,999'),
+    RAISE EXCEPTION '승인된 금액을 초과합니다. (승인 %원 / 기사용 %원 / 이번 %원)',
+      to_char(v_alloc.allocated_amount, 'FM999,999,999,999'),
       to_char(v_total_spent, 'FM999,999,999,999'),
       to_char(NEW.amount, 'FM999,999,999,999');
   END IF;
@@ -715,6 +761,110 @@ CREATE TRIGGER trg_seoul_flag_criteria
   FOR EACH ROW EXECUTE FUNCTION public.seoul_flag_criteria();
 
 
+-- (6) 본인부담금 산정 — 승인금액 × 차수 부담률, 상한 적용, 수급자·차상위 면제
+--
+-- ★ 앱이 아니라 DB 에서 계산하는 이유: 배정 행은 심의 승인(planReview.ts)뿐 아니라
+--   시드·수기 보정으로도 만들어진다. 산식을 앱에 두면 경로마다 값이 달라지고,
+--   그 차이는 당사자가 실제로 내야 하는 돈의 차이가 된다.
+--
+-- ★ SECURITY DEFINER 인 이유: 면제 판정에 seoul_benefit_status 를 읽어야 하는데,
+--   이 표의 조회 정책은 담당 실무자·관리자로 제한된다. INVOKER 로 두면 조회에
+--   실패해도 예외 없이 그냥 "행 없음"으로 보여 면제 대상자가 조용히 부과 대상이
+--   되어 버린다. 읽기만 하고 쓰지 않으므로 권한 확대는 아니다.
+CREATE OR REPLACE FUNCTION public.seoul_set_copay()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_rate      NUMERIC;
+  v_max       NUMERIC;
+  v_assist    TEXT;
+  v_has_row   BOOLEAN;
+BEGIN
+  SELECT c.copay_rate, c.copay_max INTO v_rate, v_max
+    FROM public.seoul_cohorts c WHERE c.id = NEW.cohort_id;
+
+  -- 부담률이 없는 차수(1·2차)는 제도 자체가 없다 — 0원이지만 '면제'와는 다르다.
+  IF COALESCE(v_rate, 0) = 0 THEN
+    NEW.copay_amount := 0;
+    NEW.copay_status := 'not_applicable';
+    RETURN NEW;
+  END IF;
+
+  SELECT bs.public_assistance, TRUE INTO v_assist, v_has_row
+    FROM public.seoul_benefit_status bs
+   WHERE bs.participant_id = NEW.participant_id;
+
+  IF v_assist = 'basic_livelihood' THEN
+    NEW.copay_amount := 0;
+    NEW.copay_status := 'exempt_basic_livelihood';
+    RETURN NEW;
+  ELSIF v_assist = 'near_poor' THEN
+    NEW.copay_amount := 0;
+    NEW.copay_status := 'exempt_near_poor';
+    RETURN NEW;
+  END IF;
+
+  -- LEAST 는 NULL 을 건너뛰므로 copay_max 가 NULL 이면 상한 없이 동작한다.
+  -- 원 단위로 반올림한다 — 소수점이 붙은 청구액은 당사자에게 설명할 수 없다.
+  NEW.copay_amount := LEAST(ROUND(NEW.allocated_amount * v_rate), v_max);
+
+  -- 수급 구분을 아직 못 받았으면 면제 대상일 수도 있다. 0원으로 두면 나중에
+  -- 갑자기 청구되고, 면제인데 부과로 확정하면 쓸 수 있는 돈을 과소평가하게 된다.
+  -- 그래서 금액은 부과 기준으로 두되 '확인 전'임을 상태로 남겨 화면이 알리게 한다.
+  NEW.copay_status := CASE WHEN COALESCE(v_has_row, FALSE) AND v_assist IS NOT NULL
+                           THEN 'charged' ELSE 'unverified' END;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_seoul_set_copay ON public.seoul_budget_allocations;
+CREATE TRIGGER trg_seoul_set_copay
+  BEFORE INSERT OR UPDATE OF allocated_amount, cohort_id, participant_id
+  ON public.seoul_budget_allocations
+  FOR EACH ROW EXECUTE FUNCTION public.seoul_set_copay();
+
+
+-- (7) 수급 구분이 뒤늦게 입력되면 '확인 전'으로 남아 있던 배정을 다시 산정한다
+--
+-- 실무 순서가 늘 깔끔하지 않다 — 수급현황을 확인하기 전에 심의가 먼저 끝나기도 한다.
+-- 그 경우 배정은 'unverified'(부과 기준 금액 + 확인 전 표시)로 남는데, 나중에
+-- 기초생활수급으로 확인되어도 아무도 다시 계산해 주지 않으면 면제 대상자가
+-- 24만원을 그대로 청구받는다.
+--
+-- ★ 'unverified' 인 배정만 고친다. 이미 면제/부과로 확정된 배정은 건드리지 않는다 —
+--   승인 시점에 확정된 금액을 나중의 자격 변동으로 소급해 바꾸면 당사자가 이미
+--   들은 금액과 달라진다. 확인 전이었던 것을 확인해 주는 것과, 확정된 것을
+--   뒤집는 것은 다른 일이다.
+CREATE OR REPLACE FUNCTION public.seoul_recheck_copay()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+  IF NEW.public_assistance IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  -- allocated_amount 를 제자리에 다시 써서 trg_seoul_set_copay 를 재실행시킨다.
+  UPDATE public.seoul_budget_allocations
+     SET allocated_amount = allocated_amount
+   WHERE participant_id = NEW.participant_id
+     AND copay_status = 'unverified';
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_seoul_recheck_copay ON public.seoul_benefit_status;
+CREATE TRIGGER trg_seoul_recheck_copay
+  AFTER INSERT OR UPDATE OF public_assistance ON public.seoul_benefit_status
+  FOR EACH ROW EXECUTE FUNCTION public.seoul_recheck_copay();
+
+
 -- =====================================================================
 -- §13. 뷰 — 잔액은 저장하지 않고 항상 계산한다
 -- =====================================================================
@@ -728,10 +878,21 @@ SELECT
   a.total_ceiling,
   a.monthly_ceiling,
   a.carry_over_allowed,
+  a.allocated_amount,
+  -- 본인부담금은 잔액과 다른 축이다. remaining 에서 빼지 않는다 —
+  -- 당사자가 쓸 수 있는 서비스 금액은 승인금액 그대로이고, 부담금은 그와 별도로
+  -- 발생하는 청구다(3차 안내문: 수행기관이 제공기관에 대신 지급하는 구조).
+  a.copay_amount,
+  a.copay_status,
   a.starts_on,
   a.ends_on,
   COALESCE(sum(u.amount) FILTER (WHERE u.settlement_status <> 'recovered'), 0) AS spent,
-  a.total_ceiling
+  -- ★ 기준은 total_ceiling 이 아니라 allocated_amount(승인금액)다.
+  --   total_ceiling 은 차수가 정한 상한이고, 실제로 쓸 수 있는 돈은 심의가 승인한
+  --   금액이다(CHECK: allocated_amount <= total_ceiling). 240만 한도인 차수에서
+  --   150만만 승인된 참여자에게 total_ceiling 기준 잔액을 보여주면 90만원을 더
+  --   쓸 수 있다고 잘못 알려주게 된다. 본인부담금도 승인금액 기준이므로 축을 맞춘다.
+  a.allocated_amount
     - COALESCE(sum(u.amount) FILTER (WHERE u.settlement_status <> 'recovered'), 0) AS remaining,
   count(u.id)                                                    AS usage_count,
   count(u.id) FILTER (WHERE u.requested_service_id IS NULL)       AS unplanned_count

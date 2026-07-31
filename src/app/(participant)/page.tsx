@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
+import { describeCopay } from '@/utils/copay'
 
 const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 
@@ -76,13 +77,35 @@ export default async function Home() {
             </p>
           </section>
         ) : (
-          <section className="p-8 rounded-3xl bg-zinc-900 text-white flex flex-col gap-2">
-            <span className="text-sm font-bold text-zinc-400">지금 쓸 수 있는 돈</span>
-            <span className="text-4xl font-black tracking-tight">{won(Number(balance.remaining))}</span>
-            <span className="text-xs font-medium text-zinc-400 leading-relaxed">
-              전체 {won(Number(balance.total_ceiling))} 중 {won(Number(balance.spent))} 사용했어요
-            </span>
-          </section>
+          <>
+            <section className="p-8 rounded-3xl bg-zinc-900 text-white flex flex-col gap-2">
+              <span className="text-sm font-bold text-zinc-400">지금 쓸 수 있는 돈</span>
+              <span className="text-4xl font-black tracking-tight">{won(Number(balance.remaining))}</span>
+              <span className="text-xs font-medium text-zinc-400 leading-relaxed">
+                {/* 기준은 차수 상한이 아니라 이 사람에게 승인된 금액이다 — remaining 과 같은 축이어야
+                    "전체 240만인데 왜 150만만 남았지?" 같은 혼란이 생기지 않는다. */}
+                전체 {won(Number(balance.allocated_amount))} 중 {won(Number(balance.spent))} 사용했어요
+              </span>
+            </section>
+
+            {(() => {
+              const copay = describeCopay(balance.copay_status, Number(balance.copay_amount))
+              if (!copay.show) return null
+              return (
+                <section
+                  className={`p-6 rounded-3xl flex flex-col gap-1.5 ring-1 ${
+                    copay.pending ? 'bg-amber-50 ring-amber-200' : 'bg-white ring-zinc-200'
+                  }`}
+                >
+                  <span className="text-sm font-bold text-zinc-500">{copay.title}</span>
+                  {copay.amount > 0 && (
+                    <span className="text-2xl font-black tracking-tight">{won(copay.amount)}</span>
+                  )}
+                  <span className="text-xs font-medium text-zinc-500 leading-relaxed">{copay.note}</span>
+                </section>
+              )
+            })()}
+          </>
         )}
 
         <section className="flex flex-col gap-3">

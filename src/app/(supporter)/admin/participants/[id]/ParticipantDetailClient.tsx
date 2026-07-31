@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { recordMonitoring, type MonitoringRow } from '@/app/actions/monitoring'
 import { recordSettlement, type SettlementRow } from '@/app/actions/settlement'
 import { decideAppeal, type AppealRow } from '@/app/actions/appeal'
+import { copayStatusLabel } from '@/utils/copay'
 
 const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 
@@ -18,12 +19,18 @@ const APPEAL_OUTCOME_LABEL: Record<string, string> = {
 export default function ParticipantDetailClient({
   participantId,
   allocationId,
+  allocatedAmount,
+  copayAmount,
+  copayStatus,
   monitoringRecords,
   settlements,
   appeals,
 }: {
   participantId: string
   allocationId: string | null
+  allocatedAmount: number | null
+  copayAmount: number | null
+  copayStatus: string | null
   monitoringRecords: MonitoringRow[]
   settlements: SettlementRow[]
   appeals: AppealRow[]
@@ -108,6 +115,37 @@ export default function ParticipantDetailClient({
     <div className="flex flex-col gap-6">
       {error && (
         <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>
+      )}
+
+      {/* 예산·본인부담금 — 정산 때 청구할 금액이라 실무자가 먼저 확인해야 한다 */}
+      {allocationId && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-sm font-black text-zinc-400 uppercase tracking-widest">예산과 본인부담금</h2>
+          <div className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-zinc-500">승인금액</span>
+              <span className="font-bold">{allocatedAmount !== null ? won(allocatedAmount) : '-'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-zinc-500">본인부담금</span>
+              <span className="font-bold">{copayAmount !== null ? won(copayAmount) : '-'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-zinc-500">부담금 상태</span>
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                copayStatus === 'unverified' ? 'bg-amber-50 text-amber-700' : 'bg-zinc-100 text-zinc-600'
+              }`}>
+                {copayStatusLabel(copayStatus)}
+              </span>
+            </div>
+            {copayStatus === 'unverified' && (
+              <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg p-3 leading-relaxed">
+                공공부조 수급현황이 입력되지 않아 부과 기준으로 계산된 금액입니다.
+                기초생활수급·차상위라면 면제 대상이니 수급현황을 먼저 확인해 주세요.
+              </p>
+            )}
+          </div>
+        </section>
       )}
 
       {/* 이의신청 */}

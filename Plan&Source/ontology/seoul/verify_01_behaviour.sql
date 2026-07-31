@@ -91,6 +91,6 @@ SELECT '  → 통지일 2025-03-03 / 자동 기한: ' || due_on FROM public.seou
 SELECT '  → spent=' || spent || ' remaining=' || remaining || ' unplanned=' || unplanned_count
   FROM public.v_seoul_budget_balance WHERE allocation_id='eeeeeeee-0000-0000-0000-000000000001';
 
-\echo '── T13. 총 한도 초과 시도 (250만원) → 차단되어야 함'
+\echo '── T13. 승인금액 초과 시도 (250만원) → 차단되어야 함'
 INSERT INTO public.seoul_service_usages (participant_id, allocation_id, usage_date, amount, description)
 VALUES ('11111111-1111-1111-1111-111111111111','eeeeeeee-0000-0000-0000-000000000001','2025-03-01',2500000,'대형 지출');
