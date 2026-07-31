@@ -18,9 +18,12 @@
 INSERT INTO public.seoul_cohorts
   (code, name, period_months, monthly_ceiling, total_ceiling, carry_over_allowed,
    copay_rate, copay_max, appeal_due_days, starts_on, ends_on, is_active)
+-- appeal_due_days 는 NULL 로 둔다 — 이의신청 기한·기산점은 심사처가 전달하는
+-- 내용이고 앱은 기록만 한다(기관 확인). 값을 지어내면 당사자가 실제 기한을
+-- 오해하므로, 전달받은 뒤 이 행의 값을 채우거나 이의신청마다 due_on 을 직접 적는다.
 VALUES
   ('2026_3', '서울형 장애인 개인예산제 3차 시범사업', 6, 400000, 2400000, TRUE,
-   0.10, 240000, 14, '2026-01-01', '2026-12-31', TRUE)
+   0.10, 240000, NULL, '2026-01-01', '2026-12-31', TRUE)
 ON CONFLICT (code) DO UPDATE
   SET copay_rate = EXCLUDED.copay_rate,
       copay_max  = EXCLUDED.copay_max;

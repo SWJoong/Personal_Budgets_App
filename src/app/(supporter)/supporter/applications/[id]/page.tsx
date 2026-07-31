@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
+import { getApplicationDocuments } from '@/app/actions/application'
 import ApplicationDetailClient from './ApplicationDetailClient'
 
 export default async function ApplicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -22,6 +23,9 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
     supabase.from('seoul_selection_decisions').select('*').eq('application_id', id).maybeSingle(),
   ])
 
+  // 서식 문항을 앱에 복제하지 않고 원본 파일만 보관한다(기관 확인).
+  const { documents } = await getApplicationDocuments(id)
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
       <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
@@ -39,6 +43,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
           isAdmin={profile.role === 'admin'}
           initialConsents={consents ?? []}
           initialDecision={decision ?? null}
+          documents={documents}
         />
       </main>
     </div>

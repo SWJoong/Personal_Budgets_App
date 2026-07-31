@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
+import { getReviewCommittees } from '@/app/actions/planReview'
 import PlanDetailClient from './PlanDetailClient'
 
 export default async function PlanDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -27,6 +28,9 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
     ? await supabase.from('seoul_notifications').select('*').eq('review_id', latestReview.id).maybeSingle()
     : { data: null }
 
+  // 심의 주체는 심사처가 전달한 구성을 기록해 둔 목록이다 — 앱이 유효성을 판단하지 않는다.
+  const { committees } = await getReviewCommittees()
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
       <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
@@ -44,6 +48,7 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
           requestedServices={requestedServices ?? []}
           latestReview={latestReview}
           notification={notification}
+          committees={committees}
         />
       </main>
     </div>

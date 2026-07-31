@@ -44,3 +44,15 @@ END $$;
 GRANT USAGE ON SCHEMA auth   TO authenticated;
 GRANT USAGE ON SCHEMA public TO authenticated;
 GRANT SELECT ON auth.users   TO authenticated;
+
+-- ── storage 스키마 최소 흉내 ────────────────────────────────────────────
+-- Supabase 의 storage 스키마는 로컬 PostgreSQL 에 없다. 06_storage.sql 의
+-- seoul_storage_owner() 가 storage.foldername() 하나만 쓰므로 그것만 만든다.
+-- (버킷·정책은 로컬에서 검증할 수 없다 — 실제 Supabase 에서 확인해야 한다.)
+CREATE SCHEMA IF NOT EXISTS storage;
+
+CREATE OR REPLACE FUNCTION storage.foldername(p_name TEXT) RETURNS TEXT[]
+  LANGUAGE sql IMMUTABLE
+  AS $$ SELECT string_to_array(p_name, '/') $$;
+
+GRANT USAGE ON SCHEMA storage TO authenticated;

@@ -2,7 +2,15 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { recordConsent, updateApplicationStatus, type ApplicationStatus } from '@/app/actions/application'
+import {
+  recordConsent,
+  updateApplicationStatus,
+  uploadApplicationDocument,
+  getApplicationDocumentUrl,
+  type ApplicationStatus,
+  type ApplicationDocType,
+  type ApplicationDocumentRow,
+} from '@/app/actions/application'
 import { decideSelection } from '@/app/actions/selection'
 
 interface ConsentRecord {
@@ -31,6 +39,21 @@ const CONSENT_LABEL: Record<'general' | 'unique_id', string> = {
   unique_id: '고유식별정보(주민등록번호 등) 처리 동의',
 }
 
+const DOC_TYPE_LABEL: Record<string, string> = {
+  application_form: '신청서 원본',
+  consent_form: '동의서 원본',
+  other: '기타 서류',
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '')
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function ApplicationDetailClient({
   applicationId,
   participantId,
@@ -40,6 +63,7 @@ export default function ApplicationDetailClient({
   isAdmin,
   initialConsents,
   initialDecision,
+  documents,
 }: {
   applicationId: string
   participantId: string
@@ -49,10 +73,46 @@ export default function ApplicationDetailClient({
   isAdmin: boolean
   initialConsents: ConsentRecord[]
   initialDecision: SelectionDecision | null
+  documents: ApplicationDocumentRow[]
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState('')
+  const [docType, setDocType] = useState<ApplicationDocType>('application_form')
+
+  /** 원본 서식을 그대로 보관한다 — 서식 문항을 앱에 옮겨 담지 않는다 */
+  function handleUploadDocument(file: File) {
+    setError('')
+    startTransition(async () => {
+      const base64 = await fileToBase64(file)
+      const result = await uploadApplicationDocument({
+        applicationId,
+        participantId,
+        docType,
+        fileName: file.name,
+        base64,
+        mimeType: file.type || undefined,
+      })
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+      router.refresh()
+    })
+  }
+
+  /** documents 버킷은 private 이라 열람할 때마다 signed URL 을 새로 받는다 */
+  function handleOpenDocument(documentId: string) {
+    setError('')
+    startTransition(async () => {
+      const result = await getApplicationDocumentUrl(documentId)
+      if (result.error || !result.url) {
+        setError(result.error ?? '서류를 열 수 없어요.')
+        return
+      }
+      window.open(result.url, '_blank', 'noopener,noreferrer')
+    })
+  }
 
   const [agreed, setAgreed] = useState<Record<'general' | 'unique_id', boolean>>({
     general: initialConsents.find((c) => c.consent_type === 'general' && !c.withdrawn_at)?.is_agreed ?? false,
@@ -192,6 +252,62 @@ export default function ApplicationDetailClient({
           )}
         </section>
       )}
+
+      {/* 신청서·동의서 원본 보관.
+          서식의 문항을 앱에 옮겨 담지 않는다 — 법정 서식은 임의로 바꿀 수 없고
+          차수마다 달라지므로 원본 파일을 그대로 두는 편이 정확하다(기관 확인). */}
+      <section className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
+        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">서식 원본 보관</span>
+
+        {documents.length === 0 ? (
+          <p className="text-sm text-zinc-400 leading-relaxed">아직 보관된 원본이 없어요.</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {documents.map((d) => (
+              <li key={d.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-zinc-50">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-bold text-zinc-500">{DOC_TYPE_LABEL[d.doc_type] ?? d.doc_type}</span>
+                  <span className="text-sm text-zinc-700 truncate">{d.file_name}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleOpenDocument(d.id)}
+                  disabled={pending}
+                  className="shrink-0 px-3 py-2 rounded-lg bg-zinc-900 text-white text-xs font-bold disabled:opacity-50 min-h-[36px]"
+                >
+                  열기
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="flex flex-col gap-2 pt-2 border-t border-zinc-100">
+          <select
+            value={docType}
+            onChange={(e) => setDocType(e.target.value as ApplicationDocType)}
+            className="p-2 rounded-lg bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+          >
+            <option value="application_form">신청서 원본</option>
+            <option value="consent_form">동의서 원본</option>
+            <option value="other">기타 서류</option>
+          </select>
+          <input
+            type="file"
+            accept=".pdf,.hwp,.docx,image/*"
+            disabled={pending}
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) handleUploadDocument(file)
+              e.target.value = ''
+            }}
+            className="text-sm"
+          />
+          <p className="text-[11px] text-zinc-400 leading-relaxed">
+            원본은 비공개 보관함에 저장되며, 열람할 때마다 1시간짜리 임시 링크가 발급됩니다.
+          </p>
+        </div>
+      </section>
 
       {status !== 'withdrawn' && status !== 'selected' && status !== 'not_selected' && (
         <button

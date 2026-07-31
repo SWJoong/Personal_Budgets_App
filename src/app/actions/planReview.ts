@@ -160,3 +160,56 @@ export async function markNotificationRead(notificationId: string) {
   revalidatePath('/')
   return { success: true }
 }
+
+export interface ReviewCommitteeRow {
+  id: string
+  name: string
+  composition_note: string | null
+}
+
+/**
+ * 심의 주체 목록 — 로그인만 하면 읽을 수 있다(RLS: seoul_review_committees_read).
+ * 누가 심의했는지는 통지·이의신청에서 당사자도 알아야 하는 정보다.
+ */
+export async function getReviewCommittees(): Promise<{ error?: string; committees: ReviewCommitteeRow[] }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.', committees: [] }
+
+  const { data, error } = await supabase
+    .from('seoul_review_committees')
+    .select('id, name, composition_note')
+    .order('created_at', { ascending: false })
+
+  if (error) return { error: error.message, committees: [] }
+  return { committees: (data ?? []) as ReviewCommitteeRow[] }
+}
+
+/**
+ * 심의 주체 기록 (관리자 전용) — 심사처가 전달한 구성을 그대로 적는다.
+ *
+ * ★ 정족수·구성 요건 같은 판정 로직은 만들지 않는다(기관 확인: 심의 주체 구성은
+ *   심사처 전달 사항이며 기록 외 별도 로직이 불필요). composition_note 는
+ *   자유 서술이며, 앱은 어떤 구성이 유효한지 판단하지 않는다.
+ */
+export async function createReviewCommittee(input: { name: string; compositionNote?: string }) {
+  try {
+    const { supabase } = await assertAdmin()
+
+    const name = input.name.trim()
+    if (!name) return { error: '심의 주체 이름을 적어주세요.' }
+
+    const { data, error } = await supabase
+      .from('seoul_review_committees')
+      .insert({ name, composition_note: input.compositionNote?.trim() || null })
+      .select('id')
+      .single()
+
+    if (error || !data) return { error: `심의 주체 기록 실패: ${friendlyDbError(error)}` }
+
+    revalidatePath('/supporter/plans')
+    return { success: true, committeeId: data.id as string }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : '오류가 발생했습니다.' }
+  }
+}

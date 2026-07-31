@@ -18,8 +18,10 @@ export interface AppealInput {
  * 아니라는 04_seoul_rls.sql 의 설계 원칙을 그대로 따른다 — 그래서 로그인 여부만 확인하고
  * 나머지는 RLS(seoul_can_access)에 맡긴다.
  *
- * due_on(기한)은 여기서 계산하지 않는다 — trg_seoul_appeal_due 트리거가
- * notified_on + cohort.appeal_due_days 로 자동 채운다.
+ * due_on(기한)은 여기서 계산하지 않는다. 차수에 심사처가 알려준 일수가 들어 있으면
+ * trg_seoul_appeal_due 가 통지일에 더해 채우고, 없으면 비워 둔다 — 앱이 기한을
+ * 지어내지 않는다(기관 확인: 기한·기산점은 심사처 전달 사항, 앱은 기록만).
+ * 심사처가 날짜를 직접 알려준 경우에는 recordAppealDueDate() 로 그대로 적는다.
  */
 export async function fileAppeal(input: AppealInput) {
   const supabase = await createClient()
@@ -102,6 +104,36 @@ export async function decideAppeal(
     if (!data) return { error: '수정할 권한이 없거나 존재하지 않는 이의신청이에요.' }
 
     revalidatePath('/supporter/appeals')
+    revalidatePath('/')
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : '오류가 발생했습니다.' }
+  }
+}
+
+/**
+ * 이의신청 기한 기록 — 심사처가 전달한 날짜를 그대로 적는다.
+ *
+ * 계산하지 않는 이유: 기한과 기산점은 심사처가 정해서 알려주는 것이고 앱의 역할은
+ * 기록이다(기관 확인). 차수에 일수가 등록돼 있으면 트리거가 통지일 기준으로
+ * 채우지만, 개별 건마다 다른 날짜를 안내받는 경우가 있어 직접 적는 길을 둔다.
+ */
+export async function recordAppealDueDate(id: string, dueOn: string | null) {
+  try {
+    const { supabase } = await assertStaff()
+
+    const { data, error } = await supabase
+      .from('seoul_appeals')
+      .update({ due_on: dueOn })
+      .eq('id', id)
+      .select('id')
+      .maybeSingle()
+
+    if (error) return { error: `기한 기록 실패: ${friendlyDbError(error)}` }
+    if (!data) return { error: '수정할 권한이 없거나 존재하지 않는 이의신청이에요.' }
+
+    revalidatePath('/supporter/appeals')
+    revalidatePath('/admin/participants')
     revalidatePath('/')
     return { success: true }
   } catch (e) {

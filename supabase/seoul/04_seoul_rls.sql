@@ -78,7 +78,10 @@ BEGIN
   FOREACH t IN ARRAY ARRAY[
     'seoul_disability_profiles','seoul_benefit_status','seoul_proxies',
     'seoul_applications','seoul_consent_records','seoul_notifications',
-    'seoul_budget_allocations','seoul_monitoring_records'
+    'seoul_budget_allocations','seoul_monitoring_records',
+    -- 신청서·동의서 원본: 본인은 자기 서류를 볼 수 있어야 하고(이의신청의 전제),
+    -- 넣고 지우는 것은 담당 실무자·관리자만 — documents 버킷 정책과 같은 기준이다.
+    'seoul_application_documents'
   ] LOOP
     EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
     -- 읽기: 본인도 볼 수 있어야 한다 (자기 예산이 얼마인지, 언제 통지받았는지)

@@ -46,7 +46,10 @@ CREATE TABLE IF NOT EXISTS public.seoul_cohorts (
   --   seoul_set_copay() 트리거가 하며 결과는 배정 행에 고정된다(§9 참조).
   copay_rate           NUMERIC(5,4)  NOT NULL DEFAULT 0,   -- 3차: 0.10
   copay_max            NUMERIC(12,2),                      -- 3차: 240000. NULL = 상한 없음
-  appeal_due_days      INT  NOT NULL DEFAULT 14,      -- ⚠️ 서울형 적용 여부 확인 필요
+  -- 이의신청 기한 일수. NULL = 심사처가 아직 알려주지 않음 → 기한을 계산하지 않는다.
+  -- 기본값을 두지 않는 이유: 근거 없는 숫자로 권리구제 기한을 만들어 내면
+  -- 당사자가 실제 기한을 오해한다. 모르면 모른다고 두는 편이 안전하다.
+  appeal_due_days      INT,
   starts_on            DATE,
   ends_on              DATE,
   is_active            BOOLEAN NOT NULL DEFAULT TRUE,
@@ -55,6 +58,9 @@ CREATE TABLE IF NOT EXISTS public.seoul_cohorts (
 -- 이미 배포된 DB 를 위한 추가 (재실행 안전)
 ALTER TABLE public.seoul_cohorts ADD COLUMN IF NOT EXISTS copay_rate NUMERIC(5,4) NOT NULL DEFAULT 0;
 ALTER TABLE public.seoul_cohorts ADD COLUMN IF NOT EXISTS copay_max  NUMERIC(12,2);
+-- 기존 배포본은 appeal_due_days 가 NOT NULL DEFAULT 14 였다. 근거 없는 기본값을 걷어낸다.
+ALTER TABLE public.seoul_cohorts ALTER COLUMN appeal_due_days DROP NOT NULL;
+ALTER TABLE public.seoul_cohorts ALTER COLUMN appeal_due_days DROP DEFAULT;
 
 COMMENT ON TABLE  public.seoul_cohorts IS '시범사업 차수별 제도 파라미터. 금액·기간·기한을 코드가 아닌 데이터로 둔다.';
 COMMENT ON COLUMN public.seoul_cohorts.carry_over_allowed IS
@@ -275,6 +281,32 @@ CREATE TABLE IF NOT EXISTS public.seoul_consent_records (
 );
 COMMENT ON TABLE public.seoul_consent_records IS
   '동의는 부가정보가 아니라 참여의 전제다. 서식에 "동의 거부 시 사업 참여 불가"가 명시되어 있으므로 1급 개체로 둔다.';
+
+-- 신청서·동의서 원본 보관
+--
+-- ★ 서식의 문항을 앱에 복제하지 않는 이유: 법정 서식은 임의로 바꿀 수 없고 차수마다
+--   달라진다. 모든 칸을 컬럼으로 옮기면 서식이 바뀔 때마다 스키마가 따라 움직여야
+--   하고, 옮기는 과정에서 원본과 달라질 위험도 생긴다. 기관 확인 결과 "서식 및
+--   신청서 원본 등은 별도로 저장되어 있으면 된다"이므로 원본 파일만 보관한다.
+--   앱이 구조화해 다루는 것은 절차 진행에 실제로 필요한 최소 항목(접수번호·동의
+--   여부·수급 구분)뿐이다.
+--
+--   실제 파일은 documents 버킷에 있고 여기에는 경로만 둔다. 경로 규칙은
+--   '{participant_id}/...' 로, 06_storage.sql 의 seoul_storage_owner() 가 이
+--   첫 세그먼트로 소유자를 판별한다 — 규칙을 어기면 접근 제어가 깨진다.
+CREATE TABLE IF NOT EXISTS public.seoul_application_documents (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  application_id UUID NOT NULL REFERENCES public.seoul_applications(id) ON DELETE CASCADE,
+  participant_id UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  doc_type       TEXT NOT NULL CHECK (doc_type IN ('application_form','consent_form','other')),
+  file_name      TEXT NOT NULL,
+  storage_path   TEXT NOT NULL UNIQUE,
+  note           TEXT,
+  uploaded_by    UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMENT ON TABLE public.seoul_application_documents IS
+  '신청서·동의서 원본 파일. 서식 문항을 컬럼으로 옮기지 않고 원본을 그대로 보관한다(기관 확인).';
 
 CREATE TABLE IF NOT EXISTS public.seoul_selection_decisions (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -658,7 +690,16 @@ BEGIN
     JOIN public.seoul_cohorts           c ON c.id = p.cohort_id
    WHERE n.id = NEW.notification_id;
 
-  NEW.due_on := v_notified_on + COALESCE(v_due_days, 14);
+  -- ★ 알려준 일수가 없으면 기한을 만들지 않는다.
+  --   이의신청 기한과 기산점은 심사처가 전달하는 것이고, 앱은 그것을 기록할 뿐이다
+  --   (기관 확인). 예전에는 여기서 COALESCE(v_due_days, 14) 로 14일을 지어냈는데,
+  --   근거 없는 날짜가 권리구제 기한으로 화면에 뜨면 당사자가 아직 남은 기한을
+  --   지났다고 오해하거나 그 반대가 된다. 비워 두고 "확인 필요"로 보이는 편이 낫다.
+  IF v_due_days IS NULL OR v_notified_on IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  NEW.due_on := v_notified_on + v_due_days;
   RETURN NEW;
 END;
 $$;

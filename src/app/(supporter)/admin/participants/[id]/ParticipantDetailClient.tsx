@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { recordMonitoring, type MonitoringRow } from '@/app/actions/monitoring'
 import { recordSettlement, type SettlementRow } from '@/app/actions/settlement'
-import { decideAppeal, type AppealRow } from '@/app/actions/appeal'
+import { decideAppeal, recordAppealDueDate, type AppealRow } from '@/app/actions/appeal'
 import { copayStatusLabel } from '@/utils/copay'
 
 const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
@@ -111,6 +111,19 @@ export default function ParticipantDetailClient({
     })
   }
 
+  /** 심사처가 안내한 기한을 그대로 기록한다 — 앱이 계산하지 않는다 */
+  function handleRecordDueDate(id: string, dueOn: string | null) {
+    setError('')
+    startTransition(async () => {
+      const result = await recordAppealDueDate(id, dueOn)
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+      router.refresh()
+    })
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {error && (
@@ -160,9 +173,25 @@ export default function ParticipantDetailClient({
                 <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600">
                   {APPEAL_OUTCOME_LABEL[a.outcome] ?? a.outcome}
                 </span>
-                <span className="text-xs text-zinc-400">{a.filed_on}{a.due_on ? ` · 기한 ${a.due_on}` : ''}</span>
+                <span className="text-xs text-zinc-400">{a.filed_on}</span>
               </div>
               <p className="text-sm text-zinc-700 leading-relaxed">{a.ground}</p>
+
+              {/* 기한은 심사처가 전달하는 값이라 앱이 계산하지 않는다. 비어 있으면
+                  비어 있다고 보여주고 실무자가 안내받은 날짜를 그대로 적게 한다. */}
+              <div className="flex items-center gap-2 pt-2 border-t border-zinc-100">
+                <label className="text-xs text-zinc-500 font-medium shrink-0">이의신청 기한</label>
+                <input
+                  type="date"
+                  defaultValue={a.due_on ?? ''}
+                  onBlur={(e) => handleRecordDueDate(a.id, e.target.value || null)}
+                  disabled={pending}
+                  className="p-2 rounded-lg bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none disabled:opacity-50"
+                />
+                {!a.due_on && (
+                  <span className="text-[11px] text-amber-700 leading-relaxed">심사처 안내 확인 필요</span>
+                )}
+              </div>
               {a.outcome === 'pending' && (
                 <div className="flex flex-col gap-2 pt-2 border-t border-zinc-100">
                   <input

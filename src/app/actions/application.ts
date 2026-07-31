@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { assertStaff } from '@/utils/supabase/staff'
 import { friendlyDbError } from '@/utils/supabase/errors'
 import { revalidatePath } from 'next/cache'
@@ -233,4 +233,125 @@ export async function getConsentRecords(applicationId: string) {
 
   if (error) return { error: error.message, consents: [] }
   return { consents: data ?? [] }
+}
+
+export type ApplicationDocType = 'application_form' | 'consent_form' | 'other'
+
+export interface ApplicationDocumentRow {
+  id: string
+  doc_type: string
+  file_name: string
+  note: string | null
+  created_at: string
+}
+
+const DOC_MIME_EXT: Record<string, string> = {
+  'application/pdf': 'pdf',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/heic': 'heic',
+  'application/haansofthwp': 'hwp',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+}
+
+/**
+ * 신청서·동의서 원본 보관 (실무자 전용)
+ *
+ * 서식의 문항을 앱에 옮겨 담지 않고 원본 파일만 저장한다 — 법정 서식은 임의로
+ * 바꿀 수 없고 차수마다 달라지므로, 칸을 복제하면 서식이 바뀔 때마다 스키마가
+ * 따라 움직여야 하고 옮기는 과정에서 원본과 달라질 위험이 생긴다(기관 확인).
+ *
+ * 경로는 '{participantId}/applications/...' 로 둔다 — 06_storage.sql 의
+ * seoul_storage_owner() 가 첫 세그먼트로 소유자를 판별하므로 이 규칙을 어기면
+ * 접근 제어가 깨진다.
+ */
+export async function uploadApplicationDocument(input: {
+  applicationId: string
+  participantId: string
+  docType: ApplicationDocType
+  fileName: string
+  base64: string
+  mimeType?: string
+  note?: string
+}) {
+  try {
+    const { supabase, user } = await assertStaff()
+
+    const ext = DOC_MIME_EXT[input.mimeType || ''] || input.fileName.split('.').pop() || 'bin'
+    const path = `${input.participantId}/applications/${input.applicationId}/${crypto.randomUUID()}.${ext}`
+
+    const admin = createAdminClient()
+    const { error: uploadError } = await admin.storage
+      .from('documents')
+      .upload(path, Buffer.from(input.base64, 'base64'), {
+        contentType: input.mimeType || 'application/octet-stream',
+        upsert: false,
+      })
+
+    if (uploadError) return { error: `파일 저장 실패: ${uploadError.message}` }
+
+    const { data, error } = await supabase
+      .from('seoul_application_documents')
+      .insert({
+        application_id: input.applicationId,
+        participant_id: input.participantId,
+        doc_type: input.docType,
+        file_name: input.fileName,
+        storage_path: path,
+        note: input.note?.trim() || null,
+        uploaded_by: user.id,
+      })
+      .select('id')
+      .maybeSingle()
+
+    if (error || !data) {
+      // 어떤 행에서도 참조되지 않는 파일이 버킷에 남는 것을 막는다.
+      await admin.storage.from('documents').remove([path])
+      return { error: `서류 기록 실패: ${friendlyDbError(error)}` }
+    }
+
+    revalidatePath(`/supporter/applications/${input.applicationId}`)
+    return { success: true, documentId: data.id as string }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : '오류가 발생했습니다.' }
+  }
+}
+
+/** 신청서에 붙은 원본 서류 목록 — 본인도 볼 수 있다(RLS 가 범위를 정한다) */
+export async function getApplicationDocuments(
+  applicationId: string
+): Promise<{ error?: string; documents: ApplicationDocumentRow[] }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.', documents: [] }
+
+  const { data, error } = await supabase
+    .from('seoul_application_documents')
+    .select('id, doc_type, file_name, note, created_at')
+    .eq('application_id', applicationId)
+    .order('created_at', { ascending: false })
+
+  if (error) return { error: error.message, documents: [] }
+  return { documents: (data ?? []) as ApplicationDocumentRow[] }
+}
+
+/** 원본 서류 열람용 signed URL — documents 버킷은 private (CLAUDE.md Storage 규칙) */
+export async function getApplicationDocumentUrl(documentId: string): Promise<{ error?: string; url: string | null }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.', url: null }
+
+  // RLS 가 볼 수 있는 행만 돌려주므로, 여기서 조회되면 열람 권한이 있는 것이다.
+  const { data: doc } = await supabase
+    .from('seoul_application_documents')
+    .select('storage_path')
+    .eq('id', documentId)
+    .maybeSingle()
+
+  if (!doc) return { error: '볼 수 없는 서류예요.', url: null }
+
+  const admin = createAdminClient()
+  const { data, error } = await admin.storage.from('documents').createSignedUrl(doc.storage_path, 3600)
+  if (error) return { error: error.message, url: null }
+  return { url: data.signedUrl }
 }
