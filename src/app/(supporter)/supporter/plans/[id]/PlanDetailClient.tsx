@@ -2,7 +2,13 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { reviewRequestedService } from '@/app/actions/utilizationPlan'
+import {
+  reviewRequestedService,
+  upsertSelfNarrative,
+  upsertRequestedService,
+  deleteRequestedService,
+  submitUtilizationPlan,
+} from '@/app/actions/utilizationPlan'
 import {
   decidePlanReview,
   sendNotification,
@@ -86,6 +92,86 @@ export default function PlanDetailClient({
   const [committeeId, setCommitteeId] = useState('')
   const [newCommitteeName, setNewCommitteeName] = useState('')
   const [newCommitteeNote, setNewCommitteeNote] = useState('')
+
+  // 작성 중(draft)일 때 담당자가 채우는 값들.
+  const isDraft = status === 'draft'
+  const [form, setForm] = useState<SelfNarrative>({
+    strengths_talents: narrative?.strengths_talents ?? '',
+    social_barriers: narrative?.social_barriers ?? '',
+    desired_change: narrative?.desired_change ?? '',
+    desired_life: narrative?.desired_life ?? '',
+    goal_to_try: narrative?.goal_to_try ?? '',
+  })
+  const [services, setServices] = useState<{ id: string | null; serviceName: string; estimatedCost: string }[]>(
+    [1, 2, 3].map((priority) => {
+      const existing = requestedServices.find((s) => s.priority === priority)
+      return {
+        id: existing?.id ?? null,
+        serviceName: existing?.service_name ?? '',
+        estimatedCost: existing?.estimated_cost?.toString() ?? '',
+      }
+    })
+  )
+
+  /** 나의 상황 + 요청 서비스 저장. 실패하면 첫 에러 메시지를 돌려준다(성공이면 undefined). */
+  async function saveNarrativeAndServices(): Promise<string | undefined> {
+    const narrativeResult = await upsertSelfNarrative({ planId, ...form })
+    if (narrativeResult.error) return narrativeResult.error
+
+    for (let i = 0; i < services.length; i++) {
+      const s = services[i]
+      if (!s.serviceName.trim()) {
+        // 비운 칸에 예전 내용이 있으면 지운다 — 안 그러면 화면은 비었는데 값이 남는다.
+        if (s.id) {
+          const result = await deleteRequestedService(s.id)
+          if (result.error) return result.error
+        }
+        continue
+      }
+      const result = await upsertRequestedService({
+        planId,
+        priority: i + 1,
+        serviceName: s.serviceName.trim(),
+        estimatedCost: s.estimatedCost ? Number(s.estimatedCost) : undefined,
+      })
+      if (result.error) return result.error
+    }
+    return undefined
+  }
+
+  function handleSaveDraft() {
+    setError('')
+    startTransition(async () => {
+      const saveError = await saveNarrativeAndServices()
+      if (saveError) {
+        setError(saveError)
+        return
+      }
+      router.refresh()
+    })
+  }
+
+  /**
+   * 제출 전에 반드시 먼저 저장한다. 그렇지 않으면 화면에 입력해 둔 내용이 서버에
+   * 없는 채로 상태만 submitted 로 바뀌고, 그 순간부터 RLS 가 이후 수정을 다르게
+   * 취급해 입력한 내용이 사라질 수 있다.
+   */
+  function handleSubmitPlan() {
+    setError('')
+    startTransition(async () => {
+      const saveError = await saveNarrativeAndServices()
+      if (saveError) {
+        setError(saveError)
+        return
+      }
+      const result = await submitUtilizationPlan(planId)
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+      router.refresh()
+    })
+  }
 
   /** 심사처에서 전달받은 심의 주체를 기록한다 — 구성의 유효성은 판단하지 않는다 */
   function handleCreateCommittee() {
@@ -172,13 +258,28 @@ export default function PlanDetailClient({
         <p className="font-bold mt-1">{STATUS_LABEL[status] ?? status}</p>
       </section>
 
+      {/* 작성 중(draft)이면 담당자가 여기서 나의 상황·요청 서비스를 채운다.
+          당사자와 함께 면담하며 담당자가 대신 적는다(기관 확인). 제출 뒤에는 읽기 전용. */}
       <section className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
         <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">나의 상황</span>
-        {narrative ? (
+        {isDraft ? (
+          NARRATIVE_FIELDS.map(({ key, label }) => (
+            <div key={key} className="flex flex-col gap-1">
+              <label className="text-xs text-zinc-400 font-medium">{label}</label>
+              <textarea
+                value={form[key] ?? ''}
+                onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
+                placeholder="당사자와 함께 이야기한 내용을 적어주세요"
+                rows={2}
+                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm leading-relaxed focus:ring-zinc-400 focus:outline-none resize-none"
+              />
+            </div>
+          ))
+        ) : narrative ? (
           NARRATIVE_FIELDS.map(({ key, label }) => (
             <div key={key} className="flex flex-col gap-0.5">
               <span className="text-xs text-zinc-400 font-medium">{label}</span>
-              <p className="text-sm text-zinc-700 leading-relaxed">{narrative[key] || '—'}</p>
+              <p className="text-sm text-zinc-700 leading-relaxed whitespace-pre-wrap">{narrative[key] || '—'}</p>
             </div>
           ))
         ) : (
@@ -188,7 +289,40 @@ export default function PlanDetailClient({
 
       <section className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
         <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">요청 서비스</span>
-        {requestedServices.length === 0 ? (
+        {isDraft ? (
+          services.map((s, i) => (
+            <div key={i} className="flex gap-2 items-end">
+              <div className="flex-1 flex flex-col gap-0.5">
+                <label className="text-[10px] text-zinc-400 font-medium">{i + 1}순위 — 무엇에 쓰나요?</label>
+                <input
+                  type="text"
+                  value={s.serviceName}
+                  onChange={(e) => {
+                    const next = [...services]
+                    next[i] = { ...next[i], serviceName: e.target.value }
+                    setServices(next)
+                  }}
+                  placeholder="예: 웹툰 학원 수강"
+                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                />
+              </div>
+              <div className="w-28 flex flex-col gap-0.5">
+                <label className="text-[10px] text-zinc-400 font-medium">예상 금액 (원)</label>
+                <input
+                  type="number"
+                  value={s.estimatedCost}
+                  onChange={(e) => {
+                    const next = [...services]
+                    next[i] = { ...next[i], estimatedCost: e.target.value }
+                    setServices(next)
+                  }}
+                  placeholder="0"
+                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                />
+              </div>
+            </div>
+          ))
+        ) : requestedServices.length === 0 ? (
           <p className="text-sm text-zinc-400">아직 작성되지 않았어요.</p>
         ) : (
           requestedServices.map((rs) => (
@@ -236,6 +370,26 @@ export default function PlanDetailClient({
           ))
         )}
       </section>
+
+      {/* 작성 중일 때만 저장·제출. 제출하면 심의 대기(submitted)로 넘어간다. */}
+      {isDraft && (
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={handleSaveDraft}
+            disabled={pending}
+            className="p-3 rounded-xl bg-white ring-1 ring-zinc-300 text-zinc-700 font-bold text-sm disabled:opacity-50 min-h-[44px]"
+          >
+            저장하기
+          </button>
+          <button
+            onClick={handleSubmitPlan}
+            disabled={pending}
+            className="p-3 rounded-xl bg-zinc-900 text-white font-bold text-sm disabled:opacity-50 min-h-[44px]"
+          >
+            제출하기 (심의 요청)
+          </button>
+        </div>
+      )}
 
       {isAdmin && (
         <section className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-4">

@@ -138,10 +138,12 @@ COMMENT ON FUNCTION public.mark_notification_read(UUID) IS
 GRANT EXECUTE ON FUNCTION public.mark_notification_read(UUID) TO authenticated;
 
 
--- ── 그룹 B. 당사자가 직접 쓰는 것 ───────────────────────────────────
-
--- B-1. 이용계획 — 작성중(draft)일 때만 본인이 고칠 수 있다.
---      제출한 뒤에도 고칠 수 있으면 심의 대상 문서가 사후 변조된다.
+-- ── 이용계획 — 수행기관 담당자(사회복지사)가 작성한다. 당사자는 열람만. ──
+--    기관 확인(2026-07-31): 계획 신청서는 수행기관 담당자가 작성하고, 당사자는
+--    제출 전 내용을 검토(열람)만 한다. 서울형 3차 안내문 Q2 의 "지원 코디네이터가
+--    함께 도움을 드립니다"를 실무에서는 담당자 작성 + 당사자 확인으로 운영한다.
+--    → 예전에는 본인이 draft 를 직접 쓰게 열려 있었으나(온톨로지 4차의 authors
+--      관계), 실제 운영과 달라 닫는다. 당사자 권리 경로(이의신청 등)는 그대로 둔다.
 ALTER TABLE public.seoul_utilization_plans ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS seoul_utilization_plans_select ON public.seoul_utilization_plans;
@@ -152,29 +154,20 @@ CREATE POLICY seoul_utilization_plans_select ON public.seoul_utilization_plans
 DROP POLICY IF EXISTS seoul_utilization_plans_insert ON public.seoul_utilization_plans;
 CREATE POLICY seoul_utilization_plans_insert ON public.seoul_utilization_plans
   FOR INSERT TO authenticated
-  WITH CHECK (
-    public.seoul_is_staff_for(participant_id)
-    OR (public.seoul_is_self(participant_id) AND status = 'draft')
-  );
+  WITH CHECK (public.seoul_is_staff_for(participant_id));
 
 DROP POLICY IF EXISTS seoul_utilization_plans_update ON public.seoul_utilization_plans;
 CREATE POLICY seoul_utilization_plans_update ON public.seoul_utilization_plans
   FOR UPDATE TO authenticated
-  USING (
-    public.seoul_is_staff_for(participant_id)
-    OR (public.seoul_is_self(participant_id) AND status IN ('draft','submitted'))
-  )
-  WITH CHECK (
-    public.seoul_is_staff_for(participant_id)
-    -- 본인은 draft 로 두거나 제출(submitted)까지만 할 수 있다.
-    -- 스스로 approved 로 바꾸는 것은 막는다.
-    OR (public.seoul_is_self(participant_id) AND status IN ('draft','submitted'))
-  );
+  USING      (public.seoul_is_staff_for(participant_id))
+  WITH CHECK (public.seoul_is_staff_for(participant_id));
 
 DROP POLICY IF EXISTS seoul_utilization_plans_delete ON public.seoul_utilization_plans;
 CREATE POLICY seoul_utilization_plans_delete ON public.seoul_utilization_plans
   FOR DELETE TO authenticated
   USING (public.seoul_is_admin());
+
+-- ── 그룹 B. 당사자가 직접 쓰는 것 ───────────────────────────────────
 
 -- B-2. 지출 기록 — 정산 전(pending)까지만 본인이 고칠 수 있다.
 ALTER TABLE public.seoul_service_usages ENABLE ROW LEVEL SECURITY;
@@ -245,7 +238,9 @@ CREATE POLICY seoul_appeals_delete ON public.seoul_appeals
 
 -- ── 그룹 C. 참여자를 간접 참조하는 테이블 ───────────────────────────
 
--- 나의 상황 · 요청 서비스 — 계획이 draft 일 때만 본인이 고칠 수 있다
+-- 나의 상황 · 요청 서비스 — 계획의 일부다. 계획을 담당자가 쓰므로 이것도 담당자만
+-- 쓴다. 당사자는 열람만(제출 전 검토). 예전에는 draft 일 때 본인 쓰기를 열었으나
+-- 계획 작성 주체를 담당자로 확정하면서 함께 닫는다(기관 확인 2026-07-31).
 ALTER TABLE public.seoul_self_narratives ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS seoul_self_narratives_select ON public.seoul_self_narratives;
 CREATE POLICY seoul_self_narratives_select ON public.seoul_self_narratives
@@ -256,13 +251,9 @@ DROP POLICY IF EXISTS seoul_self_narratives_write ON public.seoul_self_narrative
 CREATE POLICY seoul_self_narratives_write ON public.seoul_self_narratives
   FOR ALL TO authenticated
   USING (EXISTS (SELECT 1 FROM public.seoul_utilization_plans p
-                  WHERE p.id = plan_id
-                    AND (public.seoul_is_staff_for(p.participant_id)
-                         OR (public.seoul_is_self(p.participant_id) AND p.status = 'draft'))))
+                  WHERE p.id = plan_id AND public.seoul_is_staff_for(p.participant_id)))
   WITH CHECK (EXISTS (SELECT 1 FROM public.seoul_utilization_plans p
-                  WHERE p.id = plan_id
-                    AND (public.seoul_is_staff_for(p.participant_id)
-                         OR (public.seoul_is_self(p.participant_id) AND p.status = 'draft'))));
+                  WHERE p.id = plan_id AND public.seoul_is_staff_for(p.participant_id)));
 
 ALTER TABLE public.seoul_requested_services ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS seoul_requested_services_select ON public.seoul_requested_services;
@@ -274,13 +265,9 @@ DROP POLICY IF EXISTS seoul_requested_services_write ON public.seoul_requested_s
 CREATE POLICY seoul_requested_services_write ON public.seoul_requested_services
   FOR ALL TO authenticated
   USING (EXISTS (SELECT 1 FROM public.seoul_utilization_plans p
-                  WHERE p.id = plan_id
-                    AND (public.seoul_is_staff_for(p.participant_id)
-                         OR (public.seoul_is_self(p.participant_id) AND p.status = 'draft'))))
+                  WHERE p.id = plan_id AND public.seoul_is_staff_for(p.participant_id)))
   WITH CHECK (EXISTS (SELECT 1 FROM public.seoul_utilization_plans p
-                  WHERE p.id = plan_id
-                    AND (public.seoul_is_staff_for(p.participant_id)
-                         OR (public.seoul_is_self(p.participant_id) AND p.status = 'draft'))));
+                  WHERE p.id = plan_id AND public.seoul_is_staff_for(p.participant_id)));
 
 -- 영수증 — 본인이 올릴 수 있어야 한다 (정산 전까지)
 ALTER TABLE public.seoul_receipts ENABLE ROW LEVEL SECURITY;

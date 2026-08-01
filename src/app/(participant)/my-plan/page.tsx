@@ -32,19 +32,6 @@ export default async function MyPlanPage() {
     .limit(1)
     .maybeSingle()
 
-  let selectedApplicationId: string | null = null
-  if (!plan) {
-    const { data: application } = await supabase
-      .from('seoul_applications')
-      .select('id')
-      .eq('participant_id', participant.id)
-      .eq('status', 'selected')
-      .order('application_date', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    selectedApplicationId = application?.id ?? null
-  }
-
   let narrative = null
   let requestedServices: { id: string; priority: number; service_name: string; estimated_cost: number | null }[] = []
   let latestReview: { id: string; decision: string; reason: string | null } | null = null
@@ -83,7 +70,6 @@ export default async function MyPlanPage() {
   return (
     <MyPlanClient
       participantId={participant.id}
-      selectedApplicationId={selectedApplicationId}
       plan={plan ?? null}
       narrative={narrative}
       requestedServices={requestedServices}

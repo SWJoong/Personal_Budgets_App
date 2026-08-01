@@ -64,8 +64,9 @@ INSERT INTO public.seoul_applications (id, participant_id, cohort_id, receipt_nu
   ('5a5a0000-0000-0000-0000-000000000002','52222222-2222-2222-2222-222222222222',
      'c9999999-0000-0000-0000-000000000001','RLS-002','received');
 
--- status='submitted' — 아직 심의 전. S13 이 "본인이 스스로 approved 로 바꾸려는 시도"를 재현하려면
--- 시작 상태가 approved 가 아니어야 한다 (approved 는 self 조건의 USING 절 자체를 통과 못 한다).
+-- status='submitted' — 아직 심의 전. S13 은 "본인이 스스로 approved 로 바꾸려는 시도"를 재현한다.
+-- 계획 작성 주체가 담당자로 확정되면서(기관 확인 2026-07-31) 당사자는 계획에 UPDATE 권한이
+-- 아예 없다 — 예전보다 더 강하게 막힌다. 이 픽스처는 테이블 소유자로 넣으므로 RLS 를 우회한다.
 INSERT INTO public.seoul_utilization_plans (id, participant_id, application_id, cohort_id, status)
 VALUES ('5b5b0000-0000-0000-0000-000000000001','51111111-1111-1111-1111-111111111111',
         '5a5a0000-0000-0000-0000-000000000001','c9999999-0000-0000-0000-000000000001','submitted');

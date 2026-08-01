@@ -9,14 +9,6 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }))
 
-vi.mock('@/app/actions/utilizationPlan', () => ({
-  createUtilizationPlan: vi.fn(),
-  upsertSelfNarrative: vi.fn(),
-  upsertRequestedService: vi.fn(),
-  deleteRequestedService: vi.fn(),
-  submitUtilizationPlan: vi.fn(),
-}))
-
 vi.mock('@/app/actions/planReview', () => ({
   markNotificationRead: vi.fn(),
 }))
@@ -41,7 +33,6 @@ describe('MyPlanClient — 이의신청(다시 봐달라고 요청하기)', () =
     render(
       <MyPlanClient
         participantId="participant-1"
-        selectedApplicationId={null}
         plan={basePlan}
         narrative={null}
         requestedServices={[]}
@@ -66,7 +57,6 @@ describe('MyPlanClient — 이의신청(다시 봐달라고 요청하기)', () =
     render(
       <MyPlanClient
         participantId="participant-1"
-        selectedApplicationId={null}
         plan={basePlan}
         narrative={null}
         requestedServices={[]}
@@ -82,5 +72,35 @@ describe('MyPlanClient — 이의신청(다시 봐달라고 요청하기)', () =
     expect(screen.queryByRole('button', { name: '전부 반영' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '그대로 유지' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '요청 보내기' })).not.toBeInTheDocument()
+  })
+
+  it('계획은 열람 전용이다 — 담당자가 적은 내용을 보여주되 작성·저장·제출 조작은 없다 (작성 주체=담당자)', () => {
+    render(
+      <MyPlanClient
+        participantId="participant-1"
+        plan={{ id: 'plan-1', application_id: 'app-1', cohort_id: 'cohort-1', status: 'draft' }}
+        narrative={{
+          strengths_talents: '그림 그리기',
+          social_barriers: null,
+          desired_change: null,
+          desired_life: null,
+          goal_to_try: null,
+        }}
+        requestedServices={[{ id: 'rs-1', priority: 1, service_name: '웹툰 학원', estimated_cost: 300000 }]}
+        latestReview={null}
+        notification={null}
+        appeal={null}
+      />
+    )
+
+    // 담당자가 적은 내용은 열람된다
+    expect(screen.getByText('그림 그리기')).toBeInTheDocument()
+    expect(screen.getByText('웹툰 학원')).toBeInTheDocument()
+
+    // 당사자가 계획을 쓰거나 제출하는 조작은 화면에 없다 — 작성 주체는 담당자다
+    expect(screen.queryByRole('button', { name: '계획 시작하기' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '저장하기' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '제출하기' })).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('예: 웹툰 학원 수강')).not.toBeInTheDocument()
   })
 })

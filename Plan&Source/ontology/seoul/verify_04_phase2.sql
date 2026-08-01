@@ -88,40 +88,61 @@ RESET ROLE;
 
 
 \echo ''
-\echo '=== 참여자C 본인 로그인 — 계획 작성 ==='
+\echo '=== 계획 작성 주체 = 수행기관 담당자 (기관 확인 2026-07-31) ==='
+\echo '--- 먼저: 당사자 본인은 계획을 쓸 수 없어야 한다 (열람만) ---'
 SET ROLE alice;
 SET request.jwt.claim.sub = '70000000-0000-0000-0000-000000000001';
 
-\echo '── P5. 본인이 이용계획 생성 (draft)'
+\echo '── P5a. 본인이 이용계획 생성 시도 → 차단되어야 함'
+INSERT INTO public.seoul_utilization_plans (id, participant_id, application_id, cohort_id, authored_with_support)
+VALUES ('75555555-0000-0000-0000-0000000000ff','71111111-1111-1111-1111-111111111111',
+        '74444444-0000-0000-0000-000000000001','73333333-0000-0000-0000-000000000001','self');
+SELECT '   본인 생성: ' || count(*) || '건  ' ||
+       CASE WHEN count(*)=0 THEN '✅ 방어됨' ELSE '❌ 뚫림' END
+  FROM public.seoul_utilization_plans WHERE id='75555555-0000-0000-0000-0000000000ff';
+RESET ROLE;
+
+\echo '--- 담당자(00..02)가 계획을 작성한다 ---'
+SET ROLE alice;
+SET request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
+
+\echo '── P5. 담당자가 이용계획 생성 (draft)'
 INSERT INTO public.seoul_utilization_plans (id, participant_id, application_id, cohort_id, authored_with_support)
 VALUES ('75555555-0000-0000-0000-000000000001','71111111-1111-1111-1111-111111111111',
-        '74444444-0000-0000-0000-000000000001','73333333-0000-0000-0000-000000000001','self');
+        '74444444-0000-0000-0000-000000000001','73333333-0000-0000-0000-000000000001','with_support');
 SELECT '   계획 생성: ' || count(*) || '건  ' ||
        CASE WHEN count(*)=1 THEN '✅' ELSE '❌' END
   FROM public.seoul_utilization_plans WHERE id='75555555-0000-0000-0000-000000000001';
 
-\echo '── P6. 본인이 나의 상황(self_narrative) 작성'
+\echo '── P6. 담당자가 나의 상황(self_narrative) 작성'
 INSERT INTO public.seoul_self_narratives (plan_id, strengths_talents, desired_life)
 VALUES ('75555555-0000-0000-0000-000000000001','그림 그리기','웹툰 작가가 되고 싶어요');
 SELECT '   나의 상황: ' || count(*) || '건  ' ||
        CASE WHEN count(*)=1 THEN '✅' ELSE '❌' END
   FROM public.seoul_self_narratives WHERE plan_id='75555555-0000-0000-0000-000000000001';
 
-\echo '── P7. 본인이 요청 서비스 1순위 작성'
+\echo '── P7. 담당자가 요청 서비스 1순위 작성'
 INSERT INTO public.seoul_requested_services (plan_id, priority, service_name, estimated_cost)
 VALUES ('75555555-0000-0000-0000-000000000001', 1, '웹툰 학원 수강', 300000);
 SELECT '   요청 서비스: ' || count(*) || '건  ' ||
        CASE WHEN count(*)=1 THEN '✅' ELSE '❌' END
   FROM public.seoul_requested_services WHERE plan_id='75555555-0000-0000-0000-000000000001';
 
-\echo '── P8. 본인이 제출(draft→submitted)'
+\echo '── P8. 담당자가 제출(draft→submitted)'
 UPDATE public.seoul_utilization_plans SET status='submitted' WHERE id='75555555-0000-0000-0000-000000000001';
 SELECT '   상태: ' || status || CASE WHEN status='submitted' THEN '  ✅' ELSE '  ❌' END
   FROM public.seoul_utilization_plans WHERE id='75555555-0000-0000-0000-000000000001';
+RESET ROLE;
 
-\echo '── P9. 본인이 스스로 승인(approved)으로 바꾸는 시도 → 차단되어야 함'
+\echo '── P9. 당사자 본인이 제출된 계획을 열람은 하되 고칠 수 없어야 함'
+SET ROLE alice;
+SET request.jwt.claim.sub = '70000000-0000-0000-0000-000000000001';
+SELECT '   본인 열람: ' || count(*) || '건  ' ||
+       CASE WHEN count(*)=1 THEN '✅ (볼 수는 있음)' ELSE '❌' END
+  FROM public.seoul_utilization_plans WHERE id='75555555-0000-0000-0000-000000000001';
 UPDATE public.seoul_utilization_plans SET status='approved' WHERE id='75555555-0000-0000-0000-000000000001';
-SELECT '   상태: ' || status || CASE WHEN status<>'approved' THEN '  ✅ 방어됨' ELSE '  ❌ 뚫림' END
+SELECT '   본인이 approved 로 바꾼 뒤 상태: ' || status ||
+       CASE WHEN status<>'approved' THEN '  ✅ 방어됨' ELSE '  ❌ 뚫림' END
   FROM public.seoul_utilization_plans WHERE id='75555555-0000-0000-0000-000000000001';
 RESET ROLE;
 
