@@ -44,6 +44,7 @@ describe('ApplicationDetailClient — 동의 선행조건이 화면에 실제로
         initialConsents={[]}
         initialDecision={null}
         documents={[]}
+        participatesInMohwPilot={false}
       />
     )
 
@@ -69,6 +70,7 @@ describe('ApplicationDetailClient — 동의 선행조건이 화면에 실제로
         initialConsents={[]}
         initialDecision={{ is_selected: true, selection_reason: '지원요건 충족' }}
         documents={[]}
+        participatesInMohwPilot={false}
       />
     )
 

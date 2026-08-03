@@ -14,10 +14,12 @@ export interface SelectionInput {
 /**
  * 선정 결정 (관리자 전용 — 심의주체 구성은 미결 3번, 확정 전까지 admin 이 대행)
  *
- * DB 트리거가 (1) 복지부 시범사업 중복 참여 금지 (2) 동의 2종 완료 를 선정
- * 시점에 이미 강제한다(seoul_enforce_mohw_exclusivity/seoul_enforce_consent_precondition).
- * 여기서 다시 검사하지 않고 트리거 예외 메시지를 그대로 사용자에게 전달한다 —
- * 같은 검증을 두 곳에 두면 나중에 어긋난다.
+ * DB 트리거가 (2) 동의 2종 완료 를 선정 시점에 강제한다
+ * (seoul_enforce_consent_precondition). 여기서 다시 검사하지 않고 트리거 예외
+ * 메시지를 그대로 사용자에게 전달한다 — 같은 검증을 두 곳에 두면 나중에 어긋난다.
+ *
+ * 복지부 시범사업 중복(1)은 앱이 막지 않는다 — 확인은 수행기관이 하며, 선정 화면이
+ * "복지부 참여로 기록돼 있음"을 경고로 띄운다(기관 확인). 예전의 배제 트리거는 제거됐다.
  */
 export async function decideSelection(input: SelectionInput) {
   try {

@@ -16,11 +16,13 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
 
   if (!application) notFound()
 
-  const [{ data: participant }, { data: cohort }, { data: consents }, { data: decision }] = await Promise.all([
+  const [{ data: participant }, { data: cohort }, { data: consents }, { data: decision }, { data: benefit }] = await Promise.all([
     supabase.from('participants').select('id, name, email').eq('id', application.participant_id).maybeSingle(),
     supabase.from('seoul_cohorts').select('name, code').eq('id', application.cohort_id).maybeSingle(),
     supabase.from('seoul_consent_records').select('*').eq('application_id', id),
     supabase.from('seoul_selection_decisions').select('*').eq('application_id', id).maybeSingle(),
+    // 복지부 중복은 앱이 막지 않고 선정 화면에서 경고만 한다(기관 확인) — 그 판단 재료.
+    supabase.from('seoul_benefit_status').select('participates_in_mohw_pilot').eq('participant_id', application.participant_id).maybeSingle(),
   ])
 
   // 서식 문항을 앱에 복제하지 않고 원본 파일만 보관한다(기관 확인).
@@ -44,6 +46,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
           initialConsents={consents ?? []}
           initialDecision={decision ?? null}
           documents={documents}
+          participatesInMohwPilot={benefit?.participates_in_mohw_pilot ?? false}
         />
       </main>
     </div>

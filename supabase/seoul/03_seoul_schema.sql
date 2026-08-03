@@ -595,41 +595,18 @@ CREATE TABLE IF NOT EXISTS public.seoul_monitoring_usages (
 -- §12. 제약 강제 — 트리거
 -- =====================================================================
 
--- (1) 배타 규칙: 복지부 시범사업 참여자는 서울형 선정 불가
---     테이블을 넘나드는 조건이라 CHECK 로는 표현할 수 없어 트리거로 둔다.
-CREATE OR REPLACE FUNCTION public.seoul_enforce_mohw_exclusivity()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY INVOKER
-SET search_path = public, pg_temp
-AS $$
-DECLARE
-  v_participant_id UUID;
-  v_in_mohw        BOOLEAN;
-BEGIN
-  IF NEW.is_selected IS NOT TRUE THEN
-    RETURN NEW;
-  END IF;
-
-  SELECT a.participant_id INTO v_participant_id
-    FROM public.seoul_applications a WHERE a.id = NEW.application_id;
-
-  SELECT bs.participates_in_mohw_pilot INTO v_in_mohw
-    FROM public.seoul_benefit_status bs WHERE bs.participant_id = v_participant_id;
-
-  IF COALESCE(v_in_mohw, FALSE) THEN
-    RAISE EXCEPTION
-      '보건복지부 개인예산제 시범사업 참여자는 서울형 시범사업에 참여할 수 없습니다. (신청서 명시 사항)';
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS trg_seoul_mohw_exclusivity ON public.seoul_selection_decisions;
-CREATE TRIGGER trg_seoul_mohw_exclusivity
-  BEFORE INSERT OR UPDATE ON public.seoul_selection_decisions
-  FOR EACH ROW EXECUTE FUNCTION public.seoul_enforce_mohw_exclusivity();
+-- (1) 배타 규칙: 복지부 시범사업 중복 참여 — 막지 않고 화면에서 경고만 한다.
+--
+-- ★ 기관 확인 결과: 복지부 시범사업 참여 여부는 서울형 수행기관에서 자체적으로
+--   확인한다. 앱이 선정 자체를 차단하면, 수행기관이 자격을 이미 확인해 선정하려는
+--   순간 오래되거나 잘못 입력된 체크박스 때문에 저장이 막힌다. 확인의 정본은
+--   수행기관이므로 앱은 판정하지 않고 "복지부 참여로 기록돼 있음"만 선정 화면에
+--   경고로 띄운다(ApplicationDetailClient). 지원 불가 항목과 같은 원칙:
+--   앱은 명시·기록, 판정은 사람.
+--
+--   이전 배포본에는 seoul_enforce_mohw_exclusivity 트리거가 있었으므로 제거한다.
+DROP TRIGGER   IF EXISTS trg_seoul_mohw_exclusivity ON public.seoul_selection_decisions;
+DROP FUNCTION  IF EXISTS public.seoul_enforce_mohw_exclusivity();
 
 
 -- (2) 동의 전제: 두 종류 동의가 모두 있어야 선정 가능

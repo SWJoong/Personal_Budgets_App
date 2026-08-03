@@ -40,12 +40,20 @@ INSERT INTO public.seoul_consent_records (application_id, participant_id, consen
 INSERT INTO public.seoul_selection_decisions (application_id, is_selected)
 VALUES ('aaaaaaaa-0000-0000-0000-000000000001', TRUE);
 
-\echo '── T3. 복지부 중복 참여자 선정 시도 → 차단되어야 함'
+-- T3 은 원래 "복지부 중복 참여자 선정 → 차단"이었다. 기관 확인 결과 복지부 중복
+-- 여부는 수행기관이 자체 확인하므로 앱은 막지 않고 선정 화면에서 경고만 한다
+-- (배제 트리거 제거). 따라서 이제 선정이 저장되어야 한다. 경고 노출은 화면 몫이라
+-- SQL 로는 "막지 않는다"만 확인한다.
+\echo '── T3. 복지부 중복 참여자 선정 시도 → 막지 않고 저장되어야 함 (경고는 화면)'
 INSERT INTO public.seoul_consent_records (application_id, participant_id, consent_type, is_agreed) VALUES
  ('aaaaaaaa-0000-0000-0000-000000000002','22222222-2222-2222-2222-222222222222','general',TRUE),
  ('aaaaaaaa-0000-0000-0000-000000000002','22222222-2222-2222-2222-222222222222','unique_id',TRUE);
 INSERT INTO public.seoul_selection_decisions (application_id, is_selected)
 VALUES ('aaaaaaaa-0000-0000-0000-000000000002', TRUE);
+SELECT '   복지부 중복자 선정 저장: ' || count(*) || '건  '
+       || CASE WHEN count(*) = 1 THEN '✅ (막지 않음)' ELSE '❌' END
+  FROM public.seoul_selection_decisions
+ WHERE application_id = 'aaaaaaaa-0000-0000-0000-000000000002' AND is_selected;
 
 \echo '── T4. 부결인데 사유 없음 → 차단되어야 함'
 INSERT INTO public.seoul_utilization_plans (id, participant_id, application_id, cohort_id, status)

@@ -64,6 +64,7 @@ export default function ApplicationDetailClient({
   initialConsents,
   initialDecision,
   documents,
+  participatesInMohwPilot,
 }: {
   applicationId: string
   participantId: string
@@ -74,6 +75,7 @@ export default function ApplicationDetailClient({
   initialConsents: ConsentRecord[]
   initialDecision: SelectionDecision | null
   documents: ApplicationDocumentRow[]
+  participatesInMohwPilot: boolean
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -225,6 +227,14 @@ export default function ApplicationDetailClient({
             </div>
           ) : (
             <>
+              {/* 복지부 시범사업 중복은 앱이 막지 않는다 — 확인은 수행기관이 한다(기관 확인).
+                  다만 놓치면 안 되는 자격 요건이라 선정 화면에서 눈에 띄게 알린다. */}
+              {participatesInMohwPilot && (
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm leading-relaxed">
+                  ⚠️ 이 신청자는 <b>보건복지부 개인예산제 시범사업 참여</b>로 기록돼 있어요.
+                  안내문상 중복 참여는 불가하니, 수행기관에서 확인한 뒤 선정해 주세요.
+                </div>
+              )}
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
