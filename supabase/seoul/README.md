@@ -16,7 +16,7 @@
 01_core.sql            profiles / participants / user_invitations
                        + 신원 연결 함수 + RLS 헬퍼 함수
 02_core_rls.sql        코어 3개 테이블 RLS 정책
-03_seoul_schema.sql    서울형 26 테이블 / 5 트리거 / 7 뷰 / 14 인덱스
+03_seoul_schema.sql    서울형 27 테이블 / 6 트리거 / 7 뷰 / 14 인덱스
 04_seoul_rls.sql       서울형 74개 RLS 정책
 05_seoul_graph.sql     그래프 오버레이 (FK → 트리플 투영)
 06_storage.sql         Storage 버킷 3종(private) + 소유권 범위 정책
