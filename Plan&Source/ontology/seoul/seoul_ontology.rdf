@@ -46,13 +46,19 @@
     서울시 보도자료 및 한국장애인재단 모집공고     (한도액·서비스영역·절차·금지항목)
     ※ 출처 URL 은 Plan&Source/서울형_온톨로지_설계_v1.md §8 에 정리
 
-  확인된 제도 파라미터 (2024~2025 기준, 차수마다 변동 → DB 에서는 상수 아닌 데이터로 저장):
-    · 지원 한도   월 40만원 × 6개월 = 총 240만원 (2025년 월 40~50만원)
+  확인된 제도 파라미터 (차수마다 변동 → DB 에서는 상수가 아니라 Cohort 행으로 저장):
+    · 지원 한도   총 240만원 (월 40만원 × 6개월은 총액 산정 산식). 3차는 총액 차감 구조라 월 상한은 경고만.
     · 서비스 영역 6종  일상생활 / 사회생활 / 취·창업활동 / 자기개발 / 건강·안전 / 주거환경개선
-    · 금지 항목   주류·담배·복권 / 세금·공과금 / 저축·부채상환
-    · 판단 요건   장애 연관성, 목표 연관성 (사람이 판단 — 자동 차단 아님)
+    · 본인부담금  3차(2026) 신설 — 지원액의 10%, 최대 24만원. 기초생활수급·차상위는 면제. (1·2차는 없음)
+    · 지원 곤란   3차 안내문 「지원이 어려운 서비스」 5종 + 이용제한 요건 3종.
+                 ★ 모두 화면에 명시하고 걸리면 기록만 한다 — 자동 차단이 아니다(최종 판정은 심사처).
     · 절차 7단계  신청접수 → 참여자선정 → 계획수립 → 심의·통지 → 이의신청 → 서비스이용 → 모니터링·정산
-    · 배타 규칙   보건복지부 시범사업 참여자는 서울형 참여 불가 (신청서에 명시)
+    · 중복 배제   보건복지부 시범사업 중복 참여는 선정 화면에 경고로 기록(차단 아님 — 확인 정본은 수행기관).
+    · 이의신청    기한·기산점은 심사처가 전달하는 것을 기록. 차수가 일수를 주지 않으면 기한을 만들지 않는다.
+
+  ※ 이 파일은 supabase/seoul/(01_core·03_seoul_schema·05_seoul_graph) 정본 스키마 기준으로 갱신했다.
+    최근 반영: 본인부담금 신설 / 지원 불가 항목을 차단→명시·기록으로 전환 / 복지부 중복을 차단→경고로 /
+    서식 원본 보관(ApplicationDocument) / 이의신청 기한을 차수별 nullable 로.
 -->
 <rdf:RDF
     xml:base="http://armdeuri.kr/ontology/seoul"
@@ -68,8 +74,18 @@
     </owl:Ontology>
 
     <!-- ========================================================= -->
-    <!-- Entity Types (Classes) — 26개                             -->
+    <!-- Entity Types (Classes) — 28개                             -->
     <!-- ========================================================= -->
+
+    <!-- ── 0군. 제도·차수 ────────────────────────────────────── -->
+
+    <owl:Class rdf:about="#Cohort">
+        <rdfs:label>Cohort</rdfs:label>
+        <rdfs:comment xml:lang="ko">시범사업 차수 — 1차(2024)·2차(2025)·3차(2026). ★ 제도 파라미터(지원 한도·기간·본인부담률·이의신청 기한)를 코드에 박지 않고 데이터로 둔다. 차수마다 금액과 규칙이 달라지므로 상수로 두면 차수가 바뀔 때마다 앱을 고쳐야 한다. 잔액·본인부담금 계산의 기준이 모두 여기서 온다. [신규 테이블: seoul_cohorts]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#cohortId"/>
+        </owl:hasKey>
+    </owl:Class>
 
     <!-- ── 1군. 참여자와 자격 ────────────────────────────────── -->
 
@@ -112,6 +128,14 @@
         <rdfs:comment xml:lang="ko">신청서 — 서울형 시범사업 참여 신청서. 접수번호·신청일·신청자 정보를 담는다. 절차 1단계(신청 접수). [신규 테이블: seoul_applications]</rdfs:comment>
         <owl:hasKey rdf:parseType="Collection">
             <owl:DatatypeProperty rdf:about="#applicationId"/>
+        </owl:hasKey>
+    </owl:Class>
+
+    <owl:Class rdf:about="#ApplicationDocument">
+        <rdfs:label>ApplicationDocument</rdfs:label>
+        <rdfs:comment xml:lang="ko">신청서·동의서 원본 파일 — 법정 서식은 임의로 바꿀 수 없고 차수마다 달라진다. 서식 문항을 컬럼으로 옮기지 않고 원본 파일만 보관한다(기관 확인). 앱이 구조화하는 것은 절차에 실제로 필요한 최소 항목(접수번호·동의 여부·수급 구분)뿐이고, 원본은 파일로 남긴다. 실제 파일은 documents 버킷(private)에 있고 여기에는 경로만 둔다. [신규 테이블: seoul_application_documents]</rdfs:comment>
+        <owl:hasKey rdf:parseType="Collection">
+            <owl:DatatypeProperty rdf:about="#applicationDocumentId"/>
         </owl:hasKey>
     </owl:Class>
 
@@ -193,7 +217,7 @@
 
     <owl:Class rdf:about="#Appeal">
         <rdfs:label>Appeal</rdfs:label>
-        <rdfs:comment xml:lang="ko">이의신청 — 심의 결과에 대한 이의신청. 절차 5단계. 확인된 자료상 접수 후 14일 이내 처리·재통보. ★ 참여자 본인이 제기할 수 있어야 한다 — 실무자만 대신 넣을 수 있다면 그것은 권리구제가 아니다(RLS 에서 참여자 INSERT 허용). ⚠️ 14일 기준이 서울형에도 동일 적용되는지는 기관 확인 필요. [신규 테이블: seoul_appeals]</rdfs:comment>
+        <rdfs:comment xml:lang="ko">이의신청 — 심의 결과 통지에 대한 이의신청. 절차 5단계. ★ 참여자 본인이 제기할 수 있어야 한다 — 실무자만 대신 넣을 수 있다면 그것은 권리구제가 아니다(RLS 에서 참여자 INSERT 허용). 기한(due_on)은 차수(Cohort)의 appealDueDays 가 있을 때만 통지일+일수로 계산하고, 없으면 비워 둔다 — 근거 없는 날짜를 권리구제 기한으로 지어내지 않는다. [신규 테이블: seoul_appeals]</rdfs:comment>
         <owl:hasKey rdf:parseType="Collection">
             <owl:DatatypeProperty rdf:about="#appealId"/>
         </owl:hasKey>
@@ -203,7 +227,7 @@
 
     <owl:Class rdf:about="#BudgetAllocation">
         <rdfs:label>Budget Allocation</rdfs:label>
-        <rdfs:comment xml:lang="ko">예산 배정 — 심의 승인으로 확정된 참여자별 예산. 월 한도와 총 한도를 함께 가진다(월 40만원 × 6개월 = 240만원). ★ 두 한도를 모두 저장하는 이유: 월 한도만 보면 총액을 넘고, 총액만 보면 한 달에 몰아 쓸 수 있다. 차수마다 금액이 바뀌므로 상수가 아닌 행으로 저장한다. [신규 테이블: seoul_budget_allocations]</rdfs:comment>
+        <rdfs:comment xml:lang="ko">예산 배정 — 심의 승인으로 확정된 참여자별 예산. 월 한도와 총 한도를 함께 가진다(월 40만원 × 6개월 = 240만원). ★ 두 한도를 모두 저장하는 이유: 월 한도만 보면 총액을 넘고, 총액만 보면 한 달에 몰아 쓸 수 있다. 실제로 쓸 수 있는 돈은 총 한도가 아니라 심의가 승인한 금액(allocatedAmount)이고, 본인부담금(copayAmount)은 승인 시점에 확정되는 별도 축의 청구다. 차수마다 금액이 바뀌므로 상수가 아닌 행으로 저장한다. [신규 테이블: seoul_budget_allocations]</rdfs:comment>
         <owl:hasKey rdf:parseType="Collection">
             <owl:DatatypeProperty rdf:about="#budgetAllocationId"/>
         </owl:hasKey>
@@ -211,7 +235,7 @@
 
     <owl:Class rdf:about="#ServiceUsage">
         <rdfs:label>Service Usage</rdfs:label>
-        <rdfs:comment xml:lang="ko">서비스 이용 — 실제 지출·이용 건. 절차 6단계. 금액·일자·이용 내용과 어느 영역·어느 계획 항목에 대응하는지를 기록한다. [기존 테이블 활용: transactions 를 서울형 컬럼으로 확장하거나 seoul_service_usages 로 분리 — 설계문서 §5 참조]</rdfs:comment>
+        <rdfs:comment xml:lang="ko">서비스 이용 — 실제 지출·이용 건. 절차 6단계. 금액·일자·이용 내용과 어느 영역·어느 계획 항목에 대응하는지를 기록한다. 입력자(created_by)와 결정자(decided_by)를 구분한다 — 실무자가 대신 입력한 것과 대신 결정한 것은 전혀 다르다. [신규 테이블: seoul_service_usages]</rdfs:comment>
         <owl:hasKey rdf:parseType="Collection">
             <owl:DatatypeProperty rdf:about="#serviceUsageId"/>
         </owl:hasKey>
@@ -219,7 +243,7 @@
 
     <owl:Class rdf:about="#Receipt">
         <rdfs:label>Receipt</rdfs:label>
-        <rdfs:comment xml:lang="ko">영수증 — 지출 증빙. 정산의 근거 서류. Storage 의 receipts 버킷(private)에 저장하고 signed URL 로만 노출한다. [기존 테이블: transactions.receipt_url + receipts 버킷]</rdfs:comment>
+        <rdfs:comment xml:lang="ko">영수증 — 지출 증빙. 정산의 근거 서류. Storage 의 receipts 버킷(private)에 저장하고 signed URL 로만 노출한다. [신규 테이블: seoul_receipts + receipts 버킷(private)]</rdfs:comment>
         <owl:hasKey rdf:parseType="Collection">
             <owl:DatatypeProperty rdf:about="#receiptId"/>
         </owl:hasKey>
@@ -237,7 +261,7 @@
 
     <owl:Class rdf:about="#SpendingRule">
         <rdfs:label>Spending Rule</rdfs:label>
-        <rdfs:comment xml:lang="ko">지출 규칙 — 두 종류를 한 클래스로 담는다. ①금지(prohibition): 주류·담배·복권, 세금·공과금, 저축·부채상환 — 제도가 정한 것이므로 시스템이 차단한다. ②요건(criterion): 장애 연관성, 목표 연관성, 계획 포함 여부 — 판단이 필요하므로 시스템은 플래그만 세우고 사람이 결정한다. ★ 이 구분이 핵심이다. pcp_ontology 에서는 "자동 거절 없음"을 원칙으로 삼았지만, 서울형의 금지 항목은 법정 제한이라 차단이 맞다. 반대로 요건 판단까지 자동화하면 말로 설명하기 어려운 당사자가 불리해진다. [신규 테이블: seoul_spending_rules]</rdfs:comment>
+        <rdfs:comment xml:lang="ko">지출 규칙 — 지원 불가 항목과 판단 요건을 한 클래스로 담고, 종류(kind)와 적용 방식(enforcement)을 나눠 둔다. ①prohibition: 3차 안내문 「지원이 어려운 서비스」(이미 다른 제도로 지원 / 일상생활 물품·주거비 / 단순 여가·오락 / 병원비·약값 / 필요성 설명 부족). ②criterion: 장애 연관성·목표 연관성·계획 포함 여부. ★ 설계 전환(기관 확인): 지원 불가는 수행기관 서류를 근거로 심사처가 정하고, 그 전에 당사자·담당자의 대화에서 대부분 자정된다. 그래서 앱은 화면에 명시하고 걸리면 기록만 한다 — 서울형 시드는 어떤 규칙도 차단(block)을 쓰지 않는다. 앱이 먼저 막으면 말로 설명하기 어려운 당사자가 가장 불리해진다. [신규 테이블: seoul_spending_rules]</rdfs:comment>
         <owl:hasKey rdf:parseType="Collection">
             <owl:DatatypeProperty rdf:about="#spendingRuleId"/>
         </owl:hasKey>
@@ -245,7 +269,7 @@
 
     <owl:Class rdf:about="#RuleCheck">
         <rdfs:label>Rule Check</rdfs:label>
-        <rdfs:comment xml:lang="ko">규칙 검증 결과 — 지출 건마다 어떤 규칙에 걸렸는지, 그래서 어떻게 처리했는지를 남기는 감사 흔적. 통과/차단/검토필요와 실무자의 최종 판단·사유를 기록한다. ★ 결과만 남기고 근거를 안 남기면 이의신청 때 다툴 수 없다. [신규 테이블: seoul_rule_checks]</rdfs:comment>
+        <rdfs:comment xml:lang="ko">규칙 검증 결과 — 지출 건마다 어떤 규칙에 걸렸는지, 그래서 어떻게 처리했는지를 남기는 감사 흔적. 통과(pass)/검토필요(needs_review)와 실무자의 최종 판단·사유를 다른 컬럼에 기록한다. ★ 시스템 판정과 사람 판단을 같은 칸에 쓰면 누가 정했는지 사라진다. 결과만 남기고 근거를 안 남기면 이의신청 때 다툴 수 없다. [신규 테이블: seoul_rule_checks]</rdfs:comment>
         <owl:hasKey rdf:parseType="Collection">
             <owl:DatatypeProperty rdf:about="#ruleCheckId"/>
         </owl:hasKey>
@@ -294,7 +318,7 @@
     </owl:Class>
 
     <!-- ========================================================= -->
-    <!-- Object Properties (관계) — 46개                           -->
+    <!-- Object Properties (관계) — 49개                           -->
     <!-- ========================================================= -->
 
     <!-- ── 참여자 자격 ───────────────────────────────────────── -->
@@ -369,6 +393,20 @@
         <rdfs:domain rdf:resource="#SelectionDecision"/>
         <rdfs:range rdf:resource="#AdministeringBody"/>
         <rdfs:comment xml:lang="ko">선정을 결정한다</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#appliesToCohort">
+        <rdfs:label>appliesToCohort</rdfs:label>
+        <rdfs:domain rdf:resource="#Application"/>
+        <rdfs:range rdf:resource="#Cohort"/>
+        <rdfs:comment xml:lang="ko">차수에 신청한다 — ★ 어느 차수의 제도 파라미터가 적용되는지 결정한다. 한도·본인부담률·이의신청 기한이 모두 이 차수에서 온다. 한 차수에 한 번만 신청할 수 있다.</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#hasDocument">
+        <rdfs:label>hasDocument</rdfs:label>
+        <rdfs:domain rdf:resource="#Application"/>
+        <rdfs:range rdf:resource="#ApplicationDocument"/>
+        <rdfs:comment xml:lang="ko">원본 서식을 보관한다 — 신청서·동의서 원본 파일을 매단다. 서식 문항을 앱 스키마로 복제하지 않고 원본을 그대로 남긴다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <!-- ── 이용계획 ──────────────────────────────────────────── -->
@@ -494,6 +532,13 @@
         <rdfs:domain rdf:resource="#BudgetAllocation"/>
         <rdfs:range rdf:resource="#AdministeringBody"/>
         <rdfs:comment xml:lang="ko">재원을 댄다</rdfs:comment>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#underCohort">
+        <rdfs:label>underCohort</rdfs:label>
+        <rdfs:domain rdf:resource="#BudgetAllocation"/>
+        <rdfs:range rdf:resource="#Cohort"/>
+        <rdfs:comment xml:lang="ko">차수의 규정을 따른다 — 배정은 차수 기본값(월·총 한도·기간·본인부담률)을 복사해 오되, 개별 조정이 가능하도록 값을 배정 행에 고정한다. 나중에 차수 파라미터가 바뀌어도 이미 확정된 배정은 그대로다.</rdfs:comment>
     </owl:ObjectProperty>
 
     <owl:ObjectProperty rdf:about="#uses">
@@ -639,6 +684,71 @@
     <!-- Data Properties (속성)                                    -->
     <!-- ========================================================= -->
 
+    <!-- ── Cohort ────────────────────────────────────────────── -->
+
+    <owl:DatatypeProperty rdf:about="#cohortCode">
+        <rdfs:label>cohortCode</rdfs:label>
+        <rdfs:domain rdf:resource="#Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">차수 코드 — '2024_1' | '2025_2' | '2026_3'. 업무 키(UNIQUE).</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#cohortName">
+        <rdfs:label>cohortName</rdfs:label>
+        <rdfs:domain rdf:resource="#Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">차수 이름</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#cohortPeriodMonths">
+        <rdfs:label>cohortPeriodMonths</rdfs:label>
+        <rdfs:domain rdf:resource="#Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:comment xml:lang="ko">지원 개월수 — 확인된 자료: 6.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#cohortMonthlyCeiling">
+        <rdfs:label>cohortMonthlyCeiling</rdfs:label>
+        <rdfs:domain rdf:resource="#Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment xml:lang="ko">월 한도 기본값 — 확인된 자료: 400,000 (2025년 40~50만원).</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#cohortTotalCeiling">
+        <rdfs:label>cohortTotalCeiling</rdfs:label>
+        <rdfs:domain rdf:resource="#Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment xml:lang="ko">총 한도 기본값 — 확인된 자료: 2,400,000.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#cohortCarryOver">
+        <rdfs:label>cohortCarryOver</rdfs:label>
+        <rdfs:domain rdf:resource="#Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment xml:lang="ko">월 미사용액 이월 허용 — 3차 안내문 기준 TRUE(현금 월별 지급이 아니라 총액 차감 구조라 "이번 달 미사용액을 다음 달로"라는 개념이 성립하지 않는다). TRUE 면 총액만 강제하고 월 초과는 경고만, FALSE 면 월 한도도 하드 차단.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#copayRate">
+        <rdfs:label>copayRate</rdfs:label>
+        <rdfs:domain rdf:resource="#Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment xml:lang="ko">본인부담률 — 3차 0.10, 1·2차 0(제도에 없었음). 승인금액에 곱하고 copayMax 로 자른다.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#copayMax">
+        <rdfs:label>copayMax</rdfs:label>
+        <rdfs:domain rdf:resource="#Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment xml:lang="ko">본인부담금 상한 — 3차 240,000. NULL 이면 상한 없음.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#appealDueDays">
+        <rdfs:label>appealDueDays</rdfs:label>
+        <rdfs:domain rdf:resource="#Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:comment xml:lang="ko">이의신청 기한 일수 — ★ NULL 이면 심사처가 아직 알려주지 않은 것이므로 기한을 계산하지 않는다. 근거 없는 기본값(예: 14)을 두면 당사자가 실제 기한을 오해한다. 모르면 모른다고 둔다.</rdfs:comment>
+    </owl:DatatypeProperty>
+
     <!-- ── Participant ───────────────────────────────────────── -->
 
     <owl:DatatypeProperty rdf:about="#participantName">
@@ -747,7 +857,7 @@
         <rdfs:label>participatesInMohwPilot</rdfs:label>
         <rdfs:domain rdf:resource="#BenefitStatus"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment xml:lang="ko">보건복지부 시범사업 참여여부 — ★ true 이면 서울형 참여 불가. 신청서에 "보건복지부 시범사업 참여자의 경우, 서울형 시범사업 참여 불가"로 명시되어 있다. DB 에서 CHECK 제약으로 강제한다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">보건복지부 시범사업 참여여부 — 신청서에 "복지부 시범사업 참여자는 서울형 참여 불가"로 명시되어 있다. ★ 그러나 앱은 이것으로 선정을 차단하지 않는다(차단 트리거 제거). 확인의 정본은 수행기관이므로, 앱은 선정 화면에 "복지부 참여로 기록됨" 경고만 띄운다. 오래되거나 잘못 입력된 체크박스로 저장을 막으면 자격을 이미 확인해 선정하려는 실무가 막힌다. 지원 불가 항목과 같은 원칙: 앱은 명시·기록, 판정은 사람.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── Application ───────────────────────────────────────── -->
@@ -766,18 +876,34 @@
         <rdfs:comment xml:lang="ko">신청일</rdfs:comment>
     </owl:DatatypeProperty>
 
-    <owl:DatatypeProperty rdf:about="#cohort">
-        <rdfs:label>cohort</rdfs:label>
-        <rdfs:domain rdf:resource="#Application"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">시범사업 차수 — 1차(2024) | 2차(2025) | 3차(2026). ★ 차수마다 한도액과 세부 규칙이 달라지므로 반드시 기록한다.</rdfs:comment>
-    </owl:DatatypeProperty>
-
     <owl:DatatypeProperty rdf:about="#applicantSignature">
         <rdfs:label>applicantSignature</rdfs:label>
         <rdfs:domain rdf:resource="#Application"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
         <rdfs:comment xml:lang="ko">신청자 서명 — 서명 이미지 경로 또는 전자서명 값. 신청서 하단 "(서명 또는 인)".</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <!-- ── ApplicationDocument ───────────────────────────────── -->
+
+    <owl:DatatypeProperty rdf:about="#docType">
+        <rdfs:label>docType</rdfs:label>
+        <rdfs:domain rdf:resource="#ApplicationDocument"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">서류 종류 — application_form(신청서) | consent_form(동의서) | other.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#docFileName">
+        <rdfs:label>docFileName</rdfs:label>
+        <rdfs:domain rdf:resource="#ApplicationDocument"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">파일 이름</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#docStoragePath">
+        <rdfs:label>docStoragePath</rdfs:label>
+        <rdfs:domain rdf:resource="#ApplicationDocument"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">저장 경로 — documents 버킷(private) 경로. '{participant_id}/...' 규칙을 지켜야 소유자 기반 접근 제어가 작동한다. 공개 URL 이 아니라 경로만 저장한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── Proxy ─────────────────────────────────────────────── -->
@@ -1059,7 +1185,7 @@
         <rdfs:label>appealDueOn</rdfs:label>
         <rdfs:domain rdf:resource="#Appeal"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment xml:lang="ko">처리 기한 — 확인된 자료상 접수 후 14일 이내 처리·재통보. ⚠️ 서울형 적용 여부 기관 확인 필요. 상수로 박지 말고 차수별 설정값으로 둔다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">처리 기한 — 트리거가 통지일 + 차수(Cohort)의 appealDueDays 로 채운다. ★ 차수가 일수를 주지 않으면(NULL) 비워 둔다. 상수(예: 14일)로 박으면 당사자가 실제 기한을 오해한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#appealOutcome">
@@ -1096,14 +1222,28 @@
         <rdfs:label>carryOverAllowed</rdfs:label>
         <rdfs:domain rdf:resource="#BudgetAllocation"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment xml:lang="ko">이월 허용 여부 — ⚠️ 월 미사용액을 다음 달로 넘길 수 있는지는 확인되지 않았다. 총 한도 내 사용 가능하다는 서술이 있으나 명확한 규정 확인 필요 — 기관 확인 항목. 잔액 계산 로직이 이 값에 따라 완전히 달라진다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">이월 허용 여부 — 3차 안내문 기준 TRUE(현금 월별 지급이 아니라 총액 차감 구조라 "이번 달 미사용액을 다음 달로"라는 개념이 성립하지 않는다). TRUE 면 총액만 강제하고 월 초과는 경고만, FALSE(월별 지급 차수) 면 월 한도도 하드 차단. 배정 시점에 차수(Cohort.cohortCarryOver)에서 복사해 온다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#allocatedAmount">
         <rdfs:label>allocatedAmount</rdfs:label>
         <rdfs:domain rdf:resource="#BudgetAllocation"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment xml:lang="ko">배정 확정액</rdfs:comment>
+        <rdfs:comment xml:lang="ko">승인금액 — 심의가 실제로 승인한 금액. ★ 잔액과 본인부담금의 기준이 총 한도가 아니라 이 값이다(CHECK: allocatedAmount ≤ totalCeiling). 240만 차수에서 150만만 승인되면 쓸 수 있는 돈은 150만이다.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#copayAmount">
+        <rdfs:label>copayAmount</rdfs:label>
+        <rdfs:domain rdf:resource="#BudgetAllocation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment xml:lang="ko">본인부담금 — 승인 시점에 확정된다(승인금액 × 차수 부담률, 상한 적용). ★ 잔액과 다른 축의 청구다 — 쓸 수 있는 서비스 금액은 승인금액 그대로이고, 부담금은 그와 별도로 발생한다(수행기관이 제공기관에 대신 지급하는 구조). DB 트리거가 계산하며 수기 입력은 덮어쓰인다.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#copayStatus">
+        <rdfs:label>copayStatus</rdfs:label>
+        <rdfs:domain rdf:resource="#BudgetAllocation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">부담금 상태 — not_applicable(부담률 없는 차수) | exempt_basic_livelihood(기초생활수급 면제) | exempt_near_poor(차상위 면제) | charged(부과) | unverified(수급 구분 확인 전). ★ 금액만 두면 "0원"이 면제인지 제도 없음인지 구분되지 않으므로 상태를 따로 둔다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- ── ServiceUsage ──────────────────────────────────────── -->
@@ -1186,7 +1326,7 @@
         <rdfs:label>ruleKind</rdfs:label>
         <rdfs:domain rdf:resource="#SpendingRule"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">규칙 종류 — prohibition(금지 — 시스템 차단) | criterion(요건 — 사람 판단). ★ 이 한 컬럼이 자동화 경계선이다.</rdfs:comment>
+        <rdfs:comment xml:lang="ko">규칙 종류 — prohibition(지원 불가로 안내되는 항목) | criterion(사람이 판단할 요건). ★ 종류는 여기서 나누고, 실제로 차단/경고/기록 중 무엇을 할지는 ruleEnforcement 가 정한다. 서울형 시드는 어떤 규칙도 차단(block)을 쓰지 않는다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#ruleLabel">
@@ -1207,14 +1347,14 @@
         <rdfs:label>ruleEnforcement</rdfs:label>
         <rdfs:domain rdf:resource="#SpendingRule"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">적용 방식 — block(저장 차단) | warn(경고 후 진행 가능) | flag(기록만, 검토 목록에 노출)</rdfs:comment>
+        <rdfs:comment xml:lang="ko">적용 방식 — block(저장 차단) | warn(경고 후 진행 가능) | flag(기록만, 검토 목록에 노출). ★ 서울형 시드는 flag/warn 만 쓴다. block 은 차수마다 운영이 다를 수 있어 메커니즘만 남겨 둔 것이고, 실제로 쓰면 롤백 때문에 "무엇이 왜 막혔는지"를 남길 수 없다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#checkResult">
         <rdfs:label>checkResult</rdfs:label>
         <rdfs:domain rdf:resource="#RuleCheck"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment xml:lang="ko">검증 결과 — pass | blocked | needs_review</rdfs:comment>
+        <rdfs:comment xml:lang="ko">검증 결과 — pass | needs_review. ★ 'blocked' 은 없앴다 — 차단은 트랜잭션 롤백이라 이 표에 행이 남을 수 없다. 지원 불가 항목은 차단이 아니라 needs_review 로 기록되고, 판정은 human_decision 으로 사람이 한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
     <owl:DatatypeProperty rdf:about="#humanDecision">
@@ -1521,6 +1661,20 @@
         <rdfs:domain rdf:resource="#Caseworker"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
         <rdfs:comment xml:lang="ko">담당자 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#cohortId">
+        <rdfs:label>cohortId</rdfs:label>
+        <rdfs:domain rdf:resource="#Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">차수 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:DatatypeProperty rdf:about="#applicationDocumentId">
+        <rdfs:label>applicationDocumentId</rdfs:label>
+        <rdfs:domain rdf:resource="#ApplicationDocument"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="ko">신청 서류 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
     </owl:DatatypeProperty>
 
 </rdf:RDF>

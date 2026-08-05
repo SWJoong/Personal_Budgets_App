@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- 자동 생성 파일 — make_ko_rdf.py 가 seoul_ontology.rdf(정본)에서 만든다. 직접 고치지 마세요.
+     한글 라벨은 Playground 검증에서 오류로 표시되지만 그림은 정상입니다(README 참조). -->
 <rdf:RDF
     xml:base="http://example.org/ontology/seoul-personal-budget-scheme-ontology/"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -8,1190 +10,181 @@
     xmlns:ont="http://example.org/ontology/seoul-personal-budget-scheme-ontology/">
 
     <owl:Ontology rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/">
-        <rdfs:label>서울형 장애인 개인예산제 온톨로지</rdfs:label>
+        <rdfs:label>Seoul Personal Budget Scheme Ontology</rdfs:label>
         <rdfs:comment>서울형 장애인 개인예산제 시범사업의 신청부터 정산까지를 모델링한다. 제도가 정한 것(한도·영역·금지항목·절차)은 코드값과 제약으로, 당사자가 쓰는 것(나의 상황·원하는 서비스)만 서술형으로 둔다.</rdfs:comment>
     </owl:Ontology>
 
-    <!-- ===================== -->
     <!-- Entity Types (Classes) -->
-    <!-- ===================== -->
-
+    <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort">
+        <rdfs:label>시범사업 차수</rdfs:label>
+        <rdfs:comment>시범사업 차수 — 1차(2024)·2차(2025)·3차(2026). ★ 제도 파라미터(지원 한도·기간·본인부담률·이의신청 기한)를 코드에 박지 않고 데이터로 둔다. 차수마다 금액과 규칙이 달라지므로 상수로 두면 차수가 바뀔 때마다 앱을 고쳐야 한다. 잔액·본인부담금 계산의 기준이 모두 여기서 온다. [신규 테이블: seoul_cohorts]</rdfs:comment>
+        <ont:icon>📅</ont:icon>
+        <ont:color>#5C2D91</ont:color>
+    </owl:Class>
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant">
         <rdfs:label>참여자</rdfs:label>
         <rdfs:comment>참여자 — 서울형 시범사업에 참여하는 장애인 당사자. 서울시 거주 만 18세 이상 중증장애인. 신청·계획수립·이용·이의신청의 주체다. [기존 테이블: participants + profiles — 프로그램 간 공유되는 유일한 지점]</rdfs:comment>
-        <ont:icon>👤</ont:icon>
-        <ont:color>#0078D4</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Proxy">
         <rdfs:label>대리인</rdfs:label>
         <rdfs:comment>대리인 — 신청서에 당사자를 대신해 서명하는 사람. 신청서가 &quot;신청자(대리인) 성명 / 신청자와의 관계&quot;를 함께 받으므로 별도 노드로 둔다. ★ 대리 서명 자체가 기록되어야 나중에 &quot;누가 결정했나&quot;를 되짚을 수 있다. [신규 테이블: seoul_proxies]</rdfs:comment>
-        <ont:icon>👤</ont:icon>
-        <ont:color>#107C10</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/DisabilityProfile">
         <rdfs:label>장애 정보</rdfs:label>
         <rdfs:comment>장애 정보 — 주장애유형·장애정도·중복장애유형·중도장애 발생시기. 서울형 신청서의 고정 항목이며 참여 자격(중증) 판정의 근거. [신규 테이블: seoul_disability_profiles]</rdfs:comment>
-        <ont:icon>📋</ont:icon>
-        <ont:color>#00A9E0</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BenefitStatus">
         <rdfs:label>수급 현황</rdfs:label>
         <rdfs:comment>수급 현황 — 공공부조 수급현황(기초생활/차상위/해당없음), 활동지원서비스 이용여부, 서울시 활동지원 추가지원 여부, 보건복지부 시범사업 참여여부. ★ 마지막 항목이 배타 규칙의 입력값이다 — 복지부 참여자는 서울형 참여 불가. [신규 테이블: seoul_benefit_status]</rdfs:comment>
-        <ont:icon>📋</ont:icon>
-        <ont:color>#00A9E0</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application">
         <rdfs:label>신청서</rdfs:label>
         <rdfs:comment>신청서 — 서울형 시범사업 참여 신청서. 접수번호·신청일·신청자 정보를 담는다. 절차 1단계(신청 접수). [신규 테이블: seoul_applications]</rdfs:comment>
-        <ont:icon>📋</ont:icon>
-        <ont:color>#00A9E0</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
+    <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ApplicationDocument">
+        <rdfs:label>신청서·동의서 원본 파일</rdfs:label>
+        <rdfs:comment>신청서·동의서 원본 파일 — 법정 서식은 임의로 바꿀 수 없고 차수마다 달라진다. 서식 문항을 컬럼으로 옮기지 않고 원본 파일만 보관한다(기관 확인). 앱이 구조화하는 것은 절차에 실제로 필요한 최소 항목(접수번호·동의 여부·수급 구분)뿐이고, 원본은 파일로 남긴다. 실제 파일은 documents 버킷(private)에 있고 여기에는 경로만 둔다. [신규 테이블: seoul_application_documents]</rdfs:comment>
+        <ont:icon>📄</ont:icon>
+        <ont:color>#8764B8</ont:color>
+    </owl:Class>
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord">
         <rdfs:label>개인정보 동의</rdfs:label>
         <rdfs:comment>개인정보 동의 — 개인정보 수집·이용 동의서. 서울형은 ①일반 개인정보(민감정보 포함) 동의와 ②고유식별정보(주민등록번호) 별도 동의 두 건을 각각 받는다. ★ 동의가 참여의 전제다 — 거부 시 불이익은 없으나 사업 참여는 불가하다고 서식에 명시되어 있다. 따라서 동의는 부가정보가 아니라 1급 개체다. [신규 테이블: seoul_consent_records]</rdfs:comment>
-        <ont:icon>📋</ont:icon>
-        <ont:color>#00A9E0</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelectionDecision">
         <rdfs:label>참여자 선정</rdfs:label>
         <rdfs:comment>참여자 선정 — 신청자 중 참여자를 선정하는 결정. 절차 2단계. 선정/미선정과 사유, 결정 주체를 기록한다. [신규 테이블: seoul_selection_decisions]</rdfs:comment>
-        <ont:icon>📋</ont:icon>
-        <ont:color>#00A9E0</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan">
         <rdfs:label>개인예산 이용계획</rdfs:label>
         <rdfs:comment>개인예산 이용계획 — 참여자가 예산을 어디에 쓸지 세운 계획(2매 내외). 절차 3단계. 심의를 거쳐 확정되며, 이용 제한 요건상 &quot;개인별 수립한 이용계획에 포함되어야&quot; 지출이 인정된다. [신규 테이블: seoul_utilization_plans]</rdfs:comment>
-        <ont:icon>📋</ont:icon>
-        <ont:color>#00A9E0</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative">
         <rdfs:label>나의 상황</rdfs:label>
         <rdfs:comment>나의 상황 — 이용계획서의 서술 5항목: 재능·강점·기술 / 장애로 인한 사회적 제한·어려움 / 원하는 변화와 지원 / 원하는 삶의 모습 / 시도하고 싶은 것. ★ 서울형에서 사람중심적 색채가 남아 있는 유일한 곳. 다만 PCP 처럼 자유 그래프가 아니라 5칸 고정이므로 노드 5개가 아닌 노드 1개 + 속성 5개로 둔다. [신규 테이블: seoul_self_narratives]</rdfs:comment>
-        <ont:icon>📝</ont:icon>
-        <ont:color>#FFB900</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService">
         <rdfs:label>지원받고 싶은 서비스</rdfs:label>
         <rdfs:comment>지원받고 싶은 서비스 — 이용계획서에 적는 희망 서비스. 서식상 3칸(구분 1·2·3)이므로 우선순위를 갖는다. 실제 지출이 이 항목에 대응하는지가 정산의 기준이 된다. [신규 테이블: seoul_requested_services]</rdfs:comment>
-        <ont:icon>📝</ont:icon>
-        <ont:color>#FFB900</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceDomain">
         <rdfs:label>서비스 영역</rdfs:label>
         <rdfs:comment>서비스 영역 — 서울형이 정한 6개 지원 영역: 일상생활 / 사회생활 / 취·창업활동 / 자기개발 / 건강·안전 / 주거환경개선. ★ pcp_ontology 는 기관마다 분류가 달라 taxonomy+crosswalk 로 풀었지만, 서울형은 제도가 6종을 확정했으므로 코드 테이블로 고정한다. 이것이 두 모델을 나눈 이유 중 하나다. [신규 테이블: seoul_service_domains — 시드 6행]</rdfs:comment>
-        <ont:icon>📝</ont:icon>
-        <ont:color>#FFB900</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview">
         <rdfs:label>계획 심의</rdfs:label>
         <rdfs:comment>계획 심의 — 이용계획에 대한 심의. 절차 4단계(심의 및 통지). 승인·조건부승인·부결과 사유를 기록하고, 승인 시 예산 배정을 발생시킨다. [신규 테이블: seoul_plan_reviews]</rdfs:comment>
-        <ont:icon>🏢</ont:icon>
-        <ont:color>#E81123</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ReviewCommittee">
         <rdfs:label>심의 주체</rdfs:label>
         <rdfs:comment>심의 주체 — 이용계획을 심의하고 이의신청을 재심하는 위원회. ⚠️ 서울형의 정확한 심의 주체·구성·의결정족수는 공개 자료로 확인되지 않았다 — 기관 확인 필요 항목. [신규 테이블: seoul_review_committees]</rdfs:comment>
-        <ont:icon>🏢</ont:icon>
-        <ont:color>#E81123</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Notification">
         <rdfs:label>결과 통지</rdfs:label>
         <rdfs:comment>결과 통지 — 심의 결과를 참여자에게 알리는 문서. ★ 통지일이 이의신청 기한의 기산점이므로 별도 노드로 둔다. 통지 없이 기한만 세면 권리구제가 형해화된다. [신규 테이블: seoul_notifications]</rdfs:comment>
-        <ont:icon>🏢</ont:icon>
-        <ont:color>#E81123</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal">
         <rdfs:label>이의신청</rdfs:label>
-        <rdfs:comment>이의신청 — 심의 결과에 대한 이의신청. 절차 5단계. 확인된 자료상 접수 후 14일 이내 처리·재통보. ★ 참여자 본인이 제기할 수 있어야 한다 — 실무자만 대신 넣을 수 있다면 그것은 권리구제가 아니다(RLS 에서 참여자 INSERT 허용). ⚠️ 14일 기준이 서울형에도 동일 적용되는지는 기관 확인 필요. [신규 테이블: seoul_appeals]</rdfs:comment>
-        <ont:icon>🏢</ont:icon>
-        <ont:color>#E81123</ont:color>
+        <rdfs:comment>이의신청 — 심의 결과 통지에 대한 이의신청. 절차 5단계. ★ 참여자 본인이 제기할 수 있어야 한다 — 실무자만 대신 넣을 수 있다면 그것은 권리구제가 아니다(RLS 에서 참여자 INSERT 허용). 기한(due_on)은 차수(Cohort)의 appealDueDays 가 있을 때만 통지일+일수로 계산하고, 없으면 비워 둔다 — 근거 없는 날짜를 권리구제 기한으로 지어내지 않는다. [신규 테이블: seoul_appeals]</rdfs:comment>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation">
         <rdfs:label>예산 배정</rdfs:label>
-        <rdfs:comment>예산 배정 — 심의 승인으로 확정된 참여자별 예산. 월 한도와 총 한도를 함께 가진다(월 40만원 × 6개월 = 240만원). ★ 두 한도를 모두 저장하는 이유: 월 한도만 보면 총액을 넘고, 총액만 보면 한 달에 몰아 쓸 수 있다. 차수마다 금액이 바뀌므로 상수가 아닌 행으로 저장한다. [신규 테이블: seoul_budget_allocations]</rdfs:comment>
-        <ont:icon>💳</ont:icon>
-        <ont:color>#008272</ont:color>
+        <rdfs:comment>예산 배정 — 심의 승인으로 확정된 참여자별 예산. 월 한도와 총 한도를 함께 가진다(월 40만원 × 6개월 = 240만원). ★ 두 한도를 모두 저장하는 이유: 월 한도만 보면 총액을 넘고, 총액만 보면 한 달에 몰아 쓸 수 있다. 실제로 쓸 수 있는 돈은 총 한도가 아니라 심의가 승인한 금액(allocatedAmount)이고, 본인부담금(copayAmount)은 승인 시점에 확정되는 별도 축의 청구다. 차수마다 금액이 바뀌므로 상수가 아닌 행으로 저장한다. [신규 테이블: seoul_budget_allocations]</rdfs:comment>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage">
         <rdfs:label>서비스 이용</rdfs:label>
-        <rdfs:comment>서비스 이용 — 실제 지출·이용 건. 절차 6단계. 금액·일자·이용 내용과 어느 영역·어느 계획 항목에 대응하는지를 기록한다. [기존 테이블 활용: transactions 를 서울형 컬럼으로 확장하거나 seoul_service_usages 로 분리 — 설계문서 §5 참조]</rdfs:comment>
-        <ont:icon>💳</ont:icon>
-        <ont:color>#008272</ont:color>
+        <rdfs:comment>서비스 이용 — 실제 지출·이용 건. 절차 6단계. 금액·일자·이용 내용과 어느 영역·어느 계획 항목에 대응하는지를 기록한다. 입력자(created_by)와 결정자(decided_by)를 구분한다 — 실무자가 대신 입력한 것과 대신 결정한 것은 전혀 다르다. [신규 테이블: seoul_service_usages]</rdfs:comment>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Receipt">
         <rdfs:label>영수증</rdfs:label>
-        <rdfs:comment>영수증 — 지출 증빙. 정산의 근거 서류. Storage 의 receipts 버킷(private)에 저장하고 signed URL 로만 노출한다. [기존 테이블: transactions.receipt_url + receipts 버킷]</rdfs:comment>
-        <ont:icon>💳</ont:icon>
-        <ont:color>#008272</ont:color>
+        <rdfs:comment>영수증 — 지출 증빙. 정산의 근거 서류. Storage 의 receipts 버킷(private)에 저장하고 signed URL 로만 노출한다. [신규 테이블: seoul_receipts + receipts 버킷(private)]</rdfs:comment>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceProvider">
         <rdfs:label>서비스 제공처</rdfs:label>
         <rdfs:comment>서비스 제공처 — 참여자가 실제로 이용한 가게·기관·강사 등. 사업자번호가 있으면 함께 기록해 정산 검증에 쓴다. [신규 테이블: seoul_service_providers]</rdfs:comment>
-        <ont:icon>💳</ont:icon>
-        <ont:color>#008272</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule">
         <rdfs:label>지출 규칙</rdfs:label>
-        <rdfs:comment>지출 규칙 — 두 종류를 한 클래스로 담는다. ①금지(prohibition): 주류·담배·복권, 세금·공과금, 저축·부채상환 — 제도가 정한 것이므로 시스템이 차단한다. ②요건(criterion): 장애 연관성, 목표 연관성, 계획 포함 여부 — 판단이 필요하므로 시스템은 플래그만 세우고 사람이 결정한다. ★ 이 구분이 핵심이다. pcp_ontology 에서는 &quot;자동 거절 없음&quot;을 원칙으로 삼았지만, 서울형의 금지 항목은 법정 제한이라 차단이 맞다. 반대로 요건 판단까지 자동화하면 말로 설명하기 어려운 당사자가 불리해진다. [신규 테이블: seoul_spending_rules]</rdfs:comment>
-        <ont:icon>⚡</ont:icon>
-        <ont:color>#5C2D91</ont:color>
+        <rdfs:comment>지출 규칙 — 지원 불가 항목과 판단 요건을 한 클래스로 담고, 종류(kind)와 적용 방식(enforcement)을 나눠 둔다. ①prohibition: 3차 안내문 「지원이 어려운 서비스」(이미 다른 제도로 지원 / 일상생활 물품·주거비 / 단순 여가·오락 / 병원비·약값 / 필요성 설명 부족). ②criterion: 장애 연관성·목표 연관성·계획 포함 여부. ★ 설계 전환(기관 확인): 지원 불가는 수행기관 서류를 근거로 심사처가 정하고, 그 전에 당사자·담당자의 대화에서 대부분 자정된다. 그래서 앱은 화면에 명시하고 걸리면 기록만 한다 — 서울형 시드는 어떤 규칙도 차단(block)을 쓰지 않는다. 앱이 먼저 막으면 말로 설명하기 어려운 당사자가 가장 불리해진다. [신규 테이블: seoul_spending_rules]</rdfs:comment>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RuleCheck">
         <rdfs:label>규칙 검증 결과</rdfs:label>
-        <rdfs:comment>규칙 검증 결과 — 지출 건마다 어떤 규칙에 걸렸는지, 그래서 어떻게 처리했는지를 남기는 감사 흔적. 통과/차단/검토필요와 실무자의 최종 판단·사유를 기록한다. ★ 결과만 남기고 근거를 안 남기면 이의신청 때 다툴 수 없다. [신규 테이블: seoul_rule_checks]</rdfs:comment>
-        <ont:icon>⚡</ont:icon>
-        <ont:color>#5C2D91</ont:color>
+        <rdfs:comment>규칙 검증 결과 — 지출 건마다 어떤 규칙에 걸렸는지, 그래서 어떻게 처리했는지를 남기는 감사 흔적. 통과(pass)/검토필요(needs_review)와 실무자의 최종 판단·사유를 다른 컬럼에 기록한다. ★ 시스템 판정과 사람 판단을 같은 칸에 쓰면 누가 정했는지 사라진다. 결과만 남기고 근거를 안 남기면 이의신청 때 다툴 수 없다. [신규 테이블: seoul_rule_checks]</rdfs:comment>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement">
         <rdfs:label>정산</rdfs:label>
         <rdfs:comment>정산 — 참여 기간 종료 후(또는 월별) 집행액을 확정하는 절차. 절차 7단계. 인정액·불인정액·환수액을 기록한다. [신규 테이블: seoul_settlements]</rdfs:comment>
-        <ont:icon>📊</ont:icon>
-        <ont:color>#D83B01</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord">
         <rdfs:label>모니터링 기록</rdfs:label>
         <rdfs:comment>모니터링 기록 — 담당자가 이용 상황을 확인한 기록. 절차 7단계(모니터링). 서울형은 4+1 평가 같은 정형 평가 도구가 없으므로, 변화 기록은 모니터링 노트가 담당한다. [신규 테이블: seoul_monitoring_records]</rdfs:comment>
-        <ont:icon>📊</ont:icon>
-        <ont:color>#D83B01</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/AdministeringBody">
         <rdfs:label>시행 주체</rdfs:label>
         <rdfs:comment>시행 주체 — 서울시·관할 자치구·한국장애인재단. 사업을 설계하고 예산을 대며 선정·심의를 관장한다. [신규 테이블: seoul_administering_bodies]</rdfs:comment>
-        <ont:icon>🏢</ont:icon>
-        <ont:color>#E81123</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ExecutingAgency">
         <rdfs:label>수행기관</rdfs:label>
         <rdfs:comment>수행기관 — 신청 접수와 계획수립 지원, 모니터링을 맡는 복지관. 동의서에 열거된 8개 기관(남부·북부·시립서울·영등포·서대문농아인·노원시각·뇌성마비 등)이 여기 해당한다. 아름드리꿈터도 이 위치에 선다. [신규 테이블: seoul_executing_agencies]</rdfs:comment>
-        <ont:icon>🏢</ont:icon>
-        <ont:color>#0078D4</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
-
     <owl:Class rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Caseworker">
         <rdfs:label>담당자</rdfs:label>
         <rdfs:comment>담당자 — 수행기관 소속 실무자. 계획수립을 돕고 모니터링한다. ★ 계획을 &quot;대신 세우는&quot; 사람이 아니라 &quot;돕는&quot; 사람이다 — 관계 이름을 assists 로 둔 이유. [기존 테이블: profiles(role=supporter)]</rdfs:comment>
-        <ont:icon>👤</ont:icon>
-        <ont:color>#E81123</ont:color>
+        <ont:icon>📦</ont:icon>
+        <ont:color>#605E5C</ont:color>
     </owl:Class>
 
-    <!-- ================ -->
-    <!-- Data Properties -->
-    <!-- ================ -->
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_participantName">
-        <rdfs:label>참여자 명</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>참여자 명</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_birthDate">
-        <rdfs:label>생년월일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>생년월일</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_gender">
-        <rdfs:label>성별</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>성별 — male | female</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_registeredAddress">
-        <rdfs:label>주민등록상 주소</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>주민등록상 주소 — 도로명 주소. 서울시 거주 요건 확인에 쓰인다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_actualAddress">
-        <rdfs:label>실거주지</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>실거주지 — 주민등록상 주소와 다를 경우만 기재.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_contactNumber">
-        <rdfs:label>연락처</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>연락처</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_emergencyContact">
-        <rdfs:label>비상연락망</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>비상연락망</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_participantId">
-        <rdfs:label>참여자 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>참여자 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/proxy_proxyName">
-        <rdfs:label>대리인 성명</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Proxy"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>대리인 성명</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/proxy_relationToParticipant">
-        <rdfs:label>신청자와의 관계</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Proxy"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>신청자와의 관계</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/proxy_proxyId">
-        <rdfs:label>대리인 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Proxy"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>대리인 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/disabilityProfile_primaryDisabilityType">
-        <rdfs:label>주장애유형</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/DisabilityProfile"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>주장애유형</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/disabilityProfile_disabilitySeverity">
-        <rdfs:label>장애정도</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/DisabilityProfile"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>장애정도 — severe(심한 장애, 1~3급) | mild(심하지 않은 장애, 4~6급). ★ 서울형은 중증만 대상이므로 severe 가 자격 요건.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/disabilityProfile_secondaryDisabilityType">
-        <rdfs:label>중복장애유형</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/DisabilityProfile"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>중복장애유형</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/disabilityProfile_acquiredDisabilityAge">
-        <rdfs:label>중도장애 발생시기</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/DisabilityProfile"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>중도장애 발생시기 — none | under20 | 20s | 30s | 40s | 50s | 60s</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/disabilityProfile_disabilityProfileId">
-        <rdfs:label>장애 정보 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/DisabilityProfile"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>장애 정보 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/benefitStatus_publicAssistance">
-        <rdfs:label>공공부조 수급현황</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BenefitStatus"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>공공부조 수급현황 — basic_livelihood(기초생활수급) | near_poor(차상위·조건부수급) | none(해당없음)</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/benefitStatus_usesActivitySupport">
-        <rdfs:label>활동지원서비스 이용여부</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BenefitStatus"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment>활동지원서비스 이용여부</rdfs:comment>
-        <ont:propertyType>boolean</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/benefitStatus_usesSeoulAdditionalSupport">
-        <rdfs:label>서울시 활동지원 추가지원 이용여부</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BenefitStatus"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment>서울시 활동지원 추가지원 이용여부</rdfs:comment>
-        <ont:propertyType>boolean</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/benefitStatus_participatesInMohwPilot">
-        <rdfs:label>보건복지부 시범사업 참여여부</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BenefitStatus"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment>보건복지부 시범사업 참여여부 — ★ true 이면 서울형 참여 불가. 신청서에 &quot;보건복지부 시범사업 참여자의 경우, 서울형 시범사업 참여 불가&quot;로 명시되어 있다. DB 에서 CHECK 제약으로 강제한다.</rdfs:comment>
-        <ont:propertyType>boolean</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/benefitStatus_benefitStatusId">
-        <rdfs:label>수급 현황 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BenefitStatus"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>수급 현황 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/application_receiptNumber">
-        <rdfs:label>접수번호</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>접수번호</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/application_applicationDate">
-        <rdfs:label>신청일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>신청일</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/application_cohort">
-        <rdfs:label>시범사업 차수</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>시범사업 차수 — 1차(2024) | 2차(2025) | 3차(2026). ★ 차수마다 한도액과 세부 규칙이 달라지므로 반드시 기록한다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/application_applicantSignature">
-        <rdfs:label>신청자 서명</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>신청자 서명 — 서명 이미지 경로 또는 전자서명 값. 신청서 하단 &quot;(서명 또는 인)&quot;.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/application_applicationId">
-        <rdfs:label>신청서 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>신청서 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_consentType">
-        <rdfs:label>동의 종류</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>동의 종류 — general(개인정보·민감정보 수집·이용) | unique_id(고유식별정보 별도 동의). 서식이 두 건을 따로 받으므로 행도 두 개다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_isAgreed">
-        <rdfs:label>동의 여부</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment>동의 여부</rdfs:comment>
-        <ont:propertyType>boolean</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_consentDate">
-        <rdfs:label>동의일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>동의일</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_signedByProxy">
-        <rdfs:label>대리 서명 여부</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment>대리 서명 여부 — ★ 당사자 본인이 동의했는지 대리인이 대신했는지를 남긴다. 자기결정권이 핵심인 제도에서 이 구분이 사라지면 안 된다.</rdfs:comment>
-        <ont:propertyType>boolean</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_retentionPeriodNote">
-        <rdfs:label>보유·이용기간</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>보유·이용기간 — 서식상 &quot;사업 및 성과평가에 필요한 기간&quot;. 종료일이 특정되지 않으므로 파기 시점 관리를 위해 원문을 보존한다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_withdrawnAt">
-        <rdfs:label>동의 철회일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
-        <rdfs:comment>동의 철회일 — ★ 서식에는 없지만 개인정보보호법상 철회권이 있으므로 필드를 둔다. 철회 시 이후 처리를 막는 근거가 된다.</rdfs:comment>
-        <ont:propertyType>datetime</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_consentRecordId">
-        <rdfs:label>개인정보 동의 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>개인정보 동의 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selectionDecision_isSelected">
-        <rdfs:label>선정 여부</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelectionDecision"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment>선정 여부</rdfs:comment>
-        <ont:propertyType>boolean</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selectionDecision_selectionReason">
-        <rdfs:label>선정·미선정 사유</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelectionDecision"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>선정·미선정 사유</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selectionDecision_selectionDate">
-        <rdfs:label>선정일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelectionDecision"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>선정일</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selectionDecision_selectionDecisionId">
-        <rdfs:label>참여자 선정 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelectionDecision"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>참여자 선정 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/utilizationPlan_planStatus">
-        <rdfs:label>계획 상태</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>계획 상태 — draft(작성중) | submitted(제출) | under_review(심의중) | approved(승인) | conditional(조건부승인) | rejected(부결) | under_appeal(이의신청중). ⚠️ 서울형 실제 운영 규정과 대조 필요.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/utilizationPlan_planPeriodStart">
-        <rdfs:label>이용 시작일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>이용 시작일</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/utilizationPlan_planPeriodEnd">
-        <rdfs:label>이용 종료일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>이용 종료일 — 확인된 자료상 참여기간 6개월.</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/utilizationPlan_authoredWithSupport">
-        <rdfs:label>작성 지원 수준</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>작성 지원 수준 — self(스스로) | with_support(도움받아 함께) | by_supporter(지원자가 주로 작성). ★ 자동 추정 후 실무자가 한 번 클릭으로 보정. 개인예산제 성과평가에서 &quot;얼마나 주도적이었나&quot;의 1차 지표가 된다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/utilizationPlan_utilizationPlanId">
-        <rdfs:label>개인예산 이용계획 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>개인예산 이용계획 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_strengthsTalents">
-        <rdfs:label>나의 재능·강점·기술</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>나의 재능·강점·기술</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_socialBarriers">
-        <rdfs:label>장애로 인한 사회적 제한·어려움</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>장애로 인한 사회적 제한·어려움</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_desiredChange">
-        <rdfs:label>내가 원하는 변화와 지원</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>내가 원하는 변화와 지원</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_desiredLife">
-        <rdfs:label>내가 원하는 삶의 모습</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>내가 원하는 삶의 모습 — 희망·꿈·바라는 바·관심사.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_goalToTry">
-        <rdfs:label>시도하고 싶은 것</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>시도하고 싶은 것 — 1~2년 내 이루고자 하는 목표. 목표 연관성 판단의 근거가 된다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_writtenInFirstPerson">
-        <rdfs:label>1인칭 작성 여부</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment>1인칭 작성 여부 — ★ 서식은 &quot;나의 ~&quot;로 되어 있는데 실제로는 실무자가 3인칭으로 대필하는 경우가 흔하다. 이 값을 남겨 두면 나중에 서식 취지가 지켜졌는지 점검할 수 있다.</rdfs:comment>
-        <ont:propertyType>boolean</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_selfNarrativeId">
-        <rdfs:label>나의 상황 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>나의 상황 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/requestedService_servicePriority">
-        <rdfs:label>우선순위</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-        <rdfs:comment>우선순위 — 서식의 구분 1·2·3.</rdfs:comment>
-        <ont:propertyType>integer</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/requestedService_serviceName">
-        <rdfs:label>서비스 명</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>서비스 명</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/requestedService_estimatedCost">
-        <rdfs:label>예상 비용</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment>예상 비용 — 서식에는 없으나 심의와 한도 검증에 필요하다. 없으면 심의가 금액 감각 없이 판단하게 된다.</rdfs:comment>
-        <ont:propertyType>decimal</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/requestedService_approvedForService">
-        <rdfs:label>심의 승인 여부</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment>심의 승인 여부 — 항목 단위 승인. 조건부승인 시 일부만 승인되는 경우를 담는다.</rdfs:comment>
-        <ont:propertyType>boolean</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/requestedService_requestedServiceId">
-        <rdfs:label>지원받고 싶은 서비스 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>지원받고 싶은 서비스 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceDomain_domainCode">
-        <rdfs:label>영역 코드</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceDomain"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>영역 코드 — daily_living | social_life | employment | self_development | health_safety | housing</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceDomain_domainLabel">
-        <rdfs:label>영역 이름</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceDomain"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>영역 이름</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceDomain_domainDescription">
-        <rdfs:label>영역 설명</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceDomain"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>영역 설명</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceDomain_serviceDomainId">
-        <rdfs:label>서비스 영역 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceDomain"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>서비스 영역 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/planReview_reviewDecision">
-        <rdfs:label>심의 결정</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>심의 결정 — approved | conditional | rejected</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/planReview_reviewReason">
-        <rdfs:label>결정 사유</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>결정 사유 — ★ 부결·조건부일 때 필수. 사유 없는 부결은 이의신청을 불가능하게 만든다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/planReview_reviewDate">
-        <rdfs:label>심의일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>심의일</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/planReview_planReviewId">
-        <rdfs:label>계획 심의 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>계획 심의 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/reviewCommittee_committeeName">
-        <rdfs:label>위원회명</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ReviewCommittee"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>위원회명</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/reviewCommittee_reviewCommitteeId">
-        <rdfs:label>심의 주체 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ReviewCommittee"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>심의 주체 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/notification_notifiedOn">
-        <rdfs:label>통지일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Notification"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>통지일 — ★ 이의신청 기한의 기산점.</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/notification_notificationMethod">
-        <rdfs:label>통지 방법</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Notification"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>통지 방법 — mail | sms | in_person | app. 동의서에 문자메시지 발송 목적이 포함되어 있다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/notification_isReadByParticipant">
-        <rdfs:label>참여자 확인 여부</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Notification"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment>참여자 확인 여부 — 발송했다고 전달된 것은 아니다. 발달장애인 대상 사업이라면 확인 여부까지 봐야 한다.</rdfs:comment>
-        <ont:propertyType>boolean</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/notification_notificationId">
-        <rdfs:label>결과 통지 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Notification"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>결과 통지 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealFiledOn">
-        <rdfs:label>이의신청일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>이의신청일</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealGround">
-        <rdfs:label>이의 사유</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>이의 사유</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealFiledBySelf">
-        <rdfs:label>본인 제기 여부</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment>본인 제기 여부</rdfs:comment>
-        <ont:propertyType>boolean</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealDueOn">
-        <rdfs:label>처리 기한</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>처리 기한 — 확인된 자료상 접수 후 14일 이내 처리·재통보. ⚠️ 서울형 적용 여부 기관 확인 필요. 상수로 박지 말고 차수별 설정값으로 둔다.</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealOutcome">
-        <rdfs:label>이의신청 결과</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>이의신청 결과 — pending | upheld(인용) | partially_upheld(일부 인용) | dismissed(기각)</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealId">
-        <rdfs:label>이의신청 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>이의신청 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_totalCeiling">
-        <rdfs:label>총 한도액</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment>총 한도액 — 확인된 자료상 240만원(1·2차). 차수별로 다르므로 행에 저장한다.</rdfs:comment>
-        <ont:propertyType>decimal</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_monthlyCeiling">
-        <rdfs:label>월 한도액</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment>월 한도액 — 확인된 자료상 40만원(2025년 40~50만원).</rdfs:comment>
-        <ont:propertyType>decimal</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_periodMonths">
-        <rdfs:label>지원 개월수</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-        <rdfs:comment>지원 개월수</rdfs:comment>
-        <ont:propertyType>integer</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_carryOverAllowed">
-        <rdfs:label>이월 허용 여부</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-        <rdfs:comment>이월 허용 여부 — ⚠️ 월 미사용액을 다음 달로 넘길 수 있는지는 확인되지 않았다. 총 한도 내 사용 가능하다는 서술이 있으나 명확한 규정 확인 필요 — 기관 확인 항목. 잔액 계산 로직이 이 값에 따라 완전히 달라진다.</rdfs:comment>
-        <ont:propertyType>boolean</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_allocatedAmount">
-        <rdfs:label>배정 확정액</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment>배정 확정액</rdfs:comment>
-        <ont:propertyType>decimal</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_budgetAllocationId">
-        <rdfs:label>예산 배정 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>예산 배정 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_usageDate">
-        <rdfs:label>이용일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>이용일</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_usageAmount">
-        <rdfs:label>이용 금액</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment>이용 금액</rdfs:comment>
-        <ont:propertyType>decimal</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_usageDescription">
-        <rdfs:label>이용 내용</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>이용 내용</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_decidedBySelf">
-        <rdfs:label>결정 주체</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>결정 주체 — self | self_with_support | suggested_accepted | by_supporter. ★ 입력자(creator)와 결정자를 구분한다. 실무자가 대신 입력한 것과 실무자가 대신 결정한 것은 전혀 다르다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_settlementStatus">
-        <rdfs:label>정산 상태</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>정산 상태 — pending(검토대기) | accepted(인정) | rejected(불인정) | recovered(환수)</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_serviceUsageId">
-        <rdfs:label>서비스 이용 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>서비스 이용 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/receipt_receiptStoragePath">
-        <rdfs:label>영수증 저장 경로</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Receipt"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>영수증 저장 경로 — private 버킷 경로. 공개 URL 이 아니라 경로를 저장하고 조회 시 signed URL 을 생성한다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/receipt_receiptIssuedOn">
-        <rdfs:label>영수증 발행일</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Receipt"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>영수증 발행일</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/receipt_receiptAmount">
-        <rdfs:label>영수증 금액</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Receipt"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment>영수증 금액 — 이용 금액과 불일치하면 정산 검토 대상이 된다.</rdfs:comment>
-        <ont:propertyType>decimal</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/receipt_receiptId">
-        <rdfs:label>영수증 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Receipt"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>영수증 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceProvider_providerName">
-        <rdfs:label>제공처 이름</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceProvider"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>제공처 이름</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceProvider_businessNumber">
-        <rdfs:label>사업자등록번호</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceProvider"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>사업자등록번호</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceProvider_serviceProviderId">
-        <rdfs:label>서비스 제공처 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceProvider"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>서비스 제공처 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/spendingRule_ruleKind">
-        <rdfs:label>규칙 종류</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>규칙 종류 — prohibition(금지 — 시스템 차단) | criterion(요건 — 사람 판단). ★ 이 한 컬럼이 자동화 경계선이다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/spendingRule_ruleLabel">
-        <rdfs:label>규칙 이름</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>규칙 이름</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/spendingRule_ruleSourceNote">
-        <rdfs:label>근거</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>근거 — 어느 지침 몇 조에서 온 규칙인지. 근거 없는 규칙은 이의신청에서 무너진다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/spendingRule_ruleEnforcement">
-        <rdfs:label>적용 방식</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>적용 방식 — block(저장 차단) | warn(경고 후 진행 가능) | flag(기록만, 검토 목록에 노출)</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/spendingRule_spendingRuleId">
-        <rdfs:label>지출 규칙 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>지출 규칙 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ruleCheck_checkResult">
-        <rdfs:label>검증 결과</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RuleCheck"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>검증 결과 — pass | blocked | needs_review</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ruleCheck_humanDecision">
-        <rdfs:label>실무자 최종 판단</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RuleCheck"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>실무자 최종 판단 — accepted | rejected | pending. ★ 시스템 판정과 사람 판단을 다른 컬럼에 둔다. 같은 칸에 쓰면 누가 정했는지 사라진다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ruleCheck_humanDecisionReason">
-        <rdfs:label>판단 사유</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RuleCheck"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>판단 사유</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ruleCheck_ruleCheckId">
-        <rdfs:label>규칙 검증 결과 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RuleCheck"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>규칙 검증 결과 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_settledPeriod">
-        <rdfs:label>정산 대상 기간</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>정산 대상 기간</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_acceptedAmount">
-        <rdfs:label>인정액</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment>인정액</rdfs:comment>
-        <ont:propertyType>decimal</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_rejectedAmount">
-        <rdfs:label>불인정액</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment>불인정액</rdfs:comment>
-        <ont:propertyType>decimal</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_recoveredAmount">
-        <rdfs:label>환수액</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment>환수액</rdfs:comment>
-        <ont:propertyType>decimal</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_unusedAmount">
-        <rdfs:label>미사용액</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
-        <rdfs:comment>미사용액 — ★ 미사용은 실패가 아니다. 다만 &quot;쓸 곳을 못 찾아서&quot;인지 &quot;필요가 없어서&quot;인지는 다른 이야기이므로 모니터링 기록과 함께 읽어야 한다.</rdfs:comment>
-        <ont:propertyType>decimal</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_settlementId">
-        <rdfs:label>정산 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>정산 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/monitoringRecord_monitoringDate">
-        <rdfs:label>모니터링 일자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:comment>모니터링 일자</rdfs:comment>
-        <ont:propertyType>date</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/monitoringRecord_monitoringMethod">
-        <rdfs:label>확인 방법</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>확인 방법 — visit(방문) | phone(전화) | app(앱 기록 확인) | document(서류)</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/monitoringRecord_observedChange">
-        <rdfs:label>관찰된 변화</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>관찰된 변화 — ★ 서울형에는 4+1 같은 정형 평가가 없다. 성과평가에 쓸 변화 기록은 사실상 여기뿐이므로 자유 서술이라도 반드시 남긴다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/monitoringRecord_participantVoice">
-        <rdfs:label>참여자가 한 말</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>참여자가 한 말 — 실무자의 관찰과 당사자 본인의 말을 다른 칸에 적는다. 섞으면 누구의 평가인지 사라진다.</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/monitoringRecord_monitoringRecordId">
-        <rdfs:label>모니터링 기록 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>모니터링 기록 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/administeringBody_bodyName">
-        <rdfs:label>기관명</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/AdministeringBody"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>기관명</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/administeringBody_bodyRole">
-        <rdfs:label>역할</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/AdministeringBody"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>역할 — city(서울시) | district(자치구) | foundation(한국장애인재단)</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/administeringBody_administeringBodyId">
-        <rdfs:label>시행 주체 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/AdministeringBody"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>시행 주체 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/executingAgency_agencyName">
-        <rdfs:label>수행기관명</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ExecutingAgency"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>수행기관명</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/executingAgency_executingAgencyId">
-        <rdfs:label>수행기관 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ExecutingAgency"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>수행기관 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/caseworker_caseworkerName">
-        <rdfs:label>담당자명</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Caseworker"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>담당자명</rdfs:comment>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/caseworker_caseworkerId">
-        <rdfs:label>담당자 식별자</rdfs:label>
-        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Caseworker"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>담당자 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
-        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
-        <ont:propertyType>string</ont:propertyType>
-    </owl:DatatypeProperty>
-
-    <!-- ================== -->
-    <!-- Object Properties -->
-    <!-- ================== -->
-
+    <!-- Object Properties (관계) -->
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/hasDisabilityProfile">
         <rdfs:label>장애 정보를 가진다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
@@ -1201,7 +194,6 @@
         <ont:fromEntityId>participant</ont:fromEntityId>
         <ont:toEntityId>disabilityProfile</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/hasBenefitStatus">
         <rdfs:label>수급 현황을 가진다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
@@ -1211,7 +203,6 @@
         <ont:fromEntityId>participant</ont:fromEntityId>
         <ont:toEntityId>benefitStatus</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/actsFor">
         <rdfs:label>대리한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Proxy"/>
@@ -1221,7 +212,6 @@
         <ont:fromEntityId>proxy</ont:fromEntityId>
         <ont:toEntityId>participant</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/submits">
         <rdfs:label>신청한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
@@ -1231,7 +221,6 @@
         <ont:fromEntityId>participant</ont:fromEntityId>
         <ont:toEntityId>application</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/cosigns">
         <rdfs:label>대리 서명한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Proxy"/>
@@ -1241,7 +230,6 @@
         <ont:fromEntityId>proxy</ont:fromEntityId>
         <ont:toEntityId>application</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/grants">
         <rdfs:label>동의한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
@@ -1251,7 +239,6 @@
         <ont:fromEntityId>participant</ont:fromEntityId>
         <ont:toEntityId>consentRecord</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/includesConsent">
         <rdfs:label>동의서를 포함한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
@@ -1261,7 +248,6 @@
         <ont:fromEntityId>application</ont:fromEntityId>
         <ont:toEntityId>consentRecord</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/receivedBy">
         <rdfs:label>접수된다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
@@ -1271,7 +257,6 @@
         <ont:fromEntityId>application</ont:fromEntityId>
         <ont:toEntityId>executingAgency</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/resultsIn">
         <rdfs:label>선정 결과로 이어진다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
@@ -1281,17 +266,33 @@
         <ont:fromEntityId>application</ont:fromEntityId>
         <ont:toEntityId>selectionDecision</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/decidedBy">
         <rdfs:label>선정을 결정한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelectionDecision"/>
         <rdfs:range rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/AdministeringBody"/>
-        <rdfs:comment>결정 주체</rdfs:comment>
+        <rdfs:comment>선정을 결정한다</rdfs:comment>
         <ont:cardinality>one-to-many</ont:cardinality>
         <ont:fromEntityId>selectionDecision</ont:fromEntityId>
         <ont:toEntityId>administeringBody</ont:toEntityId>
     </owl:ObjectProperty>
-
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appliesToCohort">
+        <rdfs:label>차수에 신청한다</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
+        <rdfs:range rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:comment>차수에 신청한다 — ★ 어느 차수의 제도 파라미터가 적용되는지 결정한다. 한도·본인부담률·이의신청 기한이 모두 이 차수에서 온다. 한 차수에 한 번만 신청할 수 있다.</rdfs:comment>
+        <ont:cardinality>one-to-many</ont:cardinality>
+        <ont:fromEntityId>application</ont:fromEntityId>
+        <ont:toEntityId>cohort</ont:toEntityId>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/hasDocument">
+        <rdfs:label>원본 서식을 보관한다</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
+        <rdfs:range rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ApplicationDocument"/>
+        <rdfs:comment>원본 서식을 보관한다 — 신청서·동의서 원본 파일을 매단다. 서식 문항을 앱 스키마로 복제하지 않고 원본을 그대로 남긴다.</rdfs:comment>
+        <ont:cardinality>one-to-many</ont:cardinality>
+        <ont:fromEntityId>application</ont:fromEntityId>
+        <ont:toEntityId>applicationDocument</ont:toEntityId>
+    </owl:ObjectProperty>
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/authors">
         <rdfs:label>계획을 세운다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
@@ -1301,7 +302,6 @@
         <ont:fromEntityId>participant</ont:fromEntityId>
         <ont:toEntityId>utilizationPlan</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/assists">
         <rdfs:label>계획 수립을 돕는다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Caseworker"/>
@@ -1311,7 +311,6 @@
         <ont:fromEntityId>caseworker</ont:fromEntityId>
         <ont:toEntityId>utilizationPlan</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/basedOn">
         <rdfs:label>신청서에 근거한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
@@ -1321,7 +320,6 @@
         <ont:fromEntityId>utilizationPlan</ont:fromEntityId>
         <ont:toEntityId>application</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/describes">
         <rdfs:label>나의 상황을 담는다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
@@ -1331,7 +329,6 @@
         <ont:fromEntityId>utilizationPlan</ont:fromEntityId>
         <ont:toEntityId>selfNarrative</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/requests">
         <rdfs:label>서비스를 요청한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
@@ -1341,7 +338,6 @@
         <ont:fromEntityId>utilizationPlan</ont:fromEntityId>
         <ont:toEntityId>requestedService</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/informs">
         <rdfs:label>서비스 선택의 근거가 된다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
@@ -1351,7 +347,6 @@
         <ont:fromEntityId>selfNarrative</ont:fromEntityId>
         <ont:toEntityId>requestedService</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/classifiedAs">
         <rdfs:label>영역으로 분류된다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService"/>
@@ -1361,7 +356,6 @@
         <ont:fromEntityId>requestedService</ont:fromEntityId>
         <ont:toEntityId>serviceDomain</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/reviewedBy">
         <rdfs:label>심의를 받는다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
@@ -1371,17 +365,15 @@
         <ont:fromEntityId>utilizationPlan</ont:fromEntityId>
         <ont:toEntityId>planReview</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/conductedBy">
         <rdfs:label>심의를 맡는다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview"/>
         <rdfs:range rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ReviewCommittee"/>
-        <rdfs:comment>심의 주체</rdfs:comment>
+        <rdfs:comment>심의를 맡는다</rdfs:comment>
         <ont:cardinality>one-to-many</ont:cardinality>
         <ont:fromEntityId>planReview</ont:fromEntityId>
         <ont:toEntityId>reviewCommittee</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/issues">
         <rdfs:label>통지를 발송한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview"/>
@@ -1391,7 +383,6 @@
         <ont:fromEntityId>planReview</ont:fromEntityId>
         <ont:toEntityId>notification</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/sentTo">
         <rdfs:label>통지받는다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Notification"/>
@@ -1401,7 +392,6 @@
         <ont:fromEntityId>notification</ont:fromEntityId>
         <ont:toEntityId>participant</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/files">
         <rdfs:label>이의를 제기한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
@@ -1411,7 +401,6 @@
         <ont:fromEntityId>participant</ont:fromEntityId>
         <ont:toEntityId>appeal</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/contests">
         <rdfs:label>통지에 이의를 단다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
@@ -1421,7 +410,6 @@
         <ont:fromEntityId>appeal</ont:fromEntityId>
         <ont:toEntityId>notification</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appealReviewedBy">
         <rdfs:label>이의신청을 재심한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
@@ -1431,7 +419,6 @@
         <ont:fromEntityId>appeal</ont:fromEntityId>
         <ont:toEntityId>reviewCommittee</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/authorizes">
         <rdfs:label>예산을 승인한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview"/>
@@ -1441,7 +428,6 @@
         <ont:fromEntityId>planReview</ont:fromEntityId>
         <ont:toEntityId>budgetAllocation</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/allocatedTo">
         <rdfs:label>배정된다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
@@ -1451,7 +437,6 @@
         <ont:fromEntityId>budgetAllocation</ont:fromEntityId>
         <ont:toEntityId>participant</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/fundedBy">
         <rdfs:label>재원을 댄다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
@@ -1461,7 +446,15 @@
         <ont:fromEntityId>budgetAllocation</ont:fromEntityId>
         <ont:toEntityId>administeringBody</ont:toEntityId>
     </owl:ObjectProperty>
-
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/underCohort">
+        <rdfs:label>차수의 규정을 따른다</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
+        <rdfs:range rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:comment>차수의 규정을 따른다 — 배정은 차수 기본값(월·총 한도·기간·본인부담률)을 복사해 오되, 개별 조정이 가능하도록 값을 배정 행에 고정한다. 나중에 차수 파라미터가 바뀌어도 이미 확정된 배정은 그대로다.</rdfs:comment>
+        <ont:cardinality>one-to-many</ont:cardinality>
+        <ont:fromEntityId>budgetAllocation</ont:fromEntityId>
+        <ont:toEntityId>cohort</ont:toEntityId>
+    </owl:ObjectProperty>
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/uses">
         <rdfs:label>서비스를 이용한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
@@ -1471,7 +464,6 @@
         <ont:fromEntityId>participant</ont:fromEntityId>
         <ont:toEntityId>serviceUsage</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/drawsFrom">
         <rdfs:label>예산에서 차감된다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
@@ -1481,7 +473,6 @@
         <ont:fromEntityId>serviceUsage</ont:fromEntityId>
         <ont:toEntityId>budgetAllocation</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/fulfills">
         <rdfs:label>계획 항목을 이행한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
@@ -1491,7 +482,6 @@
         <ont:fromEntityId>serviceUsage</ont:fromEntityId>
         <ont:toEntityId>requestedService</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/providedBy">
         <rdfs:label>제공처</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
@@ -1501,7 +491,6 @@
         <ont:fromEntityId>serviceUsage</ont:fromEntityId>
         <ont:toEntityId>serviceProvider</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/inDomain">
         <rdfs:label>영역에 속한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
@@ -1511,7 +500,6 @@
         <ont:fromEntityId>serviceUsage</ont:fromEntityId>
         <ont:toEntityId>serviceDomain</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/evidencedBy">
         <rdfs:label>영수증으로 증빙된다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
@@ -1521,7 +509,6 @@
         <ont:fromEntityId>serviceUsage</ont:fromEntityId>
         <ont:toEntityId>receipt</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/issuedBy">
         <rdfs:label>발행처</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Receipt"/>
@@ -1531,7 +518,6 @@
         <ont:fromEntityId>receipt</ont:fromEntityId>
         <ont:toEntityId>serviceProvider</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/checkedAgainst">
         <rdfs:label>규칙 검증을 거친다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
@@ -1541,7 +527,6 @@
         <ont:fromEntityId>serviceUsage</ont:fromEntityId>
         <ont:toEntityId>ruleCheck</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appliesRule">
         <rdfs:label>적용된 규칙</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RuleCheck"/>
@@ -1551,7 +536,6 @@
         <ont:fromEntityId>ruleCheck</ont:fromEntityId>
         <ont:toEntityId>spendingRule</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/restrictsDomain">
         <rdfs:label>영역을 제한한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule"/>
@@ -1561,7 +545,6 @@
         <ont:fromEntityId>spendingRule</ont:fromEntityId>
         <ont:toEntityId>serviceDomain</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/monitors">
         <rdfs:label>모니터링을 수행한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Caseworker"/>
@@ -1571,7 +554,6 @@
         <ont:fromEntityId>caseworker</ont:fromEntityId>
         <ont:toEntityId>monitoringRecord</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/observes">
         <rdfs:label>대상 참여자</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
@@ -1581,7 +563,6 @@
         <ont:fromEntityId>monitoringRecord</ont:fromEntityId>
         <ont:toEntityId>participant</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/reviewsUsage">
         <rdfs:label>이용 내역을 확인한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
@@ -1591,7 +572,6 @@
         <ont:fromEntityId>monitoringRecord</ont:fromEntityId>
         <ont:toEntityId>serviceUsage</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settles">
         <rdfs:label>예산을 정산한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
@@ -1601,7 +581,6 @@
         <ont:fromEntityId>settlement</ont:fromEntityId>
         <ont:toEntityId>budgetAllocation</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/aggregates">
         <rdfs:label>이용 내역을 집계한다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
@@ -1611,7 +590,6 @@
         <ont:fromEntityId>settlement</ont:fromEntityId>
         <ont:toEntityId>serviceUsage</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/verifiedBy">
         <rdfs:label>검증 기관</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
@@ -1621,7 +599,6 @@
         <ont:fromEntityId>settlement</ont:fromEntityId>
         <ont:toEntityId>executingAgency</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/employedBy">
         <rdfs:label>소속 기관</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Caseworker"/>
@@ -1631,7 +608,6 @@
         <ont:fromEntityId>caseworker</ont:fromEntityId>
         <ont:toEntityId>executingAgency</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/designatedBy">
         <rdfs:label>지정 주체</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ExecutingAgency"/>
@@ -1641,7 +617,6 @@
         <ont:fromEntityId>executingAgency</ont:fromEntityId>
         <ont:toEntityId>administeringBody</ont:toEntityId>
     </owl:ObjectProperty>
-
     <owl:ObjectProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/assignedTo">
         <rdfs:label>담당자가 배정된다</rdfs:label>
         <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
@@ -1651,5 +626,980 @@
         <ont:fromEntityId>participant</ont:fromEntityId>
         <ont:toEntityId>caseworker</ont:toEntityId>
     </owl:ObjectProperty>
+
+    <!-- Data Properties (속성) -->
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/cohort_cohortCode">
+        <rdfs:label>차수 코드</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>차수 코드 — &#x27;2024_1&#x27; | &#x27;2025_2&#x27; | &#x27;2026_3&#x27;. 업무 키(UNIQUE).</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/cohort_cohortName">
+        <rdfs:label>차수 이름</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>차수 이름</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/cohort_cohortPeriodMonths">
+        <rdfs:label>지원 개월수</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:comment>지원 개월수 — 확인된 자료: 6.</rdfs:comment>
+        <ont:propertyType>integer</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/cohort_cohortMonthlyCeiling">
+        <rdfs:label>월 한도 기본값</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>월 한도 기본값 — 확인된 자료: 400,000 (2025년 40~50만원).</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/cohort_cohortTotalCeiling">
+        <rdfs:label>총 한도 기본값</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>총 한도 기본값 — 확인된 자료: 2,400,000.</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/cohort_cohortCarryOver">
+        <rdfs:label>월 미사용액 이월 허용</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>월 미사용액 이월 허용 — 3차 안내문 기준 TRUE(현금 월별 지급이 아니라 총액 차감 구조라 &quot;이번 달 미사용액을 다음 달로&quot;라는 개념이 성립하지 않는다). TRUE 면 총액만 강제하고 월 초과는 경고만, FALSE 면 월 한도도 하드 차단.</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/cohort_copayRate">
+        <rdfs:label>본인부담률</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>본인부담률 — 3차 0.10, 1·2차 0(제도에 없었음). 승인금액에 곱하고 copayMax 로 자른다.</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/cohort_copayMax">
+        <rdfs:label>본인부담금 상한</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>본인부담금 상한 — 3차 240,000. NULL 이면 상한 없음.</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/cohort_appealDueDays">
+        <rdfs:label>이의신청 기한 일수</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:comment>이의신청 기한 일수 — ★ NULL 이면 심사처가 아직 알려주지 않은 것이므로 기한을 계산하지 않는다. 근거 없는 기본값(예: 14)을 두면 당사자가 실제 기한을 오해한다. 모르면 모른다고 둔다.</rdfs:comment>
+        <ont:propertyType>integer</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_participantName">
+        <rdfs:label>참여자 명</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>참여자 명</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_birthDate">
+        <rdfs:label>생년월일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>생년월일</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_gender">
+        <rdfs:label>성별</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>성별 — male | female</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_registeredAddress">
+        <rdfs:label>주민등록상 주소</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>주민등록상 주소 — 도로명 주소. 서울시 거주 요건 확인에 쓰인다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_actualAddress">
+        <rdfs:label>실거주지</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>실거주지 — 주민등록상 주소와 다를 경우만 기재.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_contactNumber">
+        <rdfs:label>연락처</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>연락처</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_emergencyContact">
+        <rdfs:label>비상연락망</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>비상연락망</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/disabilityProfile_primaryDisabilityType">
+        <rdfs:label>주장애유형</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/DisabilityProfile"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>주장애유형</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/disabilityProfile_disabilitySeverity">
+        <rdfs:label>장애정도</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/DisabilityProfile"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>장애정도 — severe(심한 장애, 1~3급) | mild(심하지 않은 장애, 4~6급). ★ 서울형은 중증만 대상이므로 severe 가 자격 요건.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/disabilityProfile_secondaryDisabilityType">
+        <rdfs:label>중복장애유형</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/DisabilityProfile"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>중복장애유형</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/disabilityProfile_acquiredDisabilityAge">
+        <rdfs:label>중도장애 발생시기</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/DisabilityProfile"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>중도장애 발생시기 — none | under20 | 20s | 30s | 40s | 50s | 60s</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/benefitStatus_publicAssistance">
+        <rdfs:label>공공부조 수급현황</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BenefitStatus"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>공공부조 수급현황 — basic_livelihood(기초생활수급) | near_poor(차상위·조건부수급) | none(해당없음)</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/benefitStatus_usesActivitySupport">
+        <rdfs:label>활동지원서비스 이용여부</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BenefitStatus"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>활동지원서비스 이용여부</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/benefitStatus_usesSeoulAdditionalSupport">
+        <rdfs:label>서울시 활동지원 추가지원 이용여부</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BenefitStatus"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>서울시 활동지원 추가지원 이용여부</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/benefitStatus_participatesInMohwPilot">
+        <rdfs:label>보건복지부 시범사업 참여여부</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BenefitStatus"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>보건복지부 시범사업 참여여부 — 신청서에 &quot;복지부 시범사업 참여자는 서울형 참여 불가&quot;로 명시되어 있다. ★ 그러나 앱은 이것으로 선정을 차단하지 않는다(차단 트리거 제거). 확인의 정본은 수행기관이므로, 앱은 선정 화면에 &quot;복지부 참여로 기록됨&quot; 경고만 띄운다. 오래되거나 잘못 입력된 체크박스로 저장을 막으면 자격을 이미 확인해 선정하려는 실무가 막힌다. 지원 불가 항목과 같은 원칙: 앱은 명시·기록, 판정은 사람.</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/application_receiptNumber">
+        <rdfs:label>접수번호</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>접수번호</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/application_applicationDate">
+        <rdfs:label>신청일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>신청일</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/application_applicantSignature">
+        <rdfs:label>신청자 서명</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>신청자 서명 — 서명 이미지 경로 또는 전자서명 값. 신청서 하단 &quot;(서명 또는 인)&quot;.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/applicationDocument_docType">
+        <rdfs:label>서류 종류</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ApplicationDocument"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>서류 종류 — application_form(신청서) | consent_form(동의서) | other.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/applicationDocument_docFileName">
+        <rdfs:label>파일 이름</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ApplicationDocument"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>파일 이름</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/applicationDocument_docStoragePath">
+        <rdfs:label>저장 경로</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ApplicationDocument"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>저장 경로 — documents 버킷(private) 경로. &#x27;{participant_id}/...&#x27; 규칙을 지켜야 소유자 기반 접근 제어가 작동한다. 공개 URL 이 아니라 경로만 저장한다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/proxy_proxyName">
+        <rdfs:label>대리인 성명</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Proxy"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>대리인 성명</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/proxy_relationToParticipant">
+        <rdfs:label>신청자와의 관계</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Proxy"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>신청자와의 관계</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_consentType">
+        <rdfs:label>동의 종류</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>동의 종류 — general(개인정보·민감정보 수집·이용) | unique_id(고유식별정보 별도 동의). 서식이 두 건을 따로 받으므로 행도 두 개다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_isAgreed">
+        <rdfs:label>동의 여부</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>동의 여부</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_consentDate">
+        <rdfs:label>동의일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>동의일</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_signedByProxy">
+        <rdfs:label>대리 서명 여부</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>대리 서명 여부 — ★ 당사자 본인이 동의했는지 대리인이 대신했는지를 남긴다. 자기결정권이 핵심인 제도에서 이 구분이 사라지면 안 된다.</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_retentionPeriodNote">
+        <rdfs:label>보유·이용기간</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>보유·이용기간 — 서식상 &quot;사업 및 성과평가에 필요한 기간&quot;. 종료일이 특정되지 않으므로 파기 시점 관리를 위해 원문을 보존한다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_withdrawnAt">
+        <rdfs:label>동의 철회일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+        <rdfs:comment>동의 철회일 — ★ 서식에는 없지만 개인정보보호법상 철회권이 있으므로 필드를 둔다. 철회 시 이후 처리를 막는 근거가 된다.</rdfs:comment>
+        <ont:propertyType>dateTime</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selectionDecision_isSelected">
+        <rdfs:label>선정 여부</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelectionDecision"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>선정 여부</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selectionDecision_selectionReason">
+        <rdfs:label>선정·미선정 사유</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelectionDecision"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>선정·미선정 사유</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selectionDecision_selectionDate">
+        <rdfs:label>선정일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelectionDecision"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>선정일</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/utilizationPlan_planStatus">
+        <rdfs:label>계획 상태</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>계획 상태 — draft(작성중) | submitted(제출) | under_review(심의중) | approved(승인) | conditional(조건부승인) | rejected(부결) | under_appeal(이의신청중). ⚠️ 서울형 실제 운영 규정과 대조 필요.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/utilizationPlan_planPeriodStart">
+        <rdfs:label>이용 시작일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>이용 시작일</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/utilizationPlan_planPeriodEnd">
+        <rdfs:label>이용 종료일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>이용 종료일 — 확인된 자료상 참여기간 6개월.</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/utilizationPlan_authoredWithSupport">
+        <rdfs:label>작성 지원 수준</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>작성 지원 수준 — self(스스로) | with_support(도움받아 함께) | by_supporter(지원자가 주로 작성). ★ 자동 추정 후 실무자가 한 번 클릭으로 보정. 개인예산제 성과평가에서 &quot;얼마나 주도적이었나&quot;의 1차 지표가 된다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_strengthsTalents">
+        <rdfs:label>나의 재능·강점·기술</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>나의 재능·강점·기술</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_socialBarriers">
+        <rdfs:label>장애로 인한 사회적 제한·어려움</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>장애로 인한 사회적 제한·어려움</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_desiredChange">
+        <rdfs:label>내가 원하는 변화와 지원</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>내가 원하는 변화와 지원</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_desiredLife">
+        <rdfs:label>내가 원하는 삶의 모습</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>내가 원하는 삶의 모습 — 희망·꿈·바라는 바·관심사.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_goalToTry">
+        <rdfs:label>시도하고 싶은 것</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>시도하고 싶은 것 — 1~2년 내 이루고자 하는 목표. 목표 연관성 판단의 근거가 된다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_writtenInFirstPerson">
+        <rdfs:label>1인칭 작성 여부</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>1인칭 작성 여부 — ★ 서식은 &quot;나의 ~&quot;로 되어 있는데 실제로는 실무자가 3인칭으로 대필하는 경우가 흔하다. 이 값을 남겨 두면 나중에 서식 취지가 지켜졌는지 점검할 수 있다.</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/requestedService_servicePriority">
+        <rdfs:label>우선순위</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:comment>우선순위 — 서식의 구분 1·2·3.</rdfs:comment>
+        <ont:propertyType>integer</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/requestedService_serviceName">
+        <rdfs:label>서비스 명</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>서비스 명</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/requestedService_estimatedCost">
+        <rdfs:label>예상 비용</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>예상 비용 — 서식에는 없으나 심의와 한도 검증에 필요하다. 없으면 심의가 금액 감각 없이 판단하게 된다.</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/requestedService_approvedForService">
+        <rdfs:label>심의 승인 여부</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>심의 승인 여부 — 항목 단위 승인. 조건부승인 시 일부만 승인되는 경우를 담는다.</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceDomain_domainCode">
+        <rdfs:label>영역 코드</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceDomain"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>영역 코드 — daily_living | social_life | employment | self_development | health_safety | housing</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceDomain_domainLabel">
+        <rdfs:label>영역 이름</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceDomain"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>영역 이름</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceDomain_domainDescription">
+        <rdfs:label>영역 설명</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceDomain"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>영역 설명</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/planReview_reviewDecision">
+        <rdfs:label>심의 결정</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>심의 결정 — approved | conditional | rejected</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/planReview_reviewReason">
+        <rdfs:label>결정 사유</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>결정 사유 — ★ 부결·조건부일 때 필수. 사유 없는 부결은 이의신청을 불가능하게 만든다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/planReview_reviewDate">
+        <rdfs:label>심의일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>심의일</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/notification_notifiedOn">
+        <rdfs:label>통지일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Notification"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>통지일 — ★ 이의신청 기한의 기산점.</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/notification_notificationMethod">
+        <rdfs:label>통지 방법</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Notification"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>통지 방법 — mail | sms | in_person | app. 동의서에 문자메시지 발송 목적이 포함되어 있다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/notification_isReadByParticipant">
+        <rdfs:label>참여자 확인 여부</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Notification"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>참여자 확인 여부 — 발송했다고 전달된 것은 아니다. 발달장애인 대상 사업이라면 확인 여부까지 봐야 한다.</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealFiledOn">
+        <rdfs:label>이의신청일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>이의신청일</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealGround">
+        <rdfs:label>이의 사유</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>이의 사유</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealFiledBySelf">
+        <rdfs:label>본인 제기 여부</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>본인 제기 여부</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealDueOn">
+        <rdfs:label>처리 기한</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>처리 기한 — 트리거가 통지일 + 차수(Cohort)의 appealDueDays 로 채운다. ★ 차수가 일수를 주지 않으면(NULL) 비워 둔다. 상수(예: 14일)로 박으면 당사자가 실제 기한을 오해한다.</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealOutcome">
+        <rdfs:label>이의신청 결과</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>이의신청 결과 — pending | upheld(인용) | partially_upheld(일부 인용) | dismissed(기각)</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_totalCeiling">
+        <rdfs:label>총 한도액</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>총 한도액 — 확인된 자료상 240만원(1·2차). 차수별로 다르므로 행에 저장한다.</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_monthlyCeiling">
+        <rdfs:label>월 한도액</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>월 한도액 — 확인된 자료상 40만원(2025년 40~50만원).</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_periodMonths">
+        <rdfs:label>지원 개월수</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:comment>지원 개월수</rdfs:comment>
+        <ont:propertyType>integer</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_carryOverAllowed">
+        <rdfs:label>이월 허용 여부</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:comment>이월 허용 여부 — 3차 안내문 기준 TRUE(현금 월별 지급이 아니라 총액 차감 구조라 &quot;이번 달 미사용액을 다음 달로&quot;라는 개념이 성립하지 않는다). TRUE 면 총액만 강제하고 월 초과는 경고만, FALSE(월별 지급 차수) 면 월 한도도 하드 차단. 배정 시점에 차수(Cohort.cohortCarryOver)에서 복사해 온다.</rdfs:comment>
+        <ont:propertyType>boolean</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_allocatedAmount">
+        <rdfs:label>승인금액</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>승인금액 — 심의가 실제로 승인한 금액. ★ 잔액과 본인부담금의 기준이 총 한도가 아니라 이 값이다(CHECK: allocatedAmount ≤ totalCeiling). 240만 차수에서 150만만 승인되면 쓸 수 있는 돈은 150만이다.</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_copayAmount">
+        <rdfs:label>본인부담금</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>본인부담금 — 승인 시점에 확정된다(승인금액 × 차수 부담률, 상한 적용). ★ 잔액과 다른 축의 청구다 — 쓸 수 있는 서비스 금액은 승인금액 그대로이고, 부담금은 그와 별도로 발생한다(수행기관이 제공기관에 대신 지급하는 구조). DB 트리거가 계산하며 수기 입력은 덮어쓰인다.</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_copayStatus">
+        <rdfs:label>부담금 상태</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>부담금 상태 — not_applicable(부담률 없는 차수) | exempt_basic_livelihood(기초생활수급 면제) | exempt_near_poor(차상위 면제) | charged(부과) | unverified(수급 구분 확인 전). ★ 금액만 두면 &quot;0원&quot;이 면제인지 제도 없음인지 구분되지 않으므로 상태를 따로 둔다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_usageDate">
+        <rdfs:label>이용일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>이용일</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_usageAmount">
+        <rdfs:label>이용 금액</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>이용 금액</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_usageDescription">
+        <rdfs:label>이용 내용</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>이용 내용</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_decidedBySelf">
+        <rdfs:label>결정 주체</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>결정 주체 — self | self_with_support | suggested_accepted | by_supporter. ★ 입력자(creator)와 결정자를 구분한다. 실무자가 대신 입력한 것과 실무자가 대신 결정한 것은 전혀 다르다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_settlementStatus">
+        <rdfs:label>정산 상태</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>정산 상태 — pending(검토대기) | accepted(인정) | rejected(불인정) | recovered(환수)</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/receipt_receiptStoragePath">
+        <rdfs:label>영수증 저장 경로</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Receipt"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>영수증 저장 경로 — private 버킷 경로. 공개 URL 이 아니라 경로를 저장하고 조회 시 signed URL 을 생성한다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/receipt_receiptIssuedOn">
+        <rdfs:label>영수증 발행일</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Receipt"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>영수증 발행일</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/receipt_receiptAmount">
+        <rdfs:label>영수증 금액</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Receipt"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>영수증 금액 — 이용 금액과 불일치하면 정산 검토 대상이 된다.</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceProvider_providerName">
+        <rdfs:label>제공처 이름</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceProvider"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>제공처 이름</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceProvider_businessNumber">
+        <rdfs:label>사업자등록번호</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceProvider"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>사업자등록번호</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/spendingRule_ruleKind">
+        <rdfs:label>규칙 종류</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>규칙 종류 — prohibition(지원 불가로 안내되는 항목) | criterion(사람이 판단할 요건). ★ 종류는 여기서 나누고, 실제로 차단/경고/기록 중 무엇을 할지는 ruleEnforcement 가 정한다. 서울형 시드는 어떤 규칙도 차단(block)을 쓰지 않는다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/spendingRule_ruleLabel">
+        <rdfs:label>규칙 이름</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>규칙 이름</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/spendingRule_ruleSourceNote">
+        <rdfs:label>근거</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>근거 — 어느 지침 몇 조에서 온 규칙인지. 근거 없는 규칙은 이의신청에서 무너진다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/spendingRule_ruleEnforcement">
+        <rdfs:label>적용 방식</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>적용 방식 — block(저장 차단) | warn(경고 후 진행 가능) | flag(기록만, 검토 목록에 노출). ★ 서울형 시드는 flag/warn 만 쓴다. block 은 차수마다 운영이 다를 수 있어 메커니즘만 남겨 둔 것이고, 실제로 쓰면 롤백 때문에 &quot;무엇이 왜 막혔는지&quot;를 남길 수 없다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ruleCheck_checkResult">
+        <rdfs:label>검증 결과</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RuleCheck"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>검증 결과 — pass | needs_review. ★ &#x27;blocked&#x27; 은 없앴다 — 차단은 트랜잭션 롤백이라 이 표에 행이 남을 수 없다. 지원 불가 항목은 차단이 아니라 needs_review 로 기록되고, 판정은 human_decision 으로 사람이 한다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ruleCheck_humanDecision">
+        <rdfs:label>실무자 최종 판단</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RuleCheck"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>실무자 최종 판단 — accepted | rejected | pending. ★ 시스템 판정과 사람 판단을 다른 컬럼에 둔다. 같은 칸에 쓰면 누가 정했는지 사라진다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ruleCheck_humanDecisionReason">
+        <rdfs:label>판단 사유</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RuleCheck"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>판단 사유</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_settledPeriod">
+        <rdfs:label>정산 대상 기간</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>정산 대상 기간</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_acceptedAmount">
+        <rdfs:label>인정액</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>인정액</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_rejectedAmount">
+        <rdfs:label>불인정액</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>불인정액</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_recoveredAmount">
+        <rdfs:label>환수액</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>환수액</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_unusedAmount">
+        <rdfs:label>미사용액</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+        <rdfs:comment>미사용액 — ★ 미사용은 실패가 아니다. 다만 &quot;쓸 곳을 못 찾아서&quot;인지 &quot;필요가 없어서&quot;인지는 다른 이야기이므로 모니터링 기록과 함께 읽어야 한다.</rdfs:comment>
+        <ont:propertyType>decimal</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/monitoringRecord_monitoringDate">
+        <rdfs:label>모니터링 일자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:comment>모니터링 일자</rdfs:comment>
+        <ont:propertyType>date</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/monitoringRecord_monitoringMethod">
+        <rdfs:label>확인 방법</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>확인 방법 — visit(방문) | phone(전화) | app(앱 기록 확인) | document(서류)</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/monitoringRecord_observedChange">
+        <rdfs:label>관찰된 변화</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>관찰된 변화 — ★ 서울형에는 4+1 같은 정형 평가가 없다. 성과평가에 쓸 변화 기록은 사실상 여기뿐이므로 자유 서술이라도 반드시 남긴다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/monitoringRecord_participantVoice">
+        <rdfs:label>참여자가 한 말</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>참여자가 한 말 — 실무자의 관찰과 당사자 본인의 말을 다른 칸에 적는다. 섞으면 누구의 평가인지 사라진다.</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/administeringBody_bodyName">
+        <rdfs:label>기관명</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/AdministeringBody"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>기관명</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/administeringBody_bodyRole">
+        <rdfs:label>역할</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/AdministeringBody"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>역할 — city(서울시) | district(자치구) | foundation(한국장애인재단)</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/executingAgency_agencyName">
+        <rdfs:label>수행기관명</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ExecutingAgency"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>수행기관명</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/reviewCommittee_committeeName">
+        <rdfs:label>위원회명</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ReviewCommittee"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>위원회명</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/caseworker_caseworkerName">
+        <rdfs:label>담당자명</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Caseworker"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>담당자명</rdfs:comment>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/participant_participantId">
+        <rdfs:label>참여자 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Participant"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>참여자 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/proxy_proxyId">
+        <rdfs:label>대리인 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Proxy"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>대리인 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/disabilityProfile_disabilityProfileId">
+        <rdfs:label>장애 정보 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/DisabilityProfile"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>장애 정보 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/benefitStatus_benefitStatusId">
+        <rdfs:label>수급 현황 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BenefitStatus"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>수급 현황 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/application_applicationId">
+        <rdfs:label>신청서 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Application"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>신청서 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/consentRecord_consentRecordId">
+        <rdfs:label>개인정보 동의 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ConsentRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>개인정보 동의 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selectionDecision_selectionDecisionId">
+        <rdfs:label>참여자 선정 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelectionDecision"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>참여자 선정 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/utilizationPlan_utilizationPlanId">
+        <rdfs:label>개인예산 이용계획 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/UtilizationPlan"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>개인예산 이용계획 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/selfNarrative_selfNarrativeId">
+        <rdfs:label>나의 상황 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SelfNarrative"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>나의 상황 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/requestedService_requestedServiceId">
+        <rdfs:label>지원받고 싶은 서비스 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RequestedService"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>지원받고 싶은 서비스 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceDomain_serviceDomainId">
+        <rdfs:label>서비스 영역 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceDomain"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>서비스 영역 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/planReview_planReviewId">
+        <rdfs:label>계획 심의 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/PlanReview"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>계획 심의 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/reviewCommittee_reviewCommitteeId">
+        <rdfs:label>심의 주체 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ReviewCommittee"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>심의 주체 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/notification_notificationId">
+        <rdfs:label>결과 통지 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Notification"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>결과 통지 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/appeal_appealId">
+        <rdfs:label>이의신청 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Appeal"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>이의신청 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/budgetAllocation_budgetAllocationId">
+        <rdfs:label>예산 배정 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/BudgetAllocation"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>예산 배정 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceUsage_serviceUsageId">
+        <rdfs:label>서비스 이용 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceUsage"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>서비스 이용 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/receipt_receiptId">
+        <rdfs:label>영수증 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Receipt"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>영수증 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/serviceProvider_serviceProviderId">
+        <rdfs:label>서비스 제공처 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ServiceProvider"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>서비스 제공처 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/spendingRule_spendingRuleId">
+        <rdfs:label>지출 규칙 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/SpendingRule"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>지출 규칙 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ruleCheck_ruleCheckId">
+        <rdfs:label>규칙 검증 결과 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/RuleCheck"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>규칙 검증 결과 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/settlement_settlementId">
+        <rdfs:label>정산 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Settlement"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>정산 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/monitoringRecord_monitoringRecordId">
+        <rdfs:label>모니터링 기록 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/MonitoringRecord"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>모니터링 기록 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/administeringBody_administeringBodyId">
+        <rdfs:label>시행 주체 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/AdministeringBody"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>시행 주체 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/executingAgency_executingAgencyId">
+        <rdfs:label>수행기관 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ExecutingAgency"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>수행기관 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/caseworker_caseworkerId">
+        <rdfs:label>담당자 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Caseworker"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>담당자 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/cohort_cohortId">
+        <rdfs:label>차수 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/Cohort"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>차수 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/seoul-personal-budget-scheme-ontology/applicationDocument_applicationDocumentId">
+        <rdfs:label>신청 서류 식별자</rdfs:label>
+        <rdfs:domain rdf:resource="http://example.org/ontology/seoul-personal-budget-scheme-ontology/ApplicationDocument"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>신청 서류 식별자 — 고유 식별자. SQL 의 id UUID PRIMARY KEY 에 대응한다.</rdfs:comment>
+        <ont:isIdentifier rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</ont:isIdentifier>
+        <ont:propertyType>string</ont:propertyType>
+    </owl:DatatypeProperty>
 
 </rdf:RDF>

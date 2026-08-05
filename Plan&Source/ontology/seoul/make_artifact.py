@@ -10,8 +10,9 @@ RDF='{http://www.w3.org/1999/02/22-rdf-syntax-ns#}'
 RDFS='{http://www.w3.org/2000/01/rdf-schema#}'
 OWL='{http://www.w3.org/2002/07/owl#}'
 
-GROUPS=[("참여자와 자격",["Participant","Proxy","DisabilityProfile","BenefitStatus"],"신청서 인적사항에서 나온 것들"),
-        ("신청",["Application","ConsentRecord","SelectionDecision"],"절차 1·2단계"),
+GROUPS=[("제도·차수",["Cohort"],"금액·기간·기한을 코드가 아닌 데이터로"),
+        ("참여자와 자격",["Participant","Proxy","DisabilityProfile","BenefitStatus"],"신청서 인적사항에서 나온 것들"),
+        ("신청",["Application","ApplicationDocument","ConsentRecord","SelectionDecision"],"절차 1·2단계"),
         ("이용계획",["UtilizationPlan","SelfNarrative","RequestedService","ServiceDomain"],"절차 3단계"),
         ("심의와 권리구제",["PlanReview","ReviewCommittee","Notification","Appeal"],"절차 4·5단계"),
         ("예산과 집행",["BudgetAllocation","ServiceUsage","Receipt","ServiceProvider"],"절차 6단계"),

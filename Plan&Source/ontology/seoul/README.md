@@ -5,8 +5,9 @@
 
 | 파일 | 내용 |
 |---|---|
-| `seoul_ontology.rdf` | **온톨로지 정본**(영문 라벨). 클래스 26 / 관계 46 / 속성 120 / 고아 노드 0 |
-| `seoul_ontology_ko.rdf` | **한글 라벨판** — Playground 로 보기용. `to_korean_labels.py` 가 생성 |
+| `seoul_ontology.rdf` | **온톨로지 정본**(영문 라벨). 클래스 28 / 관계 49 / 속성 135 / 고아 노드 0. `supabase/seoul/`(01·03·05) 정본 스키마 기준 |
+| `seoul_ontology_ko.rdf` | **한글 라벨판** — Playground 로 보기용. `make_ko_rdf.py`(정본에서 오프라인 생성) 또는 `to_korean_labels.py`(Playground 내보내기 변환) 가 생성 |
+| `make_ko_rdf.py` → `seoul_ontology_ko.rdf` | 정본 RDF 를 한글 라벨판으로 옮긴다. Playground 왕복 없이 오프라인에서. 스타일(아이콘·색·카디널리티)은 기존 ko 에서 보존 |
 | `to_korean_labels.py` | Playground 내보내기 파일의 라벨을 한글로 변환 |
 | `seoul_schema_draft.sql` | SQL 스키마 **초안**. ⚠️ 그대로 실행하지 마세요 |
 | `seoul_graph_overlay.sql` | 그래프 오버레이 — 외래키를 트리플로 투영해 경로 탐색을 가능하게 함 |

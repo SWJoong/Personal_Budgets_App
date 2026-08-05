@@ -12,42 +12,46 @@ Ontology Playground 는 이름이 ASCII 로 시작·끝나고 26자 이내여야
 
 ```mermaid
 flowchart LR
-  subgraph g1["참여자·자격"]
+  subgraph g1["제도·차수"]
+    Cohort["시범사업 차수"]
+  end
+  subgraph g2["참여자·자격"]
     Participant["참여자"]
     Proxy["대리인"]
     DisabilityProfile["장애 정보"]
     BenefitStatus["수급 현황"]
   end
-  subgraph g2["신청"]
+  subgraph g3["신청"]
     Application["신청서"]
+    ApplicationDocument["신청서·동의서 원본 파일"]
     ConsentRecord["개인정보 동의"]
     SelectionDecision["참여자 선정"]
   end
-  subgraph g3["이용계획"]
+  subgraph g4["이용계획"]
     UtilizationPlan["개인예산 이용계획"]
     SelfNarrative["나의 상황"]
     RequestedService["지원받고 싶은 서비스"]
     ServiceDomain["서비스 영역"]
   end
-  subgraph g4["심의·권리구제"]
+  subgraph g5["심의·권리구제"]
     PlanReview["계획 심의"]
     ReviewCommittee["심의 주체"]
     Notification["결과 통지"]
     Appeal["이의신청"]
   end
-  subgraph g5["예산·집행"]
+  subgraph g6["예산·집행"]
     BudgetAllocation["예산 배정"]
     ServiceUsage["서비스 이용"]
     Receipt["영수증"]
     ServiceProvider["서비스 제공처"]
   end
-  subgraph g6["규칙·정산"]
+  subgraph g7["규칙·정산"]
     SpendingRule["지출 규칙"]
     RuleCheck["규칙 검증 결과"]
     Settlement["정산"]
     MonitoringRecord["모니터링 기록"]
   end
-  subgraph g7["기관"]
+  subgraph g8["기관"]
     AdministeringBody["시행 주체"]
     ExecutingAgency["수행기관"]
     Caseworker["담당자"]
@@ -62,7 +66,9 @@ flowchart LR
   Application -->|"동의서를 포함한다"| ConsentRecord
   Application -->|"접수된다"| ExecutingAgency
   Application -->|"선정 결과로 이어진다"| SelectionDecision
-  SelectionDecision -->|"결정 주체"| AdministeringBody
+  SelectionDecision -->|"선정을 결정한다"| AdministeringBody
+  Application -->|"차수에 신청한다"| Cohort
+  Application -->|"원본 서식을 보관한다"| ApplicationDocument
   Participant -->|"계획을 세운다"| UtilizationPlan
   Caseworker -->|"계획 수립을 돕는다"| UtilizationPlan
   UtilizationPlan -->|"신청서에 근거한다"| Application
@@ -71,7 +77,7 @@ flowchart LR
   SelfNarrative -->|"서비스 선택의 근거가 된다"| RequestedService
   RequestedService -->|"영역으로 분류된다"| ServiceDomain
   UtilizationPlan -->|"심의를 받는다"| PlanReview
-  PlanReview -->|"심의 주체"| ReviewCommittee
+  PlanReview -->|"심의를 맡는다"| ReviewCommittee
   PlanReview -->|"통지를 발송한다"| Notification
   Notification -->|"통지받는다"| Participant
   Participant -->|"이의를 제기한다"| Appeal
@@ -80,6 +86,7 @@ flowchart LR
   PlanReview -->|"예산을 승인한다"| BudgetAllocation
   BudgetAllocation -->|"배정된다"| Participant
   BudgetAllocation -->|"재원을 댄다"| AdministeringBody
+  BudgetAllocation -->|"차수의 규정을 따른다"| Cohort
   Participant -->|"서비스를 이용한다"| ServiceUsage
   ServiceUsage -->|"예산에서 차감된다"| BudgetAllocation
   ServiceUsage -->|"계획 항목을 이행한다"| RequestedService
@@ -150,6 +157,20 @@ flowchart TD
 
 ## 각 개체가 기록하는 것
 
+### 제도·차수
+
+**시범사업 차수** `Cohort`
+
+- 차수 코드 `cohortCode`
+- 차수 이름 `cohortName`
+- 지원 개월수 `cohortPeriodMonths`
+- 월 한도 기본값 `cohortMonthlyCeiling`
+- 총 한도 기본값 `cohortTotalCeiling`
+- 월 미사용액 이월 허용 `cohortCarryOver`
+- 본인부담률 `copayRate`
+- 본인부담금 상한 `copayMax`
+- 이의신청 기한 일수 `appealDueDays`
+
 ### 참여자·자격
 
 **참여자** `Participant`
@@ -187,8 +208,13 @@ flowchart TD
 
 - 접수번호 `receiptNumber`
 - 신청일 `applicationDate`
-- 시범사업 차수 `cohort`
 - 신청자 서명 `applicantSignature`
+
+**신청서·동의서 원본 파일** `ApplicationDocument`
+
+- 서류 종류 `docType`
+- 파일 이름 `docFileName`
+- 저장 경로 `docStoragePath`
 
 **개인정보 동의** `ConsentRecord`
 
@@ -270,7 +296,9 @@ flowchart TD
 - 월 한도액 `monthlyCeiling`
 - 지원 개월수 `periodMonths`
 - 이월 허용 여부 `carryOverAllowed`
-- 배정 확정액 `allocatedAmount`
+- 승인금액 `allocatedAmount`
+- 본인부담금 `copayAmount`
+- 부담금 상태 `copayStatus`
 
 **서비스 이용** `ServiceUsage`
 

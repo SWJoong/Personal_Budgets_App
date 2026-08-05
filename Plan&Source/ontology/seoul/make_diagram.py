@@ -15,8 +15,9 @@ OWL ='{http://www.w3.org/2002/07/owl#}'
 
 # 7개 군 — 설계 문서 §3.1 과 같은 분류
 GROUPS = [
+    ("제도·차수",   ["Cohort"]),
     ("참여자·자격", ["Participant","Proxy","DisabilityProfile","BenefitStatus"]),
-    ("신청",       ["Application","ConsentRecord","SelectionDecision"]),
+    ("신청",       ["Application","ApplicationDocument","ConsentRecord","SelectionDecision"]),
     ("이용계획",   ["UtilizationPlan","SelfNarrative","RequestedService","ServiceDomain"]),
     ("심의·권리구제",["PlanReview","ReviewCommittee","Notification","Appeal"]),
     ("예산·집행",  ["BudgetAllocation","ServiceUsage","Receipt","ServiceProvider"]),
