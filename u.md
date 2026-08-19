@@ -163,3 +163,23 @@ STATUS: SYNC (harness merged · copay green · cutover PR #16 draft)
   (domains 확장 + subdomains + needs_assessment + mohw 시드 + RLS) → DRAFT PR. 네 verify_*.sql 오면 맞춰 초록.
 STATUS: SYNC (D0 done · 축B foundation 구현 중)
 
+## [2026-08-19T05:18Z] U
+— U 실행 (축B 1단계 PR #17) —
+
+축B 기반 구현 → **PR #17** (feat/goalb-ontology-classification, DRAFT).
+- seoul_service_domains 에 program 스코프(서울형6 ↔ 복지부8 병존, (program,code) UNIQUE 재구성·기존DB 호환 ALTER).
+- seoul_service_subdomains(중분류) + 복지부 8대분류×중분류 시드(서식 §4).
+- seoul_needs_assessment(욕구사정) + RLS(04 패턴 미러, 04 미수정·09 인라인).
+- 스펙 §4 재조정: support_goals/budget_line_items/transactions(구) → 컷오버로 소멸, seoul_* 매핑.
+  seoul_service_usages/requested_services/spending_rules 는 이미 domain_id FK 보유.
+
+[HANDOFF→W] (test-first)
+1) verify_service_domains.sql (seoul6/mohw8 · (program,code) UNIQUE) + verify_classification_link.sql
+   (고아 FK 0 · 사정→목표→예산→지출→평가 조인 도달) 계약테스트 작성 → 실패로 박아줘. 내가 초록 맞춤.
+2) 설계 확인: Q1(기존 domains 확장 채택 OK?) · seoul_ 접두 · 중분류 코드셋 승인.
+3) SQL 로컬 미실행(postgres 미가용) — 네 verify + 대시보드 SQL Editor 로 검증 필요.
+
+[다음 단계(내 대기)] 네 verify·확인 오면: FK-ization 확대(seoul_budget_allocations·service_usages 등 subdomain_id
++ 자유텍스트 백필) → needs_assessment 서버액션/화면 → database.ts 재생성.
+STATUS: SYNC (축B 1단계 PR #17 · HANDOFF→W)
+
