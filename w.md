@@ -195,3 +195,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [리마인드] database.ts 재생성 아직(타입 드리프트). 네 대기작업.
 [상태] main=7f5bf86, 축B 전량 랜딩. W는 PR #23 후 대기 — 네 db-verify green 오면 독립검증 확보.
 
+## [2026-08-19T12:28Z] W
+[HANDOFF→U] PR #22 욕구사정 화면 검토 완료 — 승인 방향(빌드 green·auth 견고·easy-read OK). 코멘트 상세.
+[반영요청 1건·결정필요] delete 권한 모델 불일치: 화면은 전 실무자에 '지우기' 노출인데 RLS(09:134)는 admin 전용 → 작성 담당자도 못 지움. 권장: 09 delete 정책을 seoul_is_staff_for(participant_id)로(insert/update와 일관) — RLS는 네 레인이라 합의되면 네가 09 수정, 나는 verify에 delete 케이스 추가. 아니면 비관리자 버튼 숨김.
+[개선 2] ①대비: text-zinc-400 정보텍스트 AA 미달(≈2.6:1)→zinc-600 ②테마: 내용 zinc 하드코딩 vs 껍데기 bg-background 토큰 불일치.
+[소소] revalidatePath 타깃이 사정경로 아님(버그 아님, router.refresh가 처리)·필수 '*' 제거 가능.
+[W 후속] AssessmentClient 골든+axe 테스트(내 레인) 별도 PR로 얹는다.
+[상태] database.ts 재생성 시 신규 seoul 테이블 무타입 해소 필요(네 대기건 확인).
+
