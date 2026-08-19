@@ -1,5 +1,10 @@
 # Personal Budgets App — Claude Code 가이드
 
+> **`claude/seoul-personal-budget-rebuild` 브랜치 작업 중이라면**: 아래 "데모 모드"(고정 UUID·쿠키
+> 스푸핑)와 "데이터베이스 마이그레이션"(`supabase/migrations/`) 절은 이 브랜치에서 **적용되지 않습니다**.
+> 이 브랜치는 실제 시드 계정으로 로그인하고(`src/app/actions/demoAuth.ts`), DB 는
+> `supabase/seoul/`(코어 + 서울형 26테이블)이 정본입니다. 자세한 내용은 `supabase/seoul/README.md` 참조.
+
 ## 프로젝트 개요
 
 발달장애인을 위한 **개인예산 관리 앱**. 사회복지 기관(복지관·지원주택)의 실무자(지원자)가
@@ -170,7 +175,11 @@ export async function myAction(formData: FormData) {
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 클라이언트용 anon 키 |
 | `SUPABASE_SERVICE_ROLE_KEY` | 서버 전용 서비스 롤 키 (절대 노출 금지) |
-| `NEXT_PUBLIC_DEMO_MODE` | `"true"` = 데모 모드 활성화 |
+| `NEXT_PUBLIC_SITE_URL` | 로그인 콜백 리디렉션에 사용하는 배포 도메인 |
+| `SUPER_ADMIN_EMAIL` | 이 이메일은 첫 로그인 시 무조건 관리자로 지정 |
+| `ALLOWED_EMAIL_DOMAINS` | 실무자로 자동 인식할 이메일 도메인(쉼표 구분). 미설정 시 아무도 자동 허용 안 됨 |
+| `NEXT_PUBLIC_DEMO_MODE` | `"true"` = 데모 모드 활성화 (서울형 리빌딩 브랜치에서는 미사용) |
+| `NEXT_PUBLIC_DEMO_LOGIN_ENABLED` | `"true"` = `/login`에 데모 계정 버튼 노출 (서울형 리빌딩 브랜치) |
 | `OPENAI_API_KEY` | GPT-4o (OCR, AI 요약) |
 | `NEXT_PUBLIC_KAKAO_MAP_API_KEY` | 카카오 지도 JS SDK |
 | `KAKAO_REST_API_KEY` | 카카오 장소 검색 REST API |

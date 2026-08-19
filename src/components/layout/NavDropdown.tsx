@@ -9,14 +9,16 @@ type NavItem = {
   href: string
   icon: string
   label: string
-  subs?: { href: string; icon: string; label: string }[]
+  soon?: boolean
+  subs?: { href: string; icon: string; label: string; soon?: boolean }[]
 }
 
+// soon: true 인 항목은 아직 서울형 데이터로 다시 만들지 않아 ComingSoon 화면으로 이어진다.
 const NAV_ITEMS: NavItem[] = [
   { href: '/',         icon: '🏠', label: '홈' },
   { href: '/receipt',  icon: '🧾', label: '영수증' },
   { href: '/calendar', icon: '📅', label: '달력' },
-  { href: '/plan',     icon: '🤔', label: '나의 계획' },
+  { href: '/plan',     icon: '🤔', label: '나의 계획', soon: true },
   { href: '/gallery',  icon: '📸', label: '사진 모아보기' },
   { href: '/map',      icon: '🗺️', label: '사용 장소 지도' },
   {
@@ -24,13 +26,21 @@ const NAV_ITEMS: NavItem[] = [
     icon: '⚙️',
     label: '더보기',
     subs: [
-      { href: '/my-plan',              icon: '🎯', label: '내 목표 보기' },
-      { href: '/evaluations',          icon: '💌', label: '지원자 선생님의 편지' },
+      { href: '/my-plan',              icon: '🎯', label: '내 이용계획' },
+      { href: '/evaluations',          icon: '💌', label: '지원자 선생님의 편지', soon: true },
       { href: '/more?open=display',    icon: '🌗', label: '화면 설정' },
       { href: '/more?open=files',      icon: '📁', label: '내 서류함' },
     ],
   },
 ]
+
+function SoonBadge() {
+  return (
+    <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+      준비중
+    </span>
+  )
+}
 
 export default function NavDropdown() {
   const [isOpen, setIsOpen] = useState(false)
@@ -102,6 +112,7 @@ export default function NavDropdown() {
                   >
                     {item.label}
                   </span>
+                  {item.soon && <SoonBadge />}
                   {isActive && (
                     <div className="w-2 h-2 rounded-full bg-zinc-900 shrink-0" />
                   )}
@@ -130,6 +141,7 @@ export default function NavDropdown() {
                           >
                             {sub.label}
                           </span>
+                          {sub.soon && <SoonBadge />}
                           {isSubActive && (
                             <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 shrink-0" />
                           )}

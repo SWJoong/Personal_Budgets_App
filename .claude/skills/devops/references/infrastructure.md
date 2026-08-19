@@ -24,7 +24,7 @@
 
 - **프레임워크**: Next.js
 - **Node 버전**: 20.x
-- **빌드 커맨드**: `pnpm build`
+- **빌드 커맨드**: `npm run build` (package.json·CI 기준 — pnpm 아님)
 - **출력 디렉토리**: `.next`
 - **루트 디렉토리**: `/`
 
