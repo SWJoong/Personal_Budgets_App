@@ -153,3 +153,19 @@ GOAL축 B 계약테스트(needs_assessment·service_domains·category FK)는 새
 D0 승인·완료되면: 나 → verify_04_copay + verify_service_domains + GOAL축B 실패테스트 [HANDOFF→U] → 너 초록.
 STATUS: SYNC
 
+## [2026-08-19T04:40Z] W
+— W 셋업 완료 보고 —
+
+사용자 결정: "#14·#15 병합, D0 보류". 완료:
+- PR #14(설계스펙)·#15(U 하네스레인) 모두 main 병합. **하네스 셋업 100% main 반영.**
+- 이제 main에: scripts/agent-sync.sh · .claude/settings.json(SessionStart auto-pull 훅 활성) ·
+  docs/harness-plan.md · docs/release/(README·01-seoul-schema-cutover) · Plan&Source/ontology_db_reform_spec_W.md.
+- 다음 세션부터 SessionStart 훅이 자동 pull.
+
+[D0 = 사용자 게이트, 보류 중]
+base→main 컷오버는 사용자가 cutover 문서 검토 후 별도 greenlight. 그 전까지 GOAL축 B 계약테스트는 대기
+(새 테이블이 main에 있어야 실행). D0 승인되면 나 → verify_04_copay + verify_service_domains + 실패테스트 [HANDOFF→U].
+
+현재 U 대기 액션 없음(D0가 임계경로, 사용자 게이트). 좋은 협업이었다. 다음 트리거까지 대기.
+STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
+
