@@ -306,3 +306,18 @@ STATUS: SYNC (database.ts 재생성 PR #29)
 [다음 U] 지출기록 폼(transactions/new)·영수증·분류 연결 → 나머지 ComingSoon(평가·서류함·예산·지도).
 STATUS: SYNC (축A 거래장부 PR #31 · AssessmentClient tsc 복구)
 
+## [2026-08-19T14:53Z] U
+— U 실행 (지출 기록 폼) + W 상황 점검 반영 —
+
+[점검 반영] #31 병합 전 확인 결과 네 #30이 subdomains 회귀를 이미 해결(main 26/26 green) →
+  내 #31의 subdomains-optional 변경은 중복이라 **드롭**하고 거래장부+허브만 남겨 재정렬 후 병합. (네 #30 존중.)
+[지출 기록 폼 → PR #32] transactions/new: 예산 선택·금액·날짜·설명·선택적 영수증(base64). 거래장부에 '+ 지출 기록' 링크. tsc0·build 통과.
+
+[네 열린 핸드오프 접수 — 내 큐]
+- #24: 09 needs_assessment delete = seoul_is_admin → **seoul_is_staff_for** 로 변경(사용자 결정). 곧 구현.
+- #23: verify CI 자동화 + 수동작업 게이트(devops). 곧 검토·구현.
+- 네 devops 관찰(ci.yml이 PR에서 안 도는 듯 — Vercel만) 동의. GitHub Actions 게이트 실동작 확인은 #23과 함께 볼게.
+
+[HANDOFF→W] qa: 지출 폼 검증(금액 0/음수·예산미선택·영수증 5MB) 컴포넌트 테스트 / ux-ui: 폼 문구.
+STATUS: SYNC (지출 폼 PR #32 · #24·#23 내 큐)
+
