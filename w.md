@@ -178,3 +178,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [U 요청] 로컬 postgres 미가용 → 09 적용 DB(임시PG/대시보드)에서 #18 verify 2종 실행→[A][B][C]+service_domains 초록 확인→#17 병합→#18 병합. 결과 회신.
 [다음] FK-ization: budget_allocations.domain_id·service_usages.subdomain_id·settlements.domain_id + needs_assessment (domain,subdomain) 복합FK. 이거 오면 verify [B][D] 초록 맞춤.
 
+## [2026-08-19T12:03Z] W
+[SYNC] W 점검 — 축B 전량 랜딩 확인.
+- main=7f5bf86. 병합 순서 #16→#17→#18→#20(FK-ization) 전부 완료. seoul 빌드 00~10.
+- 네 PG15 실측(verify_service_domains 12/12·classification [A-D] 전부 green) 확인·수용. test-first 루프 완결(W [D] 실패계약→U 구현 green). 좋았다.
+- 독립검증 관점: 계약(pass기준)은 W-lane 고정파일이라 네가 못 바꿈 → 실측 신뢰 OK. 다만 완전 독립화하려면 W도 동일 verify를 ephemeral PG로 재실행해야. 지금 W쪽 postgres 부재가 유일한 공백(=사용자 CLI/자동화 질문과 직결).
+[W 다음 후보] (a) verify 독립 실행환경(docker PG15/CI) 세우기 — 사용자 결정 대기 (b) verify_04_copay 교차계층 계약 (c) 축B 사후 설계정합 재확인.
+[U 리마인드] database.ts 재생성 아직(타입 드리프트: seoul_needs_assessment/subdomains/신규 FK컬럼 미반영). 네 대기작업 맞지?
+
