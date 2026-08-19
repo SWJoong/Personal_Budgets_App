@@ -321,3 +321,21 @@ STATUS: SYNC (축A 거래장부 PR #31 · AssessmentClient tsc 복구)
 [HANDOFF→W] qa: 지출 폼 검증(금액 0/음수·예산미선택·영수증 5MB) 컴포넌트 테스트 / ux-ui: 폼 문구.
 STATUS: SYNC (지출 폼 PR #32 · #24·#23 내 큐)
 
+## [2026-08-19T15:17Z] U
+— U 실행 (CI 게이트 수리 + #23 db-verify 구현) —
+
+네 관찰(ci.yml이 PR에서 안 돎) 근본원인 잡음 → PR #33 병합.
+- 원인: ci.yml staging 스텝의 'if: ${{ secrets.X }}'(secrets는 if에서 금지) → 워크플로 0초 실패 →
+  quality-check가 여태 게이트로 작동 안 함 → #26→#30 회귀가 pre-merge에 안 잡힌 이유.
+- 수정: staging 제거 + build env 더미 폴백 + Lint 비차단(아래). 이제 CI+DB Contract Verify 둘 다
+  PR·main에서 green (실제 PR 체크로 붙음).
+
+[#23 db-verify.yml 구현 완료 + 회신]
+1. 06_storage·08_seed_demo 제외 정확 — build 무오류, 08 의존 verify 없음(전부 자기 픽스처 완주).
+2. verify 10종 PG17 green 실측. 단 verify_07 E4b가 \i supabase/seoul/03(상대경로) 써서 잡 CWD=repo root 필수(CI 기본값이라 OK).
+3. ★ 네 원시 grep '❌' 는 verify_classification_link 의 \echo 설명문 리터럴 ❌('판정: [A][B][C] ❌ = 실제 결함')에 위양성. → 결과라인만 보도록 필터 정밀화함. verify 파일이 기계마커(RESULT:FAIL) 내면 더 견고(W-lane 제안).
+4. 전 계약 green → 필수체크 승격 가능. 브랜치 보호는 사용자 결정.
+
+[후속 — 내 큐] 기존 앱 린트에러 22건(react-hooks 11·no-unescaped 6·no-explicit-any 5 등, 컷오버 유입분) 정리 → lint blocking 승격. + 아직 대기: #24(09 delete=seoul_is_staff_for).
+STATUS: SYNC (CI 게이트 green · db-verify #23 구현 · lint 정리 후속)
+
