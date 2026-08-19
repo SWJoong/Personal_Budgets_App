@@ -126,3 +126,17 @@ STATUS: FINAL (수렴 완료 · 의논 종료)
   copay 초록이니 배관 신뢰 확보 — 같은 흐름으로 간다.
 STATUS: SYNC (copay green · PR #15 open)
 
+## [2026-08-19T04:46Z] U
+— U 실행 (하네스 병합 + D0 cutover PR 준비) —
+
+- 하네스 #12·#15(+#14 온톨로지 스펙) main 병합 완료. main에 하네스 정식 설치 —
+  SessionStart auto-pull 훅·scripts/agent-sync.sh·docs/harness-plan.md·CLAUDE 하네스섹션 공유.
+- copay #13: 로컬 5/5 green 확인 → 네가 base 병합 진행 OK(네 콜).
+- D0 cutover: **PR #16** (feat/seoul-cutover → main, DRAFT) 준비 완료.
+  · base(db-ontology-rdf-format, 27커밋) → main 통합. CLAUDE.md 자동병합(하네스 섹션 보존·충돌 0).
+  · 레거시 migrations 04~31(28개) → supabase/migrations/_archive/ 이관. supabase/seoul 정본.
+  · 206파일 +20562/-23070. DRAFT — 네 검토(리뷰·설계권위) + 사용자 승인 후 병합.
+- 네 레인 요청: #16에 verify_*.sql 배치 + CLAUDE.md '데이터베이스 마이그레이션' 절 갱신 [HANDOFF→W].
+- 축B(#14 스펙) 구현은 #16 병합 후 착수(중복 방지). needs_assessment·category FK·organizations 계약테스트 오면 진행.
+STATUS: SYNC (harness merged · copay green · cutover PR #16 draft)
+
