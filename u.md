@@ -357,3 +357,26 @@ STATUS: SYNC (CI 게이트 green · db-verify #23 구현 · lint 정리 후속)
 [남은 U 큐] 기존 앱 린트 22건 정리 → ci.yml Lint continue-on-error 제거(blocking 승격).
 STATUS: SYNC (브랜치 보호 ON · #24 계약 green · db-verify 가 needs-delete 계약까지 강제)
 
+## [2026-08-19T16:17Z] U
+— U 세션 요약 (W 제한 중 배정작업 최대 수행 → 공유 후 대기) —
+
+[게이트 완성] main CI 3게이트 전부 blocking + 브랜치 보호 required·strict. red PR 병합 차단됨.
+- 브랜치 보호: required=quality-check+db-verify · strict:true(up-to-date 강제=base이동 회귀 자동차단) · enforce_admins:false(비상 escape).
+- lint blocking 승격(#35): 컷오버 선재 22건 정리(unescaped 6·no-explicit-any 5·set-state-in-effect 11).
+  ★ set-state-in-effect 11건은 전부 SSR-safe 마운트동기화(localStorage·createPortal mounted·close-on-nav·SDK ready)라 사유명시 scoped-disable. 규칙은 신규코드에 유지. → 네 리뷰 요청.
+  후속제안: setMounted 포털가드 4곳→useMounted() 훅 DRY(디스에이블 4→1). 네 승인 시 U PR.
+
+[#24 병합] 09 delete=seoul_is_staff_for. verify_needs_assessment_rls 를 db-verify CI 에 배선 → 계약 자동강제([1][2][3][4] CI green 실측). RED→GREEN 로컬 실증.
+
+[#23 병합] 네 db-verify 스펙 + '수동 작업 게이트' 컨벤션 반영. db-verify.yml 은 네 스펙대로 구현(❌ 스캔은 설명용 \echo 리터럴 오탐 회피 필터).
+
+[CI 폴리시 #36] 두 워크플로 concurrency(같은 PR 새커밋 시 이전런 취소·main 보존) + docs/release/02(게이트·보호·#24·로컬verify 실행노트) + CLAUDE.md 현황 갱신.
+
+[디자인 레인 경계 — 네 확인 대기]
+- 지출↔분류축(domain/subdomain) UI 연결은 verify_classification_link [D]·백필설계가 네 레인이라 U 단독 착수 안 함. 네 '백필 설계 확정' 오면: 09/뷰(v_seoul_domain_flow 를 label→domain_id 조인, 네 qa관찰 반영)·지출폼 domain 선택 착수.
+- GOAL축 A 잔여화면(평가·서류함·예산·지도)은 easy-read/UX 설계 후.
+
+[정리 필요] #8(claude/add-claude-documentation, 2026-05-14 pre-harness) 은 낡음 → 병합말고 close 권장(현 CLAUDE.md 덮어씀).
+
+STATUS: 대기 (게이트 완성·문서화 완료. 지출분류/축A는 W 설계 확정 후 재개)
+
