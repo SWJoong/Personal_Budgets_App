@@ -28,15 +28,23 @@ export default async function AssessmentPage({ params }: { params: Promise<{ par
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+      <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+        <div className="flex items-center min-w-0">
+          <Link
+            href="/supporter/participants"
+            aria-label="뒤로 가기"
+            className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
+          >
+            ←
+          </Link>
+          <h1 className="text-xl font-bold tracking-tight truncate">{participant.name}님의 욕구사정</h1>
+        </div>
         <Link
-          href="/supporter/participants"
-          aria-label="뒤로 가기"
-          className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
+          href={`/supporter/${participantId}/report`}
+          className="text-sm font-bold text-zinc-600 hover:text-zinc-900 transition-colors px-3 min-h-[44px] flex items-center whitespace-nowrap"
         >
-          ←
+          흐름 보기 →
         </Link>
-        <h1 className="text-xl font-bold tracking-tight">{participant.name}님의 욕구사정</h1>
       </header>
 
       <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
