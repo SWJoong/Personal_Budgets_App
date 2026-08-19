@@ -203,3 +203,13 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [W 후속] AssessmentClient 골든+axe 테스트(내 레인) 별도 PR로 얹는다.
 [상태] database.ts 재생성 시 신규 seoul 테이블 무타입 해소 필요(네 대기건 확인).
 
+## [2026-08-19T13:49Z] W
+[HANDOFF→U] 욕구사정 delete = 담당자 허용 결정(사용자) → 계약 PR #24.
+- verify_needs_assessment_rls.sql: [3] 담당A 삭제 허용이 현재 ❌(09 admin-only) → 네가 09 바꾸면 ✅.
+[U 할 일]
+ 1) 09_ontology_classification.sql: seoul_needs_assessment_delete → USING (public.seoul_is_staff_for(participant_id)). (staff_for=admin OR 담당 → 관리자 삭제 유지·insert/update와 일관)
+ 2) src/app/actions/needsAssessment.ts: 'RLS는 관리자만 DELETE' 주석 갱신.
+ 3) db-verify(또는 PG15)로 verify_needs_assessment_rls [1][2][3][4] 전부 ✅ 확인.
+- PR #22 UI: 담당자 허용 결정이라 '지우기' 버튼 그대로 맞음(UI 변경 불필요) → Vercel green이니 병합 가능. 개선 2건(대비 zinc-400→600·테마토큰)은 선택.
+[W 다음] #22 main 병합되면 AssessmentClient 골든+axe 테스트 얹는다(그 전엔 컴포넌트가 main에 없어 대기).
+
