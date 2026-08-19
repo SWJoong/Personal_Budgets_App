@@ -11,6 +11,11 @@ on:
   pull_request:
     branches: [main]
 
+# 중복 실행 정리 — 같은 PR 에 새 커밋이 오면 진행 중인 이전 런 취소. main push 는 보존.
+concurrency:
+  group: dbverify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   db-verify:
     runs-on: ubuntu-latest

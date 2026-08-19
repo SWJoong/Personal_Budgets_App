@@ -258,5 +258,5 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 ### 현재 작업 현황
 <!-- 양쪽이 작업 시작/완료 시 갱신·push -->
 - **활성(W)**: 축B(#17·#18·#20) 랜딩·verify PG15 green 확인 → verify CI 자동화 스펙 `[HANDOFF→U]`(`ci_db_verify_spec_W.md`) + 수동작업 게이트 컨벤션 신설.
-- **활성(U)**: 축B FK-ization(`10`) 머지 → `needs_assessment` 서버액션/화면·사정→지출 교차집계 리포트·`database.ts` 재생성 대기.
-- **다음**: U가 `.github/workflows/db-verify.yml` 구현 → W 독립검증 게이트 확보. 이후 copay 교차계층 계약.
+- **활성(U)**: CI 게이트 정상화(`quality-check`+`db-verify` both required·`strict`) + main 브랜치 보호 + **lint blocking 승격**(선재 22건 정리) + 욕구사정 삭제=담당자 계약 초록화(#24). 실행노트 `docs/release/02`.
+- **다음**: 지출↔분류축(`domain`/`subdomain`) UI 연결은 **W 백필 설계 확정 후** 착수(디자인 레인). GOAL축 A 잔여 화면은 W UX·easy-read 설계 후. copay 교차계층 계약 대기.
