@@ -151,14 +151,14 @@ export default function MoreMenuClient({
             <div className="flex flex-col gap-3">
               <p className="text-sm font-bold text-zinc-600">🔤 글자 크기를 조절할 수 있어요.</p>
               <div className="flex gap-2">
-                {[
+                {([
                   { id: 'normal', label: '가', size: '기본' },
                   { id: 'large', label: '가', size: '크게' },
                   { id: 'huge', label: '가', size: '매우 크게' },
-                ].map((s) => (
+                ] as const).map((s) => (
                   <button
                     key={s.id}
-                    onClick={() => setFontSize(s.id as any)}
+                    onClick={() => setFontSize(s.id)}
                     className={`flex-1 flex flex-col items-center justify-center py-4 rounded-2xl transition-all border-2
                       ${fontSize === s.id
                         ? 'bg-zinc-900 border-zinc-900 text-white shadow-lg scale-105'

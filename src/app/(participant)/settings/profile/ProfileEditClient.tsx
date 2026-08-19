@@ -31,8 +31,8 @@ export default function ProfileEditClient({ profile, userEmail, isAdminEmail }: 
       await updateProfile(formData)
       setToast({ type: 'success', message: '프로필이 저장되었습니다.' })
       router.refresh()
-    } catch (err: any) {
-      setToast({ type: 'error', message: err.message || '저장 실패' })
+    } catch (err) {
+      setToast({ type: 'error', message: err instanceof Error ? err.message : '저장 실패' })
     } finally {
       setLoading(false)
     }

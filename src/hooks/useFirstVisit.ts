@@ -10,6 +10,7 @@ export function useFirstVisit(sectionKey: string): [boolean, () => void] {
   useEffect(() => {
     try {
       const visited = localStorage.getItem(PREFIX + sectionKey)
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR-safe: localStorage 첫 방문 여부를 마운트 후 동기화
       if (!visited) setIsFirstVisit(true)
     } catch {}
   }, [sectionKey])

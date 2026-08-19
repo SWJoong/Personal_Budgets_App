@@ -233,17 +233,17 @@ function GoogleLoginContent() {
           >
             <p className="text-2xl mb-4 text-center">💬</p>
             <p className="text-sm text-slate-700 leading-relaxed mb-1">
-              "훌륭한 삶이란 사랑으로 힘을 얻고 지식으로 길잡이를 삼는 삶이다."
+              &quot;훌륭한 삶이란 사랑으로 힘을 얻고 지식으로 길잡이를 삼는 삶이다.&quot;
             </p>
             <p className="text-xs text-slate-400 text-right mb-4">— 버트런드 러셀</p>
             <p className="text-xs text-slate-500 italic leading-relaxed mb-1">
-              "The good life is one inspired by love and guided by knowledge."
+              &quot;The good life is one inspired by love and guided by knowledge.&quot;
             </p>
             <p className="text-xs text-slate-400 text-right mb-5">— Bertrand Russell</p>
             <div className="h-px bg-slate-100 mb-4" />
             <p className="text-xs text-slate-500 leading-relaxed mb-1">
-              "행복의 비결은 이것이다: 당신의 관심사를 가능한 한 넓게 키우고,
-              당신의 관심사에 반응하는 것들에 대해 가능한 한 우호적으로 반응하라."
+              &quot;행복의 비결은 이것이다: 당신의 관심사를 가능한 한 넓게 키우고,
+              당신의 관심사에 반응하는 것들에 대해 가능한 한 우호적으로 반응하라.&quot;
             </p>
             <p className="text-xs text-slate-400 text-right mb-5">— 버트런드 러셀, 《행복의 정복》</p>
             <div className="w-full rounded-xl overflow-hidden mb-5">

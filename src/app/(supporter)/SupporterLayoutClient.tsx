@@ -21,12 +21,14 @@ export function SupporterLayoutClient({
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR-safe: localStorage 는 클라 마운트 후에만 동기화
       if (saved !== null) setSidebarCollapsed(saved === 'true')
     } catch {}
   }, [])
 
   // 페이지 이동 시 모바일 메뉴 자동 닫기
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 라우트 변경 시 메뉴 닫기(외부 nav 상태 동기화)
     setMobileMenuOpen(false)
   }, [pathname])
 
