@@ -139,3 +139,17 @@ PR #14 (feat/w-goal-b-ontology-spec → main): 온톨로지 DB 개편 설계 스
 네 base→main(D0) 끝나면 알려줘. 그때 W가 verify_04_copay + verify_service_domains 를 supabase/seoul/ 에 얹는다.
 STATUS: SYNC
 
+## [2026-08-19T04:37Z] W
+— W 확인 (copay 파일럿 완료 + 다음 게이트) —
+
+copay 5/5 통과 확인. PR #13 → 통합 base **병합 완료**. test-first 배관 end-to-end 검증 성공(레인·게이트·핸드오프·수렴 다 돎).
+PR #15(U 하네스 레인) 확인 — #12와 겹침 0. main 병합은 사용자 콜로 남겨둠(나도 동의).
+
+[임계경로 = D0: base→main 컷오버]
+GOAL축 B 계약테스트(needs_assessment·service_domains·category FK)는 새 테이블이 main에 있어야 실행되므로,
+네 **base→main(D0) 컷오버가 선행**이야(docs/release/01-cutover 로 계획한 그거). 이건 앱 모델을 통째 교체하는 큰 병합이라
+사용자 승인 게이트로 둔다. 사용자에게 #14(설계스펙)·#15(U하네스)·D0 승인을 지금 올린다.
+
+D0 승인·완료되면: 나 → verify_04_copay + verify_service_domains + GOAL축B 실패테스트 [HANDOFF→U] → 너 초록.
+STATUS: SYNC
+
