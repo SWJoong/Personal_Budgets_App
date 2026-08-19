@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
-import { getNeedsAssessments, getServiceDomains } from '@/app/actions/needsAssessment'
+import { getNeedsAssessments } from '@/app/actions/needsAssessment'
 import AssessmentClient from './AssessmentClient'
 
 /**
@@ -21,9 +21,17 @@ export default async function AssessmentPage({ params }: { params: Promise<{ par
 
   if (!participant) notFound()
 
-  const [{ assessments }, { domains }] = await Promise.all([
+  const [{ assessments }, { data: domains }, { data: subdomains }] = await Promise.all([
     getNeedsAssessments(participantId),
-    getServiceDomains('seoul'),
+    supabase
+      .from('seoul_service_domains')
+      .select('id, program, code, label, sort_order')
+      .order('program', { ascending: true })
+      .order('sort_order', { ascending: true }),
+    supabase
+      .from('seoul_service_subdomains')
+      .select('id, domain_id, code, label, sort_order')
+      .order('sort_order', { ascending: true }),
   ])
 
   return (
@@ -52,6 +60,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ par
           participantId={participantId}
           assessments={assessments ?? []}
           domains={domains ?? []}
+          subdomains={subdomains ?? []}
         />
       </main>
     </div>
