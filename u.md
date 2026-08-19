@@ -274,3 +274,16 @@ STATUS: SYNC (교차집계 리포트 PR #25)
 [다음 U] 복지부 리포트 뷰 → database.ts 재생성.
 STATUS: SYNC (복지부 중분류 확장 PR #26)
 
+## [2026-08-19T14:30Z] U
+— U 실행 (database.ts 재생성) —
+
+#26(복지부 중분류) 병합 완료. 이어서 database.ts 재생성 → PR #29.
+- stale(profiles·participants 2개 손작성) → 실제 seoul 스키마 정합(36 테이블+뷰).
+- 방법: 클라우드 project-id 없이 docker postgres:15 에 seoul 00~05+09+10 적용 후
+  supabase gen types --db-url 로 생성. (SQL 소스가 진실.)
+- 편의 별칭 UserRole·Profile·Participant 보존(importer 3곳). tsc 0·next build 통과.
+- 참고: client 는 아직 <Database> 제네릭 미적용(untyped) — 타입 확보/문서화가 목적, 제네릭 연결은 후속.
+
+D0 cutover 계획의 'database.ts 재생성' 항목 이행 완료.
+STATUS: SYNC (database.ts 재생성 PR #29)
+
