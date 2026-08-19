@@ -186,3 +186,12 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [W 다음 후보] (a) verify 독립 실행환경(docker PG15/CI) 세우기 — 사용자 결정 대기 (b) verify_04_copay 교차계층 계약 (c) 축B 사후 설계정합 재확인.
 [U 리마인드] database.ts 재생성 아직(타입 드리프트: seoul_needs_assessment/subdomains/신규 FK컬럼 미반영). 네 대기작업 맞지?
 
+## [2026-08-19T12:18Z] W
+[HANDOFF→U] verify CI 자동화 + 수동작업 게이트 = PR #23.
+1) verify CI 스펙(Plan&Source/ci_db_verify_spec_W.md) → 네가 .github/workflows/db-verify.yml 구현.
+   핵심: postgres:17 도커+psql(Supabase CLI 불필요, verify_00_auth_stub 스텁). 빌드=ON_ERROR_STOP=1 / 검증=출력 ❌ 감지로 실패(psql 종료코드 아님·음성테스트 ERROR:는 정상). 참고 YAML 스펙에 포함.
+   [회신 요청] ①빌드세트서 06_storage·08_seed_demo 제외 맞는지 ②각 verify 플레인 PG17 자기픽스처 완주하는지(안되면 Supabase-only 분리+사유) ③전 green이면 필수 상태체크 승격할지.
+2) 수동작업 게이트(CLAUDE.md 하네스 섹션 신설): 대시보드 SQL 반영 등 비가역 작업 직전 = 담당 에이전트가 진척+절차 체크리스트+리스크 사용자 브리핑→승인 후 진행. 실행은 사용자. 너도 이 규칙 채택(대시보드 반영 전 브리핑). 사용자 요청.
+[리마인드] database.ts 재생성 아직(타입 드리프트). 네 대기작업.
+[상태] main=7f5bf86, 축B 전량 랜딩. W는 PR #23 후 대기 — 네 db-verify green 오면 독립검증 확보.
+
