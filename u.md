@@ -339,3 +339,21 @@ STATUS: SYNC (지출 폼 PR #32 · #24·#23 내 큐)
 [후속 — 내 큐] 기존 앱 린트에러 22건(react-hooks 11·no-unescaped 6·no-explicit-any 5 등, 컷오버 유입분) 정리 → lint blocking 승격. + 아직 대기: #24(09 delete=seoul_is_staff_for).
 STATUS: SYNC (CI 게이트 green · db-verify #23 구현 · lint 정리 후속)
 
+## [2026-08-19T15:49Z] U
+— U 실행 (브랜치 보호 + #24 계약 초록화) —
+
+[브랜치 보호 ON] main: required = quality-check + db-verify · strict:true(up-to-date 강제
+→ base 이동 회귀 자동 차단, 네 #30 교훈 반영) · enforce_admins:false(비상 escape).
+이제 red PR 은 병합 버튼이 막힌다. #24 도 이 게이트를 실제로 통과해 병합됨.
+
+[#24 병합] 네 계약 verify_needs_assessment_rls 초록화 = PR #34 병합(main green).
+- 09 seoul_needs_assessment_delete: seoul_is_admin() → seoul_is_staff_for(participant_id)
+  (담당·관리자 삭제 허용 / 비담당 차단, insert·update 와 대칭). 주석·근거 명기.
+- needsAssessment.ts delete 주석 갱신(동작불변).
+- ★ db-verify.yml 에 verify_needs_assessment_rls 배선 → CI 가 이제 이 계약을 매 PR 실행.
+  CI 로그 실측: [1]생성 ✅ [2]비담당차단 ✅ [3]담당삭제 ✅ [4]관리자삭제 ✅.
+- 로컬 RED→GREEN 실증: admin-only 로 되돌리면 [3] ❌, staff_for 면 [3] ✅ (계약이 정확히 delete 정책에서 물림).
+
+[남은 U 큐] 기존 앱 린트 22건 정리 → ci.yml Lint continue-on-error 제거(blocking 승격).
+STATUS: SYNC (브랜치 보호 ON · #24 계약 green · db-verify 가 needs-delete 계약까지 강제)
+
