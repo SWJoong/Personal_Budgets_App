@@ -3,6 +3,10 @@
 import { assertStaff } from '@/utils/supabase/staff'
 import { friendlyDbError } from '@/utils/supabase/errors'
 import { revalidatePath } from 'next/cache'
+import { type NeedsAssessmentInput, validateNeedsAssessmentInput } from '@/utils/needsAssessment'
+
+// NeedsAssessmentInput / validateNeedsAssessmentInput 는 순수 로직이라 util 로 분리했다.
+// ('use server' 파일은 모든 export 가 async 여야 한다 — 동기 함수를 여기서 export 하면 빌드 실패.)
 
 /**
  * 지원영역 욕구사정 (GOAL축 B).
@@ -72,28 +76,6 @@ export async function getNeedsAssessments(participantId: string) {
 }
 
 // ── 생성·수정·삭제 ───────────────────────────────────────────────────────
-
-export interface NeedsAssessmentInput {
-  participantId: string
-  program?: 'seoul' | 'mohw'
-  domainId: string
-  subdomainId?: string | null
-  supportExample?: string
-  limitation?: string
-  needHope?: string
-}
-
-/**
- * 입력 검증(순수 함수) — DB 왕복 전에 거른다. 통과 시 null, 아니면 쉬운 말 메시지.
- * (분류 정합 자체는 DB 복합 FK 가 최종 방어하므로 여기선 필수값·enum 만 본다.)
- */
-export function validateNeedsAssessmentInput(input: NeedsAssessmentInput): string | null {
-  if (!input.participantId) return '당사자를 선택해 주세요.'
-  if (!input.domainId) return '지원 영역(대분류)을 선택해 주세요.'
-  const program = input.program ?? 'seoul'
-  if (program !== 'seoul' && program !== 'mohw') return '알 수 없는 제도 구분이에요.'
-  return null
-}
 
 /** 욕구사정 생성 — 담당자 전용. assessed_by 는 현재 로그인 담당자로 기록한다. */
 export async function createNeedsAssessment(input: NeedsAssessmentInput) {
