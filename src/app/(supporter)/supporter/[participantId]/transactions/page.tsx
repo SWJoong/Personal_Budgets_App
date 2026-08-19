@@ -42,15 +42,23 @@ export default async function TransactionsPage({ params }: { params: Promise<{ p
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+      <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+        <div className="flex items-center min-w-0">
+          <Link
+            href="/supporter/participants"
+            aria-label="뒤로 가기"
+            className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
+          >
+            ←
+          </Link>
+          <h1 className="text-xl font-bold tracking-tight truncate">{participant.name}님의 거래장부</h1>
+        </div>
         <Link
-          href="/supporter/participants"
-          aria-label="뒤로 가기"
-          className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
+          href={`/supporter/${participantId}/transactions/new`}
+          className="px-4 rounded-xl bg-zinc-900 text-white text-sm font-bold hover:bg-zinc-800 transition-colors min-h-[44px] flex items-center whitespace-nowrap"
         >
-          ←
+          + 지출 기록
         </Link>
-        <h1 className="text-xl font-bold tracking-tight truncate">{participant.name}님의 거래장부</h1>
       </header>
 
       <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-4">
