@@ -94,8 +94,8 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
         router.push('/')
         router.refresh()
       }
-    } catch (err: any) {
-      setError(err.message || '저장 중 오류가 발생했습니다.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '저장 중 오류가 발생했습니다.')
       setLoading(false)
     }
   }

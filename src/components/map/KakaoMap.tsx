@@ -279,6 +279,7 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any
     if (w.kakao?.maps) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 마운트 시 이미 로드된 외부 SDK 전역과 동기화
       setSdkReady(true)
     }
   }, [])

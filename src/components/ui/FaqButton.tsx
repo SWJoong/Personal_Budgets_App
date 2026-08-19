@@ -10,6 +10,7 @@ function FaqModal({ onClose }: { onClose: () => void }) {
   const [openIdx, setOpenIdx] = useState<number | null>(0)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- createPortal SSR 마운트 가드
     setMounted(true)
     // 모달 열릴 때 스크롤 잠금
     document.body.style.overflow = 'hidden'

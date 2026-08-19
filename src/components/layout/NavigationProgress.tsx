@@ -39,6 +39,7 @@ export default function NavigationProgress() {
     if (pathname !== prevPathname.current) {
       prevPathname.current = pathname
       if (animRef.current) clearInterval(animRef.current)
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 라우트 변경 시 진행바 완료 애니메이션 트리거
       setWidth(100)
       timerRef.current = setTimeout(() => {
         setVisible(false)

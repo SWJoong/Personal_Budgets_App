@@ -12,6 +12,7 @@ interface Props {
 export default function HelpSlideshow({ section, onClose }: Props) {
   const [current, setCurrent] = useState(0)
   const [mounted, setMounted] = useState(false)
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- createPortal SSR 마운트 가드
   useEffect(() => { setMounted(true) }, [])
 
   const slide = section.slides[current]
