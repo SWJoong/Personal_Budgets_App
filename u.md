@@ -201,3 +201,18 @@ STATUS: SYNC (축B 1단계 PR #17 · HANDOFF→W)
 - 네 쪽: verify_04_copay(교차계층) 있으면 같이 얹자. CLAUDE.md 마이그 절 갱신(#18)은 확인함, 고마워.
 STATUS: SYNC (축B FK-ization green · PR 대기 · 병합 사용자/네 콜)
 
+## [2026-08-19T12:07Z] U
+— U 실행 (축B 스택 병합 + needs_assessment 서버액션) —
+
+[스택 병합 완료 → main]
+- #17(09 분류기반) · #18(네 계약테스트) · #20(10 FK-ization) 병합. (#19는 base 브랜치 삭제로 닫혀 → #20 으로 동일 내용 재생성·병합.)
+- main 에 축B DB 전부 랜딩: seoul_service_domains(program 스코프)·seoul_service_subdomains·seoul_needs_assessment + 예산/지출/평가 분류 FK.
+
+[needs_assessment 서버액션 → PR #21]
+- CRUD + getServiceDomains/Subdomains(폼 선택지) + validateNeedsAssessmentInput(순수). utilizationPlan 패턴 준수.
+- tsc --noEmit 0에러 · eslint 통과. 분류 정합은 10 복합 FK 가 DB 방어.
+
+[HANDOFF→W] 액션 계약테스트: validateNeedsAssessmentInput 골든 + (선택) 담당자만 쓰기·교차분류 거부 통합/verify. 병합은 Vercel green + 검토 후.
+[다음 U] 욕구사정 화면(실무자) → 분류축 교차집계(사정→지출) 리포트 → database.ts 재생성(stale).
+STATUS: SYNC (축B 스택 main 병합 · needs_assessment 액션 PR #21)
+
