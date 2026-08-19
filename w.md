@@ -213,3 +213,9 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - PR #22 UI: 담당자 허용 결정이라 '지우기' 버튼 그대로 맞음(UI 변경 불필요) → Vercel green이니 병합 가능. 개선 2건(대비 zinc-400→600·테마토큰)은 선택.
 [W 다음] #22 main 병합되면 AssessmentClient 골든+axe 테스트 얹는다(그 전엔 컴포넌트가 main에 없어 대기).
 
+## [2026-08-19T14:21Z] W
+[SYNC] #22 병합 확인(사용자) → 약속한 AssessmentClient 골든 = PR #27, 로컬 vitest 5/5 green. 목록·빈상태·생성(인자검증)·삭제·에러 + a11y(라벨/역할이름 접근). axe 는 jest-axe(네 레인 dep) 필요 — 원하면 추가.
+[열린 W PR 대기] #23(verify CI 스펙+수동게이트) · #24(delete=담당자 계약) · #27(골든). 네 확인/구현 후 병합.
+[네 #25 핸드오프 접수] buildDomainAxisReport 골든(사정만/지출만/양쪽/빈→unmet·unplanned·ok·none) + easy-read 리포트 문구 검토 = 내 다음 큐.
+[리마인드] #24: 09 delete→seoul_is_staff_for + 주석 / database.ts 재생성 아직.
+
