@@ -116,7 +116,7 @@ DROP POLICY IF EXISTS seoul_service_subdomains_admin_write ON public.seoul_servi
 CREATE POLICY seoul_service_subdomains_admin_write ON public.seoul_service_subdomains
   FOR ALL TO authenticated USING (public.seoul_is_admin()) WITH CHECK (public.seoul_is_admin());
 
--- 욕구사정: 당사자 스코프 → 본인·담당 실무자 읽기, 담당 실무자 쓰기, 관리자 삭제
+-- 욕구사정: 당사자 스코프 → 본인·담당 실무자 읽기, 담당 실무자 쓰기·삭제(seoul_is_staff_for = 담당 OR 관리자)
 ALTER TABLE public.seoul_needs_assessment ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS seoul_needs_assessment_select ON public.seoul_needs_assessment;
 CREATE POLICY seoul_needs_assessment_select ON public.seoul_needs_assessment
@@ -129,6 +129,9 @@ CREATE POLICY seoul_needs_assessment_update ON public.seoul_needs_assessment
   FOR UPDATE TO authenticated
   USING (public.seoul_is_staff_for(participant_id))
   WITH CHECK (public.seoul_is_staff_for(participant_id));
+-- 삭제 = 담당 실무자 허용(관리자 포함). W #24 결정(2026-08-19): 작성 담당자 본인도 삭제 가능해야
+--   UX 가 맞고 insert/update 와 일관. seoul_is_staff_for = seoul_is_admin() OR 담당 → 비담당만 차단.
+--   계약: Plan&Source/ontology/seoul/verify_needs_assessment_rls.sql [3].
 DROP POLICY IF EXISTS seoul_needs_assessment_delete ON public.seoul_needs_assessment;
 CREATE POLICY seoul_needs_assessment_delete ON public.seoul_needs_assessment
-  FOR DELETE TO authenticated USING (public.seoul_is_admin());
+  FOR DELETE TO authenticated USING (public.seoul_is_staff_for(participant_id));

@@ -148,7 +148,7 @@ export async function updateNeedsAssessment(
   }
 }
 
-/** 욕구사정 삭제 — 담당자 전용(RLS 는 관리자만 DELETE 허용). */
+/** 욕구사정 삭제 — 담당자 전용(RLS 09: seoul_is_staff_for → 담당·관리자 DELETE 허용, 비담당 차단). */
 export async function deleteNeedsAssessment(id: string) {
   try {
     const { supabase } = await assertStaff()
