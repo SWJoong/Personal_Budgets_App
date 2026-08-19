@@ -1,0 +1,90 @@
+name: DB Contract Verify
+
+# W 설계 스펙: Plan&Source/ci_db_verify_spec_W.md (#23) 구현.
+# supabase/seoul/ 빌드 SQL + Plan&Source/ontology/seoul/verify_*.sql 계약을
+# 매 PR마다 임시 Postgres 에서 자동 실행 — 저자(U)와 독립된 스키마 검증 게이트.
+# (배포 자동화가 아니라 '스키마 계약 검증'. 클라우드 반영은 여전히 대시보드 수동.)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  db-verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: verify
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: verify
+    steps:
+      - uses: actions/checkout@v4
+
+      # ① 빌드: auth 스텁 + seoul 빌드 SQL 을 순서대로. SQL 오류 1건이라도 = 실패.
+      #    (psql \i 상대경로 해결을 위해 스텝 CWD = 리포 루트 — checkout 기본값.)
+      #    제외: 06_storage(Supabase storage 의존) · 08_seed_demo(Admin API 시드) — Supabase-only.
+      - name: Build — auth stub + seoul (ON_ERROR_STOP=1, +멱등 재적용)
+        run: |
+          set -euo pipefail
+          build=(
+            "Plan&Source/ontology/seoul/verify_00_auth_stub.sql"
+            supabase/seoul/00_extensions.sql
+            supabase/seoul/01_core.sql
+            supabase/seoul/02_core_rls.sql
+            supabase/seoul/03_seoul_schema.sql
+            supabase/seoul/04_seoul_rls.sql
+            supabase/seoul/05_seoul_graph.sql
+            supabase/seoul/07_seed_program.sql
+            supabase/seoul/09_ontology_classification.sql
+            supabase/seoul/10_fk_ization.sql
+          )
+          for f in "${build[@]}"; do
+            echo "=== apply $f ==="
+            psql -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+          # 멱등성 — 대표 파일 재적용도 무오류여야 한다.
+          for f in supabase/seoul/03_seoul_schema.sql \
+                   supabase/seoul/09_ontology_classification.sql \
+                   supabase/seoul/10_fk_ization.sql; do
+            psql -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+
+      # ② 검증: verify_*.sql 실행. 파일들은 ON_ERROR_STOP off 라 종료코드 0 + 화면에 ✅/❌ 를 낸다.
+      #    → 출력의 '결과라인 ❌' 로 실패 판정. 음성 테스트의 psql ERROR: 는 정상(무시).
+      #    ★ 판정/설명용 \echo 에 든 리터럴 ❌(예: "판정: [A][B][C] ❌ = 실제 결함")는 제외해야
+      #      위양성이 안 난다 — W 스펙의 원시 grep 은 이 부분에서 오탐하므로 필터를 정밀화했다.
+      - name: Verify — run contracts, fail on real ❌
+        run: |
+          set -uo pipefail
+          verify=(
+            verify_01_behaviour verify_02_rls verify_03_graph verify_04_phase2
+            verify_05_phase3 verify_06_copay verify_07_spending_rules verify_08_records
+            verify_service_domains verify_classification_link
+          )
+          out="$(mktemp)"
+          for v in "${verify[@]}"; do
+            f="Plan&Source/ontology/seoul/$v.sql"
+            echo "=== $f ===" | tee -a "$out"
+            psql -q -f "$f" 2>&1 | tee -a "$out"
+          done
+          echo "----- scan -----"
+          grep -q "✅" "$out" || { echo "::error::verify 미실행(✅ 없음 — 연결/경로 확인)"; exit 1; }
+          fails="$(grep '❌' "$out" | grep -vE '^===|^[[:space:]]*\(|판정:|실제 결함|다음 단계|미설치|현재 부분|초록화|정상\)' || true)"
+          if [ -n "$fails" ]; then
+            echo "::error::verify 계약 실패 — 결과라인 ❌ 발견"
+            printf '%s\n' "$fails"
+            exit 1
+          fi
+          echo "전 계약 통과 ✅ (build 멱등 + verify 10종 green)"
