@@ -31,16 +31,25 @@ export default async function ParticipantsOverviewPage() {
         ) : (
           <ul className="flex flex-col gap-2">
             {(participants ?? []).map((p) => (
-              <li key={p.id}>
-                <Link
-                  href={`/supporter/${p.id}/assessment`}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-400 transition-all min-h-[44px]"
-                >
-                  <span className="font-bold">{p.name ?? '이름 없음'}</span>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600">
-                    욕구사정 →
-                  </span>
-                </Link>
+              <li
+                key={p.id}
+                className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white ring-1 ring-zinc-200"
+              >
+                <span className="font-bold truncate">{p.name ?? '이름 없음'}</span>
+                <div className="flex gap-2 shrink-0">
+                  <Link
+                    href={`/supporter/${p.id}/assessment`}
+                    className="text-xs font-bold px-3 rounded-full bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors min-h-[44px] flex items-center"
+                  >
+                    욕구사정
+                  </Link>
+                  <Link
+                    href={`/supporter/${p.id}/transactions`}
+                    className="text-xs font-bold px-3 rounded-full bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors min-h-[44px] flex items-center"
+                  >
+                    거래장부
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>
