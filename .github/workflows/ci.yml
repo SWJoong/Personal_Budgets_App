@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
 
+# 중복 실행 정리 — 같은 PR 에 새 커밋이 오면 진행 중인 이전 런을 취소(러너 절약).
+# main push 런은 취소하지 않는다(커밋마다 게이트 검증 보존).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   quality-check:
     runs-on: ubuntu-latest

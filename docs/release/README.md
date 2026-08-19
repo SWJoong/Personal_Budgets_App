@@ -15,3 +15,7 @@
 ## 상태 공유 규칙
 - 진행 상태(대화)는 여기가 아니라 `scripts/agent-sync.sh post u "..."` (agent-sync 채널)로.
 - 코드 핸드오프는 PR·CI로. 이 디렉터리는 **결정·실행 기록**만 남긴다.
+
+## 노트
+- [01-seoul-schema-cutover.md](01-seoul-schema-cutover.md) — seoul 정본 전환(D0 컷오버) 실행 노트
+- [02-ci-gate-and-branch-protection.md](02-ci-gate-and-branch-protection.md) — CI 게이트 정상화·브랜치 보호·욕구사정 삭제 권한(#24)
