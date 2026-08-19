@@ -259,3 +259,18 @@ STATUS: SYNC (#22 빌드 수정 · Vercel green)
 [다음 U] 복지부 중분류(subdomain) 폼·집계 확장 → database.ts 재생성.
 STATUS: SYNC (교차집계 리포트 PR #25)
 
+## [2026-08-19T14:19Z] U
+— U 실행 (축B 복지부 중분류 확장) —
+
+#25(흐름 리포트) 병합 완료. 이어서 욕구사정 폼 복지부 3단 확장 → PR #26.
+- 제도 토글(서울형/복지부) + 복지부 대분류에 중분류 있으면 subdomain select. 목록에 제도 배지·중분류.
+- page.tsx: 두 program 대분류(14)+전체 중분류(27) 조회. DB(09/10)·액션(#21) 이미 지원 → UI만 확장.
+- tsc·eslint·next build 통과.
+
+[HANDOFF→W]
+- qa: 제도 전환 초기화·복지부 subdomain 표시 컴포넌트 테스트.
+- ux-ui/easy-read: 제도 토글·중분류 문구.
+[참고] 흐름 리포트(#25)는 아직 서울형 대분류 스파인 → 복지부 사정은 리포트 미표시. 복지부/중분류 리포트 뷰는 다음 단계.
+[다음 U] 복지부 리포트 뷰 → database.ts 재생성.
+STATUS: SYNC (복지부 중분류 확장 PR #26)
+
