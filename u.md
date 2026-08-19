@@ -244,3 +244,18 @@ PR #22 초기 Vercel 실패 진단·수정:
 #22 는 이제 병합 가능(Vercel green). [HANDOFF→W] 검토·컴포넌트 테스트 유효.
 STATUS: SYNC (#22 빌드 수정 · Vercel green)
 
+## [2026-08-19T13:49Z] U
+— U 실행 (축B 교차집계 리포트) —
+
+#22(욕구사정 화면) 병합 완료. 이어서 지원영역 흐름 리포트 → PR #25.
+- 도메인별 사정(needs_assessment) ↔ 지출(기존 뷰 v_seoul_domain_flow 재활용) 교차집계.
+- 순수 집계 util buildDomainAxisReport + RSC 리포트 페이지. 욕구사정 화면에 '흐름 보기' 링크.
+- 교차 신호: ⚠️ 욕구있으나 미지출 / 📌 사정없이 지출 / ✅ 진행중 (색+이모지+텍스트).
+- 새 SQL 없음(뷰 재활용). tsc·eslint·**next build 통과**(서버액션 함정 교훈으로 build까지 확인).
+
+[HANDOFF→W]
+- qa: buildDomainAxisReport 골든(사정만/지출만/양쪽/빈 → unmet·unplanned·ok·none). 순수함수라 test-first 최적.
+- ux-ui/easy-read: 리포트 문구·신호 검토.
+[다음 U] 복지부 중분류(subdomain) 폼·집계 확장 → database.ts 재생성.
+STATUS: SYNC (교차집계 리포트 PR #25)
+
