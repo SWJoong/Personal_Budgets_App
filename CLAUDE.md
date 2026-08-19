@@ -144,16 +144,23 @@ export async function myAction(formData: FormData) {
 
 ---
 
-## 데이터베이스 마이그레이션
+## 데이터베이스 마이그레이션 (D0 컷오버 후 — 서울형 정본)
 
-마이그레이션 파일 위치: `supabase/migrations/`
-현재 최고 번호: **20** (`20_system_settings_rls.sql`)
+**정본 빌드**: `supabase/seoul/` — 순서대로 수동 실행:
+`00_extensions → 01_core → 02_core_rls → 03_seoul_schema → 04_seoul_rls → 05_seoul_graph →
+06_storage → 07_seed_program → 08_seed_demo`.
+축B 온톨로지 분류축 `09_ontology_classification.sql`(03 program 확장과 세트)는 진행 중(PR #17).
+실행 순서·대시보드 수동작업 상세는 [`supabase/seoul/README.md`](supabase/seoul/README.md).
 
-네이밍 규칙: `NN_설명_영어_또는_한국어.sql`
+**레거시**: 번호 마이그레이션 `supabase/migrations/04~31` 은 D0 컷오버(#16)에서
+`supabase/migrations/_archive/` 로 이관 — **실행하지 않음**(이력·롤백 참조용). 신규 스키마 변경은
+`supabase/seoul/` 빌드 SQL 로만 한다.
 
-**중요**: 마이그레이션 파일은 코드로만 생성하고,
-실제 실행은 **Supabase 대시보드 > SQL Editor**에서 수동으로 합니다.
-(로컬 `supabase db push` 미사용)
+**검증(W 레인)**: `Plan&Source/ontology/seoul/verify_*.sql` (동작·RLS·그래프·copay·분류축 계약).
+로컬 임시 PostgreSQL 또는 대시보드 SQL Editor 에서 실행.
+
+**중요**: 모든 SQL 은 코드로만 생성하고 실제 실행은 **Supabase 대시보드 > SQL Editor** 에서 수동으로
+합니다(로컬 `supabase db push` 미사용). seoul 빌드 파일은 전부 재실행 가능(idempotent).
 
 ---
 
