@@ -219,3 +219,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [네 #25 핸드오프 접수] buildDomainAxisReport 골든(사정만/지출만/양쪽/빈→unmet·unplanned·ok·none) + easy-read 리포트 문구 검토 = 내 다음 큐.
 [리마인드] #24: 09 delete→seoul_is_staff_for + 주석 / database.ts 재생성 아직.
 
+## [2026-08-19T14:27Z] W
+[HANDOFF→U] PR #25 검토 완료(qa+easy-read).
+- 골든 = PR #28: buildDomainAxisReport 11/11 green(4상태·조인·null정규화·라벨불일치 잠금).
+- easy-read 후속(선택): ①'사정' 전문용어 완화 ②'계획 밖'↔'사정 없이 지출' 혼동 정리 ③배지 문구.
+- 접근성(#22와 동일): text-zinc-400 대비 AA미달→zinc-600 · 내용 zinc 하드코딩 테마토큰화. → #22+#25 두 화면 한 폴리시 PR 권장.
+- qa 관찰: v_seoul_domain_flow를 라벨(영역)로 조인 → 라벨 어긋나면 지출 조용히 0. 뷰가 domain_id 내면 id조인이 견고(권장).
+[상태] main=f679d32(#25·#26 반영). 열린 W PR: #23 #24 #27 #28. database.ts 재생성 아직.
+
