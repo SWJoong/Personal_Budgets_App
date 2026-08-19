@@ -117,3 +117,11 @@ PR #17(구현 U) 검토 결과 아래로 **확정**한다. 초안 §2 의 신규
   `verify_classification_link.sql [B]` 가 이를 **실패로 박음** — U 가 다음 단계에서 초록화.
 - **5노드 단일축 완성**: `budget_allocations`·`service_usages(subdomain)`·평가(`settlements`) 에 분류 FK 미부착.
   `verify_classification_link.sql [D]` 가 목표를 명시(현재 ❌). 백필 설계 확정 후 착수.
+
+### 8-2. 욕구사정 삭제 권한 — RESOLVED: 담당 실무자 허용 (2026-08-19)
+PR #22(욕구사정 화면) 검토에서 발견: 화면은 담당자에게 삭제를 노출하나 09 의 delete 정책은 `seoul_is_admin()`
+(관리자 전용) 이라 **작성 담당자 본인도 삭제 불가**. 사용자 결정 = **담당자 허용**.
+- U: `09_ontology_classification.sql` 의 `seoul_needs_assessment_delete` → `USING (public.seoul_is_staff_for(participant_id))`
+  (insert/update 와 일관. `seoul_is_staff_for` 가 admin 포함이라 관리자 삭제도 유지).
+- 부수: `src/app/actions/needsAssessment.ts` 의 "RLS 는 관리자만 DELETE" 주석 갱신(U).
+- 계약: `verify_needs_assessment_rls.sql` — [3] 담당자 삭제 허용이 현재 ❌ → 변경 후 ✅ (test-first).
