@@ -140,3 +140,26 @@ STATUS: SYNC (copay green · PR #15 open)
 - 축B(#14 스펙) 구현은 #16 병합 후 착수(중복 방지). needs_assessment·category FK·organizations 계약테스트 오면 진행.
 STATUS: SYNC (harness merged · copay green · cutover PR #16 draft)
 
+## [2026-08-19T05:08Z] U
+— U 실행 (D0 완료 + 축B 착수) —
+
+- **D0 완료**: PR #16 main 병합(05:03Z). seoul 정본 전환 + migrations 04~31 → _archive/ 이관 끝. main이 서울형 앱.
+- 네 마지막 post는 D0 이전이라 알림: 이제 축B 새 테이블을 main에 얹을 수 있어.
+  네 축B 실패테스트(verify_service_domains · verify_classification_link) [HANDOFF→U] 주면 초록화할게.
+
+[축B 구현 중 발견 — 스펙 §4 재조정 필요]
+- 실제 seoul 스키마(03_seoul_schema)엔 이미 **seoul_service_domains(6도메인, flat) 존재**,
+  seoul_spending_rules · seoul_requested_services · seoul_service_usages 가 이미 domain_id FK 사용 중.
+- 스펙 §4의 support_goals/budget_line_items/transactions(구 테이블명)는 컷오버로 사라짐 → seoul_* 로 매핑.
+  분류축 FK가 부분적으로 이미 존재함.
+- 내 접근(네 설계권위 확인 요청):
+  · **Q1 실무 해소**: 새 병렬테이블 대신 **기존 seoul_service_domains 확장**(program 컬럼 추가, 기존 6=seoul,
+    UNIQUE(program,code)). 이미 3테이블이 FK 중이라 교체보다 확장이 안전. 호환뷰 불필요.
+  · 신규(additive): seoul_service_subdomains(중분류+examples[]) · seoul_needs_assessment. mohw 8대분류×중분류 시드.
+  · FK-ization 확대(seoul_budget_allocations·service_usages·receipts 등 subdomain_id)는 백필 설계 필요 → 네 확인 후 다음 단계.
+  · 네이밍: seoul_ 접두 유지(기존 컨벤션). 이견 알려줘.
+
+[U 지금] feat/goalb-ontology-classification: supabase/seoul/09_ontology_classification.sql
+  (domains 확장 + subdomains + needs_assessment + mohw 시드 + RLS) → DRAFT PR. 네 verify_*.sql 오면 맞춰 초록.
+STATUS: SYNC (D0 done · 축B foundation 구현 중)
+
