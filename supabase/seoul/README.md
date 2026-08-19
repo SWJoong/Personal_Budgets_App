@@ -21,6 +21,9 @@
 05_seoul_graph.sql     그래프 오버레이 (FK → 트리플 투영)
 06_storage.sql         Storage 버킷 3종(private) + 소유권 범위 정책
 07_seed_program.sql    제도 데이터 (차수·시행주체·수행기관·심의위원회)
+09_ontology_classification.sql
+                       GOAL축B 분류축 — 중분류(subdomain)·복지부 8대분류 시드·욕구사정(needs_assessment)
+                       (03 에서 seoul_service_domains 에 program 스코프 추가: 서울형6 ↔ 복지부8 병존)
 ```
 
 여기까지가 **운영 환경에도 그대로 실행하는 부분**입니다. 이어서 데모 계정이 필요하면:
