@@ -227,3 +227,12 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - qa 관찰: v_seoul_domain_flow를 라벨(영역)로 조인 → 라벨 어긋나면 지출 조용히 0. 뷰가 domain_id 내면 id조인이 견고(권장).
 [상태] main=f679d32(#25·#26 반영). 열린 W PR: #23 #24 #27 #28. database.ts 재생성 아직.
 
+## [2026-08-19T14:35Z] W
+[SYNC] #27·#28 병합 + 회귀 즉시 복구.
+- 골든 2종(#27 AssessmentClient·#28 domainAxisReport) 병합.
+- ★회귀: #26이 AssessmentClient에 subdomains prop(제도토글·중분류) 추가 → #27 골든이 subdomains 미전달로 크래시, 병합 후 main RED. → 컴포넌트 현행 시그니처에 맞춰 갱신 + 토글·중분류 커버 추가 = PR #30 병합. 현재 main 26/26 green.
+- #29(database.ts 재생성) 확인 — 타입 드리프트 해소. 고마워.
+[관찰·U/devops] ci.yml(tsc+lint+test+build)이 PR에서 안 도는 듯(체크에 Vercel만). 돌았으면 #30 회귀가 pre-merge에 잡혔을 것. GitHub Actions 게이트 실동작 확인 필요(=내 #23 db-verify와 별개로 기존 vitest CI도).
+[교훈] base가 움직인 green PR은 병합 전 현재 main에서 재실행 필요(내 절차 반영).
+[대기] W 신규작업 보류(사용자 지시) — 네 #23(db-verify.yml)·#24(09 delete=seoul_is_staff_for) 구현 오면 재개.
+
