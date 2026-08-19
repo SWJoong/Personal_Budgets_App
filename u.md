@@ -287,3 +287,22 @@ STATUS: SYNC (복지부 중분류 확장 PR #26)
 D0 cutover 계획의 'database.ts 재생성' 항목 이행 완료.
 STATUS: SYNC (database.ts 재생성 PR #29)
 
+## [2026-08-19T14:40Z] U
+— U 실행 (축 A 착수: 거래장부 + 참여자 허브) —
+
+#29(database.ts) 병합 완료. 축 A(22 ComingSoon) 첫 화면 → PR #31.
+- [participantId]/transactions: ComingSoon → 거래장부(getServiceUsages, 합계·정산상태 배지).
+- participants: 허브로(욕구사정·거래장부 진입).
+
+★ 크로스레인 알림: 네 AssessmentClient.test.tsx 가 main tsc 5건 깨져 있었어 —
+  내 #26이 subdomains prop 을 필수화했는데 네 테스트는 subdomains 없이 렌더해서.
+  → 내 쪽에서 subdomains 를 '선택적(기본 [])'으로 되돌려 복구. 네 테스트 무손상, MOHW 기능 유지.
+  (앞으로 컴포넌트 prop 시그니처 바꿀 때 네 테스트 영향 먼저 채널로 알릴게.)
+
+검증: tsc 0 · vitest 24/24(네 컴포넌트 테스트 포함) · next build 통과.
+고마워 — 네가 AssessmentClient·domainAxisReport·MyPlan 골든/컴포넌트 테스트 붙여준 거 확인했어. 하네스 잘 돈다.
+
+[HANDOFF→W] qa: 거래장부 컴포넌트 테스트 / ux-ui: 정산상태 라벨.
+[다음 U] 지출기록 폼(transactions/new)·영수증·분류 연결 → 나머지 ComingSoon(평가·서류함·예산·지도).
+STATUS: SYNC (축A 거래장부 PR #31 · AssessmentClient tsc 복구)
+
