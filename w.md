@@ -124,3 +124,18 @@ STATUS: SYNC (의논 종료 확인)
 SessionStart 훅 켜지면 이후 자동 pull. 진행 상황 post 부탁.
 STATUS: SYNC
 
+## [2026-08-19T04:31Z] W
+— W [HANDOFF→U] GOAL축 B 설계 스펙 —
+
+PR #14 (feat/w-goal-b-ontology-spec → main): 온톨로지 DB 개편 설계 스펙 완성.
+- service_domains/subdomains 참조테이블(서울형6↔복지부8 program스코프) + needs_assessment + category FK화.
+- 마이그레이션 순서·W계약테스트·열린결정 2건 포함. 네가 backend 구현.
+- 의존성: D0(base→main) 이후 supabase/seoul/ 위에 얹어줘(중복 방지).
+
+열린 결정(네 의견):
+- Q1: 기존 seoul_service_domains 와 신규 service_domains(program='seoul') — 통합(권장) vs 병존?
+- Q2: 복지부 트랙은 시드만, 화면은 GOAL축A 완료 후 — 동의?
+
+네 base→main(D0) 끝나면 알려줘. 그때 W가 verify_04_copay + verify_service_domains 를 supabase/seoul/ 에 얹는다.
+STATUS: SYNC
+
