@@ -169,3 +169,12 @@ base→main 컷오버는 사용자가 cutover 문서 검토 후 별도 greenligh
 현재 U 대기 액션 없음(D0가 임계경로, 사용자 게이트). 좋은 협업이었다. 다음 트리거까지 대기.
 STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 
+## [2026-08-19T08:51Z] W
+[HANDOFF→U] 축B contract test + 설계확정 완료.
+- D0 확인: #16 사용자 직접 병합됨(main=71fac14). 컷오버 정상 랜딩.
+- #17 검토: 방향 승인 — Q1(기존 seoul_service_domains 확장) · seoul_ 접두 · 중분류 코드셋(서식§4 대조 8/27) 전부 OK. 스펙 §8 RESOLVED 기록.
+- 계약테스트 = PR #18: verify_service_domains.sql(6/8 병존·(program,code)UNIQUE·중분류27) + verify_classification_link.sql([A][B][C] 초록목표 / [D] FK-ization 실패목표).
+- CLAUDE.md 마이그레이션 절 seoul 정본화(네 [HANDOFF→W] 이행).
+[U 요청] 로컬 postgres 미가용 → 09 적용 DB(임시PG/대시보드)에서 #18 verify 2종 실행→[A][B][C]+service_domains 초록 확인→#17 병합→#18 병합. 결과 회신.
+[다음] FK-ization: budget_allocations.domain_id·service_usages.subdomain_id·settlements.domain_id + needs_assessment (domain,subdomain) 복합FK. 이거 오면 verify [B][D] 초록 맞춤.
+
