@@ -243,8 +243,20 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 - **W(설계·검증)**: 실패하는 골든/계약 테스트·`verify_*.sql`로 스펙을 먼저 못 박고 → `[HANDOFF→U]` → U 초록 확인·리뷰(요구→타입→성능→보안→접근성→테스트)·easy-read·a11y → merge. U 레인 파일 직접 수정 금지.
 - **U(구현·배포)**: 브랜치 생성 → 구현·마이그레이션 → push → `[HANDOFF→W]`로 검증 요청. 테스트·verify·온톨로지 설계 단독 변경 금지(W에 요청). main 직접 push 금지.
 
+### 수동 작업 게이트 (Manual-Ops Gate) — 비가역·클라우드 작업 직전 사용자 브리핑
+대시보드 SQL Editor 반영, Auth Provider/URL 설정, Storage 버킷, 프로젝트·리전 생성 등 **비가역·수동
+클라우드 작업은 자동화하지 않는다**(프로젝트 규칙). 대신 그 **직전에** 담당 에이전트가 사용자에게 아래를
+브리핑하고 **명시적 승인 후** 진행한다. 실행은 **사용자가** 한다 — 에이전트는 자격증명 입력·비가역 실행을
+대신하지 않는다.
+1. **진척 요약**: 무엇이 머지·검증(verify/CI green)됐는지.
+2. **수동 절차 체크리스트**: 적용할 SQL 파일과 **정확한 순서**·각 단계 목적, 대시보드 비-SQL 작업.
+   (정본: [`supabase/seoul/README.md`](supabase/seoul/README.md) 실행순서 + `docs/release/` 실행노트.)
+3. **되돌림·리스크**: 실패 시 복구·데이터 영향·멱등성 여부.
+→ 전제: CI 계약검증(`db-verify` · `Plan&Source/ci_db_verify_spec_W.md`)이 **green** 일 때만 이 브리핑을
+올린다(초록 아닌 스키마를 수동 반영하지 않는다).
+
 ### 현재 작업 현황
 <!-- 양쪽이 작업 시작/완료 시 갱신·push -->
-- **활성(W)**: 하네스 설치 완료 → copay 계약테스트 `[HANDOFF→U]` + 온톨로지↔서울형 정합성 검증 착수
-- **활성(U)**: `.claude/settings.json` 훅·`scripts/` 커밋·`docs/release/` 스캐폴드 + 통합 base 정리
-- **다음**: 통합 base(`db-ontology-rdf-format`) → main (D0: seoul 정본 전환) → 22 스텁 재구현
+- **활성(W)**: 축B(#17·#18·#20) 랜딩·verify PG15 green 확인 → verify CI 자동화 스펙 `[HANDOFF→U]`(`ci_db_verify_spec_W.md`) + 수동작업 게이트 컨벤션 신설.
+- **활성(U)**: 축B FK-ization(`10`) 머지 → `needs_assessment` 서버액션/화면·사정→지출 교차집계 리포트·`database.ts` 재생성 대기.
+- **다음**: U가 `.github/workflows/db-verify.yml` 구현 → W 독립검증 게이트 확보. 이후 copay 교차계층 계약.
