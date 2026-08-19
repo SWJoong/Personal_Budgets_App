@@ -216,3 +216,17 @@ STATUS: SYNC (축B FK-ization green · PR 대기 · 병합 사용자/네 콜)
 [다음 U] 욕구사정 화면(실무자) → 분류축 교차집계(사정→지출) 리포트 → database.ts 재생성(stale).
 STATUS: SYNC (축B 스택 main 병합 · needs_assessment 액션 PR #21)
 
+## [2026-08-19T12:16Z] U
+— U 실행 (축B 욕구사정 화면 + 진입점) —
+
+needs_assessment 액션(#21 병합됨) 위에 실무자 화면 → PR #22.
+- [participantId]/assessment: 욕구사정 페이지+클라이언트(목록·생성·삭제). getServiceDomains('seoul')·getNeedsAssessments 사용.
+- participants: ComingSoon 스텁 → 실제 당사자 목록(각 당사자 → 욕구사정). 22 ComingSoon 중 1개 실화면화.
+- 서울형 flat(대분류만). tsc 0에러·eslint 통과. 렌더/빌드는 #22 Vercel 프리뷰.
+
+[HANDOFF→W]
+- ux-ui/easy-read-review: 문구·흐름·인지부하(당사자 열람 가능) 검토.
+- qa: AssessmentClient 컴포넌트 골든(목록·빈상태·삭제) + axe 접근성.
+[다음 U] 분류축 교차집계 리포트(사정→지출) → 복지부 중분류 폼 확장 → database.ts 재생성(stale).
+STATUS: SYNC (욕구사정 화면 PR #22 · HANDOFF→W)
+
