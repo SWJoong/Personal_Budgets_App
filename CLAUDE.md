@@ -195,3 +195,40 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 | `/migration` | 다음 번호 Supabase 마이그레이션 파일 생성 |
 | `/server-action` | 서버 액션 스캐폴딩 |
 | `/signed-url` | Storage signed URL 생성 패턴 안내 |
+
+---
+
+## 병렬 하네스 운영 중 (agent-sync) — W · U 2 인스턴스
+
+이 프로젝트는 **2개**의 Claude Code 인스턴스가 병렬로 작업한다(자기 결과를 자기가 채점하지 않게 분리).
+전체 계획·역할스킬 매핑·로드맵: **[docs/harness-plan.md](docs/harness-plan.md)**.
+
+- **W** (Windows/개인): **설계·검증 축** — 역할스킬 `/pl` `/qa` `/ux-ui` `/pm` `/easy-read-review`
+- **U** (Ubuntu/팀): **구현·배포 축** — 역할스킬 `/backend` `/frontend` `/devops`
+
+### 레인 규칙 (충돌 방지의 핵심)
+- **W만** 수정: `Plan&Source/`(온톨로지 설계 포함) · `supabase/**/verify_*.sql` · `src/**/*.{test,spec}.{ts,tsx}` · `src/test/` · `vitest.config.ts` · `.claude/skills/` · `docs/harness-plan.md` · 이 CLAUDE.md 하네스 섹션
+- **U만** 수정: `src/`(테스트 제외) · `supabase/`(빌드 SQL·`migrations/`) · `src/types/database.ts` · `.github/workflows/` · 빌드설정 · `docs/release/` · `.claude/settings.json`
+- 공유 `CLAUDE.md`: 하네스 섹션 = W 저작, 「현재 작업 현황」 = 양쪽 append, 그 외 구조변경 = U
+- **main 직접 push 금지** — 코드는 항상 PR·CI 경유
+
+### 상태 동기화 (복붙 없이)
+- 세션 시작·재개: `bash scripts/agent-sync.sh pull` (SessionStart 훅이 자동)
+- 핸드오프·턴 종료: `bash scripts/agent-sync.sh post <w|u> "진행·문제·다음 요청"`
+- 전용 `agent-sync` 브랜치 = 상태 로그만. 코드 핸드오프는 PR·CI. 접두 `[HANDOFF→W]`·`[HANDOFF→U]`·`[SYNC]`.
+
+### 매 세션 루틴 (토큰 절약)
+1. `agent-sync.sh pull` — 상대 최신 상태만 로드(복붙·재설명 금지).
+2. 아래 「현재 작업 현황」 + 채널 로그로 **내 다음 작업만** 파악.
+3. `npm test && npm run build` — 전체 재검토 대신 게이트만.
+4. **내 레인만** 착수. 턴 종료 시 `post`로 상태만.
+
+### 하네스 역할별 지침
+- **W(설계·검증)**: 실패하는 골든/계약 테스트·`verify_*.sql`로 스펙을 먼저 못 박고 → `[HANDOFF→U]` → U 초록 확인·리뷰(요구→타입→성능→보안→접근성→테스트)·easy-read·a11y → merge. U 레인 파일 직접 수정 금지.
+- **U(구현·배포)**: 브랜치 생성 → 구현·마이그레이션 → push → `[HANDOFF→W]`로 검증 요청. 테스트·verify·온톨로지 설계 단독 변경 금지(W에 요청). main 직접 push 금지.
+
+### 현재 작업 현황
+<!-- 양쪽이 작업 시작/완료 시 갱신·push -->
+- **활성(W)**: 하네스 설치 완료 → copay 계약테스트 `[HANDOFF→U]` + 온톨로지↔서울형 정합성 검증 착수
+- **활성(U)**: `.claude/settings.json` 훅·`scripts/` 커밋·`docs/release/` 스캐폴드 + 통합 base 정리
+- **다음**: 통합 base(`db-ontology-rdf-format`) → main (D0: seoul 정본 전환) → 22 스텁 재구현
