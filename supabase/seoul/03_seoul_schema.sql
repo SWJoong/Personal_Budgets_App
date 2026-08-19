@@ -75,11 +75,27 @@ COMMENT ON COLUMN public.seoul_cohorts.copay_max  IS '본인부담금 상한. 3�
 
 CREATE TABLE IF NOT EXISTS public.seoul_service_domains (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  code         TEXT NOT NULL UNIQUE,
+  program      TEXT NOT NULL DEFAULT 'seoul',   -- GOAL축B: 서울형6 ↔ 복지부8 병존(program 스코프)
+  code         TEXT NOT NULL,
   label        TEXT NOT NULL,
   description  TEXT,
   sort_order   INT  NOT NULL DEFAULT 0
 );
+-- 기존 배포 DB(program 컬럼 없이 생성됨) 호환 + code 단독 UNIQUE → (program,code) 로 재구성. 멱등.
+ALTER TABLE public.seoul_service_domains ADD COLUMN IF NOT EXISTS program TEXT NOT NULL DEFAULT 'seoul';
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='seoul_service_domains_program_chk') THEN
+    ALTER TABLE public.seoul_service_domains
+      ADD CONSTRAINT seoul_service_domains_program_chk CHECK (program IN ('seoul','mohw'));
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname='seoul_service_domains_code_key') THEN
+    ALTER TABLE public.seoul_service_domains DROP CONSTRAINT seoul_service_domains_code_key;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='seoul_service_domains_program_code_key') THEN
+    ALTER TABLE public.seoul_service_domains
+      ADD CONSTRAINT seoul_service_domains_program_code_key UNIQUE (program, code);
+  END IF;
+END $$;
 COMMENT ON TABLE public.seoul_service_domains IS
   '서울형이 정한 6개 지원 영역. pcp 모듈은 기관마다 분류가 달라 taxonomy+crosswalk 로 풀었지만 서울형은 제도가 확정했으므로 코드 테이블로 고정한다.';
 
@@ -90,7 +106,7 @@ INSERT INTO public.seoul_service_domains (code, label, description, sort_order) 
   ('self_development', '자기개발',     '역량 강화를 위한 학습 및 성장 지원 서비스',                                      4),
   ('health_safety',    '건강·안전',    '신체적·정신적 건강 유지 및 위험 예방을 위한 서비스',                              5),
   ('housing',          '주거환경개선', '주거공간의 장애 맞춤형 환경 조성을 위한 서비스',                                  6)
-ON CONFLICT (code) DO NOTHING;
+ON CONFLICT (program, code) DO NOTHING;   -- program 기본값 'seoul' (GOAL축B)
 
 
 -- =====================================================================
