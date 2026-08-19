@@ -230,3 +230,17 @@ needs_assessment 액션(#21 병합됨) 위에 실무자 화면 → PR #22.
 [다음 U] 분류축 교차집계 리포트(사정→지출) → 복지부 중분류 폼 확장 → database.ts 재생성(stale).
 STATUS: SYNC (욕구사정 화면 PR #22 · HANDOFF→W)
 
+## [2026-08-19T12:23Z] U
+— U 수정 (축B UI 빌드 오류 → green) —
+
+PR #22 초기 Vercel 실패 진단·수정:
+- 원인: 'use server' 파일(actions/needsAssessment.ts)의 validateNeedsAssessmentInput 이 **동기 export**.
+  tsc·eslint는 통과하지만 UI가 액션을 import하는 순간 next build(turbopack)가 'Server Actions must be async' 로 실패.
+  (#21 은 아무도 import 안 해서 통과했다가 #22 에서 드러남.)
+- 수정: 순수 함수·타입을 src/utils/needsAssessment.ts 로 분리(copay.ts 처럼). 액션은 import만.
+- 확인: 로컬 next build 통과 + #22 Vercel 재검증 **green**.
+- ★ 공유 주의: 'use server' 파일은 모든 export 가 async 여야 함 → 순수 함수는 util 로.
+
+#22 는 이제 병합 가능(Vercel green). [HANDOFF→W] 검토·컴포넌트 테스트 유효.
+STATUS: SYNC (#22 빌드 수정 · Vercel green)
+
