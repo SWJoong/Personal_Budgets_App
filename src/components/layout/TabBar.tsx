@@ -35,25 +35,25 @@ export function TabBar() {
   }
 
   // 역할별 탭 구성
-  const participantTabs = [
+  // soon: true 인 탭은 아직 서울형 데이터로 다시 만들지 않아 ComingSoon 화면으로 이어진다.
+  type Tab = { name: string; href: string; icon: string; soon?: boolean }
+  const participantTabs: Tab[] = [
     { name: '홈', href: '/', icon: '🏠' },
     { name: '영수증', href: '/receipt', icon: '🧾' },
     { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
-  const supporterTabs = [
+  const supporterTabs: Tab[] = [
     { name: '당사자', href: '/supporter', icon: '👥' },
-    { name: '내역 관리', href: '/supporter/transactions', icon: '📊' },
-    { name: '영수증 확인', href: '/receipt', icon: '🧾' },
-    { name: '달력', href: '/calendar', icon: '📅' },
+    { name: '확인 필요', href: '/supporter/review', icon: '🧾' },
+    { name: '내역 관리', href: '/supporter/transactions', icon: '📊', soon: true },
     { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
-  const adminTabs = [
+  const adminTabs: Tab[] = [
     { name: '당사자 관리', href: '/admin/participants', icon: '👥' },
-    { name: '내역 관리', href: '/supporter/transactions', icon: '📊' },
-    { name: '영수증 확인', href: '/receipt', icon: '🧾' },
-    { name: '달력', href: '/calendar', icon: '📅' },
+    { name: '확인 필요', href: '/supporter/review', icon: '🧾' },
+    { name: '내역 관리', href: '/supporter/transactions', icon: '📊', soon: true },
     { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
@@ -72,12 +72,17 @@ export function TabBar() {
               key={tab.name}
               href={tab.href}
               aria-current={isActive ? "page" : undefined}
-              className={`flex flex-col items-center justify-center gap-1 min-w-[64px] min-h-[44px] min-w-[44px] transition-colors ${
+              className={`relative flex flex-col items-center justify-center gap-1 min-w-[64px] min-h-[44px] min-w-[44px] transition-colors ${
                 isActive ? 'text-primary' : 'text-zinc-500 hover:text-zinc-700'
               }`}
             >
               <span className={`text-xl sm:text-2xl transition-transform ${isActive ? 'scale-110' : ''}`}>{tab.icon}</span>
               <span className={`text-xs font-medium ${isActive ? 'font-bold' : ''}`}>{tab.name}</span>
+              {tab.soon && (
+                <span className="absolute top-0 right-0.5 text-[8px] font-black px-1 rounded-full bg-amber-100 text-amber-700 ring-1 ring-amber-200">
+                  준비중
+                </span>
+              )}
             </Link>
           )
         })}

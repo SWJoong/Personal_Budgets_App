@@ -1,5 +1,9 @@
 # 아름드리꿈터 개인예산 관리 앱 (Personal Budgets App)
 
+> **이 브랜치(`claude/seoul-personal-budget-rebuild`)는 서울형 개인예산제 전용 리빌딩 작업 중입니다.**
+> DB 빌드·신원 모델·배포 절차는 이 문서가 아니라 **`supabase/seoul/README.md`** 를 따르세요.
+> 아래 내용은 원본(PCP·복지부형) 앱 기준이며 이 브랜치의 코드와 일부 맞지 않을 수 있습니다.
+
 발달장애인 당사자를 위한 개인별 예산 관리 웹 애플리케이션
 
 [![Vercel](https://img.shields.io/badge/배포-Vercel-black)](https://personal-budgets-app-gp8t.vercel.app/)
@@ -304,7 +308,13 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key  # 서버 전용, 절대 노출 금지
 
-# 데모 모드 (true = 로그인 없이 체험 가능)
+# 로그인 — 구글 OAuth 콜백이 사용. 셋 다 없으면 아무도 로그인하지 못한다.
+NEXT_PUBLIC_SITE_URL=https://your-app.vercel.app
+SUPER_ADMIN_EMAIL=you@example.com          # 첫 로그인 시 무조건 관리자로 지정 (부트스트랩 탈출구)
+ALLOWED_EMAIL_DOMAINS=example.org           # 이 도메인 이메일은 실무자로 자동 인식, 쉼표로 여러 개
+
+# 데모 모드 (true = 로그인 없이 체험 가능) — 서울형 리빌딩 브랜치에서는 사용하지 않는다.
+# supabase/seoul/README.md 의 NEXT_PUBLIC_DEMO_LOGIN_ENABLED 를 대신 참고할 것.
 NEXT_PUBLIC_DEMO_MODE=true
 
 # OpenAI (영수증 OCR 및 AI 계획 생성 — 선택사항)

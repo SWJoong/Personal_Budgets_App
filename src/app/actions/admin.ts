@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient, createAdminClient } from '@/utils/supabase/server'
+import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { UserRole } from '@/types/database'
 
@@ -108,38 +108,27 @@ export async function assignRoleForFirstUser() {
 
 /**
  * 새 당사자 등록 (participants 테이블에 직접 생성)
- * participants는 profiles와 독립 — 자체 name, email 컬럼 보유
+ *
+ * 예산 배정은 여기서 하지 않는다 — 서울형은 신청→선정→계획→심의를 거쳐야
+ * seoul_budget_allocations 가 생기므로, 등록 시점에 예산 기본값을 넣는 것은
+ * 제도 흐름과 맞지 않는다(§2 서울형 온톨로지 설계 참조).
+ *
+ * email 은 필수다 — 당사자가 나중에 구글로 로그인하면 handle_new_user() 트리거가
+ * 이 이메일과 일치하는 행을 찾아 auth_user_id 를 자동으로 채운다.
  */
 export async function createParticipant(formData: {
   name: string
   email: string
-  monthlyBudget: number
-  yearlyBudget: number
-  startDate: string
-  endDate: string
-  alertThreshold: number
   supporterId: string | null
-  fundingSources: Array<{
-    name: string
-    monthlyBudget: number
-    yearlyBudget: number
-  }>
 }) {
   const { supabase } = await verifyAdmin()
 
   try {
-    // 1. 당사자 등록 (profiles 불필요 — participants 자체 인적사항 보유)
     const { data: participant, error: participantError } = await supabase
       .from('participants')
       .insert({
         name: formData.name,
         email: formData.email,
-        monthly_budget_default: formData.monthlyBudget,
-        yearly_budget_default: formData.yearlyBudget,
-        budget_start_date: formData.startDate,
-        budget_end_date: formData.endDate,
-        funding_source_count: formData.fundingSources.length,
-        alert_threshold: formData.alertThreshold,
         assigned_supporter_id: formData.supporterId || null,
       })
       .select('id')
@@ -149,59 +138,30 @@ export async function createParticipant(formData: {
       return { error: `당사자 등록 실패: ${participantError?.message}` }
     }
 
-    const newParticipantId = participant.id
-
-    // 2. 재원 등록 (배치 INSERT)
-    if (formData.fundingSources.length > 0) {
-      const { error: fsError } = await supabase
-        .from('funding_sources')
-        .insert(
-          formData.fundingSources.map((fs: any) => ({
-            participant_id: newParticipantId,
-            name: fs.name,
-            monthly_budget: fs.monthlyBudget,
-            yearly_budget: fs.yearlyBudget,
-            current_month_balance: fs.monthlyBudget,
-            current_year_balance: fs.yearlyBudget,
-          }))
-        )
-
-      if (fsError) {
-        return { error: `재원 등록 실패: ${fsError.message}` }
-      }
-    }
-
     revalidatePath('/admin/participants')
-    return { success: true, participantId: newParticipantId }
-  } catch (e: any) {
-    return { error: `오류: ${e.message}` }
+    return { success: true, participantId: participant.id }
+  } catch (e) {
+    return { error: `오류: ${e instanceof Error ? e.message : String(e)}` }
   }
 }
 
 /**
  * 당사자 정보 업데이트
+ *
+ * 예산 관련 필드(월/연 예산·경고 기준액)는 서울형 코어에 없다 — 예산은
+ * seoul_budget_allocations 로 심의를 거쳐 배정된다. 등록 정보(이름·이메일·담당자)만 다룬다.
  */
 export async function updateParticipant(participantId: string, formData: {
   name?: string
   email?: string
-  monthlyBudget?: number
-  yearlyBudget?: number
-  startDate?: string
-  endDate?: string
-  alertThreshold?: number
   supporterId?: string | null
 }) {
   const { supabase } = await verifyAdmin()
 
   try {
-    const updateData: any = {}
+    const updateData: { name?: string; email?: string; assigned_supporter_id?: string | null } = {}
     if (formData.name !== undefined) updateData.name = formData.name
     if (formData.email !== undefined) updateData.email = formData.email
-    if (formData.monthlyBudget !== undefined) updateData.monthly_budget_default = formData.monthlyBudget
-    if (formData.yearlyBudget !== undefined) updateData.yearly_budget_default = formData.yearlyBudget
-    if (formData.startDate !== undefined) updateData.budget_start_date = formData.startDate
-    if (formData.endDate !== undefined) updateData.budget_end_date = formData.endDate
-    if (formData.alertThreshold !== undefined) updateData.alert_threshold = formData.alertThreshold
     if (formData.supporterId !== undefined) updateData.assigned_supporter_id = formData.supporterId
 
     const { error } = await supabase
@@ -215,19 +175,19 @@ export async function updateParticipant(participantId: string, formData: {
 
     revalidatePath('/admin/participants')
     revalidatePath(`/admin/participants/${participantId}`)
-    revalidatePath(`/admin/participants/${participantId}/preview`)
     return { success: true }
-  } catch (e: any) {
-    return { error: `오류: ${e.message}` }
+  } catch (e) {
+    return { error: `오류: ${e instanceof Error ? e.message : String(e)}` }
   }
 }
 
 /**
  * 당사자 삭제 (CASCADE로 관련 데이터도 함께 삭제됨)
+ *
+ * 데모 모드 삭제 차단 가드는 없앴다 — 데모 계정도 이제 실제 role='admin' 계정이라
+ * 삭제 권한은 RLS(seoul_is_admin())가 그대로 결정한다.
  */
 export async function deleteParticipant(participantId: string) {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return { error: '데모 모드에서는 삭제할 수 없습니다.' }
-
   const { supabase } = await verifyAdmin()
 
   try {
@@ -242,105 +202,8 @@ export async function deleteParticipant(participantId: string) {
 
     revalidatePath('/admin/participants')
     return { success: true }
-  } catch (e: any) {
-    return { error: `오류: ${e.message}` }
-  }
-}
-
-/**
- * 재원 정보 업데이트
- */
-export async function updateFundingSource(fundingSourceId: string, formData: {
-  name?: string
-  monthlyBudget?: number
-  yearlyBudget?: number
-}) {
-  const { supabase } = await verifyAdmin()
-
-  try {
-    const updateData: any = {}
-    if (formData.name !== undefined) updateData.name = formData.name
-    if (formData.monthlyBudget !== undefined) {
-      updateData.monthly_budget = formData.monthlyBudget
-      updateData.current_month_balance = formData.monthlyBudget
-    }
-    if (formData.yearlyBudget !== undefined) {
-      updateData.yearly_budget = formData.yearlyBudget
-      updateData.current_year_balance = formData.yearlyBudget
-    }
-
-    const { error } = await supabase
-      .from('funding_sources')
-      .update(updateData)
-      .eq('id', fundingSourceId)
-
-    if (error) {
-      return { error: `재원 업데이트 실패: ${error.message}` }
-    }
-
-    revalidatePath('/admin/participants')
-    return { success: true }
-  } catch (e: any) {
-    return { error: `오류: ${e.message}` }
-  }
-}
-
-/**
- * 재원 추가
- */
-export async function createFundingSource(participantId: string, formData: {
-  name: string
-  monthlyBudget: number
-  yearlyBudget: number
-}) {
-  const { supabase } = await verifyAdmin()
-
-  try {
-    const { error } = await supabase
-      .from('funding_sources')
-      .insert({
-        participant_id: participantId,
-        name: formData.name,
-        monthly_budget: formData.monthlyBudget,
-        yearly_budget: formData.yearlyBudget,
-        current_month_balance: formData.monthlyBudget,
-        current_year_balance: formData.yearlyBudget,
-      })
-
-    if (error) {
-      return { error: `재원 추가 실패: ${error.message}` }
-    }
-
-    revalidatePath('/admin/participants')
-    revalidatePath(`/admin/participants/${participantId}`)
-    return { success: true }
-  } catch (e: any) {
-    return { error: `오류: ${e.message}` }
-  }
-}
-
-/**
- * 재원 삭제
- */
-export async function deleteFundingSource(fundingSourceId: string) {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') return { error: '데모 모드에서는 삭제할 수 없습니다.' }
-
-  const { supabase } = await verifyAdmin()
-
-  try {
-    const { error } = await supabase
-      .from('funding_sources')
-      .delete()
-      .eq('id', fundingSourceId)
-
-    if (error) {
-      return { error: `재원 삭제 실패: ${error.message}` }
-    }
-
-    revalidatePath('/admin/participants')
-    return { success: true }
-  } catch (e: any) {
-    return { error: `오류: ${e.message}` }
+  } catch (e) {
+    return { error: `오류: ${e instanceof Error ? e.message : String(e)}` }
   }
 }
 

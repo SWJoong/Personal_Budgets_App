@@ -2,33 +2,13 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-// 데모 모드에서 사용할 고정 UUID
-// - admin: 데모 전용 UUID (migration 10에서 profiles 테이블에 삽입)
-// - participant: seed.sql의 김지수 UUID
-const DEMO_ADMIN_ID = '00000000-0000-0000-0000-000000000001'
-const DEMO_PARTICIPANT_ID = '11e95b8b-6806-496d-9f36-88bd04e814b3'
+// 데모 계정도 실제 Supabase Auth 계정으로 로그인한다(src/app/actions/demoAuth.ts).
+// 서비스 롤로 auth.getUser() 를 스푸핑하던 이전 방식은 RLS 를 전면 우회했고,
+// 쿠키를 클라이언트 JS 가 직접 썼기 때문에 누구나 관리자로 자칭할 수 있었다.
+// createClient() 는 이제 항상 세션 기반 클라이언트를 반환한다.
 
 export async function createClient() {
   const cookieStore = await cookies()
-
-  // 데모 모드: 서비스 롤 클라이언트 반환 + auth.getUser() 스푸핑
-  // demo_role 쿠키(login 페이지에서 설정)를 읽어 역할에 맞는 데모 유저 반환
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
-    const demoRole = cookieStore.get('demo_role')?.value || 'admin'
-    const demoUserId = demoRole === 'participant' ? DEMO_PARTICIPANT_ID : DEMO_ADMIN_ID
-    const demoUser = {
-      id: demoUserId,
-      email: demoRole === 'admin' ? 'admin@demo.com' : 'participant@demo.com',
-      aud: 'authenticated',
-      role: 'authenticated',
-      created_at: new Date().toISOString(),
-    }
-
-    const adminClient = createAdminClient()
-    // 스프레드 대신 직접 오버라이드: prototype 메서드(from, rpc 등)를 유지
-    adminClient.auth.getUser = async () => ({ data: { user: demoUser as any }, error: null })
-    return adminClient
-  }
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321',

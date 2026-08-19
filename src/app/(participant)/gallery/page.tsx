@@ -1,87 +1,85 @@
-import { createClient } from '@/utils/supabase/server'
+import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { EasyTerm } from '@/components/ui/EasyTerm'
-import GalleryClient from './GalleryClient'
-import { getSignedImageUrls } from '@/app/actions/storage'
-import NavDropdown from '@/components/layout/NavDropdown'
+import { getCurrentParticipant } from '@/utils/supabase/participant'
 
-function getRecentMonths(count: number) {
-  const months = []
-  const now = new Date()
-  for (let i = 0; i < count; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-    const label = `${d.getFullYear()}년 ${d.getMonth() + 1}월`
-    months.push({ value, label })
-  }
-  return months
-}
-
-export default async function GalleryPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ month?: string }>
-}) {
-  const params = await searchParams
+export default async function GalleryPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) redirect('/login')
 
-  const months = getRecentMonths(6)
-  const currentMonth = params.month || months[0].value
+  const participant = await getCurrentParticipant()
 
-  // 해당 월의 시작/끝 날짜 계산
-  const [year, month] = currentMonth.split('-').map(Number)
-  const startDate = `${currentMonth}-01`
-  const nextMonthDate = new Date(year, month, 1) // month is 1-based so this gives next month day 1
-  const endDate = nextMonthDate.toISOString().split('T')[0]
+  if (!participant) {
+    return (
+      <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
+        <header className="flex h-14 items-center px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
+          <h1 className="text-sm font-black text-zinc-800">영수증 모아보기</h1>
+        </header>
+        <main className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-4">
+          <span className="text-6xl">🖼️</span>
+          <p className="text-zinc-500 font-medium leading-relaxed">아직 예산 정보가 없어요.<br />담당 선생님에게 말씀해 주세요.</p>
+        </main>
+      </div>
+    )
+  }
 
-  const { data: transactions } = await supabase
-    .from('transactions')
-    .select('id, activity_name, date, amount, receipt_image_url, activity_image_url, category')
-    .eq('participant_id', user.id)
-    .gte('date', startDate)
-    .lt('date', endDate)
-    .or('receipt_image_url.not.is.null,activity_image_url.not.is.null')
-    .order('date', { ascending: false })
+  const { data: usages } = await supabase
+    .from('seoul_service_usages')
+    .select('id, usage_date, description')
+    .eq('participant_id', participant.id)
 
-  const rawItems = (transactions || []).filter(
-    (t: any) => t.receipt_image_url || t.activity_image_url
+  const usageIds = (usages ?? []).map((u) => u.id)
+  const { data: receipts } = usageIds.length
+    ? await supabase.from('seoul_receipts').select('usage_id, storage_path').in('usage_id', usageIds)
+    : { data: [] as { usage_id: string; storage_path: string }[] }
+
+  const admin = createAdminClient()
+  const photos = await Promise.all(
+    (receipts ?? []).map(async (r) => {
+      const usage = usages?.find((u) => u.id === r.usage_id)
+      const { data } = await admin.storage.from('receipts').createSignedUrl(r.storage_path, 3600)
+      return {
+        usageId: r.usage_id,
+        url: data?.signedUrl ?? null,
+        description: usage?.description ?? '활동',
+        date: usage?.usage_date ?? '',
+      }
+    })
   )
-  const signedUrls = await getSignedImageUrls(
-    rawItems.map((t: any) => ({
-      id: t.id,
-      receiptUrl: t.receipt_image_url ?? null,
-      activityUrl: t.activity_image_url ?? null,
-    }))
-  )
-  const items = rawItems.map((t: any) => ({
-    id: t.id,
-    activity_name: t.activity_name,
-    date: t.date,
-    amount: t.amount,
-    receipt_image_url: signedUrls[t.id]?.receipt ?? t.receipt_image_url,
-    activity_image_url: signedUrls[t.id]?.activity ?? t.activity_image_url,
-    category: t.category,
-  }))
+  const validPhotos = photos.filter((p) => p.url)
 
   return (
-    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
-      <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl">←</Link>
-          <h1 className="text-lg font-bold tracking-tight">
-            <EasyTerm formal="사진 모아보기" easy="내 사진들 보기" />
-          </h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <NavDropdown />
-        </div>
+    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
+      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
+        <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
+          ←
+        </Link>
+        <h1 className="text-sm font-black text-zinc-800">영수증 모아보기</h1>
       </header>
 
-      <GalleryClient items={items} currentMonth={currentMonth} months={months} />
+      <main className="flex-1 p-6 max-w-sm mx-auto w-full">
+        {validPhotos.length === 0 ? (
+          <div className="flex flex-col items-center justify-center text-center gap-4 pt-16">
+            <span className="text-6xl">🖼️</span>
+            <p className="text-zinc-500 font-medium leading-relaxed">아직 사진이 없어요.<br />지출을 기록할 때 사진을 함께 남겨보세요.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {validPhotos.map((p) => (
+              <div key={p.usageId} className="flex flex-col gap-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={p.url!}
+                  alt={`${p.description} 영수증`}
+                  className="w-full aspect-square object-cover rounded-2xl ring-1 ring-zinc-200"
+                />
+                <span className="text-xs text-zinc-500 font-medium truncate">{p.description}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   )
 }

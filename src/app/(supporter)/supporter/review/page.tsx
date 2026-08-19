@@ -1,131 +1,70 @@
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import ReviewQueueClient from '@/components/transactions/ReviewQueueClient'
-import AdminHelpButton from '@/components/help/AdminHelpButton'
-import { getSignedImageUrls } from '@/app/actions/storage'
+import { requireStaff } from '@/utils/supabase/staff'
+import { getRuleChecks } from '@/app/actions/ruleCheck'
+import { getReceiptSignedUrl } from '@/app/actions/serviceUsage'
+import ReviewQueueClient from './ReviewQueueClient'
 
 export default async function ReviewQueuePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { supabase } = await requireStaff()
+  const { ruleChecks, error } = await getRuleChecks(true)
 
-  if (!user) redirect('/login')
+  const usageIds = [...new Set(ruleChecks.map((rc) => rc.usage_id))]
+  const ruleIds = [...new Set(ruleChecks.map((rc) => rc.rule_id))]
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  const [{ data: usages }, { data: rules }] = await Promise.all([
+    usageIds.length
+      ? supabase.from('seoul_service_usages').select('id, participant_id, usage_date, amount, description, provider_id').in('id', usageIds)
+      : Promise.resolve({ data: [] as { id: string; participant_id: string; usage_date: string; amount: number; description: string | null; provider_id: string | null }[] }),
+    ruleIds.length
+      ? supabase.from('seoul_spending_rules').select('id, label').in('id', ruleIds)
+      : Promise.resolve({ data: [] as { id: string; label: string }[] }),
+  ])
 
-  if (!profile || (profile.role !== 'supporter' && profile.role !== 'admin')) {
-    redirect('/')
-  }
+  const participantIds = [...new Set((usages ?? []).map((u) => u.participant_id))]
+  const providerIds = [...new Set((usages ?? []).map((u) => u.provider_id).filter((id): id is string => !!id))]
 
-  // 미확인(pending) 거래 조회 — 담당 당사자만 (지원자), 전체 (관리자)
-  let participantsQuery = supabase
-    .from('participants')
-    .select('id, name, funding_sources(id, name)')
+  const [{ data: participants }, { data: providers }] = await Promise.all([
+    participantIds.length
+      ? supabase.from('participants').select('id, name').in('id', participantIds)
+      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+    providerIds.length
+      ? supabase.from('seoul_service_providers').select('id, name').in('id', providerIds)
+      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+  ])
 
-  if (profile.role === 'supporter') {
-    participantsQuery = participantsQuery.eq('assigned_supporter_id', user.id)
-  }
+  // 실무자가 사진·장소를 못 본 채 "그대로 인정"/"제외"를 누르는 것을 막는다 —
+  // 검토 화면의 존재 이유가 바로 이 증거를 보고 판단하는 것이다.
+  const receiptUrls = await Promise.all(usageIds.map((id) => getReceiptSignedUrl(id)))
+  const receiptUrlByUsage = new Map(usageIds.map((id, i) => [id, receiptUrls[i]?.url ?? null]))
 
-  const { data: participants } = await participantsQuery
-  const participantIds = (participants ?? []).map((p: any) => p.id)
+  const usageById = new Map((usages ?? []).map((u) => [u.id, u]))
+  const ruleById = new Map((rules ?? []).map((r) => [r.id, r]))
+  const participantById = new Map((participants ?? []).map((p) => [p.id, p.name]))
+  const providerById = new Map((providers ?? []).map((p) => [p.id, p.name]))
 
-  // 재원 맵 (participant_id → FundingSource[])
-  const allFundingSources: Record<string, { id: string; name: string }[]> = {}
-  for (const p of participants ?? []) {
-    allFundingSources[(p as any).id] = ((p as any).funding_sources ?? []).map((fs: any) => ({
-      id: fs.id,
-      name: fs.name,
-    }))
-  }
-
-  // pending 거래 조회
-  let txQuery = supabase
-    .from('transactions')
-    .select(`
-      id,
-      participant_id,
-      activity_name,
-      amount,
-      date,
-      category,
-      payment_method,
-      receipt_image_url,
-      funding_source_id,
-      place_name,
-      place_lat,
-      place_lng,
-      participants!transactions_participant_id_fkey ( name ),
-      funding_sources!transactions_funding_source_id_fkey ( name )
-    `)
-    .eq('status', 'pending')
-    .order('date', { ascending: false })
-
-  if (profile.role === 'supporter' && participantIds.length > 0) {
-    txQuery = txQuery.in('participant_id', participantIds)
-  }
-
-  const { data: rawTx } = await txQuery
-
-  const transactions = (rawTx ?? []).map((t: any) => ({
-    id: t.id,
-    participant_id: t.participant_id,
-    participant_name: t.participants?.name ?? '알 수 없음',
-    activity_name: t.activity_name,
-    amount: Number(t.amount),
-    date: t.date,
-    category: t.category ?? '기타',
-    payment_method: t.payment_method ?? '',
-    receipt_image_url: t.receipt_image_url ?? null,
-    funding_source_id: t.funding_source_id ?? null,
-    funding_source_name: t.funding_sources?.name ?? null,
-    place_name: t.place_name ?? null,
-    place_lat: t.place_lat ?? null,
-    place_lng: t.place_lng ?? null,
-  }))
-
-  // 영수증 이미지 signed URL 변환 (버킷이 private일 때 필요)
-  const signedUrls = await getSignedImageUrls(
-    transactions.map(t => ({ id: t.id, receiptUrl: t.receipt_image_url, activityUrl: null }))
-  )
-  const transactionsWithSignedUrls = transactions.map(t => ({
-    ...t,
-    receipt_image_url: signedUrls[t.id]?.receipt ?? t.receipt_image_url,
-  }))
+  const items = ruleChecks.map((rc) => {
+    const usage = usageById.get(rc.usage_id)
+    return {
+      id: rc.id,
+      ruleLabel: rc.rule_id ? ruleById.get(rc.rule_id)?.label ?? '' : '',
+      participantName: usage ? participantById.get(usage.participant_id) ?? '' : '',
+      usageDate: usage?.usage_date ?? '',
+      amount: usage?.amount ?? 0,
+      description: usage?.description ?? null,
+      placeName: usage?.provider_id ? providerById.get(usage.provider_id) ?? null : null,
+      receiptUrl: receiptUrlByUsage.get(rc.usage_id) ?? null,
+    }
+  })
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground p-4 sm:p-8">
-      <header className="flex items-center gap-3 mb-8">
-        <Link
-          href="/supporter/transactions"
-          className="text-zinc-400 hover:text-zinc-600 transition-colors text-xl"
-        >
-          ←
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">영수증 검토 대기열</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
-            당사자가 올린 영수증을 확인하고 잔액에 반영해요
-          </p>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          {transactions.length > 0 && (
-            <span className="px-3 py-1 rounded-full bg-orange-100 text-orange-600 text-sm font-black">
-              {transactions.length}건 대기
-            </span>
-          )}
-          <AdminHelpButton pageKey="review" />
-        </div>
+    <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
+      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+        <h1 className="text-xl font-bold tracking-tight">확인이 필요한 지출</h1>
       </header>
-
-      <main className="w-full max-w-2xl flex flex-col gap-4">
-        <ReviewQueueClient
-          transactions={transactionsWithSignedUrls}
-          allFundingSources={allFundingSources}
-        />
+      <main className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6">
+        {error && (
+          <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>
+        )}
+        <ReviewQueueClient items={items} />
       </main>
     </div>
   )

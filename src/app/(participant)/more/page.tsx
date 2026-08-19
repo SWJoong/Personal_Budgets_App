@@ -19,18 +19,12 @@ export default async function MorePage({
     redirect('/login')
   }
 
-  // 당사자 정보 및 파일 링크 조회
+  // 당사자 정보 조회
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
-
-  const { data: fileLinks } = await supabase
-    .from('file_links')
-    .select('*')
-    .eq('participant_id', user.id)
-    .order('created_at', { ascending: false })
 
   return (
     <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
@@ -63,7 +57,7 @@ export default async function MorePage({
         </section>
 
         {/* 클라이언트 컴포넌트 (설정 및 로그아웃 핸들링) */}
-        <MoreMenuClient fileLinks={fileLinks || []} initialOpenSection={open} />
+        <MoreMenuClient fileLinks={[]} initialOpenSection={open} />
         
         <div className="text-center py-4">
           <p className="text-[10px] font-bold text-zinc-300 uppercase tracking-[0.3em]">아름드리꿈터 개인예산</p>
