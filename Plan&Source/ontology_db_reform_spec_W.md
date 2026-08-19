@@ -74,6 +74,12 @@ CREATE TABLE public.needs_assessment (
 | `transactions.category` | 자유텍스트 | `subdomain_id UUID FK` 추가(지출을 분류축에 연결) |
 - 백필: 기존 문자열 → code 매핑표로 1회 변환(매핑 불가값은 로그 후 NULL 유지, 수동 정리).
 
+> **컷오버(#16) 반영 — 실제 seoul 테이블 매핑** (구 표의 이름은 컷오버로 소멸):
+> - `support_goals` → **`seoul_requested_services`** (`domain_id` 이미 보유 ✅)
+> - `budget_line_items` → **`seoul_budget_allocations`** (분류 FK 미부착 → 추가 필요)
+> - `transactions` → **`seoul_service_usages`** (`domain_id` ✅ / `subdomain_id` 추가 필요)
+> - 평가 → **`seoul_settlements`** (분류 FK 미부착 → 추가 필요)
+
 ## 5. 연결 축 (온톨로지의 목적)
 `needs_assessment.domain` → `support_goals.domain` → `budget_allocations/line_items.subdomain` → `transactions.subdomain` → `evaluations`.
 → **동일 분류축으로 "사정→목표→예산→지출→평가"를 추적**. (예: '이동지원' 욕구가 목표·예산·실제 지출·평가까지 한 축으로 집계)
@@ -91,6 +97,23 @@ CREATE TABLE public.needs_assessment (
 - TS: 매핑표 순수함수(자유텍스트→code) 골든 — 대표 입력 커버.
 - **의존성**: 이 스펙은 D0(base→main) **이후** supabase/seoul/ 위에 얹는다(중복 방지).
 
-## 8. 열린 결정 (사용자/U 확인 요망)
-- Q1: 서울형 `seoul_service_domains`(기존)와 신규 `service_domains(program='seoul')` — **통합**(권장: 신규로 일원화, 뷰로 호환) vs **병존**?
-- Q2: 복지부 트랙(program='mohw')은 시드만 준비하고 화면은 GOAL축 A 완료 후 착수 확인.
+## 8. 결정 기록 (W 설계권위 · 2026-08-19 확정)
+PR #17(구현 U) 검토 결과 아래로 **확정**한다. 초안 §2 의 신규 `service_domains` 스케치는 컷오버 후 실제 스키마에 맞춰 아래로 대체됨.
+
+- **Q1 — RESOLVED: 기존 `seoul_service_domains` 확장(program 스코프) 채택** (신규 병렬 테이블 X).
+  근거: 컷오버(#16)로 `seoul_service_domains` 가 정본이 되었고, 이미 3개 FK가 이를 참조
+  (`seoul_spending_rules.domain_id`·`seoul_requested_services.domain_id`·`seoul_service_usages.domain_id`).
+  신규 테이블로 갈아끼우면 3 FK 이관+백필+뷰호환이 필요 → 확장이 **더 낮은 위험으로 같은 목적**(단일 분류축) 달성.
+  → 스펙 §2 의 `service_domains`/`service_subdomains` 는 `seoul_service_domains`/`seoul_service_subdomains` 로 읽는다.
+- **네이밍 — RESOLVED: `seoul_` 접두 채택** (`seoul_service_subdomains`·`seoul_needs_assessment`). 컷오버 `seoul_*` 관례와 일관.
+- **중분류 코드셋 — RESOLVED: 승인.** 09 시드(대분류 8·중분류 27)를 복지부 서식 §4 원문과 1:1 대조 확인.
+  계약: `verify_service_domains.sql`(개수·코드셋·(program,code) UNIQUE·병존).
+- **Q2 — 유지:** 복지부(program='mohw')는 시드만. 화면은 GOAL축 A 완료 후.
+
+### 8-1. 신규 계약(정합성) — 다음 FK-ization 단계로 이월
+- **(domain,subdomain) 일치 · (program,domain) 일치**: `seoul_needs_assessment` 는 domain/subdomain 를 각각
+  독립 FK 로만 걸어 **교차 불일치가 가능**(예: domain=seoul/daily_living 인데 subdomain=mohw 하위). 미방어.
+  → 권장: `seoul_service_subdomains(id, domain_id)` 복합 UNIQUE + `needs_assessment` 복합 FK(또는 트리거).
+  `verify_classification_link.sql [B]` 가 이를 **실패로 박음** — U 가 다음 단계에서 초록화.
+- **5노드 단일축 완성**: `budget_allocations`·`service_usages(subdomain)`·평가(`settlements`) 에 분류 FK 미부착.
+  `verify_classification_link.sql [D]` 가 목표를 명시(현재 ❌). 백필 설계 확정 후 착수.
