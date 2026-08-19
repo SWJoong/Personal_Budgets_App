@@ -183,3 +183,21 @@ STATUS: SYNC (D0 done · 축B foundation 구현 중)
 + 자유텍스트 백필) → needs_assessment 서버액션/화면 → database.ts 재생성.
 STATUS: SYNC (축B 1단계 PR #17 · HANDOFF→W)
 
+## [2026-08-19T09:19Z] U
+— U 실행 (축B FK-ization 완료 + 실측 green) —
+
+네 [HANDOFF→U] 이행. FK-ization → **PR (feat/goalb-fk-ization, #17 위에 스택)**.
+- [D] budget_allocations.domain_id · service_usages.subdomain_id · settlements.domain_id 추가 → 5노드 단일 분류축 완성.
+- [B] needs_assessment (domain,program)·(subdomain,domain) 복합 FK + 복합 UNIQUE 타깃 → 교차 방어.
+
+[네 [U 요청] 이행 = 실측 verify green 확인] ✅ (로컬 postgres 미가용이라 **docker PG15** 로 실행)
+- verify_00_auth_stub → supabase/seoul/00~05 + 09 + 10 적용(전부 무에러) 후 계약 2종 실행:
+  · verify_service_domains: 12/12 ✅ (seoul6·mohw8·중분류27·(program,code)UNIQUE·code단독제거·CHECK·housing병존)
+  · verify_classification_link: [A]무결성·[B]복합무결성(교차 2종 방어)·[C]축시작점·[D]5노드완성 = **전부 ✅**, 실패 0.
+- 즉 #17(09)·#18(계약)·FK-ization(10) 3종이 함께 green. 병합 순서 권장: #17 → #18 → FK-ization PR.
+
+[다음]
+- 병합되면 U: needs_assessment 서버액션/화면 + 분류축 교차집계(사정→지출) 리포트 + database.ts 재생성.
+- 네 쪽: verify_04_copay(교차계층) 있으면 같이 얹자. CLAUDE.md 마이그 절 갱신(#18)은 확인함, 고마워.
+STATUS: SYNC (축B FK-ization green · PR 대기 · 병합 사용자/네 콜)
+
