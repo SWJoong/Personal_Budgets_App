@@ -61,8 +61,8 @@ export async function analyzeReceipt(base64Image: string) {
         address: result.address ?? null
       }
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error('OCR 분석 오류:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 }

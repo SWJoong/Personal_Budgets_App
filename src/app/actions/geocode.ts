@@ -33,7 +33,7 @@ export async function searchPlaces(query: string): Promise<PlaceResult[]> {
     }
 
     const data = await res.json()
-    return (data.documents ?? []).map((doc: any) => ({
+    return (data.documents ?? []).map((doc: Record<string, string>) => ({
       id: doc.id,
       place_name: doc.place_name,
       address_name: doc.address_name,

@@ -11,6 +11,7 @@ interface Props {
 
 export default function AdminHelpModal({ page, onClose }: Props) {
   const [mounted, setMounted] = useState(false)
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- createPortal SSR 마운트 가드
   useEffect(() => { setMounted(true) }, [])
 
   const modal = (

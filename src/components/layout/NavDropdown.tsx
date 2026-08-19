@@ -47,10 +47,12 @@ export default function NavDropdown() {
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- createPortal SSR 마운트 가드
   useEffect(() => { setMounted(true) }, [])
 
   // 페이지 이동 시 자동 닫기
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 라우트 변경 시 드롭다운 닫기(외부 nav 상태 동기화)
     setIsOpen(false)
   }, [pathname])
 

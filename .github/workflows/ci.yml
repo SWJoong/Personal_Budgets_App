@@ -23,31 +23,25 @@ jobs:
       - name: TypeCheck
         run: npx tsc --noEmit
 
+      # 린트 차단(blocking) — 컷오버 유입분 22건(react-hooks/set-state-in-effect 11·
+      # no-unescaped-entities 6·no-explicit-any 5)을 정리해 승격. 이제 새 린트 에러는 CI 를 실패시킨다.
+      # (set-state-in-effect 는 SSR 마운트 동기화 등 정당한 기존 패턴에 한해 사유 명시 scoped-disable.
+      #  no-img-element 등은 warning 이라 통과 — 필요 시 별도 정리.)
       - name: Lint
         run: npm run lint
 
       - name: Test
         run: npm test
 
-      - name: Build (production)
+      # 빌드 게이트 — 시크릿이 없어도 항상 컴파일되도록 더미 폴백을 준다(결정적 회귀 감지가 목적).
+      # 실제 클라우드 값 검증은 Vercel 프리뷰가 담당한다.
+      - name: Build
         run: npm run build
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          NEXT_PUBLIC_KAKAO_MAP_API_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }}
-          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
-          NEXT_PUBLIC_DEMO_MODE: 'true'
-
-      - name: Build (staging)
-        if: ${{ secrets.STAGING_SUPABASE_URL != '' }}
-        run: npm run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          NEXT_PUBLIC_KAKAO_MAP_API_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }}
-          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy-anon-key' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'dummy-service-role-key' }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || '' }}
+          NEXT_PUBLIC_KAKAO_MAP_API_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY || '' }}
+          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY || '' }}
           NEXT_PUBLIC_DEMO_MODE: 'true'

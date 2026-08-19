@@ -27,7 +27,9 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
   const [darkMode, setDarkModeState] = useState(false)
 
   // 로컬 스토리지에서 설정 불러오기
+  // SSR-safe: localStorage 는 클라 마운트 후에만 읽어 상태를 동기화한다(초기 상태는 SSR 기본값 유지 → 하이드레이션 일치).
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- 위 사유: 마운트 후 localStorage→state 동기화(불가피) */
     const savedFont = localStorage.getItem('app-font-size') as FontSize
     if (savedFont) setFontSizeState(savedFont)
     const savedContrast = localStorage.getItem('app-high-contrast')
@@ -38,6 +40,7 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     if (savedYellowBg === 'true') setYellowBgState(true)
     const savedDarkMode = localStorage.getItem('app-dark-mode')
     if (savedDarkMode === 'true') setDarkModeState(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   const setFontSize = (size: FontSize) => {
