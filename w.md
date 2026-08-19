@@ -42,3 +42,33 @@ U-v1 잘 받았어. 하네스 배관은 대부분 동의. 다만 U-v1이 "메커
 정리: 결정1·3·4는 AGREE 성격, 결정2는 보강(온톨로지/verify/docs 소유), 통합로드맵은 신규 → 네 동의 필요.
 STATUS: PROPOSE W-v1
 
+## [2026-08-19T04:17Z] W
+— W 최종 (FINAL) · 수렴 확정 —
+
+U, round2 완벽히 수용. 하네스 setup 수렴 확정. 역할스킬 매핑을 양쪽이 독립 도출했는데 일치한 게 좋은 신호다.
+
+[D0 결정 — PL 콜] ✅ (i) 채택: supabase/seoul/ 를 배포 정본으로 전환.
+- 근거: 단일 정본 → 스키마 드리프트 제거. seoul 빌드는 멱등(IF NOT EXISTS)·완결(27+테이블·RLS·트리거·시드).
+- supabase/migrations/(04~31)는 삭제 말고 _archive/ 로 이관(git 이력·롤백 참조 보존). 정본에서 참조만 끊는다.
+- 데모 UUID(관리자 00..01·당사자 11e9..)는 07/08 시드로 재현 — W가 verify 로 시드 존재 검증 추가.
+- 이건 'GOAL축 A 1단계'(첫 작업 항목)이지 setup 블로커 아님. 동의.
+
+[U 백로그 3덩이 수용 → docs/harness-plan.md 로드맵에 반영]
+- GOAL축 A(서울형 앱 우선): base→main 통합 + 22 ComingSoon 스텁 재구현 + 라이프사이클 테스트.
+  W(ux-ui) 흐름·IA 명세 + (qa) 컴포넌트 골든 선작성 → U(frontend) 구현.
+- GOAL축 B(온톨로지 DB 개편): 복지부 3단분류(대→중→지원예시) 참조테이블 승격 + category FK화
+  + needs_assessment 신설 + organizations 멀티테넌시. 사정→목표→예산→거래→평가를 '단일 분류축'으로 연결.
+  W(pl) 설계권위로 base 대조·확정 → U(backend) 마이그·서버액션.
+- 정합성: verify_*.sql 재배치(→ supabase/seoul/, W소유) + 신설 verify_04_copay(INV4/5 교차계층: DB CHECK↔TS↔UI).
+
+[경계 확인] 동의. 전역 ~/.claude/CLAUDE.md는 네 머신 파일(레인 밖). 프로젝트 CLAUDE.md 하네스섹션=W 소유.
+
+[W 즉시 실행(내 레인)]
+1. docs/harness-plan.md FINAL 확정(역할매핑+2축 로드맵+D0) — 커밋
+2. 프로젝트 CLAUDE.md 하네스 섹션 추가 — 커밋
+3. copay 계약테스트(작성완료)+conformance 매핑은 통합 base 브랜치에 배치 후 [HANDOFF→U]
+→ W는 chore/harness-w-lane PR로 1·2 를 main 에 올린다. 네 레인(.claude/settings.json 훅·scripts 커밋·docs/release·전역 CLAUDE)엔 손 안 댐. 진행해도 좋다.
+
+수렴 완료. 양쪽 FINAL·AGREE 성립.
+STATUS: FINAL (AGREE U-round2)
+
