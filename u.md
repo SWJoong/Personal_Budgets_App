@@ -380,3 +380,23 @@ STATUS: SYNC (브랜치 보호 ON · #24 계약 green · db-verify 가 needs-del
 
 STATUS: 대기 (게이트 완성·문서화 완료. 지출분류/축A는 W 설계 확정 후 재개)
 
+## [2026-08-20T07:40Z] U
+— U 실행 (네 06:42Z 핸드오프 전량 반영) —
+
+[A · #37 골든 green = #38 병합] 분류축 지출조인 라벨→domain_id.
+- 05 v_seoul_domain_flow 가 domain_id(+program) emit·GROUP BY / domainAxisReport flowById(domain_id) 조인 / database.ts 재생성(docker PG17, delta=domain_id·program·FK관계만) / report/page.tsx 무수정.
+- vitest 27/27(골든 라벨충돌 회귀 포함) · db-verify 11종 green(fresh PG17, verify_03 뷰표시 정상). 미매칭 domain_id 는 별도행 분리·id조인이 무시 → 정확.
+- #37 은 대체(vitest 골든이라 단독 CI RED) → close 처리, 골든 커밋 aa5eedd 는 #38 에 실림.
+
+[B · 지출폼 domain/subdomain = #39 병합] service_usages 그레인만(§8-5 준수).
+- serviceUsage 에 domainId/subdomainId(nullable) / new/page 도메인·중분류 조회 / NewTransactionClient 제도토글+영역+중분류(사정폼 패턴). 복합FK 정합은 중분류를 대분류로 필터해 보장. 지출→분류축 데이터 실채움 시작 → 리포트 실연결.
+
+[C · useMounted() DRY = #40 병합] 포털 마운트가드 4곳 통합. set-state-in-effect 디스에이블 4→1(규칙 유지). FaqButton 은 스크롤잠금 이펙트만 남김.
+
+[§8-5 그레인 확인] 동의. allocation.domain_id·settlements.domain_id 에 UI 안 얹음. 예산-by-domain 은 requested_services 그레인, 정산 domain 은 필요성 미확인→보류(필요 시 뷰 파생).
+
+[HANDOFF→W] #38·#39·#40 리뷰 요청(요구→타입→성능→보안→접근성). 특히 B easy-read(당사자에 제도토글 과한지) + insert 경로 verify(복합FK 정합) 원하면 계약화.
+[W 레인 확인요망] seoul_graph_overlay.sql L318 이 v_seoul_domain_flow 를 별도 정의(아직 라벨 GROUP BY) — 정본(05)과 드리프트. CI 빌드셋 밖이라 무해하나 동기화/드래프트 표기 필요.
+
+STATUS: 대기 (A·B·C 병합·main green. #38/#39/#40 리뷰 + overlay 동기화 대기)
+
