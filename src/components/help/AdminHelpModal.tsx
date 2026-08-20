@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useMounted } from '@/hooks/useMounted'
 import type { AdminHelpPage } from '@/data/adminHelpContent'
 
 interface Props {
@@ -10,9 +10,7 @@ interface Props {
 }
 
 export default function AdminHelpModal({ page, onClose }: Props) {
-  const [mounted, setMounted] = useState(false)
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- createPortal SSR 마운트 가드
-  useEffect(() => { setMounted(true) }, [])
+  const mounted = useMounted()
 
   const modal = (
     <div
