@@ -12,6 +12,10 @@ export interface ServiceUsageInput {
   description?: string
   requestedServiceId?: string
   providerId?: string
+  /** 분류축(GOAL축B): 이 지출이 속한 지원영역(대분류). nullable — 안 고르면 미분류. */
+  domainId?: string | null
+  /** 중분류(복지부 3단). 서울형은 flat 이라 보통 null. 넘기면 domainId 하위여야 함(복합 FK). */
+  subdomainId?: string | null
   decidedBy?: 'self' | 'self_with_support' | 'suggested_accepted' | 'by_supporter'
   /** base64 인코딩(접두어 없이). 넘기면 receipts 버킷에 저장하고 seoul_receipts 행도 만든다. */
   receiptBase64?: string
@@ -61,6 +65,8 @@ export async function recordServiceUsage(input: ServiceUsageInput) {
       allocation_id: input.allocationId,
       requested_service_id: input.requestedServiceId || null,
       provider_id: input.providerId || null,
+      domain_id: input.domainId || null,
+      subdomain_id: input.subdomainId || null,
       usage_date: input.usageDate,
       amount: input.amount,
       description: input.description || null,

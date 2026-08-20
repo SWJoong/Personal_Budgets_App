@@ -19,11 +19,22 @@ export default async function NewTransactionPage({ params }: { params: Promise<{
 
   if (!participant) notFound()
 
-  const { data: allocations } = await supabase
-    .from('seoul_budget_allocations')
-    .select('id, allocated_amount, total_ceiling, starts_on, ends_on')
-    .eq('participant_id', participantId)
-    .order('starts_on', { ascending: false })
+  const [{ data: allocations }, { data: domains }, { data: subdomains }] = await Promise.all([
+    supabase
+      .from('seoul_budget_allocations')
+      .select('id, allocated_amount, total_ceiling, starts_on, ends_on')
+      .eq('participant_id', participantId)
+      .order('starts_on', { ascending: false }),
+    supabase
+      .from('seoul_service_domains')
+      .select('id, program, code, label, sort_order')
+      .order('program', { ascending: true })
+      .order('sort_order', { ascending: true }),
+    supabase
+      .from('seoul_service_subdomains')
+      .select('id, domain_id, code, label, sort_order')
+      .order('sort_order', { ascending: true }),
+  ])
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
@@ -39,7 +50,12 @@ export default async function NewTransactionPage({ params }: { params: Promise<{
       </header>
 
       <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
-        <NewTransactionClient participantId={participantId} allocations={allocations ?? []} />
+        <NewTransactionClient
+          participantId={participantId}
+          allocations={allocations ?? []}
+          domains={domains ?? []}
+          subdomains={subdomains ?? []}
+        />
       </main>
     </div>
   )
