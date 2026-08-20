@@ -1905,7 +1905,9 @@ export type Database = {
       }
       v_seoul_domain_flow: {
         Row: {
+          domain_id: string | null
           participant_id: string | null
+          program: string | null
           건수: number | null
           계획외_건수: number | null
           계획외_금액: number | null
@@ -1913,6 +1915,13 @@ export type Database = {
           영역: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "seoul_service_usages_domain_id_fkey"
+            columns: ["domain_id"]
+            isOneToOne: false
+            referencedRelation: "seoul_service_domains"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "seoul_service_usages_participant_id_fkey"
             columns: ["participant_id"]
