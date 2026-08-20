@@ -13,8 +13,15 @@ export interface DomainSpine {
   sort_order: number
 }
 
-/** v_seoul_domain_flow 한 행(참여자별 도메인 지출 집계). 컬럼명은 한글. */
+/**
+ * v_seoul_domain_flow 한 행(참여자별 도메인 지출 집계).
+ * 조인 키는 domain_id(전역 유일 UUID) — 영역(라벨)은 표시·디버그용이다. 분류 참조테이블이
+ * program 스코프(seoul·mohw 병존)라 라벨('일상생활' 등)이 프로그램 간 충돌하므로, 라벨로 조인하면
+ * 다른 도메인의 지출을 조용히 합치거나 엉뚱한 행에 귀속시킨다(스펙 §8-4).
+ */
 export interface DomainFlowRow {
+  domain_id: string | null
+  program?: string | null
   영역: string
   건수: number | null
   금액: number | null
@@ -60,7 +67,7 @@ export function axisStatusLabel(status: AxisStatus): string {
 
 /**
  * 도메인 스파인 + 지출뷰 + 사정행 → 도메인별 교차 행(스파인 순서 유지, 6개 모두 포함).
- * 지출은 라벨로, 사정은 domain_id 로 집계해 domains 스파인에서 라벨↔id 로 만난다.
+ * 사정도 지출도 domain_id 로 집계해 같은 domain_id 로 만난다(라벨 조인 금지 — 스펙 §8-4).
  */
 export function buildDomainAxisReport(
   domains: DomainSpine[],
@@ -71,14 +78,16 @@ export function buildDomainAxisReport(
   for (const n of needsRows) {
     needsByDomainId.set(n.domain_id, (needsByDomainId.get(n.domain_id) ?? 0) + 1)
   }
-  const flowByLabel = new Map<string, DomainFlowRow>()
-  for (const f of flowRows) flowByLabel.set(f.영역, f)
+  const flowById = new Map<string, DomainFlowRow>()
+  for (const f of flowRows) {
+    if (f.domain_id != null) flowById.set(f.domain_id, f)
+  }
 
   return [...domains]
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((d) => {
       const needsCount = needsByDomainId.get(d.id) ?? 0
-      const flow = flowByLabel.get(d.label)
+      const flow = flowById.get(d.id)
       const usageSum = Number(flow?.금액 ?? 0)
       const usageCount = Number(flow?.건수 ?? 0)
       const unplannedSum = Number(flow?.계획외_금액 ?? 0)
