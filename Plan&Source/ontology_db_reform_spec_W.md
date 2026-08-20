@@ -125,3 +125,44 @@ PR #22(욕구사정 화면) 검토에서 발견: 화면은 담당자에게 삭�
   (insert/update 와 일관. `seoul_is_staff_for` 가 admin 포함이라 관리자 삭제도 유지).
 - 부수: `src/app/actions/needsAssessment.ts` 의 "RLS 는 관리자만 DELETE" 주석 갱신(U).
 - 계약: `verify_needs_assessment_rls.sql` — [3] 담당자 삭제 허용이 현재 ❌ → 변경 후 ✅ (test-first).
+
+### 8-3. 백필 설계 — RESOLVED: **1회 백필 불필요** (W 독립 검증, 2026-08-20)
+U 의 `10_fk_ization.sql`(#… FK-ization) 이 "자유텍스트 백필 불필요"로 처리한 것을 W 가 **독립 확인**하고 확정한다.
+- **근거(스키마 실검증)**: 스펙 §4 의 "nullable→백필→NOT NULL" 은 컷오버(#16) 이전 자유텍스트 테이블
+  (`transactions.category`·`budget_line_items.category`)을 전제로 쓴 것이다. 그 테이블들은 컷오버로 소멸했고,
+  seoul 대상 3테이블에는 **매핑할 자유텍스트 분류 컬럼이 없다**:
+  - `seoul_budget_allocations` = 금액·한도만(`03` L443–473). 분류 컬럼 없음.
+  - `seoul_service_usages` = `domain_id` 를 이미 보유(`03` L511). 신설은 `subdomain_id` 뿐.
+  - `seoul_settlements` = 금액·기간만(`03` L571–584). 분류 컬럼 없음.
+  → 문자열→code 매핑 대상이 0건이므로 1회 백필은 **개념적으로 존재하지 않는다**(스펙 §6.3 이 부분은 seoul 에선 무효).
+- **신규 분류 컬럼 = nullable 유지 (NOT NULL 금지)**: 백필할 과거 행이 없고 데모시드(`08`)에도 값이 없어,
+  DB 레벨 NOT NULL 은 신규 insert 를 깨뜨린다. 채움은 앞으로 서버액션/UI 가 담당(§8-4). 신규 행 필수화는
+  필요 시 앱 레벨 검증 또는 트리거로(하드 NOT NULL 아님).
+- **데모 가시성**: `08_seed_demo` 가 `service_usages.domain_id` 를 이미 시드(L156–160)해 `v_seoul_domain_flow`
+  가 실행 즉시 실데이터를 낸다 → 도메인 레벨 축 리포트는 **오늘 시연 가능**. 다음 hop 컬럼
+  (`subdomain_id`·예산·정산 domain)의 시드 채움은 선택(더 풍부한 시연용, 비필수).
+- **계약 상태**: `verify_classification_link.sql [A][B][C][D]` = db-verify CI 가 `10_fk` 적용 후 실행,
+  main(2462643) **green 실측**. [D] 5노드 축 완성 ✅.
+- **→ U GO**: 지출↔분류축 UI(지출폼 domain/subdomain 선택) 착수 가능. 백필 스텝 없음.
+
+### 8-4. 분류축 조인 강건성 — RESOLVED: **라벨→domain_id 조인** (test-first, U 구현)
+W qa 관찰(라벨 조인 취약점)을 계약으로 승격. 분류 참조테이블이 `program` 스코프(seoul·mohw 병존, §2)라
+라벨('일상생활'·'주거' 등)이 **프로그램 간 충돌**한다 — 라벨 조인은 서로 다른 도메인의 지출을 조용히 합치거나
+엉뚱한 스파인 행에 귀속시킨다(에러 없이 금액 오염). mohw 는 현재 시드전용이라 **잠복**이나 구조적 확실성이다.
+- **골든(W, RED→green)**: `src/utils/domainAxisReport.test.ts` — 라벨충돌 회귀를 추가해 라벨 조인에서 **실패**로 박음
+  (현재 util 대비 `99999≠10000` RED 실측). id 조인 시 green.
+- **구현(U)**: ①`v_seoul_domain_flow`(05) 가 `domain_id`(+`program`) 를 SELECT/GROUP BY 에 emit(뷰는 이미
+  `u.domain_id` 로 조인 중 — 컬럼만 노출). ②`domainAxisReport.ts` 의 `DomainFlowRow` 에 `domain_id` 추가,
+  `buildDomainAxisReport` 가 `flowByLabel`→`flowById(domain_id)` 로 조인. ③`npm run generate-types`.
+  `report/page.tsx` 는 `select('*')`·시그니처 불변이라 무수정.
+
+### 8-5. 예산·정산 hop 그레인 — OPEN: U 확인 요망 (UI 착수 전)
+`10_fk` 가 `budget_allocations.domain_id`·`settlements.domain_id` 를 추가했으나 **그레인이 축과 어긋난다**:
+- **예산**: `seoul_budget_allocations` 는 `UNIQUE(plan_id)` = 플랜당 1행(`03` L470)인데, 한 플랜은
+  `seoul_requested_services` 를 통해 **여러 domain 에 걸친다**. 단일 `allocation.domain_id` 는 **손실적**(어느 한
+  domain 만 임의 선택). → **예산-by-domain 은 `requested_services`(domain_id·estimated_cost) 그레인으로 집계**해야
+  맞다. **권장: `budget_allocations.domain_id` 에 UI 를 얹지 말 것**(컬럼은 무해·미사용이나 채우면 오해석 유발).
+- **정산**: `seoul_settlements.domain_id` 는 `allocation_id`→`budget_allocations.domain_id` 로 **파생 가능**하며
+  현재 리포트 미소비. 저장 시 배정 domain 과 **드리프트** 위험 → (a) 뷰에서 배정 조인으로 파생하거나
+  (b) 컬럼 유지 시 배정과 일치 가드(트리거/복합 FK) 추가. 정산 레벨 domain 이 실제 필요한지부터 U 확인.
+- 결론: 축의 domain 신호는 **사정·요청서비스·지출(domain_id)** 노드가 정본. 예산·정산은 파생/집계로 읽는다.
