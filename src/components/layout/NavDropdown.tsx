@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useMounted } from '@/hooks/useMounted'
 
 type NavItem = {
   href: string
@@ -44,11 +45,8 @@ function SoonBadge() {
 
 export default function NavDropdown() {
   const [isOpen, setIsOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const mounted = useMounted()
   const pathname = usePathname()
-
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- createPortal SSR 마운트 가드
-  useEffect(() => { setMounted(true) }, [])
 
   // 페이지 이동 시 자동 닫기
   useEffect(() => {

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useMounted } from '@/hooks/useMounted'
 import type { HelpSection } from '@/data/helpSlides'
 
 interface Props {
@@ -11,9 +12,7 @@ interface Props {
 
 export default function HelpSlideshow({ section, onClose }: Props) {
   const [current, setCurrent] = useState(0)
-  const [mounted, setMounted] = useState(false)
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- createPortal SSR 마운트 가드
-  useEffect(() => { setMounted(true) }, [])
+  const mounted = useMounted()
 
   const slide = section.slides[current]
   const total = section.slides.length

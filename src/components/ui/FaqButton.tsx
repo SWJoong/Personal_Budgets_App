@@ -1,18 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { useEffect } from 'react'
+import { useMounted } from '@/hooks/useMounted'
 import { FAQ_ITEMS } from '@/data/faqContent'
 
 function FaqModal({ onClose }: { onClose: () => void }) {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useMounted()
   const [openIdx, setOpenIdx] = useState<number | null>(0)
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- createPortal SSR 마운트 가드
-    setMounted(true)
-    // 모달 열릴 때 스크롤 잠금
+    // 모달 열릴 때 스크롤 잠금(setState 없음 → 디스에이블 불필요)
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [])
