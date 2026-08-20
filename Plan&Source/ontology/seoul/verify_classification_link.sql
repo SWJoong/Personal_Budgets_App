@@ -48,8 +48,13 @@ SELECT '   지출→대분류 고아(non-null만): ' || count(*) || CASE WHEN co
   LEFT JOIN public.seoul_service_domains d ON d.id=u.domain_id
  WHERE u.domain_id IS NOT NULL AND d.id IS NULL;
 
+SELECT '   지출→중분류 고아(non-null만): ' || count(*) || CASE WHEN count(*)=0 THEN ' ✅' ELSE ' ❌' END
+  FROM public.seoul_service_usages u
+  LEFT JOIN public.seoul_service_subdomains s ON s.id=u.subdomain_id
+ WHERE u.subdomain_id IS NOT NULL AND s.id IS NULL;
+
 \echo ''
-\echo '=== [B] 정합성 계약 — 사정의 (domain,subdomain)·(program,domain) 일치 ==='
+\echo '=== [B] 정합성 계약 — 사정·지출의 (domain,subdomain)·(program,domain) 일치 ==='
 \echo '     (현재 복합 FK/트리거 미설치면 ❌ — U 가 seoul_service_subdomains(id,domain_id)'
 \echo '      복합 UNIQUE + needs_assessment 복합 FK 로 초록화)'
 
@@ -86,6 +91,21 @@ SELECT '   program≠domain.program 행: ' || count(*) ||
 -- 정리(다음 섹션 픽스처와 분리)
 DELETE FROM public.seoul_needs_assessment
  WHERE id IN ('9b333333-3333-3333-3333-333333333333','9b444444-4444-4444-4444-444444444444');
+
+\echo '── B3. 지출 insert 경로 복합 FK — service_usages(subdomain_id,domain_id)→subdomains(id,domain_id)'
+\echo '     (지출폼 #39 가 이 두 컬럼을 함께 쓴다. 유효 지출행은 allocation·plan·cohort 전체 체인이'
+\echo '      필요해 픽스처가 무거우므로, 여기서는 FK 형태를 카탈로그로 못박는다 — 형태가 이러면 엉뚱한'
+\echo '      중분류·대분류 짝 insert 는 DB 가 반드시 거절한다. subdomain_id NULL(서울형 flat)은 MATCH'
+\echo '      SIMPLE 로 미검사되어 허용됨.)'
+SELECT '   지출 복합 FK (subdomain_id,domain_id)->subdomains(id,domain_id): ' ||
+       CASE WHEN EXISTS (
+         SELECT 1
+           FROM pg_constraint c
+           JOIN pg_class rel ON rel.oid = c.conrelid AND rel.relname = 'seoul_service_usages'
+          WHERE c.contype = 'f'
+            AND pg_get_constraintdef(c.oid)
+                ILIKE '%FOREIGN KEY (subdomain_id, domain_id) REFERENCES%seoul_service_subdomains(id, domain_id)%'
+       ) THEN '✅ 설치됨(엉뚱한 짝 거절 보장)' ELSE '❌ 복합 FK 부재 — 지출 (중분류,대분류) 정합 깨짐' END;
 
 \echo ''
 \echo '=== [C] 축 시작점 — 사정→도메인 라벨 조인 도달(서울형 flat: subdomain NULL 허용) ==='
