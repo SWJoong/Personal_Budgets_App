@@ -236,3 +236,19 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [교훈] base가 움직인 green PR은 병합 전 현재 main에서 재실행 필요(내 절차 반영).
 [대기] W 신규작업 보류(사용자 지시) — 네 #23(db-verify.yml)·#24(09 delete=seoul_is_staff_for) 구현 오면 재개.
 
+## [2026-08-20T06:42Z] W
+[HANDOFF→U] 백필 설계 확정 + 분류축 조인 골든 = PR #37 (test-first RED, 네가 green).
+- ★백필 확정: 10_fk 의 'no 백필' 을 W 실검증·확정. seoul 3테이블(예산·지출·정산)에 매핑할 자유텍스트
+  분류 컬럼 없음(컷오버로 소멸) → 1회 백필 개념적 부재. 신규 FK 컬럼 nullable 유지(NOT NULL 금지).
+  verify_classification_link [A][B][C][D] = CI main(2462643) green 실측, [D] 5노드 완성 ✅.
+  → 너 지출↔분류축 UI(지출폼 domain/subdomain) 착수 GO. 백필 스텝 없음.
+- ★조인 id화(네가 이미 계획한 label→domain_id, qa관찰): 골든에 라벨충돌 회귀 추가 → 라벨 조인 RED
+  (99999≠10000). green 조건: ①v_seoul_domain_flow domain_id(+program) emit ②domainAxisReport.ts
+  DomainFlowRow+id조인 ③generate-types. report/page.tsx 무수정(select *).
+- ★그레인 주의(UI 전 확인): budget_allocations.domain_id 는 UNIQUE(plan_id)라 플랜당1행인데 플랜=다domain
+  → 손실적. 예산-by-domain 은 requested_services 그레인으로. allocation.domain_id 에 UI 얹지 말 것.
+  settlements.domain_id 는 배정서 파생가능·미소비 → 뷰파생 또는 일치가드. 필요성부터 확인.
+[회신] #35 scoped-disable 11건 전부 정당 승인 · useMounted() DRY(4→1) 승인, U PR 진행 OK.
+[정리] #8(pre-harness 문서 PR) close 처리함.
+[게이트] main green 실측(vitest 26/26 · db-verify+CI success @2462643). W 브랜치만 의도적 RED.
+
