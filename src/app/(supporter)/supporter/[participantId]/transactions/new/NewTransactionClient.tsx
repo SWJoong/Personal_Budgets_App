@@ -12,6 +12,26 @@ interface Allocation {
   ends_on: string
 }
 
+type Program = 'seoul' | 'mohw'
+
+interface Domain {
+  id: string
+  program: string
+  code: string
+  label: string
+  sort_order: number
+}
+
+interface Subdomain {
+  id: string
+  domain_id: string
+  code: string
+  label: string
+  sort_order: number
+}
+
+const PROGRAM_LABEL: Record<Program, string> = { seoul: '서울형', mohw: '보건복지부' }
+
 const inputClass =
   'p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 leading-relaxed focus:ring-zinc-400 focus:outline-none'
 
@@ -26,9 +46,13 @@ function today(): string {
 export default function NewTransactionClient({
   participantId,
   allocations,
+  domains,
+  subdomains,
 }: {
   participantId: string
   allocations: Allocation[]
+  domains: Domain[]
+  subdomains: Subdomain[]
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -37,7 +61,24 @@ export default function NewTransactionClient({
   const [amount, setAmount] = useState('')
   const [usageDate, setUsageDate] = useState(today())
   const [description, setDescription] = useState('')
+  const [program, setProgram] = useState<Program>('seoul')
+  const [domainId, setDomainId] = useState('')
+  const [subdomainId, setSubdomainId] = useState('')
   const [receipt, setReceipt] = useState<{ base64: string; mime: string; name: string } | null>(null)
+
+  const domainsForProgram = domains.filter((d) => d.program === program)
+  const subdomainsForDomain = subdomains.filter((s) => s.domain_id === domainId)
+  const hasSubdomains = program === 'mohw' && subdomainsForDomain.length > 0
+
+  function selectProgram(p: Program) {
+    setProgram(p)
+    setDomainId('')
+    setSubdomainId('')
+  }
+  function selectDomain(id: string) {
+    setDomainId(id)
+    setSubdomainId('')
+  }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -82,6 +123,8 @@ export default function NewTransactionClient({
         usageDate,
         amount: amt,
         description: description.trim() || undefined,
+        domainId: domainId || null,
+        subdomainId: program === 'mohw' ? subdomainId || null : null,
         receiptBase64: receipt?.base64,
         receiptMimeType: receipt?.mime,
       })
@@ -170,6 +213,62 @@ export default function NewTransactionClient({
           placeholder="예: 수영 강습비"
           className={inputClass}
         />
+      </div>
+
+      {/* 분류축(GOAL축B) — 이 지출이 어느 지원영역에 속하는지. 안 골라도 됨(nullable).
+          service_usages.domain_id 그레인만 채운다(예산·정산 domain 은 손대지 않음 — 스펙 §8-5). */}
+      <div className="flex flex-col gap-2 rounded-xl bg-zinc-50/60 ring-1 ring-zinc-200 p-3">
+        <span className="text-xs text-zinc-500 font-medium">어느 영역에 썼나요? (안 골라도 돼요)</span>
+
+        <div className="flex gap-2" role="group" aria-label="제도 선택">
+          {(['seoul', 'mohw'] as Program[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => selectProgram(p)}
+              aria-pressed={program === p}
+              className={`flex-1 p-2.5 rounded-lg font-bold text-sm transition-colors min-h-[44px] ${
+                program === p
+                  ? 'bg-zinc-900 text-white'
+                  : 'bg-white ring-1 ring-zinc-200 text-zinc-600 hover:ring-zinc-400'
+              }`}
+            >
+              {PROGRAM_LABEL[p]}
+            </button>
+          ))}
+        </div>
+
+        <select
+          id="tx-domain"
+          aria-label="지원 영역"
+          value={domainId}
+          onChange={(e) => selectDomain(e.target.value)}
+          className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+        >
+          <option value="">영역 안 고름</option>
+          {domainsForProgram.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.label}
+            </option>
+          ))}
+        </select>
+
+        {hasSubdomains && (
+          <select
+            id="tx-subdomain"
+            aria-label="세부 영역(중분류)"
+            value={subdomainId}
+            onChange={(e) => setSubdomainId(e.target.value)}
+            className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+          >
+            <option value="">세부 영역 안 고름</option>
+            {subdomainsForDomain.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">
