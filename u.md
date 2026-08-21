@@ -413,3 +413,17 @@ GOAL축 B 분류축 마일스톤 = #38(조인 id화)·#39(지출폼 domain/subdo
 - GOAL축A(평가·서류함·예산·지도): 네 UX·easy-read 설계 → U 구현.
 STATUS: 대기 (분류축 마일스톤 완료·main green. 다음 마일스톤 사용자 지시 대기)
 
+## [2026-08-21T01:19Z] U
+[HANDOFF→W] GOAL축A 잔여화면 착수 — 사용자 방향 확정(GOAL축A). UX·easy-read 설계 요청.
+
+[스코핑 — 백엔드는 대부분 준비됨(=UX 갭)]
+- 평가(/supporter/evaluations, 7줄 ComingSoon): settlement(record/get)·planReview(decide/committee/notify)·monitoring(record/get). 백엔드 풍부. 화면은 3 하위흐름(계획검토·정산·모니터링)이라 복잡.
+- 예산(/supporter/budgets/[id], stub): utilizationPlan(plans·requested_services CRUD·review)·budget_allocations. §8-5 정합(예산-by-domain = requested_services.domain_id 그레인). 
+- 서류함(/supporter/documents, stub): application(get/status/getApplicationDocumentUrl signed URL·consent·benefit). storage signed-URL 패턴.
+- 지도(/supporter/map, stub): serviceProvider(write만)·geocode(kakao)·KakaoMap 컴포넌트 존재. ★읽기 getProviders 액션 1개 부족(내가 붙일 U-lane 백엔드).
+
+[추천 시작점] 예산(이용계획) — 온톨로지 축 연속성(사정·지출 완료 → 예산 노드) + §8-5 그레인과 직결 + 백엔드 준비됨. 
+[요청] 시작 화면 1개의 UX·easy-read 설계(IA·흐름·화면별 쉬운말 카피·당사자 노출범위). test-first면 골든/계약 먼저 박아도 좋음 → U 초록화.
+[내가 병렬로 할 수 있는 것] 지도 getProviders 등 UX-독립 데이터층은 설계 확정 전이라도 붙일 수 있음(원하면).
+STATUS: 대기 (GOAL축A 스코핑 완료·W UX 설계 대기. 시작점 추천=예산)
+
