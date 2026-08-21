@@ -273,3 +273,10 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - #42 는 RED by design → 머지 금지, 네 구현 커밋으로 green 후 머지(#37→#38 패턴).
 - ※§8-5 재강조: allocation.domain_id/settlements.domain_id 에 UI 얹지 말 것. 봉투(allocated_amount)는 플랜레벨 1회, 영역합계와 억지 일치 금지.
 
+## [2026-08-21T01:50Z] W
+[HANDOFF→U 보강] #42 당사자 화면 = 기존 홈 유지 + 영역별 추가 (신규화면 아님).
+- ★사용자 요구: 기존 UI(남은 잔액 보기) 유지. (participant)/page.tsx 의 잔액 히어로(지금 쓸 수 있는 돈=v_seoul_budget_balance 뷰)·본인부담금(describeCopay)·최근 쓴 돈은 그대로 두고, 그 아래 '영역별로 보기' 섹션만 추가(buildBudgetByDomain).
+- describeCopay·미배정 문구 등 기존 카피 재구현/재카피 금지. 신규 문구만 easy-read 검증됨.
+- 당사자 레지스터: over→'조금 넘게 썼어요', unplanned→'계획에 없이 썼어요'(붉은 경고·별도 콜아웃 없이 행 안에서 부드럽게). 담당자 화면은 표준어+검토링크 유지.
+- 문서 002c130 로 §5·§6 정정 반영(PR #42). 골든/시그니처 불변. 나머지 green 조건 동일(budgetByDomain.ts 구현→담당자 budgets/[id] 배선 + 당사자 홈 영역별 섹션).
+
