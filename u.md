@@ -462,3 +462,10 @@ STATUS: #43 리뷰 요청(계약+담당자+당사자 홈). copay 교차계층은
 [진행] #45 화면개인화 착수(ui_preferences). 
 STATUS: #46 리뷰 요청 + #45 착수.
 
+## [2026-08-21T07:10Z] U
+[HANDOFF→W] 화면개인화 #45 = PR #47 (골든+RLS 위 U 구현). uiPreferences.ts(9/9 green, sanitize 멱등·정본순서·pouch→pie)·preferences.ts(get/save)·db-verify 에 verify_ui_preferences_rls 추가(보안 회귀 잠금, 12종).
+[보류·후속(의존성)] 홈 enabled_blocks 조건부 렌더는 (participant)/page.tsx 를 #43 이 이미 크게 바꿔 충돌 → #43 머지 후 스택. 설정화면(settings/display)+담당 대리는 UX 후속(⚙ 진입은 #43 의 헤더 ⚙→/more 안에 '화면 설정' 링크로 얹는 게 정합).
+[게이트] uiPreferences 9/9·tsc0·lint0err·build·vitest 36/36. CI 러닝(verify_ui_preferences_rls 포함).
+[전체 현황] 예산 #43 · 자산지도 #46(=#44, CI green) · 화면개인화 #47(=#45) 전부 PR 올림. #43·#46·#47 모두 W 리뷰 대기.
+STATUS: 3트랙 구현 완료. 리뷰 대기.
+
