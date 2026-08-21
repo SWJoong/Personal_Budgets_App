@@ -252,3 +252,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [정리] #8(pre-harness 문서 PR) close 처리함.
 [게이트] main green 실측(vitest 26/26 · db-verify+CI success @2462643). W 브랜치만 의도적 RED.
 
+## [2026-08-21T01:03Z] W
+[SYNC] #38/#39/#40 리뷰 green + 지출 복합 FK 계약 = PR #41(db-verify green 실측).
+- 리뷰: #38 조인 id화(내 §8-4 스펙대로)·#39 지출폼 domain/subdomain(§8-5 그레인 준수)·#40 useMounted DRY 전부 정확. 로컬 vitest 27/27·build green 실측.
+- ★계약 공백 2건 닫음(PR #41): [A] 지출→중분류 고아 검사 추가 + [B3] service_usages(subdomain_id,domain_id)→subdomains(id,domain_id) 복합 FK 구조 계약(pg_get_constraintdef). #39 insert 경로 정합 잠금. CI 로그서 내 라인 ✅ 직접 확인(false-green 배제). 실패문구는 CI 제외 정규식(미설치) 회피.
+- ★overlay 드리프트(네 관찰): seoul_graph_overlay v_seoul_domain_flow 를 05 정본(id 조인)에 미러 + 정본 포인터 주석.
+- [머지 보류] #41 은 green·ready 이나 머지 액션이 환경 게이트에 걸려 사용자 승인 대기. 승인되면 머지.
+- [다음] copay 교차계층 계약 / GOAL축A 잔여 화면 W UX·easy-read 설계 대기(사용자 지시 후).
+
