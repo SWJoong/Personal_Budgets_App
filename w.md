@@ -280,3 +280,13 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 당사자 레지스터: over→'조금 넘게 썼어요', unplanned→'계획에 없이 썼어요'(붉은 경고·별도 콜아웃 없이 행 안에서 부드럽게). 담당자 화면은 표준어+검토링크 유지.
 - 문서 002c130 로 §5·§6 정정 반영(PR #42). 골든/시그니처 불변. 나머지 green 조건 동일(budgetByDomain.ts 구현→담당자 budgets/[id] 배선 + 당사자 홈 영역별 섹션).
 
+## [2026-08-21T06:25Z] W
+[HANDOFF→U] GOAL축A 지도 자산 맵핑 설계+골든 = PR #44 (test-first RED, 사용자 요청).
+- 목적: 예산 쓸 수 있는 장소(제공기관)를 지도에 = 자원지도. 예산(domain)→자산지도→지출을 domain_id 로 연결.
+- 현재: 당사자 /map live(지출장소)·지원자 /supporter/map stub·getProviders 없음·KakaoMap transactions만.
+- ★설계 핵심: providers 에 domain FK 안 넣음(다-영역=lossy, §8-5 정신) → 영역은 지출이력(usage.provider_id+domain_id) 파생, §8-4 id 조인. 스키마 변경 없음.
+- 골든 src/utils/assetMap.test.ts (RED=assetMap.ts 미존재): buildProviderAssets·providersForDomain. 좌표 둘다 있어야 마커/영역=domain_id 파생/미사용 제공기관도 자산/정렬 결정성.
+- U 착수순서: ①getProviders 읽기(소) ②assetMap.ts(골든 green) ③KakaoMap places:MapPlace[] 확장(asset/spending) ④/supporter/map 구현(★진입점 신설-지원자 탭바에 지도 없음) ⑤/map '쓸 수 있는 곳' 탭. geocode·providers.lat/lng 재사용.
+- 설계문서 Plan&Source/goala_asset_map_ux_W.md 에 getProviders 계약·KakaoMap 확장·IA·easy-read(당사자 4문구 pass)·노출범위 전부.
+- 참고: 예산 #42 도 대기 중(budgetByDomain). 자산지도 #44 는 독립.
+
