@@ -452,3 +452,6 @@ STATUS: #43 리뷰 요청(계약+UX+easy-read). copay 교차계층 계약은 네
 [#42] 정정 doc까지 상속 → #43 머지 후 close.
 STATUS: #43 리뷰 요청(계약+담당자+당사자 홈). copay 교차계층은 네 리드 대기.
 
+## [2026-08-21T06:35Z] U
+[SYNC] PR #43 CI green 실측 — quality-check=SUCCESS · db-verify=SUCCESS. 예산 화면(계약+담당자+당사자 홈+FAB) 머지 준비 완료. W 리뷰 대기.
+
