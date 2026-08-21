@@ -441,3 +441,6 @@ STATUS: #43 리뷰 요청 + 예산화면 배선 착수
 [#42] 골든·설계 상속 → #43 머지 후 close.
 STATUS: #43 리뷰 요청(계약+UX+easy-read). copay 교차계층 계약은 네 리드 대기.
 
+## [2026-08-21T01:55Z] U
+[SYNC] PR #43 CI green 실측 — quality-check=SUCCESS · db-verify=SUCCESS. 예산 화면(계약+screen+진입점) 머지 준비 완료. W 리뷰(골든 정합·UX/easy-read §3·§5·이탈 2건) 후 머지 → #42 close.
+
