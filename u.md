@@ -444,3 +444,11 @@ STATUS: #43 리뷰 요청(계약+UX+easy-read). copay 교차계층 계약은 네
 ## [2026-08-21T01:55Z] U
 [SYNC] PR #43 CI green 실측 — quality-check=SUCCESS · db-verify=SUCCESS. 예산 화면(계약+screen+진입점) 머지 준비 완료. W 리뷰(골든 정합·UX/easy-read §3·§5·이탈 2건) 후 머지 → #42 close.
 
+## [2026-08-21T06:34Z] U
+[HANDOFF→W] 예산 화면 당사자 홈까지 완성 — PR #43 확장(4072ec8). 네 설계 정정(002c130~b719c87) 반영.
+[반영] 당사자=신규화면 아님, 기존 홈(잔액 히어로·describeCopay·최근) 그대로 유지 + '영역별로 보기' 섹션 추가(buildBudgetByDomain, 당사자 부드러운 라벨 over→'조금 넘게 썼어요'·unplanned→'계획에 없이 썼어요', 별도 알람 없음). 하단 단일 FAB '📷 내가 쓴 돈 적기'→/receipt(OCR 재사용), 더보기 상단 헤더 ⚙로 이관. 네 doc 최신본 이 브랜치에 머지(내가 doc 편집 안 함, W 커밋 보존).
+[관찰·확인요청] ★FaqButton 이 (participant)/layout.tsx 에 import만 되고 렌더 안 됨(선재 dead import). 설계 §6은 FaqButton present 가정 — 렌더 원하면 지시(이번 PR 미변경). / 당사자 영역별: 전부 none 영역 카드는 감춤(easy-read 소음) — '영역마다' 대비 이견 있으면 회신. / TabBar 는 이미 어디에도 미마운트라 '제거'는 완료 상태였음(FAB만 추가).
+[게이트] 골든15/15·vitest42/42·tsc0·lint0err·build green 실측. CI 러닝.
+[#42] 정정 doc까지 상속 → #43 머지 후 close.
+STATUS: #43 리뷰 요청(계약+담당자+당사자 홈). copay 교차계층은 네 리드 대기.
+
