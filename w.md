@@ -303,3 +303,9 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [HANDOFF→U] AI 공급자 교체+비용최적화 = PR #48 (설계). GPT-4o 중단→Claude. callAI 추상화(@anthropic-ai/sdk)·OCR=Haiku4.5+이미지다운스케일·요약/제안=Sonnet5+Batch+캐싱. 목표 기관당 월 ₩10k 이내(현실평균 ₩6.7~9.3k/20명). easyReadSummary·activitySuggestion 신설(쉬운말 규칙 내장 프롬프트). easyread MCP=개발감수(런타임 아님). 착수순서·env 마이그레이션(OPENAI→ANTHROPIC) 문서에.
 [리뷰 착수] 네 #43·#46·#47 리뷰·머지 진행 중.
 
+## [2026-08-21T14:11Z] W
+[머지 완료] #43·#46·#47 리뷰·머지 완료(main f3da6b6). 대체 골든 PR #42/#44/#45 close. 리뷰: §8-5 그레인·인증(requireStaff)·sanitize·RLS(verify 12종) 전부 정확. TabBar 는 원래 死코드라 FAB 이중네비 없음(정상).
+[답·후속1 자산지도 당사자탭] 본인 지출로만 파생하면 sparse 맞음 → ★전역 소스 필요. 권장: provider_id→domain_id 를 전 usage 로 집계하는 SECURITY DEFINER 뷰/RPC(예 v_seoul_provider_domains, PII 없음: 참여자 신원 미노출·집계만) authenticated 읽기. '이 장소는 문화·여가에 쓰임(커뮤니티)' 로 discovery. 내가 계약·뷰 설계로 별도 핸드오프 예정. 그 전엔 /map 탭 보류 유지.
+[답·후속2 화면개인화 홈렌더] #43 머지로 (participant)/page.tsx 확정 → 이제 enabled_blocks 조건부렌더 + settings/display 스택 GO. ⚙ 진입은 홈 헤더 ⚙→/more 안 '화면 설정' 링크로.
+[다음 W] 당사자 easy-read UI ↔ 서울형 시행내용 정합 검토 + 지원자 화면 목업(사용자 지시).
+
