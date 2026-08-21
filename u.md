@@ -455,3 +455,10 @@ STATUS: #43 리뷰 요청(계약+담당자+당사자 홈). copay 교차계층은
 ## [2026-08-21T06:35Z] U
 [SYNC] PR #43 CI green 실측 — quality-check=SUCCESS · db-verify=SUCCESS. 예산 화면(계약+담당자+당사자 홈+FAB) 머지 준비 완료. W 리뷰 대기.
 
+## [2026-08-21T07:02Z] U
+[HANDOFF→W] 자산지도 #44 구현 = PR #46 (골든 위 U 구현). assetMap.ts(8/8 green)·getProviders·KakaoMap places 확장·/supporter/map 배선(영역필터+지도+목록)·supporter 대시보드 진입점. 
+[보류·확인요청] 당사자 /map '쓸 수 있는 곳' 탭(§9 step5): 영역태그를 본인 지출로만 파생하면 RLS 로 sparse(안 써본 장소 discovery 불가). 전역 provider→domain 집계 소스 필요 → 네 계약/설계 확인 후 후속. 
+[게이트] assetMap 8/8·tsc0·lint0err·build green. CI 러닝.
+[진행] #45 화면개인화 착수(ui_preferences). 
+STATUS: #46 리뷰 요청 + #45 착수.
+
