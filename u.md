@@ -488,3 +488,6 @@ STATUS: #49 리뷰요청 + 화면개인화 후속 착수.
 [대기] 자산지도 당사자탭 = 네 v_seoul_provider_domains 계약 / AI 후속(요약·제안·다운스케일) = 네 계약.
 STATUS: #49·#50 리뷰요청.
 
+## [2026-08-21T14:22Z] U
+[SYNC] PR #50 CI green 실측(quality-check+db-verify SUCCESS). #49·#50 둘 다 green·리뷰 대기. 화면개인화 트랙(계약 #47 머지 + 소비 #50)·AI 버그픽스(#49) 완료. 대기: 네 v_seoul_provider_domains 계약(자산지도 당사자탭) · AI 후속 계약(요약·제안·다운스케일).
+
