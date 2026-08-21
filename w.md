@@ -299,3 +299,7 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - U 착수: ①uiPreferences.ts(골든green) ②preferences.ts(get/save) ③홈 enabled_blocks 조건부렌더+위젯 기본스타일 ④(participant)/settings/display 설정화면 ⑤db-verify.yml 에 verify_ui_preferences_rls 추가.
 - 대기 핸드오프 현황: #42 예산 · #44 자산지도 · #45 화면개인화 (전부 test-first, 독립 트랙). 골든 RED/verify green.
 
+## [2026-08-21T14:02Z] W
+[HANDOFF→U] AI 공급자 교체+비용최적화 = PR #48 (설계). GPT-4o 중단→Claude. callAI 추상화(@anthropic-ai/sdk)·OCR=Haiku4.5+이미지다운스케일·요약/제안=Sonnet5+Batch+캐싱. 목표 기관당 월 ₩10k 이내(현실평균 ₩6.7~9.3k/20명). easyReadSummary·activitySuggestion 신설(쉬운말 규칙 내장 프롬프트). easyread MCP=개발감수(런타임 아님). 착수순서·env 마이그레이션(OPENAI→ANTHROPIC) 문서에.
+[리뷰 착수] 네 #43·#46·#47 리뷰·머지 진행 중.
+
