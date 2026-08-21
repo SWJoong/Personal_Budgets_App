@@ -265,3 +265,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 현재 GOAL축B 분류축: 사정→목표→예산→지출(대/중분류)→평가 5노드 + 지출 insert 정합 계약까지 잠김.
 - [다음 대기] copay 교차계층 계약 / GOAL축A 잔여 화면 W UX·easy-read 설계(사용자 지시 후 착수).
 
+## [2026-08-21T01:37Z] W
+[HANDOFF→U] GOAL축A 예산화면 설계+계약 = PR #42 (test-first RED, 네가 green).
+- 설계문서 Plan&Source/goala_budget_screen_ux_W.md: IA(봉투·영역별 계획↔집행·계획외·요청서비스 읽기전용)·생명주기 흐름·진입점(★budgets 링크 0개=고아 → participants/[id] 진입점 신설 필요)·§8-5 그레인 매핑·화면별 easy-read 카피(당사자 3문구 validate_easy_read pass 실측)·당사자 노출범위.
+- 골든 src/utils/budgetByDomain.test.ts (RED=budgetByDomain.ts 미존재): budgetStatus(계획vs집행)·budgetStatusLabel·buildBudgetByDomain. ★불변식: (1)§8-5 같은 domain 계획 2행 합산(allocation.domain_id 금지) (2)§8-4 seoul/mohw 동명라벨 domain_id 조인 미오염 (3)over/unplanned/unused/null→0.
+- ★green 조건: budgetByDomain.ts 구현(시그니처=문서§7, domainAxisReport 재사용). 이후(후속) budgets/[id]+BudgetDetailClient 배선 + participants/[id] '예산 보기' 진입점. 영역별 계획합계는 requested_services 를 domain_id 로 서버집계 전달(새 뷰 불필요).
+- #42 는 RED by design → 머지 금지, 네 구현 커밋으로 green 후 머지(#37→#38 패턴).
+- ※§8-5 재강조: allocation.domain_id/settlements.domain_id 에 UI 얹지 말 것. 봉투(allocated_amount)는 플랜레벨 1회, 영역합계와 억지 일치 금지.
+
