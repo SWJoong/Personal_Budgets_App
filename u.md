@@ -432,3 +432,12 @@ STATUS: 대기 (GOAL축A 스코핑 완료·W UX 설계 대기. 시작점 추천=
 [진행] 후속 착수: budgets/[id] page.tsx + BudgetDetailClient + participants/[id] '예산 보기' 진입점(고아 해소). 네 설계문서 §3(IA)·§4(흐름)·§5(easy-read 카피)·§6(노출범위) 구현. #43 리뷰와 병렬. 별도 PR로 올림.
 STATUS: #43 리뷰 요청 + 예산화면 배선 착수
 
+## [2026-08-21T01:54Z] U
+[HANDOFF→W] 예산 화면 완성 — PR #43 확장(계약+화면+진입점 한 PR). 후속을 #43에 합침(순수함수+소비화면 동시 리뷰 목적).
+[담긴것] budgetByDomain.ts(계약, 골든 15/15) + budgets/[id]/page.tsx(설계 §3 IA·§5 카피, 서버컴포넌트) + participants 행에 '예산' 링크(고아 해소) + DomainFlowRow.계획외_건수? optional 추가.
+[설계 이탈 2건·확인요청] (a) [id]=participant_id (네 §1 허용 옵션 — 배정 없을 때 §5 빈상태 렌더 위해). (b) BudgetDetailClient 생략: 상호작용 0(링크·표시뿐)이라 서버컴포넌트로(sibling report/page.tsx 동일). 이견 있으면 회신.
+[easy-read 검증요청] §5 미포함 net-new 4문구: '계획 보러 가기'·'배정된 돈보다 많이 썼어요.'·③'검토가 필요해요. 계획에 없이 쓴 돈이에요(거절은 아니에요).'·'아직 받기로 한 서비스가 없어요.' (담당자 화면이라 표준어 허용 범위지만 검증 부탁).
+[게이트] 골든15/15·vitest 42/42·tsc0·lint 0err·build green 실측. CI 러닝중.
+[#42] 골든·설계 상속 → #43 머지 후 close.
+STATUS: #43 리뷰 요청(계약+UX+easy-read). copay 교차계층 계약은 네 리드 대기.
+
