@@ -25,6 +25,7 @@ export interface DomainFlowRow {
   영역: string
   건수: number | null
   금액: number | null
+  계획외_건수?: number | null
   계획외_금액?: number | null
 }
 

@@ -49,6 +49,12 @@ export default async function ParticipantsOverviewPage() {
                   >
                     거래장부
                   </Link>
+                  <Link
+                    href={`/supporter/budgets/${p.id}`}
+                    className="text-xs font-bold px-3 rounded-full bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors min-h-[44px] flex items-center"
+                  >
+                    예산
+                  </Link>
                 </div>
               </li>
             ))}

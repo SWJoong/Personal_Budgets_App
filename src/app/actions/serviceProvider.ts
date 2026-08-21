@@ -2,12 +2,31 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { friendlyDbError } from '@/utils/supabase/errors'
+import type { ProviderRow } from '@/utils/assetMap'
 
 export interface ProviderInput {
   name: string
   address?: string
   lat?: number
   lng?: number
+}
+
+/**
+ * 제공기관(이용 장소) 전량 읽기 — 자산 지도용. 좌표 유무 무관 전량 반환(필터는 화면/순수로직 assetMap).
+ * RLS(04): seoul_service_providers 읽기는 로그인 전원 허용이라 새 정책 불필요.
+ */
+export async function getProviders(): Promise<{ providers: ProviderRow[]; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { providers: [], error: '로그인이 필요합니다.' }
+
+  const { data, error } = await supabase
+    .from('seoul_service_providers')
+    .select('id, name, lat, lng, category')
+    .order('name', { ascending: true })
+
+  if (error) return { providers: [], error: error.message }
+  return { providers: (data ?? []) as ProviderRow[] }
 }
 
 /**
