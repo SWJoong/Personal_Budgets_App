@@ -315,10 +315,16 @@ COMMENT ON VIEW public.v_seoul_intent_to_spending IS
 
 
 -- (2) "어느 영역에 돈이 갔고, 계획에 없던 지출은 어디였나"
+-- ★ 정본은 supabase/seoul/05_seoul_graph.sql. 이 오버레이는 설계 서사(문서)이며 CI 빌드셋 밖이다.
+--   05 와 반드시 동기화한다 — 아래는 id 조인 정본(스펙 §8-4)을 그대로 미러한 것이다.
+--   조인 키는 domain_id(전역 유일). 라벨은 program 스코프(seoul·mohw)라 프로그램 간 충돌하므로
+--   domain_id 로 GROUP BY 해야 서로 다른 프로그램의 동명 도메인이 한 행으로 뭉치지 않는다.
 CREATE OR REPLACE VIEW public.v_seoul_domain_flow
   WITH (security_invoker = true) AS
 SELECT
   u.participant_id,
+  u.domain_id                                              AS domain_id,
+  d.program                                                AS program,
   COALESCE(d.label, '(영역 미분류)')                        AS 영역,
   count(*)                                                  AS 건수,
   sum(u.amount)                                             AS 금액,
@@ -326,7 +332,7 @@ SELECT
   sum(u.amount) FILTER (WHERE u.requested_service_id IS NULL) AS 계획외_금액
 FROM public.seoul_service_usages u
 LEFT JOIN public.seoul_service_domains d ON d.id = u.domain_id
-GROUP BY u.participant_id, d.label;
+GROUP BY u.participant_id, u.domain_id, d.program, d.label;
 
 
 -- =====================================================================
