@@ -9,6 +9,16 @@ import {
   type PlannedServiceRow,
 } from '@/utils/budgetByDomain'
 import type { DomainSpine, DomainFlowRow } from '@/utils/domainAxisReport'
+import { getUIPreferences } from '@/app/actions/preferences'
+import { BLOCK_METADATA, type BlockId } from '@/utils/uiPreferences'
+
+/** 선택 블록 중 바로가기(shortcut) 카드의 라우트. domain_breakdown·recent_usages 는 홈 내 섹션이라 제외. */
+const SHORTCUT_HREF: Partial<Record<BlockId, string>> = {
+  calendar_shortcut: '/calendar',
+  plan_shortcut: '/plan',
+  map_shortcut: '/map',
+  gallery: '/gallery',
+}
 
 const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 
@@ -73,6 +83,10 @@ export default async function Home() {
       </div>
     )
   }
+
+  // 화면 개인화 — 켜진 선택 블록만 렌더(설계 goala_ui_preferences_W.md). 필수 블록(잔액·부담금·FAB)은 항상.
+  const prefs = await getUIPreferences(participant.id)
+  const enabled = new Set(prefs.enabled_blocks)
 
   // 가장 최근(종료일 기준) 예산 배정과 잔액을 함께 조회한다.
   // 잔액은 저장하지 않고 v_seoul_budget_balance 뷰에서 항상 계산한다.
@@ -169,7 +183,7 @@ export default async function Home() {
               )
             })()}
 
-            {showDomains && (
+            {showDomains && enabled.has('domain_breakdown') && (
               <section className="flex flex-col gap-3">
                 <div>
                   <h2 className="text-sm font-bold text-zinc-500">영역별로 보기</h2>
@@ -212,24 +226,51 @@ export default async function Home() {
           </>
         )}
 
-        <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-bold text-zinc-500">최근에 쓴 돈</h2>
-          {recentUsages && recentUsages.length > 0 ? (
-            <ul className="flex flex-col gap-2">
-              {recentUsages.map((u) => (
-                <li key={u.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
-                    <span className="text-xs text-zinc-400">{u.usage_date}</span>
-                  </div>
-                  <span className="font-bold">{won(Number(u.amount))}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-zinc-400 text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
-          )}
-        </section>
+        {/* 바로 가기 — 켜진 shortcut 블록만(달력·계획·지도·사진). */}
+        {(() => {
+          const shortcuts = (Object.keys(SHORTCUT_HREF) as BlockId[]).filter((b) => enabled.has(b))
+          if (shortcuts.length === 0) return null
+          return (
+            <section className="flex flex-col gap-3">
+              <h2 className="text-sm font-bold text-zinc-500">바로 가기</h2>
+              <div className="grid grid-cols-2 gap-2">
+                {shortcuts.map((b) => (
+                  <Link
+                    key={b}
+                    href={SHORTCUT_HREF[b]!}
+                    className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center gap-3 hover:bg-zinc-50 transition-colors min-h-[44px]"
+                  >
+                    <span aria-hidden="true" className="text-2xl">
+                      {BLOCK_METADATA[b].icon}
+                    </span>
+                    <span className="font-bold text-zinc-800">{BLOCK_METADATA[b].label}</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )
+        })()}
+
+        {enabled.has('recent_usages') && (
+          <section className="flex flex-col gap-3">
+            <h2 className="text-sm font-bold text-zinc-500">최근에 쓴 돈</h2>
+            {recentUsages && recentUsages.length > 0 ? (
+              <ul className="flex flex-col gap-2">
+                {recentUsages.map((u) => (
+                  <li key={u.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
+                      <span className="text-xs text-zinc-400">{u.usage_date}</span>
+                    </div>
+                    <span className="font-bold">{won(Number(u.amount))}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-zinc-400 text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
+            )}
+          </section>
+        )}
       </main>
     </div>
   )
