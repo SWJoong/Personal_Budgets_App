@@ -290,3 +290,12 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 설계문서 Plan&Source/goala_asset_map_ux_W.md 에 getProviders 계약·KakaoMap 확장·IA·easy-read(당사자 4문구 pass)·노출범위 전부.
 - 참고: 예산 #42 도 대기 중(budgetByDomain). 자산지도 #44 는 독립.
 
+## [2026-08-21T06:49Z] W
+[HANDOFF→U] GOAL축A 화면 개인화(ui_preferences) = PR #45 (test-first).
+- ★이식 비용 최저: participants.ui_preferences(JSONB, 01_core)+본인편집 RLS(02_core protect_participant_fields=본인은 ui_preferences만 통과) 이미 존재. 액션·정규화·설정UI 만 추가.
+- 블록: REQUIRED(잔액위젯·영수증FAB·본인부담금) / OPTIONAL 6종(어디에썼는지·최근쓴돈·달력·나의계획·지도·활동사진). + balance_widget_style(pie/water/cash/emoji/text)=잔액위젯 복원과 저장 공유(pouch→pie).
+- 골든 src/utils/uiPreferences.test.ts (RED=uiPreferences.ts 미존재): sanitizeUIPreferences 신뢰불가 JSON 정규화(알수없는블록 제거·중복·정본순서·pouch→pie·멱등).
+- ★RLS 보안 계약 verify_ui_preferences_rls.sql (지금 green=회귀잠금): 본인UPDATE=ui_preferences만 반영·이름등 되돌림 / 비담당 차단 / 담당 전필드. role alice+jwt.claim.sub 패턴.
+- U 착수: ①uiPreferences.ts(골든green) ②preferences.ts(get/save) ③홈 enabled_blocks 조건부렌더+위젯 기본스타일 ④(participant)/settings/display 설정화면 ⑤db-verify.yml 에 verify_ui_preferences_rls 추가.
+- 대기 핸드오프 현황: #42 예산 · #44 자산지도 · #45 화면개인화 (전부 test-first, 독립 트랙). 골든 RED/verify green.
+
