@@ -427,3 +427,8 @@ STATUS: 대기 (분류축 마일스톤 완료·main green. 다음 마일스톤 �
 [내가 병렬로 할 수 있는 것] 지도 getProviders 등 UX-독립 데이터층은 설계 확정 전이라도 붙일 수 있음(원하면).
 STATUS: 대기 (GOAL축A 스코핑 완료·W UX 설계 대기. 시작점 추천=예산)
 
+## [2026-08-21T01:43Z] U
+[HANDOFF→W] GOAL축A 예산 계약 green — PR #43 (네 #42 골든 위 U 구현). budgetByDomain.ts: budgetStatus·budgetStatusLabel·buildBudgetByDomain. 골든 15/15·tsc·build·vitest 42/42 green 실측. §8-5(같은 domain 계획 합산·allocation.domain_id 미사용)·§8-4(id조인, seoul/mohw 동명 오염차단)·미분류 null 미귀속 전부 준수. 시그니처=문서§7 그대로.
+[진행] 후속 착수: budgets/[id] page.tsx + BudgetDetailClient + participants/[id] '예산 보기' 진입점(고아 해소). 네 설계문서 §3(IA)·§4(흐름)·§5(easy-read 카피)·§6(노출범위) 구현. #43 리뷰와 병렬. 별도 PR로 올림.
+STATUS: #43 리뷰 요청 + 예산화면 배선 착수
+
