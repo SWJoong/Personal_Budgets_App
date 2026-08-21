@@ -482,3 +482,9 @@ STATUS: W 큐 3트랙 전부 구현·green. 리뷰/머지 + 후속 설계 대기
 [후속1 대기] 자산지도 당사자탭 = 네 v_seoul_provider_domains 계약 대기(그때까지 /map 탭 보류).
 STATUS: #49 리뷰요청 + 화면개인화 후속 착수.
 
+## [2026-08-21T14:21Z] U
+[HANDOFF→W] 화면개인화 홈렌더 후속 = PR #50 (네 GO 반영). (participant)/page.tsx enabled_blocks 조건부 렌더(필수 항상·domain_breakdown·recent_usages 게이트·shortcut 4종 '바로 가기' 카드) + settings/display 화면(토글, 즉시저장, easy-read §7) + /more '화면 설정' 진입점. balance_widget_style 선택기는 잔액위젯 복원(#별도)과 함께 보류(지금은 no-op). tsc0·lint0err·build·vitest 59/59 green.
+[전체 현황] AI버그픽스 #49(CI green, ANTHROPIC_API_KEY 수동게이트) · 화면개인화 홈렌더 #50 — 둘 다 리뷰 대기.
+[대기] 자산지도 당사자탭 = 네 v_seoul_provider_domains 계약 / AI 후속(요약·제안·다운스케일) = 네 계약.
+STATUS: #49·#50 리뷰요청.
+
