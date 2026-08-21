@@ -28,10 +28,28 @@ export interface MapPlan {
   cost?: number
 }
 
+/**
+ * 자산(제공기관) 마커 — '쓸 수 있는 곳'. 설계 goala_asset_map_ux_W.md §5.
+ * 지출(spending)이 '쓴 곳'이라면 asset 은 '쓸 수 있는 곳'(테두리·연한 색으로 구분).
+ * domainIds 는 §8-4 id(라벨 아님) — 표시용 라벨은 화면에서 목록으로 보여준다.
+ */
+export interface MapPlace {
+  id: string
+  name: string
+  lat: number
+  lng: number
+  kind: 'asset' | 'spending'
+  category?: string | null
+  domainIds?: string[]
+  usageCount?: number
+  amount?: number
+}
+
 interface KakaoMapProps {
   apiKey: string
   transactions: MapTransaction[]
   plans?: MapPlan[]
+  places?: MapPlace[]
   height?: string
 }
 
@@ -49,7 +67,15 @@ const PLAN_MARKER_SVG = encodeURIComponent(`
   <text x="16" y="16" font-size="8" text-anchor="middle" fill="#6366f1" font-family="sans-serif" font-weight="bold">📋</text>
 </svg>`)
 
-export default function KakaoMap({ apiKey, transactions, plans = [], height = '480px' }: KakaoMapProps) {
+// 자산(쓸 수 있는 곳) 핀 — 지출 마커와 구분되게 테두리·흰 속(teal outline).
+const ASSET_MARKER_SVG = encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
+  <ellipse cx="16" cy="38" rx="6" ry="2" fill="rgba(0,0,0,0.12)"/>
+  <path d="M16 1C9.925 1 5 5.925 5 12c0 8.25 11 25 11 25s11-16.75 11-25C27 5.925 22.075 1 16 1z" fill="#fff" stroke="#14b8a6" stroke-width="2.5"/>
+  <circle cx="16" cy="12" r="4.5" fill="#14b8a6"/>
+</svg>`)
+
+export default function KakaoMap({ apiKey, transactions, plans = [], places = [], height = '480px' }: KakaoMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<kakao.maps.Map | null>(null)
   const markersRef = useRef<kakao.maps.Marker[]>([])
@@ -60,6 +86,7 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
     (t) => t.place_lat !== null && t.place_lng !== null
   )
   const validPlans = plans.filter((p) => p.place_lat && p.place_lng)
+  const validPlaces = places.filter((p) => p.lat && p.lng)
 
   const drawMarkers = useCallback(() => {
     const map = mapRef.current
@@ -69,7 +96,7 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
     markersRef.current.forEach((m) => m.setMap(null))
     markersRef.current = []
 
-    const hasAny = validTx.length > 0 || validPlans.length > 0
+    const hasAny = validTx.length > 0 || validPlans.length > 0 || validPlaces.length > 0
     if (!hasAny) return
 
     const bounds = new kakao.maps.LatLngBounds()
@@ -258,8 +285,56 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
       })
     })
 
+    // 자산 마커 (쓸 수 있는 곳 — teal 테두리 핀). 지출과 구분.
+    const assetMarkerImage = new kakao.maps.MarkerImage(
+      `data:image/svg+xml;charset=utf-8,${ASSET_MARKER_SVG}`,
+      new kakao.maps.Size(32, 40),
+      { offset: new kakao.maps.Point(16, 40) }
+    )
+
+    validPlaces.forEach((place) => {
+      const position = new kakao.maps.LatLng(place.lat, place.lng)
+      bounds.extend(position)
+
+      const marker = new kakao.maps.Marker({ position, map, image: assetMarkerImage })
+      markersRef.current.push(marker)
+
+      const usageLine =
+        place.usageCount && place.usageCount > 0
+          ? `<div style="font-size:11px;color:#52525b;margin-top:2px;">이용 ${place.usageCount}회${
+              place.amount ? ` · <b style="color:#18181b;">${formatCurrency(place.amount)}원</b>` : ''
+            }</div>`
+          : `<div style="font-size:11px;color:#14b8a6;margin-top:2px;font-weight:700;">여기서 돈을 쓸 수 있어요.</div>`
+
+      const content = `
+        <div style="
+          padding:10px 14px;
+          font-size:12px;
+          line-height:1.6;
+          max-width:220px;
+          border-radius:10px;
+          background:#fff;
+          box-shadow:0 2px 8px rgba(0,0,0,.15);
+          border-left:3px solid #14b8a6;
+        ">
+          <span style="font-size:10px;font-weight:bold;color:#0f766e;background:#ccfbf1;padding:2px 6px;border-radius:4px;">📍 쓸 수 있는 곳</span>
+          <br/>
+          <b style="font-size:13px;color:#18181b;">${place.name}</b>
+          ${place.category ? `<br/><span style="color:#71717a;">${place.category}</span>` : ''}
+          ${usageLine}
+        </div>
+      `
+
+      const infoWindow = new kakao.maps.InfoWindow({ content, removable: true })
+      kakao.maps.event.addListener(marker, 'click', () => {
+        infoWindowRef.current?.close()
+        infoWindow.open(map, marker)
+        infoWindowRef.current = infoWindow
+      })
+    })
+
     map.setBounds(bounds, 60, 60, 60, 60)
-  }, [validTx, validPlans])
+  }, [validTx, validPlans, validPlaces])
 
   const initMap = useCallback(() => {
     if (!mapContainerRef.current || !window.kakao?.maps) return
@@ -312,16 +387,16 @@ export default function KakaoMap({ apiKey, transactions, plans = [], height = '4
     />
     <div className="relative w-full rounded-2xl overflow-hidden ring-1 ring-zinc-200">
       <div ref={mapContainerRef} style={{ width: '100%', height }} />
-      {validTx.length === 0 && validPlans.length === 0 && (
+      {validTx.length === 0 && validPlans.length === 0 && validPlaces.length === 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-50/90 gap-2">
           <span className="text-3xl">📍</span>
           <p className="text-sm font-bold text-zinc-500">장소 정보가 있는 내역이 없습니다.</p>
           <p className="text-xs text-zinc-400">지출을 기록할 때 장소를 검색해 등록하면 지도에 표시됩니다.</p>
         </div>
       )}
-      {(validTx.length > 0 || validPlans.length > 0) && (
+      {(validTx.length > 0 || validPlans.length > 0 || validPlaces.length > 0) && (
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl text-xs font-bold text-zinc-600 shadow-sm ring-1 ring-zinc-200">
-          📍 {validTx.length + validPlans.length}개 장소
+          📍 {validTx.length + validPlans.length + validPlaces.length}개 장소
         </div>
       )}
     </div>
