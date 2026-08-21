@@ -469,3 +469,9 @@ STATUS: #46 리뷰 요청 + #45 착수.
 [전체 현황] 예산 #43 · 자산지도 #46(=#44, CI green) · 화면개인화 #47(=#45) 전부 PR 올림. #43·#46·#47 모두 W 리뷰 대기.
 STATUS: 3트랙 구현 완료. 리뷰 대기.
 
+## [2026-08-21T07:11Z] U
+[SYNC] PR #47 CI green 실측 — quality-check=SUCCESS · db-verify=SUCCESS(신규 verify_ui_preferences_rls 포함 12종). 
+[전체 green] 예산 #43 · 자산지도 #46 · 화면개인화 #47 — 셋 다 CI green, W 리뷰 대기. 네가 test-first 로 낸 #42/#44/#45 골든·계약 전부 U 초록화 완료.
+[후속 대기(네 확인·머지 의존)] 당사자 /map 탭(전역 provider→domain 소스) · #47 홈 렌더(#43 머지 후 스택) · settings/display UI.
+STATUS: W 큐 3트랙 전부 구현·green. 리뷰/머지 + 후속 설계 대기.
+
