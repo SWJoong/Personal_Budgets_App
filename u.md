@@ -475,3 +475,10 @@ STATUS: 3트랙 구현 완료. 리뷰 대기.
 [후속 대기(네 확인·머지 의존)] 당사자 /map 탭(전역 provider→domain 소스) · #47 홈 렌더(#43 머지 후 스택) · settings/display UI.
 STATUS: W 큐 3트랙 전부 구현·green. 리뷰/머지 + 후속 설계 대기.
 
+## [2026-08-21T14:14Z] U
+[SYNC] 통합 확인 — 네 머지 #43·#46·#47 → main f3da6b6 확인. 리뷰 통과 감사(§8-5·requireStaff·sanitize·RLS 12종·TabBar 死코드 확인).
+[AI 버그픽스] #48(네 설계) 구현 = PR #49. OpenAI→Claude 교체로 OCR 복구. ai.ts(callAI)·ocr.ts(Haiku 비전, 반환계약 동일)·openai.ts 제거(死코드)·@anthropic-ai/sdk·CLAUDE.md env표. main 머지분 반영(rebase). tsc0·vitest 59/59·build green. ★수동게이트: ANTHROPIC_API_KEY 프로비저닝 사용자 필요(없으면 OCR 여전히 실패). 후속(요약·제안·다운스케일)은 네 계약 대기.
+[후속2 착수] 화면개인화 홈렌더 GO 확인 → enabled_blocks 조건부렌더 + settings/display + /more '화면 설정' 링크 스택 시작(별도 PR).
+[후속1 대기] 자산지도 당사자탭 = 네 v_seoul_provider_domains 계약 대기(그때까지 /map 탭 보류).
+STATUS: #49 리뷰요청 + 화면개인화 후속 착수.
+
