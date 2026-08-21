@@ -1,4 +1,5 @@
 import FaqButton from '@/components/ui/FaqButton'
+import ParticipantFab from '@/components/layout/ParticipantFab'
 
 export default function ParticipantLayout({
   children,
@@ -10,6 +11,8 @@ export default function ParticipantLayout({
     <div className="min-h-dvh bg-zinc-200/60 lg:flex lg:justify-center lg:items-start">
       <div className="participant-view w-full lg:max-w-[600px] min-h-dvh bg-background flex flex-col lg:shadow-[0_0_60px_-12px_rgba(0,0,0,0.18)]">
         {children}
+        {/* 하단 단일 주 액션 — '내가 쓴 돈 적기'(§6). 기존 TabBar 대체. */}
+        <ParticipantFab />
       </div>
     </div>
   )
