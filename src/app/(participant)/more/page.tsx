@@ -56,6 +56,19 @@ export default async function MorePage({
           </div>
         </section>
 
+        {/* 화면 설정 — 홈에 무엇을 볼지 고르기(화면 개인화) */}
+        <Link
+          href="/settings/display"
+          className="flex items-center gap-3 p-5 rounded-3xl bg-white ring-1 ring-zinc-200 shadow-sm hover:bg-zinc-50 transition-colors min-h-[44px]"
+        >
+          <span aria-hidden="true" className="text-2xl">🎛️</span>
+          <span className="flex flex-col">
+            <span className="font-black text-zinc-900">화면 설정</span>
+            <span className="text-xs text-zinc-400">홈에 무엇을 볼지 골라요</span>
+          </span>
+          <span className="ml-auto text-zinc-300 text-xl">›</span>
+        </Link>
+
         {/* 클라이언트 컴포넌트 (설정 및 로그아웃 핸들링) */}
         <MoreMenuClient fileLinks={[]} initialOpenSection={open} />
         
