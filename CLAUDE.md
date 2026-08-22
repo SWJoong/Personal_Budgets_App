@@ -26,7 +26,7 @@
 | Tailwind CSS | 4 (PostCSS) |
 | Supabase | PostgreSQL + Auth + Storage |
 | 폰트 | Pretendard (CDN) |
-| AI | OpenAI GPT-4o (영수증 OCR, 평가 요약) |
+| AI | Claude (Anthropic) — 영수증 OCR·평가 요약 (`@anthropic-ai/sdk`, `src/utils/ai.ts`) |
 | 지도 | Kakao Maps JavaScript SDK + REST API |
 
 ---
@@ -187,7 +187,9 @@ export async function myAction(formData: FormData) {
 | `ALLOWED_EMAIL_DOMAINS` | 실무자로 자동 인식할 이메일 도메인(쉼표 구분). 미설정 시 아무도 자동 허용 안 됨 |
 | `NEXT_PUBLIC_DEMO_MODE` | `"true"` = 데모 모드 활성화 (서울형 리빌딩 브랜치에서는 미사용) |
 | `NEXT_PUBLIC_DEMO_LOGIN_ENABLED` | `"true"` = `/login`에 데모 계정 버튼 노출 (서울형 리빌딩 브랜치) |
-| `OPENAI_API_KEY` | GPT-4o (OCR, AI 요약) |
+| `ANTHROPIC_API_KEY` | Claude (영수증 OCR·AI 요약, 서버 전용). `src/utils/ai.ts` callAI 진입점 |
+| `AI_MODEL_OCR` | (선택) OCR 모델 오버라이드. 기본 `claude-haiku-4-5` |
+| `AI_MODEL_SUMMARY` · `AI_MODEL_SUGGEST` | (선택) 요약·활동제안 모델. 기본 `claude-sonnet-5` |
 | `NEXT_PUBLIC_KAKAO_MAP_API_KEY` | 카카오 지도 JS SDK |
 | `KAKAO_REST_API_KEY` | 카카오 장소 검색 REST API |
 
