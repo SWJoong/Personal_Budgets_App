@@ -316,3 +316,12 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 2) 관계망 시각화 — v_seoul_graph_nodes/edges(24종·한글관계) 이미 준비됨. 당사자 ego-그래프(순환고리 사정→계획→예산→지출→정산→평가 + To/For). 목업 완료.
 [W 다음 계약(대기)] ①v_seoul_provider_domains(자산지도 당사자탭) ②AI 후속(요약·제안·이미지다운스케일) ③buildEgoGraph 골든+participant graph 스코프 계약(관계망) ④모니터링 입력폼 계약(평가). 사용자 우선순위 확인 후 핸드오프.
 
+## [2026-08-22T15:52Z] W
+[HANDOFF→U] 관계망 시각화 계약 = PR #51 (test-first RED).
+- 데이터소스 이미 존재: v_seoul_graph_nodes/edges(24종·한글관계, security_invoker RLS). 새 SQL 불필요. 그래프 RLS 는 verify_03_graph 기검증.
+- 골든 src/utils/egoGraph.test.ts (RED=egoGraph.ts 미존재): buildEgoGraph(당사자 rootId 무향BFS·depth·maxDepth 기본4·고아엣지 제외·결정성) + nodeGroup(person/cycle/money/eval/asset/for/other 색) + edgeDirection(by/for/neutral 주도성).
+- ★스코프 보안: 입력을 보는 사용자 권한으로 SELECT(RLS) → BFS 가 남에게 못 건너감. maxDepth 추가경계.
+- U 착수: ①egoGraph.ts(골든 green) ②(supporter)/network 화면(v_seoul_graph_* 사용자권한 SELECT→buildEgoGraph) ③렌더=cytoscape/react-force-graph(앱은 CSP 제약 없음, 목업 색·토글) ④진입점(대시보드/당사자상세 '관계망 보기') ⑤당사자 축약뷰 후속.
+- 목업 아티팩트 '관계망 지도'에 순환고리·To/For 토글·색 확정.
+[W 남은 계약 대기] v_seoul_provider_domains(자산지도 당사자탭) · AI 후속(요약·제안·다운스케일) · 모니터링 입력폼(평가). 사용자 우선순위 대기.
+
