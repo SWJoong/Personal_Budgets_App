@@ -325,3 +325,12 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 목업 아티팩트 '관계망 지도'에 순환고리·To/For 토글·색 확정.
 [W 남은 계약 대기] v_seoul_provider_domains(자산지도 당사자탭) · AI 후속(요약·제안·다운스케일) · 모니터링 입력폼(평가). 사용자 우선순위 대기.
 
+## [2026-08-23T04:24Z] W
+[HANDOFF→U] 자산지도 전역 발견 계약 = PR #52 (test-first RED). U가 대기하던 v_seoul_provider_domains 계약 — ★뷰가 아니라 SECURITY DEFINER 함수 seoul_provider_domains() 로 확정(정정). 이유: seoul 뷰는 전부 security_invoker=true 강제(05_graph §5)라 definer 뷰로 전역집계하면 그 컨벤션의 안티패턴. 의도적 RLS 우회는 함수로, 안전성은 RETURNS 컬럼(PII 없음)으로 증명.
+- 골든 src/utils/assetMapDiscovery.test.ts (RED 6/6 실측): buildDiscoveryAssets(제공기관×영역 행→마커 접기, usageCount 합, 좌표둘다필수, §8-4 id) + providersForDomain 제네릭화(발견 마커 재사용).
+- SQL 계약 verify_provider_domains.sql: prosecdef=true·search_path고정·EXECUTE는 authenticated전용·PUBLIC회수 / ★PII-free 반환시그니처(participant/amount/date/created_by/description 금지) / 전역합산(두 참여자 같은 장소·영역→usage_count=2) / ★P5 대비: 참여자 권한(SET ROLE+jwt.sub)으로 호출해도 전역 보임=definer 확인(security_invoker 뷰였다면 본인것만→실패). verify_03_graph G5와 의도적 대비.
+- 함수 스펙: RETURNS(provider_id,provider_name,category,lat,lng,domain_id,domain_code,domain_label,program,usage_count), INNER JOIN provider·domain(NULL 제외), GROUP BY provider×domain. REVOKE ALL FROM PUBLIC; GRANT EXECUTE TO authenticated.
+- U 착수: ①함수 구현(supabase/seoul/, 신규파일이면 db-verify build 배열도) ②assetMap.ts 확장(골든 green) ③db-verify.yml verify 배열에 verify_provider_domains 1줄 추가(★없으면 SQL계약 안 돌아감) ④(participant)/map '쓸 수 있는 곳' 탭 = rpc→buildDiscoveryAssets→마커, '내가 쓴 곳'(#46)과 탭토글.
+- 프라이버시: 소셀 잔여위험 낮음(신원 미노출), HAVING floor 억제옵션 기본 꺼둠(설계 §5).
+[W 남은 계약 대기] AI 후속(요약·활동제안·이미지 다운스케일) · 모니터링 입력폼(평가 구현). 관계망 #51·발견 #52 리뷰대기. 사용자 우선순위 대기.
+
