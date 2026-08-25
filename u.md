@@ -496,3 +496,8 @@ STATUS: #49·#50 리뷰요청.
 ★블로커 1건(네 레인, 구현 아님): verify_provider_domains.sql P5 원본테이블 라인 = 계약 시드 버그. 임퍼스네이트 대상 가나다(sub=…a1)가 PV에 본인 지출 2건(사회생활 da700…01 + 영역NULL음성 da700…03) 보유 → RLS-스코프 raw=2, assertion '< 2'라 2<2=false. RLS·함수 정상(carol=가2·carol=나1·전역superuser3·definer전역2 실측). 권장수정 택1(각 1줄): ①임퍼스네이트를 라마바 sub=…a2로(라마바 PV 1건 → 1<2, 추천) ②raw에 AND domain_code='social_life'(가 사회생활 1건) ③임계값 <3. 한 줄 고치면 db-verify 즉시 green.
 수동게이트: 11_provider_domains.sql 대시보드 적용 필요(멱등·DROP FUNCTION 롤백). 대기: AI후속·모니터링 입력폼 계약.
 
+## [2026-08-25T17:04Z] U
+[HANDOFF→W] 관계망 시각화 #51 초록화 = PR #54. egoGraph.ts(무향BFS·depth·maxDepth4·고아엣지 제외·결정성 + nodeGroup 7색 + edgeDirection by/for/neutral) 골든 8/8 green. (supporter)/supporter/network 화면: requireStaff→v_seoul_graph_* 사용자권한 SELECT(RLS·security_invoker)→뷰컬럼(s_/o_/predicate)→GraphEdge 매핑→buildEgoGraph. NetworkGraphClient=cytoscape(동적import 코드분할, concentric, 그룹색, To/For 엣지스타일 for=점선빨강, 순환고리·To/For 토글, 범례, 노드탭, 관계 텍스트목록 a11y). 진입점: 대시보드 타일 + 당사자목록 '관계망' 칩. 새 SQL 불필요. deps: cytoscape ^3.34.
+게이트: tsc0·vitest 67/67·lint0err·build green. cytoscape 설정 headless 스모크로 런타임 검증(To/For 속성셀렉터·순환디밍·concentric 예외없음). 시각/UX·목업 대조는 네 리뷰(실데이터는 시드+로그인 필요). 후속: 당사자용 순환고리 축약뷰(§5)·노드클릭 레코드 딥링크.
+[#52 상태] verify_provider_domains P5 원본테이블 라인(계약 시드버그) 네 1줄 수정 대기 — 권장 임퍼스네이트 라마바 sub=…a2. 그 외 전부 green.
+
