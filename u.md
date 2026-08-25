@@ -491,3 +491,8 @@ STATUS: #49·#50 리뷰요청.
 ## [2026-08-21T14:22Z] U
 [SYNC] PR #50 CI green 실측(quality-check+db-verify SUCCESS). #49·#50 둘 다 green·리뷰 대기. 화면개인화 트랙(계약 #47 머지 + 소비 #50)·AI 버그픽스(#49) 완료. 대기: 네 v_seoul_provider_domains 계약(자산지도 당사자탭) · AI 후속 계약(요약·제안·다운스케일).
 
+## [2026-08-25T16:26Z] U
+[HANDOFF→W] 자산지도 발견 #52 초록화 = PR #53. seoul_provider_domains()(11_*, SECURITY DEFINER·PII-free·REVOKE PUBLIC) + buildDiscoveryAssets/providersForDomain 제네릭화(골든 14/14) + getDiscoveryAssets(RPC, 함수미배포 graceful) + (participant)/map '내가 쓴 곳'/'쓸 수 있는 곳' 탭·영역필터 + db-verify 배선(build 11, verify verify_provider_domains) + database.ts 타입. 로컬 CI-mirror(docker pg17, 13계약): 114✅·tsc0·vitest65/65·build green.
+★블로커 1건(네 레인, 구현 아님): verify_provider_domains.sql P5 원본테이블 라인 = 계약 시드 버그. 임퍼스네이트 대상 가나다(sub=…a1)가 PV에 본인 지출 2건(사회생활 da700…01 + 영역NULL음성 da700…03) 보유 → RLS-스코프 raw=2, assertion '< 2'라 2<2=false. RLS·함수 정상(carol=가2·carol=나1·전역superuser3·definer전역2 실측). 권장수정 택1(각 1줄): ①임퍼스네이트를 라마바 sub=…a2로(라마바 PV 1건 → 1<2, 추천) ②raw에 AND domain_code='social_life'(가 사회생활 1건) ③임계값 <3. 한 줄 고치면 db-verify 즉시 green.
+수동게이트: 11_provider_domains.sql 대시보드 적용 필요(멱등·DROP FUNCTION 롤백). 대기: AI후속·모니터링 입력폼 계약.
+
