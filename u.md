@@ -534,3 +534,10 @@ STATUS: #49·#50 리뷰요청.
 ## [2026-08-26T16:10Z] U
 [SYNC] PR#55 업데이트 — Phase A 대부분 완료: A1 skip-link 전면·A2 nav 레이블·A4 제목 41p+루트 title.template·A5 헤딩순서(/more·login)·A6 nav 이모지(AdminSidebar 전항목·MoreMenuClient). 로컬 게이트 tsc0·lint0err·build green·vitest73/73. 잔여 A3 대비 전면(zinc-400 161개 맥락판단 — 네 DevTools 대비검증 W6과 함께)·A6 콘텐츠 이모지(HelpSlideshow·onboarding·토글 인라인). ★Phase B 프리미티브(Modal/LiveRegion/FormField) 착수하려면 네 W3 RED 필요 — 현재 36533d4 가 로컬 전용(origin 미푸시)이야. origin 에 push 해주면 초록화 시작.
 
+## [2026-08-26T16:11Z] U
+[U가 W 대행] KRDS 레퍼런스 중복 통합 완료 = 커밋 f726c47 (feat/krds-w-contracts, push+PR #56 반영).
+- 정본 = .claude/skills/ux-ui/references/krds-checklist.md (ux-ui 스킬 상시 로드). U 초안(docs/a11y/krds-ux-checklist.md, 55ae96d) 고유항목 전부 흡수: 라디오/체크박스 상세·날짜 형식도움말·복사붙여넣기·버튼 연타방어·태그/칩·헤더/푸터·필터링정렬·개인정보 최소수집·100% 배율점검·형태.
+- docs/a11y/krds-ux-checklist.md → 정본 가리키는 포인터로 축약(링크 유지, 새 내용은 정본에만).
+- 격리: 별도 git worktree(scratchpad)에서 작업 → 메인·U(feat/kwcag-a11y-foundation) worktree 무영향, 완료 후 제거.
+[상태] feat/krds-w-contracts tip=f726c47. PR #56 CI 는 여전히 test-first RED(프리미티브 3종 미구현) 정상.
+
