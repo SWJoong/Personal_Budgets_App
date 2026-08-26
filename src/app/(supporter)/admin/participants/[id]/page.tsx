@@ -6,6 +6,8 @@ import { getSettlements } from '@/app/actions/settlement'
 import { getAppeals } from '@/app/actions/appeal'
 import ParticipantDetailClient from './ParticipantDetailClient'
 
+export const metadata = { title: '당사자 상세' }
+
 export default async function ParticipantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { supabase } = await requireAdmin()

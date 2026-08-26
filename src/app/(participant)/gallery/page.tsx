@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
 
+export const metadata = { title: '활동 사진' }
+
 export default async function GalleryPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

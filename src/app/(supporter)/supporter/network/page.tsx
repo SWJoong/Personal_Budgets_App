@@ -11,6 +11,8 @@ import NetworkGraphClient from './NetworkGraphClient'
  * RLS 가 접근 가능한 행만 넘긴다. buildEgoGraph 는 '준 것만' 잇고, rootId 연결 성분만 추출한다(교차참여자
  * 유입 방지는 RLS 책임 + maxDepth 경계). 뷰 컬럼(s_/o_/predicate)을 순수 로직 shape(GraphEdge)로 매핑한다.
  */
+export const metadata = { title: '관계망' }
+
 export default async function NetworkPage({
   searchParams,
 }: {

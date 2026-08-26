@@ -7,6 +7,8 @@ import NewTransactionClient from './NewTransactionClient'
  * 지출 기록 폼 (GOAL축 A) — 담당자·당사자가 예산 배정에 대해 지출을 기록한다.
  * recordServiceUsage 액션 사용. 예산 배정(seoul_budget_allocations)이 있어야 기록 가능.
  */
+export const metadata = { title: '지출 추가' }
+
 export default async function NewTransactionPage({ params }: { params: Promise<{ participantId: string }> }) {
   const { participantId } = await params
   const { supabase } = await requireStaff()

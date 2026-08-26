@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
 import MyPlanClient from './MyPlanClient'
 
+export const metadata = { title: '내 계획' }
+
 export default async function MyPlanPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

@@ -25,6 +25,8 @@ function won(n: number): string {
   return n.toLocaleString('ko-KR') + '원'
 }
 
+export const metadata = { title: '거래장부' }
+
 export default async function TransactionsPage({ params }: { params: Promise<{ participantId: string }> }) {
   const { participantId } = await params
   const { supabase } = await requireStaff()

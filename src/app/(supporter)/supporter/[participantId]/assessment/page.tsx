@@ -9,6 +9,8 @@ import AssessmentClient from './AssessmentClient'
  * 사정(needs_assessment)은 분류축(사정→목표→예산→지출→평가)의 시작점이다.
  * 서울형(program='seoul')은 6개 대분류가 flat 이라 중분류 없이 대분류만 고른다.
  */
+export const metadata = { title: '욕구사정' }
+
 export default async function AssessmentPage({ params }: { params: Promise<{ participantId: string }> }) {
   const { participantId } = await params
   const { supabase } = await requireStaff()

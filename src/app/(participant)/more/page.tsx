@@ -6,6 +6,8 @@ import NavDropdown from '@/components/layout/NavDropdown'
 import HelpButton from '@/components/help/HelpButton'
 import HelpAutoTrigger from '@/components/help/HelpAutoTrigger'
 
+export const metadata = { title: '더보기' }
+
 export default async function MorePage({
   searchParams,
 }: {

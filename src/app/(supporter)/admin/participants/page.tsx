@@ -12,6 +12,8 @@ interface ParticipantRow {
   supporter: { id: string; name: string | null } | null
 }
 
+export const metadata = { title: '당사자 관리' }
+
 export default async function AdminParticipantsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

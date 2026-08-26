@@ -4,6 +4,8 @@ import { requireStaff } from '@/utils/supabase/staff'
 import { getReviewCommittees } from '@/app/actions/planReview'
 import PlanDetailClient from './PlanDetailClient'
 
+export const metadata = { title: '계획 상세' }
+
 export default async function PlanDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { supabase, profile } = await requireStaff()

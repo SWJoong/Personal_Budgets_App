@@ -5,6 +5,8 @@ import { requireStaff } from '@/utils/supabase/staff'
  * 당사자 목록 — 담당자가 당사자를 골라 욕구사정 등으로 들어가는 진입점.
  * (기존 ComingSoon 스텁을 대체. 상세 통합 현황은 이후 단계에서 확장.)
  */
+export const metadata = { title: '당사자 목록' }
+
 export default async function ParticipantsOverviewPage() {
   const { supabase } = await requireStaff()
 

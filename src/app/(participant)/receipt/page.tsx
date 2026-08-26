@@ -4,6 +4,8 @@ import { getCurrentParticipant } from '@/utils/supabase/participant'
 import { getSpendingRules } from '@/app/actions/ruleCheck'
 import ReceiptClient from './ReceiptClient'
 
+export const metadata = { title: '지출 적기' }
+
 export default async function ReceiptPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

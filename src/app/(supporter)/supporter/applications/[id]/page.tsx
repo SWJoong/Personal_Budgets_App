@@ -4,6 +4,8 @@ import { requireStaff } from '@/utils/supabase/staff'
 import { getApplicationDocuments } from '@/app/actions/application'
 import ApplicationDetailClient from './ApplicationDetailClient'
 
+export const metadata = { title: '신청 상세' }
+
 export default async function ApplicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { supabase, profile } = await requireStaff()

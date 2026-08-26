@@ -1,6 +1,8 @@
 import { requireStaff } from '@/utils/supabase/staff'
 import Link from 'next/link'
 
+export const metadata = { title: '대시보드' }
+
 export default async function SupporterPage() {
   const { profile } = await requireStaff()
 

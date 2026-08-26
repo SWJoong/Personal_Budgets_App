@@ -6,6 +6,8 @@ import { type MapTransaction } from '@/components/map/KakaoMap'
 import { getDiscoveryAssets } from '@/app/actions/serviceProvider'
 import MapTabsClient from './MapTabsClient'
 
+export const metadata = { title: '지도' }
+
 export default async function MapPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

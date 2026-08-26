@@ -4,6 +4,8 @@ import Link from 'next/link'
 import ProfileEditClient from './ProfileEditClient'
 import NavDropdown from '@/components/layout/NavDropdown'
 
+export const metadata = { title: '내 정보' }
+
 export default async function ProfileSettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

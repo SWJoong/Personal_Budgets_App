@@ -8,6 +8,8 @@ import SupporterMapClient from './MapClient'
  * 지원자 자산 지도 — 예산 쓸 수 있는 장소(제공기관)를 영역별로. 설계: goala_asset_map_ux_W.md §6.
  * 영역 태그는 지출 이력(seoul_can_access 스코프)에서 파생(assetMap). providers 읽기는 전원 허용(RLS 04).
  */
+export const metadata = { title: '지도' }
+
 export default async function SupporterMapPage() {
   const { supabase } = await requireStaff()
 

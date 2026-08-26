@@ -11,6 +11,8 @@ const STATUS_LABEL: Record<ApplicationStatus, string> = {
   withdrawn: '철회됨',
 }
 
+export const metadata = { title: '신청 목록' }
+
 export default async function ApplicationsPage() {
   const { supabase } = await requireStaff()
   const { applications, error } = await getApplications()

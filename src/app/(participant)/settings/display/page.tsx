@@ -9,6 +9,8 @@ import DisplaySettingsClient from './DisplaySettingsClient'
  * 화면 설정 — 당사자 본인이 홈 구성을 고른다(설계 goala_ui_preferences_W.md §7).
  * 담당자 대리 설정은 후속(participants/[id]).
  */
+export const metadata = { title: '화면 설정' }
+
 export default async function DisplaySettingsPage() {
   const supabase = await createClient()
   const {

@@ -19,6 +19,8 @@ function won(n: number): string {
   return n.toLocaleString('ko-KR') + '원'
 }
 
+export const metadata = { title: '월간 보고서' }
+
 export default async function DomainAxisReportPage({ params }: { params: Promise<{ participantId: string }> }) {
   const { participantId } = await params
   const { supabase } = await requireStaff()

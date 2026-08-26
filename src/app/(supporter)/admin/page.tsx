@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AdminHelpButton from '@/components/help/AdminHelpButton'
 
+export const metadata = { title: '대시보드' }
+
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

@@ -12,6 +12,8 @@ const STATUS_LABEL: Record<string, string> = {
   under_appeal: '이의신청 중',
 }
 
+export const metadata = { title: '이용계획' }
+
 export default async function PlansPage() {
   const { supabase } = await requireStaff()
   const { plans, error } = await getUtilizationPlans()

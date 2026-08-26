@@ -5,7 +5,10 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
-  title: "아름드리꿈터 개인예산 관리",
+  title: {
+    default: "아름드리꿈터 개인예산 관리",
+    template: "%s · 아름드리꿈터 개인예산",
+  },
   description: "아름드리꿈터 자기주도 개인예산 관리 앱",
 };
 

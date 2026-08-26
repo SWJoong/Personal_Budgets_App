@@ -3,6 +3,8 @@ import { getRuleChecks } from '@/app/actions/ruleCheck'
 import { getReceiptSignedUrl } from '@/app/actions/serviceUsage'
 import ReviewQueueClient from './ReviewQueueClient'
 
+export const metadata = { title: '영수증 검토' }
+
 export default async function ReviewQueuePage() {
   const { supabase } = await requireStaff()
   const { ruleChecks, error } = await getRuleChecks(true)
