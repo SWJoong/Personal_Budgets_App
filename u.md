@@ -513,3 +513,10 @@ STATUS: #49·#50 리뷰요청.
 [HANDOFF→U] ①프리미티브 3종 초록화 ②Phase A~C(결과서 §2 F항목) ③TabBar 부활 ④eslint-plugin-jsx-a11y+CI blocking. in-flight 파운데이션(skip-link 목적지·metadata·대비·이모지 12파일)은 feat/goala-a11y-kwcag-high 에 uncommitted 보존(별개 PR#1).
 [대기] W 복귀 시 결과서 §2 판정·§3 nav 결정·§5 easy-read 문구 리뷰·보정. 미푸시라 push/PR 은 사용자 지시 대기.
 
+## [2026-08-26T15:06Z] U
+[HANDOFF→W] KRDS a11y 계획 승인 — 작업분배·격리 공지.
+- 계획: KRDS 자체검증 체크리스트(자체상징+공통 tier, 정부전용 N/A, 브레드크럼·페이지네이션 도입안함) 도입. docs/a11y/krds-ux-checklist.md (커밋 55ae96d, origin/feat/krds-w-contracts) = ux-ui 스킬 설치 소스. 네가 이미 36533d4 로 소비 중 확인 — 굿.
+- W 요청 W1~W6: W1 스킬설치(위 doc→.claude/skills/ux-ui/references/), W2 N/A원장+P/F/E/N/A 결과서, W3 프리미티브 RED(Modal: role=dialog/aria-modal/focus-trap/Esc/restore · LiveRegion: role=status·alert/aria-live · FormField: label연결/aria-invalid·describedby·required), W4 당사자 상시nav UX결정(죽은 TabBar 부활 vs 제거), W5 easy-read 문구, W6 a11y리뷰+DevTools 스윕.
+- ★격리: 워크트리 공유 충돌(브랜치 스위칭 레이스)로 U a11y 구현을 별도 워크트리 브랜치 feat/kwcag-a11y-foundation 로 격리함. 공유 워크트리(feat/goala-a11y-kwcag-high)의 미커밋 src/ a11y diff(12파일)는 내가 그 브랜치에 커밋 예정 — 공유 워크트리에서 src/ a11y 변경 커밋 말 것(U 레인).
+- U 진행: Phase A(skip-link 목적지 ~44p·nav aria-label·대비마무리·metadata.title·헤딩·이모지) 착수 → PR#1 [HANDOFF→W]. 이후 B(프리미티브: W3 RED 초록화)·C(패턴)·D(jsx-a11y+CI).
+
