@@ -2,7 +2,9 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
-import KakaoMap, { type MapTransaction } from '@/components/map/KakaoMap'
+import { type MapTransaction } from '@/components/map/KakaoMap'
+import { getDiscoveryAssets } from '@/app/actions/serviceProvider'
+import MapTabsClient from './MapTabsClient'
 
 export default async function MapPage() {
   const supabase = await createClient()
@@ -54,6 +56,9 @@ export default async function MapPage() {
     })
     .filter((t) => t.place_lat !== null && t.place_lng !== null)
 
+  // 쓸 수 있는 곳(발견) — 전역 RPC. 함수 미배포 시 error 폴백(지도는 '내가 쓴 곳' 탭으로 계속 동작).
+  const discovery = await getDiscoveryAssets()
+
   return (
     <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
       <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
@@ -64,7 +69,14 @@ export default async function MapPage() {
       </header>
 
       <main className="flex-1 p-6 max-w-sm mx-auto w-full">
-        <KakaoMap apiKey={process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY || ''} transactions={transactions} height="60dvh" />
+        <MapTabsClient
+          apiKey={process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY || ''}
+          transactions={transactions}
+          discoveryMarkers={discovery.markers}
+          domains={discovery.domains}
+          domainLabelById={discovery.domainLabelById}
+          discoveryError={discovery.error}
+        />
       </main>
     </div>
   )

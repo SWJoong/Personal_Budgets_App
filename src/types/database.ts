@@ -2130,6 +2130,21 @@ export type Database = {
         Args: { p_participant_id: string }
         Returns: boolean
       }
+      seoul_provider_domains: {
+        Args: never
+        Returns: {
+          category: string | null
+          domain_code: string
+          domain_id: string
+          domain_label: string
+          lat: number | null
+          lng: number | null
+          program: string
+          provider_id: string
+          provider_name: string
+          usage_count: number
+        }[]
+      }
       seoul_self_participant_id: { Args: never; Returns: string }
     }
     Enums: {
