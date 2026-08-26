@@ -38,7 +38,7 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
         <h1 className="text-xl font-bold tracking-tight">{participant?.name ?? '당사자'}님의 이용계획</h1>
       </header>
 
-      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
         <PlanDetailClient
           planId={id}
           participantId={plan.participant_id}

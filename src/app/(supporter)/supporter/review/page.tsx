@@ -60,7 +60,7 @@ export default async function ReviewQueuePage() {
       <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
         <h1 className="text-xl font-bold tracking-tight">확인이 필요한 지출</h1>
       </header>
-      <main className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6">
         {error && (
           <div className="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>
         )}

@@ -38,7 +38,7 @@ export default async function ParticipantDetailPage({ params }: { params: Promis
         <Link href="/admin/participants" aria-label="뒤로 가기" className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center">←</Link>
         <h1 className="text-xl font-bold tracking-tight">{participant.name}님 상세</h1>
       </header>
-      <main className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6">
         <ParticipantDetailClient
           participantId={participant.id}
           allocationId={allocation?.id ?? null}

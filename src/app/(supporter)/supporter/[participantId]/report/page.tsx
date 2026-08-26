@@ -54,7 +54,7 @@ export default async function DomainAxisReportPage({ params }: { params: Promise
         <h1 className="text-xl font-bold tracking-tight">{participant.name}님의 지원영역 흐름</h1>
       </header>
 
-      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-4">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-4">
         <p className="text-sm text-zinc-500 leading-relaxed">
           지원영역별로 <b className="text-zinc-700">사정한 욕구</b>와 <b className="text-zinc-700">실제 지출</b>을 나란히 봅니다.
           욕구는 있는데 아직 안 쓴 영역(⚠️)이나 사정 없이 지출된 영역(📌)을 살펴보세요.

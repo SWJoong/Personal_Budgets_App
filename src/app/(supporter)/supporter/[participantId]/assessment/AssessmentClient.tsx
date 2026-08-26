@@ -128,7 +128,7 @@ export default function AssessmentClient({
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-bold text-zinc-500">지금까지 적은 욕구</h2>
         {assessments.length === 0 ? (
-          <p className="text-zinc-400 text-sm py-6 text-center leading-relaxed">
+          <p className="text-zinc-600 text-sm py-6 text-center leading-relaxed">
             아직 적은 욕구가 없어요.
             <br />
             아래에서 도움이 필요한 영역을 골라 적어 주세요.

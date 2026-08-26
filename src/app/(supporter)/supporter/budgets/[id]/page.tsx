@@ -23,8 +23,10 @@ const STATUS_STYLE: Record<BudgetStatus, { badge: string; emoji: string }> = {
   unused: { badge: 'bg-sky-50 text-sky-700 ring-sky-200', emoji: '💤' },
   over: { badge: 'bg-rose-50 text-rose-700 ring-rose-200', emoji: '⚠️' },
   unplanned: { badge: 'bg-amber-50 text-amber-700 ring-amber-200', emoji: '📌' },
-  none: { badge: 'bg-zinc-100 text-zinc-400 ring-zinc-200', emoji: '·' },
+  none: { badge: 'bg-zinc-100 text-zinc-600 ring-zinc-200', emoji: '·' },
 }
+
+export const metadata = { title: '예산' }
 
 function won(n: number): string {
   return Math.round(n).toLocaleString('ko-KR') + '원'
@@ -87,7 +89,7 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
           </Link>
           <h1 className="text-xl font-bold tracking-tight">{participant.name}님의 예산</h1>
         </header>
-        <main className="flex-1 w-full max-w-lg mx-auto p-6 flex flex-col items-center justify-center text-center gap-4">
+        <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-6 flex flex-col items-center justify-center text-center gap-4">
           <span className="text-6xl" aria-hidden="true">
             💰
           </span>
@@ -154,7 +156,7 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
         <h1 className="text-xl font-bold tracking-tight">{participant.name}님의 예산</h1>
       </header>
 
-      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-4">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-4">
         {/* ① 예산 봉투 카드 */}
         <section className="p-5 rounded-3xl bg-white ring-1 ring-zinc-200 flex flex-col gap-4">
           <div>

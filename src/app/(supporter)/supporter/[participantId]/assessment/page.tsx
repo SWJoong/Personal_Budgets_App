@@ -55,7 +55,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ par
         </Link>
       </header>
 
-      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
         <AssessmentClient
           participantId={participantId}
           assessments={assessments ?? []}

@@ -16,7 +16,7 @@ export default async function MyPlanPage() {
         <header className="flex h-14 items-center px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
           <h1 className="text-sm font-black text-zinc-800">내 이용계획</h1>
         </header>
-        <main className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-4">
+        <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-4">
           <span className="text-6xl">🎯</span>
           <p className="text-zinc-500 font-medium leading-relaxed">아직 예산 정보가 없어요.<br />담당 선생님에게 말씀해 주세요.</p>
         </main>

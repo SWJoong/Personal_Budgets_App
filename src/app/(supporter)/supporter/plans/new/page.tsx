@@ -50,7 +50,7 @@ export default async function NewPlanPage() {
         <Link href="/supporter/plans" aria-label="뒤로 가기" className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center">←</Link>
         <h1 className="text-xl font-bold tracking-tight">새 이용계획 만들기</h1>
       </header>
-      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
         <NewPlanClient candidates={candidates} />
       </main>
     </div>

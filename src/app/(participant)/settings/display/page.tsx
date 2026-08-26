@@ -34,7 +34,7 @@ export default async function DisplaySettingsPage() {
         <h1 className="text-sm font-black text-zinc-800">화면 설정</h1>
       </header>
 
-      <main className="flex-1 p-6 max-w-sm mx-auto w-full flex flex-col gap-4">
+      <main id="main-content" tabIndex={-1} className="flex-1 p-6 max-w-sm mx-auto w-full flex flex-col gap-4">
         <div>
           <h2 className="text-lg font-black text-zinc-900">무엇을 볼지 골라요.</h2>
           <p className="text-sm text-zinc-500 mt-1 leading-relaxed">이 칸을 보여줄까요? 켜고 끌 수 있어요.</p>

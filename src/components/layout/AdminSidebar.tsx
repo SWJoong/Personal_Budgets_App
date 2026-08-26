@@ -111,7 +111,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
       <div className="h-px bg-white/10 mx-3 mb-3 shrink-0" />
 
       {/* 메인 메뉴 */}
-      <nav className="flex-1 px-2 space-y-0.5">
+      <nav aria-label="주요 메뉴" className="flex-1 px-2 space-y-0.5">
         {menuItems.map((item) => {
           const isActive =
             pathname === item.href ||

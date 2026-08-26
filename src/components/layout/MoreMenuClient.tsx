@@ -34,10 +34,11 @@ function SectionToggle({
     <button
       type="button"
       onClick={onToggle}
-      className="w-full flex items-center justify-between py-1 mb-2"
+      aria-expanded={open}
+      className="w-full min-h-[44px] flex items-center justify-between py-1 mb-2"
     >
-      <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest ml-2">{title}</h3>
-      <span className="text-zinc-400 text-xs font-bold mr-1">{open ? '▲ 접기' : '▼ 펼치기'}</span>
+      <h3 className="text-sm font-black text-zinc-700 uppercase tracking-widest ml-2">{title}</h3>
+      <span className="text-zinc-500 text-xs font-bold mr-1">{open ? '▲ 접기' : '▼ 펼치기'}</span>
     </button>
   )
 }
@@ -162,7 +163,7 @@ export default function MoreMenuClient({
                     className={`flex-1 flex flex-col items-center justify-center py-4 rounded-2xl transition-all border-2
                       ${fontSize === s.id
                         ? 'bg-zinc-900 border-zinc-900 text-white shadow-lg scale-105'
-                        : 'bg-zinc-50 border-transparent text-zinc-400 hover:bg-zinc-100'}
+                        : 'bg-zinc-50 border-transparent text-zinc-600 hover:bg-zinc-100'}
                     `}
                   >
                     <span className={`font-black ${s.id === 'normal' ? 'text-sm' : s.id === 'large' ? 'text-xl' : 'text-3xl'}`}>
@@ -178,16 +179,18 @@ export default function MoreMenuClient({
             <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-zinc-700">🌗 글씨가 더 잘 보여요</span>
-                <span className="text-xs text-zinc-400 font-medium">글씨와 배경의 대비를 높여요</span>
+                <span className="text-xs text-zinc-600 font-medium">글씨와 배경의 대비를 높여요</span>
               </div>
               <button
                 onClick={() => setHighContrast(!highContrast)}
-                className={`relative w-14 h-8 rounded-full transition-all duration-300 ${highContrast ? 'bg-zinc-900' : 'bg-zinc-200'}`}
+                className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 role="switch"
                 aria-checked={highContrast}
                 aria-label="글씨 더 잘 보이기 전환"
               >
-                <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${highContrast ? 'left-7' : 'left-1'}`} />
+                <span className={`relative block w-14 h-8 rounded-full transition-all duration-300 ${highContrast ? 'bg-zinc-900' : 'bg-zinc-200'}`}>
+                  <span className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${highContrast ? 'left-7' : 'left-1'}`} />
+                </span>
               </button>
             </div>
 
@@ -195,7 +198,7 @@ export default function MoreMenuClient({
             <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-zinc-700">🌙 다크 모드</span>
-                <span className="text-xs text-zinc-400 font-medium">눈부심을 줄이기 위해 어두운 배경을 사용해요</span>
+                <span className="text-xs text-zinc-600 font-medium">눈부심을 줄이기 위해 어두운 배경을 사용해요</span>
               </div>
               <button
                 onClick={() => setDarkMode(!darkMode)}
@@ -212,7 +215,7 @@ export default function MoreMenuClient({
             <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-zinc-700">💬 쉬운 말 모드</span>
-                <span className="text-xs text-zinc-400 font-medium">쉬운 말로 바꿔요</span>
+                <span className="text-xs text-zinc-600 font-medium">쉬운 말로 바꿔요</span>
               </div>
               <button
                 onClick={() => setEasyTerms(!easyTerms)}
@@ -229,7 +232,7 @@ export default function MoreMenuClient({
             <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-zinc-700">🟡 노란 배경 모드</span>
-                <span className="text-xs text-zinc-400 font-medium">글 읽기 어려운 분을 위해 배경을 노란색으로 바꿔요</span>
+                <span className="text-xs text-zinc-600 font-medium">글 읽기 어려운 분을 위해 배경을 노란색으로 바꿔요</span>
               </div>
               <button
                 onClick={() => setYellowBg(!yellowBg)}

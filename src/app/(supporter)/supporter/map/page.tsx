@@ -34,7 +34,7 @@ export default async function SupporterMapPage() {
         <h1 className="text-xl font-bold tracking-tight">지도 · 쓸 수 있는 곳</h1>
       </header>
 
-      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
         {error ? (
           <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
             장소를 불러오지 못했어요: {error}

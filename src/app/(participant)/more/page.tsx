@@ -44,7 +44,7 @@ export default async function MorePage({
         </div>
       </header>
 
-      <main className="flex-1 p-4 w-full flex flex-col gap-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 p-4 w-full flex flex-col gap-6">
         {/* 프로필 요약 */}
         <section className="flex items-center gap-4 p-6 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm">
           <div className="w-16 h-16 rounded-3xl bg-zinc-100 flex items-center justify-center text-3xl font-black text-zinc-400">

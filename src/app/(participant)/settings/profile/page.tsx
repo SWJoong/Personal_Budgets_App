@@ -31,7 +31,7 @@ export default async function ProfileSettingsPage() {
         <NavDropdown />
       </header>
 
-      <main className="flex-1 p-6 max-w-lg mx-auto w-full">
+      <main id="main-content" tabIndex={-1} className="flex-1 p-6 max-w-lg mx-auto w-full">
         <ProfileEditClient
           profile={profile}
           userEmail={user.email || ''}
