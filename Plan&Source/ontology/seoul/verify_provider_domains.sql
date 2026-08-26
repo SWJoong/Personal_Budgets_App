@@ -153,7 +153,7 @@ DO $$ BEGIN CREATE ROLE carol LOGIN; EXCEPTION WHEN duplicate_object THEN NULL; 
 GRANT authenticated TO carol;
 
 SET ROLE carol;
-SET request.jwt.claim.sub = 'da000000-0000-0000-0000-0000000000a1';  -- 가나다의 로그인 id(참여자 내부 키 아님)
+SET request.jwt.claim.sub = 'da000000-0000-0000-0000-0000000000a2';  -- 라마바의 로그인 id(PV 지출 1건뿐 — 가나다는 2건이라 raw<2 단언과 충돌, 시드버그 수정)
 SELECT '   [참여자 권한] 함수 전역 count(=2 여야 definer): ' || COALESCE(sum(usage_count),0) ||
   CASE WHEN COALESCE(sum(usage_count),0)=2 THEN ' ✅ 전역 보임' ELSE ' ❌ (본인 것만 — invoker/뷰 의심)' END
   FROM public.seoul_provider_domains()
