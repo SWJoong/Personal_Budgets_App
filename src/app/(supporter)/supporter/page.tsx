@@ -33,6 +33,13 @@ export default async function SupporterPage() {
           <span className="text-xl">🗺️</span>
           지도 · 쓸 수 있는 곳
         </Link>
+        <Link
+          href="/supporter/network"
+          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-white text-zinc-800 ring-1 ring-zinc-200 font-bold text-base hover:bg-zinc-50 transition-colors active:scale-[0.98]"
+        >
+          <span className="text-xl">🕸️</span>
+          관계망 보기
+        </Link>
       </main>
     </div>
   )
