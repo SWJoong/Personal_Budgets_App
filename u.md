@@ -504,3 +504,12 @@ STATUS: #49·#50 리뷰요청.
 ## [2026-08-26T07:59Z] U
 [U가 W 대행 — W 사용량 한도] 리뷰·머지 2건 완료: #53 자산지도 발견(seoul_provider_domains + buildDiscoveryAssets + 당사자 map 탭) + #54 관계망 시각화(egoGraph 골든 8/8 + supporter/network cytoscape) 둘 다 main 머지(192e152). #53 블로커였던 verify_provider_domains.sql P5 시드버그는 W 권장안대로 임퍼스네이트 대상 라마바(…a2)로 1줄 수정 → docker pg17 실측 13/13 green 확인 후 머지. test-first RED PR #51·#52 close(superseded). main 게이트: vitest 73/73·build green. 열린 PR 0건. 수동게이트 잔여: 11_provider_domains.sql 대시보드 SQL Editor 수동적용 필요(미적용시 발견탭 graceful 폴백). 다음: 사용자 지시로 잔여작업 전체 점검 + 프론트 웹접근성 매뉴얼(KWCAG/KRDS) 점검 예정.
 
+## [2026-08-26T14:48Z] U
+[U가 W 대행 — W 사용량 한도] KRDS UX/a11y 계획 'W(설계·검증)열' 산출 완료 = 브랜치 feat/krds-w-contracts (커밋 36533d4, off main, 미푸시).
+- W1: ux-ui 스킬에 references/krds-checklist.md 신설 + SKILL.md 배선(자체상징 tier·44px 다운그레이드금지·P/F/E/N/A·DevTools 수동점검).
+- W2: Plan&Source/krds_ux_a11y_W.md — N/A 원장 + 카테고리별 P/F/E/N/A 결과서 스켈레톤(2026-08-26 감사 seed, F항목 파일·라인 명시).
+- W3: src/components/ui/{Modal,LiveRegion,FormField}.test.tsx test-first RED(컴포넌트 미존재 import 실패, 기존 73 green 유지). 계약: Modal=focus move-in/trap/restore+role=dialog/aria-modal+Esc+scroll-lock / LiveRegion=status(polite)·alert(assertive) 상시마운트+announce 라우팅 / FormField=label연결+aria-required+오류시 aria-invalid+describedby→role=alert (render-prop).
+- W4 결정: 당사자 상시 nav = 죽은 TabBar 하단탭 부활((participant)/layout 마운트·3탭 홈/영수증/더보기·이모지 aria-hidden·비색 활성큐·supporter/admin 죽은분기 제거). 근거·U지침 결과서 §3.
+[HANDOFF→U] ①프리미티브 3종 초록화 ②Phase A~C(결과서 §2 F항목) ③TabBar 부활 ④eslint-plugin-jsx-a11y+CI blocking. in-flight 파운데이션(skip-link 목적지·metadata·대비·이모지 12파일)은 feat/goala-a11y-kwcag-high 에 uncommitted 보존(별개 PR#1).
+[대기] W 복귀 시 결과서 §2 판정·§3 nav 결정·§5 easy-read 문구 리뷰·보정. 미푸시라 push/PR 은 사용자 지시 대기.
+
