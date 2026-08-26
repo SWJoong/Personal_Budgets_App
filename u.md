@@ -501,3 +501,6 @@ STATUS: #49·#50 리뷰요청.
 게이트: tsc0·vitest 67/67·lint0err·build green. cytoscape 설정 headless 스모크로 런타임 검증(To/For 속성셀렉터·순환디밍·concentric 예외없음). 시각/UX·목업 대조는 네 리뷰(실데이터는 시드+로그인 필요). 후속: 당사자용 순환고리 축약뷰(§5)·노드클릭 레코드 딥링크.
 [#52 상태] verify_provider_domains P5 원본테이블 라인(계약 시드버그) 네 1줄 수정 대기 — 권장 임퍼스네이트 라마바 sub=…a2. 그 외 전부 green.
 
+## [2026-08-26T07:59Z] U
+[U가 W 대행 — W 사용량 한도] 리뷰·머지 2건 완료: #53 자산지도 발견(seoul_provider_domains + buildDiscoveryAssets + 당사자 map 탭) + #54 관계망 시각화(egoGraph 골든 8/8 + supporter/network cytoscape) 둘 다 main 머지(192e152). #53 블로커였던 verify_provider_domains.sql P5 시드버그는 W 권장안대로 임퍼스네이트 대상 라마바(…a2)로 1줄 수정 → docker pg17 실측 13/13 green 확인 후 머지. test-first RED PR #51·#52 close(superseded). main 게이트: vitest 73/73·build green. 열린 PR 0건. 수동게이트 잔여: 11_provider_domains.sql 대시보드 SQL Editor 수동적용 필요(미적용시 발견탭 graceful 폴백). 다음: 사용자 지시로 잔여작업 전체 점검 + 프론트 웹접근성 매뉴얼(KWCAG/KRDS) 점검 예정.
+
