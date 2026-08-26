@@ -85,7 +85,87 @@ export function buildProviderAssets(providers: ProviderRow[], usages: UsageRow[]
   return [...markers.values()]
 }
 
-/** 영역(domain_id)으로 자산 필터 — 그 영역에서 쓰인 장소만(§8-4 id 조인, 라벨 아님). */
-export function providersForDomain(markers: AssetMarker[], domainId: string): AssetMarker[] {
+/**
+ * 영역(domain_id)으로 자산 필터 — 그 영역에서 쓰인 장소만(§8-4 id 조인, 라벨 아님).
+ * ★ 제네릭: '내가 쓴 곳'(AssetMarker)·'쓸 수 있는 곳'(DiscoveryMarker) 마커에 공용(§4).
+ *   domainIds 만 요구하므로 두 마커 타입 모두 만족(후방호환).
+ */
+export function providersForDomain<T extends { domainIds: string[] }>(markers: T[], domainId: string): T[] {
   return markers.filter((m) => m.domainIds.includes(domainId))
+}
+
+// =====================================================================
+// "쓸 수 있는 곳"(발견) — 전역 제공기관×영역 집계 소스
+//
+//   설계: goala_provider_domains_W.md · 골든: assetMapDiscovery.test.ts
+//   소스: seoul_provider_domains() RPC(SECURITY DEFINER, PII 없음 — 11_provider_domains.sql).
+//
+//   '내가 쓴 곳'(buildProviderAssets)이 본인 지출(RLS 스코프·금액 있음)에서 파생한다면,
+//   '쓸 수 있는 곳'은 전 참여자 지출을 신원제거·집계한 전역 소스에서 파생한다(금액 개념 없음).
+//   둘 다 같은 domain_id 로 예산 영역 필터와 이어진다(예산→자산→지출 한 축, §1).
+// =====================================================================
+
+/** seoul_provider_domains() RPC 한 행. PII 없음(신원·금액·날짜 없음, 집계 수치만). */
+export interface ProviderDomainRow {
+  provider_id: string
+  provider_name: string
+  category: string | null
+  lat: number | null
+  lng: number | null
+  domain_id: string
+  domain_code: string
+  domain_label: string
+  program: string
+  usage_count: number
+}
+
+/** 발견(쓸 수 있는 곳) 마커 — 금액 없음(전역·신원제거 소스라 '본인 금액'이라는 개념이 없다). */
+export interface DiscoveryMarker {
+  id: string
+  name: string
+  lat: number
+  lng: number
+  category: string | null
+  domainIds: string[] // §8-4 id 기준, 유니크·정렬
+  usageCount: number // 이 장소의 전 영역 이용 합(전역)
+}
+
+/**
+ * 전역 제공기관×영역 행(RPC)을 발견 마커로 접는다 — 제공기관 단위, domainIds[].
+ *  - 한 제공기관의 여러 (provider,domain) 행 → 한 마커. domainIds = 그 영역 id 집합(유니크·정렬),
+ *    usageCount = 그 제공기관의 usage_count 합(전 영역·전역).
+ *  - 좌표(lat·lng) 둘 다 있어야 마커(하나라도 null → 지도에 못 찍음, 제외).
+ *  - domainIds 는 라벨이 아니라 domain_id(§8-4, program 스코프 라벨 충돌 방지).
+ *  - 마커·domainIds 모두 결정적으로 정렬(UI 결정성 — RPC 행 순서에 의존하지 않는다).
+ */
+export function buildDiscoveryAssets(rows: ProviderDomainRow[]): DiscoveryMarker[] {
+  const markers = new Map<string, DiscoveryMarker>()
+  const domainsByProvider = new Map<string, Set<string>>()
+
+  for (const r of rows) {
+    if (r.lat == null || r.lng == null) continue // 좌표 불완전 → 지도에 못 찍음
+    let marker = markers.get(r.provider_id)
+    if (!marker) {
+      marker = {
+        id: r.provider_id,
+        name: r.provider_name,
+        lat: r.lat,
+        lng: r.lng,
+        category: r.category,
+        domainIds: [],
+        usageCount: 0,
+      }
+      markers.set(r.provider_id, marker)
+      domainsByProvider.set(r.provider_id, new Set<string>())
+    }
+    marker.usageCount += Number(r.usage_count ?? 0) // 전 영역 합(전역)
+    domainsByProvider.get(r.provider_id)!.add(r.domain_id) // §8-4 id 기준
+  }
+
+  for (const [providerId, set] of domainsByProvider) {
+    markers.get(providerId)!.domainIds = [...set].sort() // 유니크·정렬(UI 결정성)
+  }
+
+  // 마커도 id 로 정렬 — RPC 행 순서와 무관하게 결정적.
+  return [...markers.values()].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
 }

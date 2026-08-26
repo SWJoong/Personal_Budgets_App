@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { friendlyDbError } from '@/utils/supabase/errors'
-import type { ProviderRow } from '@/utils/assetMap'
+import { buildDiscoveryAssets, type ProviderRow, type ProviderDomainRow, type DiscoveryMarker } from '@/utils/assetMap'
 
 export interface ProviderInput {
   name: string
@@ -27,6 +27,41 @@ export async function getProviders(): Promise<{ providers: ProviderRow[]; error?
 
   if (error) return { providers: [], error: error.message }
   return { providers: (data ?? []) as ProviderRow[] }
+}
+
+/**
+ * 자산지도 "쓸 수 있는 곳"(발견) — 전역 제공기관×영역 집계.
+ * seoul_provider_domains() RPC(SECURITY DEFINER, PII 없음)를 호출해 마커로 접는다(assetMap, §4).
+ * '내가 쓴 곳'(getProviders→buildProviderAssets, RLS 스코프)과 달리 전 참여자 지출을 신원제거·합산한다.
+ *
+ * ★ 함수는 대시보드 수동 반영(Manual-Ops Gate) 대상이라 아직 없을 수 있다 — 이때는 빈 결과 + 안내로
+ *   폴백해 화면이 깨지지 않게 한다(지도는 '내가 쓴 곳' 탭으로 계속 동작).
+ */
+export async function getDiscoveryAssets(): Promise<{
+  markers: DiscoveryMarker[]
+  domains: { id: string; label: string }[]
+  domainLabelById: Record<string, string>
+  error?: string
+}> {
+  const empty = { markers: [] as DiscoveryMarker[], domains: [] as { id: string; label: string }[], domainLabelById: {} as Record<string, string> }
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ...empty, error: '로그인이 필요합니다.' }
+
+  const { data, error } = await supabase.rpc('seoul_provider_domains')
+  if (error) return { ...empty, error: error.message }
+
+  const rows = (data ?? []) as ProviderDomainRow[]
+  const markers = buildDiscoveryAssets(rows)
+
+  // 영역 필터용 라벨 맵·목록 — RPC 행에서 파생(§8-4 id → 라벨). 정렬로 UI 결정성.
+  const labelById: Record<string, string> = {}
+  for (const r of rows) labelById[r.domain_id] = r.domain_label
+  const domains = Object.entries(labelById)
+    .map(([id, label]) => ({ id, label }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'ko'))
+
+  return { markers, domains, domainLabelById: labelById }
 }
 
 /**
