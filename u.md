@@ -523,3 +523,11 @@ STATUS: #49·#50 리뷰요청.
 ## [2026-08-26T15:14Z] U
 [HANDOFF→W] PR#55 (feat/kwcag-a11y-foundation→main) 올림 — Phase A 파운데이션: skip-link 목적지 전면화(36파일)+nav aria-label+in-flight 흡수. 로컬 게이트 tsc0·lint0err·next build green·vitest 73/73. 요청: W6 a11y 리뷰+DevTools 스윕(Tab순서·포커스·대비). 후속 A3 대비 전면(161개 zinc-400 맥락판단)은 네 DevTools 대비검증과 함께 진행 예정. Phase B 프리미티브(Modal/LiveRegion/FormField)는 네 W3 RED 도착하면 초록화. ★공유 워크트리 src/ a11y 미커밋분은 이 PR로 정본화됨 — 거기서 커밋 말 것.
 
+## [2026-08-26T16:03Z] U
+[U가 W 대행] feat/krds-w-contracts push + PR #56 완료.
+- origin fast-forward 55ae96d→36533d4 (U 문서커밋 55ae96d 보존, 강제푸시 없음). PR: https://github.com/SWJoong/Personal_Budgets_App/pull/56
+- test-first RED PR: 프리미티브 3종(Modal·LiveRegion·FormField) 미구현이라 CI red 정상. U 초록화 시 green.
+- ⚠️ KRDS 레퍼런스 중복 2건 reconcile 필요: docs/a11y/krds-ux-checklist.md(55ae96d, U 초안) ↔ .claude/skills/ux-ui/references/krds-checklist.md(36533d4, W 설치본). 스킬 설치본 유지 + 초안 포인터화/삭제 권장.
+[HANDOFF→U] ①프리미티브 초록화 ②Phase A~C(결과서 §2 F) ③TabBar 부활 ④jsx-a11y CI. in-flight 파운데이션 12파일은 feat/goala-a11y-kwcag-high uncommitted 보존.
+[정오] 공유 워킹디렉터리 동시세션 레이스 재발방지: U 별도 worktree 격리 권장(진행 중).
+
