@@ -37,7 +37,7 @@ function SectionToggle({
       aria-expanded={open}
       className="w-full min-h-[44px] flex items-center justify-between py-1 mb-2"
     >
-      <h3 className="text-sm font-black text-zinc-700 uppercase tracking-widest ml-2">{title}</h3>
+      <h2 className="text-sm font-black text-zinc-700 uppercase tracking-widest ml-2">{title}</h2>
       <span className="text-zinc-500 text-xs font-bold mr-1">{open ? '▲ 접기' : '▼ 펼치기'}</span>
     </button>
   )
@@ -77,20 +77,20 @@ export default function MoreMenuClient({
               className="flex items-center justify-between p-5 rounded-[2rem] bg-violet-600 text-white shadow-xl hover:bg-violet-700 transition-all active:scale-[0.98] group"
             >
               <div className="flex items-center gap-4">
-                <span className="text-3xl group-hover:scale-110 transition-transform">🎯</span>
+                <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">🎯</span>
                 <div className="flex flex-col">
                   <span className="text-lg font-black">내 이용계획</span>
                   <span className="text-xs font-bold text-violet-200">이용계획 작성하고 심의 결과 보기</span>
                 </div>
               </div>
-              <span className="text-2xl">▸</span>
+              <span aria-hidden="true" className="text-2xl">▸</span>
             </Link>
             <Link
               href="/evaluations"
               className="flex items-center justify-between p-5 rounded-[2rem] bg-zinc-900 text-white shadow-xl hover:bg-zinc-800 transition-all active:scale-[0.98] group"
             >
               <div className="flex items-center gap-4">
-                <span className="text-3xl group-hover:scale-110 transition-transform">💌</span>
+                <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">💌</span>
                 <div className="flex flex-col">
                   <span className="text-lg font-black">지원자 선생님의 편지</span>
                   <span className="text-xs font-bold text-zinc-400">나의 한 달 활동 이야기 보기</span>
@@ -98,7 +98,7 @@ export default function MoreMenuClient({
               </div>
               <div className="flex items-center gap-2">
                 <SoonBadge />
-                <span className="text-2xl">▸</span>
+                <span aria-hidden="true" className="text-2xl">▸</span>
               </div>
             </Link>
           </div>
@@ -269,7 +269,7 @@ export default function MoreMenuClient({
                     className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 hover:bg-zinc-100 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">📄</span>
+                      <span aria-hidden="true" className="text-2xl">📄</span>
                       <div className="flex flex-col">
                         <span className="text-sm font-black text-zinc-800">{file.title}</span>
                         <span className="text-[10px] font-bold text-zinc-400 uppercase">{file.file_type}</span>
