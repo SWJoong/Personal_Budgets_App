@@ -4,6 +4,8 @@ import Link from 'next/link'
 import ProfileEditClient from './ProfileEditClient'
 import NavDropdown from '@/components/layout/NavDropdown'
 
+export const metadata = { title: '내 정보' }
+
 export default async function ProfileSettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -31,7 +33,7 @@ export default async function ProfileSettingsPage() {
         <NavDropdown />
       </header>
 
-      <main className="flex-1 p-6 max-w-lg mx-auto w-full">
+      <main id="main-content" tabIndex={-1} className="flex-1 p-6 max-w-lg mx-auto w-full">
         <ProfileEditClient
           profile={profile}
           userEmail={user.email || ''}

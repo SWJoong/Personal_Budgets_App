@@ -82,7 +82,7 @@ export default function NewParticipantPage() {
           <Link href="/admin/participants" className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3">←</Link>
           <h1 className="text-xl font-bold tracking-tight">새 당사자 등록</h1>
         </header>
-        <main className="flex-1 flex items-center justify-center">
+        <main id="main-content" tabIndex={-1} className="flex-1 flex items-center justify-center">
           <p className="text-zinc-400 font-medium">불러오는 중...</p>
         </main>
       </div>
@@ -96,7 +96,7 @@ export default function NewParticipantPage() {
         <h1 className="text-xl font-bold tracking-tight">새 당사자 등록</h1>
       </header>
 
-      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           {error && (
             <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">

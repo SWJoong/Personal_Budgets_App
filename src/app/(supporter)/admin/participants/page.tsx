@@ -12,6 +12,8 @@ interface ParticipantRow {
   supporter: { id: string; name: string | null } | null
 }
 
+export const metadata = { title: '당사자 관리' }
+
 export default async function AdminParticipantsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -54,7 +56,7 @@ export default async function AdminParticipantsPage() {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
         <div className="grid grid-cols-2 gap-4">
           <div className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm">
             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">등록된 당사자</span>

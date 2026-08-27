@@ -159,7 +159,7 @@ export default function MyPlanClient({
         <h1 className="text-sm font-black text-zinc-800">내 이용계획</h1>
       </header>
 
-      <main className="flex-1 p-6 flex flex-col gap-4 max-w-sm mx-auto w-full">
+      <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-4 max-w-sm mx-auto w-full">
         {error && (
           <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium leading-relaxed">
             {error}

@@ -33,7 +33,7 @@ export default function ComingSoon({
         </Link>
         <h1 className="text-sm font-black text-zinc-800">{title}</h1>
       </header>
-      <main className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-4 max-w-sm mx-auto">
+      <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-4 max-w-sm mx-auto">
         <span className="text-7xl" aria-hidden="true">{emoji}</span>
         <div className="flex flex-col gap-2">
           <h2 className="text-xl font-bold tracking-tight leading-relaxed">준비하고 있어요</h2>

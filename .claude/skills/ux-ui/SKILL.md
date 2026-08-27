@@ -13,7 +13,14 @@ description: |
 **발달장애인 이용자**가 주 사용자이므로, 모든 설계 결정에서
 **쉬운 정보 접근성**과 **인지 부하 최소화**를 최우선으로 고려한다.
 
-디자인 가이드는 `references/design-system.md` 를 읽는다.
+디자인 가이드는 `references/design-system.md`(팔레트·타이포·간격)와
+`references/krds-checklist.md`(KRDS 자체 검증 체크리스트 — 접근성·컴포넌트·패턴)를 읽는다.
+
+**KRDS 적용 원칙**(상세는 `references/krds-checklist.md`):
+- 스코핑 3계층 = **자체상징 / 공통 / 정부전용**. 우리는 자체상징 → 정부 상징 전용 항목은 **N/A**(근거 기록).
+- **다운그레이드 금지**: 터치 타깃 **44px**(KRDS 최소 24px), 줄간격 **1.85**(최소 1.5), 아이콘 항상 텍스트 동반.
+- 판정은 **P / F / E / N/A**(E·N/A 는 근거 1줄). 결과서: `Plan&Source/krds_ux_a11y_W.md`.
+- 자동(계약 테스트·jsx-a11y)이 못 잡는 대비·글자크기·포커스·타깃크기는 **Chrome DevTools 수동 점검**(레퍼런스 §6).
 
 ---
 

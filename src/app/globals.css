@@ -315,6 +315,23 @@ button, [role="button"], a {
   border-radius: calc(0.75rem - 2px);
 }
 
+/* 본문 바로가기(skip navigation) — KWCAG 6.4.1 반복 영역 건너뛰기.
+   평소엔 화면 밖으로 숨기고, 키보드 포커스를 받으면 좌상단에 드러난다. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 0 0 0.75rem 0;
+}
+.skip-link:focus {
+  left: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

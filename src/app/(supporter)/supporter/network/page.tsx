@@ -11,6 +11,8 @@ import NetworkGraphClient from './NetworkGraphClient'
  * RLS 가 접근 가능한 행만 넘긴다. buildEgoGraph 는 '준 것만' 잇고, rootId 연결 성분만 추출한다(교차참여자
  * 유입 방지는 RLS 책임 + maxDepth 경계). 뷰 컬럼(s_/o_/predicate)을 순수 로직 shape(GraphEdge)로 매핑한다.
  */
+export const metadata = { title: '관계망' }
+
 export default async function NetworkPage({
   searchParams,
 }: {
@@ -43,7 +45,7 @@ export default async function NetworkPage({
     return (
       <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
         {backHeader('관계망 · 당사자 선택', '/supporter', '대시보드로 가기')}
-        <main className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6 flex flex-col gap-3">
+        <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6 flex flex-col gap-3">
           <p className="text-sm text-zinc-500 leading-relaxed px-1">
             관계망을 볼 당사자를 골라 주세요. 한 사람의 신청·계획·예산·지출·평가가 어떻게 이어지는지 그림으로 보여줘요.
           </p>
@@ -112,7 +114,7 @@ export default async function NetworkPage({
         </h1>
       </header>
 
-      <main className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6">
         {graph.nodes.length === 0 ? (
           <div className="p-6 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 text-center flex flex-col items-center gap-3">
             <span className="text-4xl">🕸️</span>

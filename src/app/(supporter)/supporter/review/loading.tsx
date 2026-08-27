@@ -9,7 +9,7 @@ export default function ReviewQueueLoading() {
         </div>
       </header>
 
-      <main className="w-full max-w-2xl flex flex-col gap-4">
+      <main id="main-content" tabIndex={-1} className="w-full max-w-2xl flex flex-col gap-4">
         {/* 헤더 액션 bar skeleton */}
         <div className="flex items-center justify-between">
           <div className="h-4 w-20 bg-zinc-200 rounded animate-pulse" />

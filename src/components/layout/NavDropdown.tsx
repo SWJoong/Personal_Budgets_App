@@ -60,6 +60,16 @@ export default function NavDropdown() {
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
+  // Escape 키로 닫기
+  useEffect(() => {
+    if (!isOpen) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isOpen])
+
   const drawer = mounted && isOpen ? createPortal(
     <>
       {/* 배경 오버레이 */}
@@ -75,14 +85,15 @@ export default function NavDropdown() {
         className="fixed top-0 right-0 bottom-0 w-64 bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
         style={{ zIndex: 99999 }}
         role="dialog"
+        aria-modal="true"
         aria-label="페이지 이동 메뉴"
       >
         {/* 드로어 헤더 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
-          <span className="text-sm font-black text-zinc-400 uppercase tracking-widest">메뉴</span>
+          <span className="text-sm font-black text-zinc-500 uppercase tracking-widest">메뉴</span>
           <button
             onClick={() => setIsOpen(false)}
-            className="w-9 h-9 rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-colors"
+            className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-colors"
             aria-label="메뉴 닫기"
           >
             <span className="text-zinc-600 text-sm font-black leading-none">✕</span>
@@ -90,7 +101,7 @@ export default function NavDropdown() {
         </div>
 
         {/* 메뉴 목록 */}
-        <nav className="flex-1 overflow-y-auto py-2">
+        <nav aria-label="페이지 이동" className="flex-1 overflow-y-auto py-2">
           {NAV_ITEMS.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -100,11 +111,12 @@ export default function NavDropdown() {
                 <Link
                   href={item.href}
                   onClick={() => setIsOpen(false)}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`flex items-center gap-3 px-5 py-4 hover:bg-zinc-50 transition-colors ${
                     isActive ? 'bg-zinc-50' : ''
                   }`}
                 >
-                  <span className="text-2xl w-8 text-center">{item.icon}</span>
+                  <span className="text-2xl w-8 text-center" aria-hidden="true">{item.icon}</span>
                   <span
                     className={`text-sm font-bold flex-1 ${
                       isActive ? 'text-zinc-900' : 'text-zinc-600'
@@ -129,11 +141,12 @@ export default function NavDropdown() {
                           key={sub.href}
                           href={sub.href}
                           onClick={() => setIsOpen(false)}
+                          aria-current={isSubActive ? 'page' : undefined}
                           className={`flex items-center gap-2.5 pl-14 pr-5 py-2.5 hover:bg-zinc-50 transition-colors ${
                             isSubActive ? 'bg-zinc-50' : ''
                           }`}
                         >
-                          <span className="text-base w-5 text-center shrink-0">{sub.icon}</span>
+                          <span className="text-base w-5 text-center shrink-0" aria-hidden="true">{sub.icon}</span>
                           <span
                             className={`text-xs font-bold flex-1 ${
                               isSubActive ? 'text-zinc-900' : 'text-zinc-500'
@@ -163,7 +176,7 @@ export default function NavDropdown() {
     <>
       <button
         onClick={() => setIsOpen((v) => !v)}
-        className="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-all active:scale-95"
+        className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-all active:scale-95"
         aria-label={isOpen ? '메뉴 닫기' : '메뉴 열기'}
         aria-expanded={isOpen}
         aria-haspopup="dialog"

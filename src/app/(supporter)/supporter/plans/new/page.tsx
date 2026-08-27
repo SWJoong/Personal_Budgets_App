@@ -6,6 +6,8 @@ import NewPlanClient from './NewPlanClient'
  * 새 이용계획 만들기 — 수행기관 담당자(사회복지사)가 선정된 신청자를 골라 계획을 시작한다.
  * 기관 확인(2026-07-31): 계획 작성 주체는 담당자다. 당사자는 만들어진 계획을 열람만 한다.
  */
+export const metadata = { title: '계획 작성' }
+
 export default async function NewPlanPage() {
   const { supabase } = await requireStaff()
 
@@ -50,7 +52,7 @@ export default async function NewPlanPage() {
         <Link href="/supporter/plans" aria-label="뒤로 가기" className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center">←</Link>
         <h1 className="text-xl font-bold tracking-tight">새 이용계획 만들기</h1>
       </header>
-      <main className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
         <NewPlanClient candidates={candidates} />
       </main>
     </div>

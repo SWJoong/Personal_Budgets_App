@@ -9,7 +9,7 @@ export default function AdminDashboardLoading() {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
         {/* 안내 배너 skeleton */}
         <div className="h-12 rounded-xl bg-blue-50 border border-blue-100 animate-pulse" />
 

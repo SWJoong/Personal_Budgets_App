@@ -5,7 +5,10 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
-  title: "아름드리꿈터 개인예산 관리",
+  title: {
+    default: "아름드리꿈터 개인예산 관리",
+    template: "%s · 아름드리꿈터 개인예산",
+  },
   description: "아름드리꿈터 자기주도 개인예산 관리 앱",
 };
 
@@ -25,6 +28,10 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased text-gray-900 bg-gray-50">
+        {/* 본문 바로가기 — KWCAG 6.4.1. 각 화면의 주 콘텐츠(main#main-content)로 건너뛴다. */}
+        <a href="#main-content" className="skip-link">
+          본문 바로가기
+        </a>
         <AccessibilityProvider>
           {children}
         </AccessibilityProvider>

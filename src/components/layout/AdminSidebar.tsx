@@ -111,7 +111,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
       <div className="h-px bg-white/10 mx-3 mb-3 shrink-0" />
 
       {/* 메인 메뉴 */}
-      <nav className="flex-1 px-2 space-y-0.5">
+      <nav aria-label="주요 메뉴" className="flex-1 px-2 space-y-0.5">
         {menuItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -129,7 +129,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                     collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
                   } ${isActive ? 'bg-white/10 text-white font-semibold shadow-sm' : 'hover:bg-white/5 hover:text-white'}`}
                 >
-                  <span className={`text-xl shrink-0 transition-transform ${isActive ? 'scale-110' : ''}`}>
+                  <span aria-hidden="true" className={`text-xl shrink-0 transition-transform ${isActive ? 'scale-110' : ''}`}>
                     {item.icon}
                   </span>
                   {!collapsed && (
