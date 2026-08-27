@@ -9,7 +9,7 @@ export default function ParticipantDetailLoading() {
         <div className="h-6 w-14 bg-red-100 rounded-full animate-pulse" />
       </header>
 
-      <main className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
         {/* 프로필 카드 skeleton */}
         <div className="p-6 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm animate-pulse">
           <div className="flex items-center gap-4 mb-5">

@@ -43,7 +43,7 @@ export default function GuidePageClient() {
         <NavDropdown />
       </header>
 
-      <main className="flex-1 p-6 max-w-lg mx-auto w-full flex flex-col gap-8">
+      <main id="main-content" tabIndex={-1} className="flex-1 p-6 max-w-lg mx-auto w-full flex flex-col gap-8">
         <div className="text-center py-4">
           <h2 className="text-2xl font-black text-zinc-900 mb-2">반가워요! 👋</h2>
           <p className="text-zinc-500 font-bold">이 앱을 어떻게 사용하는지<br/>쉽게 알려드릴게요.</p>

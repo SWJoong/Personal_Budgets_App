@@ -12,6 +12,8 @@ import type { DomainSpine, DomainFlowRow } from '@/utils/domainAxisReport'
 import { getUIPreferences } from '@/app/actions/preferences'
 import { BLOCK_METADATA, type BlockId } from '@/utils/uiPreferences'
 
+export const metadata = { title: '홈' }
+
 /** 선택 블록 중 바로가기(shortcut) 카드의 라우트. domain_breakdown·recent_usages 는 홈 내 섹션이라 제외. */
 const SHORTCUT_HREF: Partial<Record<BlockId, string>> = {
   calendar_shortcut: '/calendar',
@@ -31,7 +33,7 @@ const PARTICIPANT_STATUS: Record<BudgetStatus, { label: string; cls: string }> =
   unused: { label: '아직 안 썼어요', cls: 'bg-sky-50 text-sky-700 ring-sky-200' },
   over: { label: '조금 넘게 썼어요', cls: 'bg-amber-50 text-amber-700 ring-amber-200' },
   unplanned: { label: '계획에 없이 썼어요', cls: 'bg-amber-50 text-amber-700 ring-amber-200' },
-  none: { label: '아직 없어요', cls: 'bg-zinc-100 text-zinc-400 ring-zinc-200' },
+  none: { label: '아직 없어요', cls: 'bg-zinc-100 text-zinc-500 ring-zinc-200' },
 }
 
 /** 서울형 6영역 아이콘(seed label 기준, program='seoul'). */
@@ -71,8 +73,8 @@ export default async function Home() {
         <header className="flex h-16 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
           <h1 className="text-xl font-bold tracking-tight">서울형 개인예산</h1>
         </header>
-        <main className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-6 max-w-sm mx-auto">
-          <span className="text-8xl">👋</span>
+        <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-6 max-w-sm mx-auto">
+          <span aria-hidden="true" className="text-8xl">👋</span>
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-bold tracking-tight">반가워요!</h2>
             <p className="text-zinc-500 font-medium leading-relaxed">
@@ -146,7 +148,7 @@ export default async function Home() {
           ⚙
         </Link>
       </header>
-      <main className="flex-1 p-6 flex flex-col gap-6 max-w-sm mx-auto w-full">
+      <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-6 max-w-sm mx-auto w-full">
         {!balance ? (
           <section className="p-8 rounded-3xl bg-zinc-100 text-center">
             <p className="text-zinc-500 font-medium leading-relaxed">
@@ -187,7 +189,7 @@ export default async function Home() {
               <section className="flex flex-col gap-3">
                 <div>
                   <h2 className="text-sm font-bold text-zinc-500">영역별로 보기</h2>
-                  <p className="text-xs text-zinc-400 mt-0.5">어디에 썼는지 봐요.</p>
+                  <p className="text-xs text-zinc-600 mt-0.5">어디에 썼는지 봐요.</p>
                 </div>
                 <ul className="flex flex-col gap-3">
                   {budgetRows.map((r) => {
@@ -201,7 +203,7 @@ export default async function Home() {
                         className={`p-5 rounded-3xl ring-1 flex flex-col gap-2 ${dim ? 'bg-zinc-50 ring-zinc-100' : 'bg-white ring-zinc-200'}`}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className={`font-bold flex items-center gap-2 ${dim ? 'text-zinc-400' : 'text-zinc-800'}`}>
+                          <span className={`font-bold flex items-center gap-2 ${dim ? 'text-zinc-500' : 'text-zinc-800'}`}>
                             <span aria-hidden="true" className="text-lg">
                               {icon}
                             </span>
@@ -212,7 +214,7 @@ export default async function Home() {
                         {canSpendMore ? (
                           <div>
                             <span className="text-2xl font-black tracking-tight">{won(Math.max(0, r.remaining))}</span>
-                            <p className="text-xs text-zinc-400 mt-0.5">이만큼 더 쓸 수 있어요.</p>
+                            <p className="text-xs text-zinc-600 mt-0.5">이만큼 더 쓸 수 있어요.</p>
                           </div>
                         ) : dim ? null : (
                           <p className="text-sm text-zinc-500">{won(r.usageSum)} 썼어요.</p>
@@ -260,14 +262,14 @@ export default async function Home() {
                   <li key={u.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center justify-between">
                     <div className="flex flex-col">
                       <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
-                      <span className="text-xs text-zinc-400">{u.usage_date}</span>
+                      <span className="text-xs text-zinc-500">{u.usage_date}</span>
                     </div>
                     <span className="font-bold">{won(Number(u.amount))}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-zinc-400 text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
+              <p className="text-zinc-600 text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
             )}
           </section>
         )}
