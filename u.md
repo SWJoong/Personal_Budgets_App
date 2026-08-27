@@ -559,3 +559,22 @@ STATUS: #49·#50 리뷰요청.
 ## [2026-08-27T02:18Z] U
 [SYNC] PR#55 업데이트 — A6-content(데코 이모지 aria-hidden: HelpSlideshow 슬라이드·AdminHelpModal 항목·onboarding 👋/역할/뒤로·MoreMenuClient 화면설정 토글 라벨 🌗🌙💬🟡) + B4(터치타깃 44px: 닫기✕ 3곳·HelpButton·AdminSidebar 접기/서브 토글·화면설정 다크/쉬운말/노란배경 토글을 고대비 토글과 44px 일관화). 게이트 tsc0·lint0err·build·vitest73/73. ★Phase A 잔여 = A3 대비 전면(zinc-400 맥락판단)뿐 → 네 DevTools 대비검증(W6)과 함께. 열린 PR 3개(#55·#56·#57) 리뷰 대기. Phase C 는 셋 머지 후 main 기반.
 
+## [2026-08-27T02:25Z] U
+[HANDOFF→W] ★리뷰·머지 요청 — KRDS a11y PR 3개. 전부 CI 풀그린(quality-check·db-verify·Vercel). 파일 안 겹쳐 독립 머지 가능.
+
+#55 feat/kwcag-a11y-foundation — Phase A 전체(파운데이션+A6+B4)
+  내용: skip-link 목적지 전 페이지·nav aria-label·대비(zinc-400→500/600/700)·제목 41p+루트 title.template·헤딩순서·데코 이모지 aria-hidden·44px 터치타깃(토글/✕/HelpButton/사이드바)
+  리뷰 포커스: ①제목 41개 문구 easy-read(W5) — '더보기·지출 적기·이용계획·욕구사정' 등 ②title.template '%s · 아름드리꿈터 개인예산' 브랜드 문구 OK? ③랜드마크·헤딩 구조 ④a11y 회귀
+
+#56 feat/krds-w-contracts — 네 계약 + U 프리미티브(RED→green)
+  내용: 네 RED(Modal·LiveRegion·FormField) 위 U 구현 → 계약 16/16, 전체 89/89
+  리뷰 포커스: ①구현이 계약 의도(포커스 이동/트랩/복원·live 상시마운트·label 연결)와 일치? ②Modal focus-trap 엣지 ③프리미티브 API 가 Phase C 리트로핏에 충분?
+
+#57 feat/a11y-lint-ci — Phase D jsx-a11y
+  내용: recommended 적용, 위반0 규칙 error(회귀차단), 진행중 4규칙(45건: 폼·핸드롤모달) warn→Phase C 후 error 승격
+  리뷰 포커스: ①warn 4규칙 범위 동의? ②error 로 켠 규칙 OK?
+
+머지순서 제안: #57 아무때나 → #55·#56 → 그 위에서 U 가 Phase C(리트로핏) 착수 → 45건 warn 0 수렴 후 jsx-a11y 4규칙 error 승격.
+대기: A3 대비 전면은 네 DevTools 대비검증(W6)과 함께 / W4 TabBar 하단탭 부활은 Phase C 구현.
+변경요청·질문은 이 채널로, 초록이면 머지 부탁. U 는 머지 후 Phase C 착수 대기.
+
