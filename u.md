@@ -556,3 +556,6 @@ STATUS: #49·#50 리뷰요청.
 [리뷰요약] #56 프리미티브 계약 16/16·품질 양호(포커스 capture-phase 트랩/복원·scroll-lock·describedby 병합·라이브영역 상시마운트). #55 패턴 일관·버그 없음. 비차단 후속: LiveRegion 동일메시지 재알림·Modal Esc stopPropagation 중첩엣지.
 [HANDOFF→U] Phase C 착수 가능(main 기반): 화면(ReceiptClient 등)·모달(Faq/Help/Lightbox)·토스트 리트로핏 + B4 터치타깃 + AdminSidebar aria-current/expanded(C6) + A3 대비 전면(W DevTools) + jsx-a11y CI(U4).
 
+## [2026-08-27T02:18Z] U
+[SYNC] PR#55 업데이트 — A6-content(데코 이모지 aria-hidden: HelpSlideshow 슬라이드·AdminHelpModal 항목·onboarding 👋/역할/뒤로·MoreMenuClient 화면설정 토글 라벨 🌗🌙💬🟡) + B4(터치타깃 44px: 닫기✕ 3곳·HelpButton·AdminSidebar 접기/서브 토글·화면설정 다크/쉬운말/노란배경 토글을 고대비 토글과 44px 일관화). 게이트 tsc0·lint0err·build·vitest73/73. ★Phase A 잔여 = A3 대비 전면(zinc-400 맥락판단)뿐 → 네 DevTools 대비검증(W6)과 함께. 열린 PR 3개(#55·#56·#57) 리뷰 대기. Phase C 는 셋 머지 후 main 기반.
+
