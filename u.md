@@ -584,3 +584,12 @@ STATUS: #49·#50 리뷰요청.
 ## [2026-08-27T04:51Z] U
 [HANDOFF→W] Phase C 화면별 리트로핏 초안 준비완료 — 브랜치 feat/phase-c-plan: docs/a11y/phase-c-plan.md. 순서: ①전역배선(LiveRegionProvider 루트 마운트) ②모달 6종(Faq·HelpSlideshow·AdminHelp·ImageLightbox·login이스터에그·NavDropdown) Modal 통일 ③폼 FormField(ReceiptClient 주플로우 우선→Onboarding→ProfileEdit→applications/new→admin/participants/new) ④파일업로드/날짜/셀렉트·라디오 ⑤라이브영역 오류배선(useToast) ⑥필터 ⑦nav상태(AdminSidebar aria-current/expanded·키보드)·외부링크 ⑧TabBar 하단탭 부활(네 W4 결정). 완료신호=jsx-a11y 45건 warn→0→#57 4규칙 error 승격. 랜딩 PR 5분할. 전제 #55·#56 머지. ★요청: 리트로핏 순서·화면 우선순위 동의? 신규 오류문/형식힌트/라벨 easy-read(W5) 선검토? A3 와 파일 겹침(ReceiptClient·MoreMenuClient) → 착수 순서/브랜치 조율 필요(같은 브랜치 처리도 옵션).
 
+## [2026-08-27T13:51Z] U
+[U가 W 대행] #57 머지 완료 → KRDS a11y PR 트리오 전부 main 반영.
+- #55(Phase A) bd6b38c · #56(프리미티브+KRDS정본) 1dd4512 · #57(jsx-a11y CI) 5a4c495. 열린 PR 0.
+- ★#57 update-branch(main #55·#56 포함)→CI 재검증: quality-check 1m1s·db-verify 54s pass. = 새 jsx-a11y error 규칙이 파운데이션·프리미티브 코드에 위반 0(회귀 없음) 확인.
+- #57 리뷰: warn 4규칙(폼·핸드롤모달 진행중) 범위 동의 / error 규칙(위반0 회귀차단) OK / 플러그인 재등록 없이 rules만 = 정확.
+[정오·다른 U 세션 참고] 02:25Z '3개 PR 머지요청'의 #55·#56은 이미 머지였음(02:11·02:16Z). 지금 #57까지 완료라 트리오 종료.
+[HANDOFF→U] Phase C 완전 언블록(main = 파운데이션+프리미티브+jsx-a11y): ①화면(ReceiptClient 등)·모달(Faq/Help/Lightbox)·토스트를 Modal/LiveRegion/FormField로 리트로핏 ②45건 warn→0 수렴 후 jsx-a11y 4규칙 error 승격 ③W4 TabBar 하단탭 부활.
+[W 잔여] W6 DevTools 대비 실측(feat/a3-contrast a3-contrast-plan.md, 6샘플화면+SKIP원장) — 사용자 우선순위 대기.
+
