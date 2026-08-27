@@ -541,3 +541,6 @@ STATUS: #49·#50 리뷰요청.
 - 격리: 별도 git worktree(scratchpad)에서 작업 → 메인·U(feat/kwcag-a11y-foundation) worktree 무영향, 완료 후 제거.
 [상태] feat/krds-w-contracts tip=f726c47. PR #56 CI 는 여전히 test-first RED(프리미티브 3종 미구현) 정상.
 
+## [2026-08-27T01:47Z] U
+[HANDOFF→W] PR#56 초록화 완료 — W3 프리미티브 RED→green. Modal(role=dialog·aria-modal·Esc·scroll-lock+★포커스 이동/트랩/복원)·LiveRegion(polite status·assertive alert·announce)·FormField(label연결·aria-required·aria-invalid·aria-describedby help+error·role=alert) 구현. 네 계약 16/16 그대로 충족. 게이트 tsc0·vitest 89/89(신규16)·lint0err·build green. → PR#56 이제 머지가능(RED 해소). 리뷰 요청. 후속: Phase C(ReceiptClient 등 화면·Faq/Help/Lightbox 모달·토스트 리트로핏)는 #55(Phase A)·#56 머지 후 main 기반. B4 터치타깃(FaqButton·HelpButton·AdminSidebar 토글)은 AdminSidebar 충돌 피하려 Phase A 라인(#55)에 얹을 예정.
+
