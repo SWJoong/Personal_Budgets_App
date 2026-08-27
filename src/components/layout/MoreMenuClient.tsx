@@ -178,7 +178,7 @@ export default function MoreMenuClient({
             {/* 고대비 모드 */}
             <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-zinc-700">🌗 글씨가 더 잘 보여요</span>
+                <span className="text-sm font-bold text-zinc-700"><span aria-hidden="true">🌗</span> 글씨가 더 잘 보여요</span>
                 <span className="text-xs text-zinc-600 font-medium">글씨와 배경의 대비를 높여요</span>
               </div>
               <button
@@ -197,51 +197,57 @@ export default function MoreMenuClient({
             {/* 다크 모드 */}
             <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-zinc-700">🌙 다크 모드</span>
+                <span className="text-sm font-bold text-zinc-700"><span aria-hidden="true">🌙</span> 다크 모드</span>
                 <span className="text-xs text-zinc-600 font-medium">눈부심을 줄이기 위해 어두운 배경을 사용해요</span>
               </div>
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className={`relative w-14 h-8 rounded-full transition-all duration-300 ${darkMode ? 'bg-indigo-600' : 'bg-zinc-200'}`}
+                className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 role="switch"
                 aria-checked={darkMode}
                 aria-label="다크 모드 전환"
               >
-                <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${darkMode ? 'left-7' : 'left-1'}`} />
+                <span className={`relative block w-14 h-8 rounded-full transition-all duration-300 ${darkMode ? 'bg-indigo-600' : 'bg-zinc-200'}`}>
+                  <span className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${darkMode ? 'left-7' : 'left-1'}`} />
+                </span>
               </button>
             </div>
 
             {/* 쉬운 말 모드 */}
             <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-zinc-700">💬 쉬운 말 모드</span>
+                <span className="text-sm font-bold text-zinc-700"><span aria-hidden="true">💬</span> 쉬운 말 모드</span>
                 <span className="text-xs text-zinc-600 font-medium">쉬운 말로 바꿔요</span>
               </div>
               <button
                 onClick={() => setEasyTerms(!easyTerms)}
-                className={`relative w-14 h-8 rounded-full transition-all duration-300 ${easyTerms ? 'bg-blue-600' : 'bg-zinc-200'}`}
+                className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 role="switch"
                 aria-checked={easyTerms}
                 aria-label="쉬운 용어 모드 전환"
               >
-                <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${easyTerms ? 'left-7' : 'left-1'}`} />
+                <span className={`relative block w-14 h-8 rounded-full transition-all duration-300 ${easyTerms ? 'bg-blue-600' : 'bg-zinc-200'}`}>
+                  <span className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${easyTerms ? 'left-7' : 'left-1'}`} />
+                </span>
               </button>
             </div>
 
             {/* 노란 배경 모드 */}
             <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-zinc-700">🟡 노란 배경 모드</span>
+                <span className="text-sm font-bold text-zinc-700"><span aria-hidden="true">🟡</span> 노란 배경 모드</span>
                 <span className="text-xs text-zinc-600 font-medium">글 읽기 어려운 분을 위해 배경을 노란색으로 바꿔요</span>
               </div>
               <button
                 onClick={() => setYellowBg(!yellowBg)}
-                className={`relative w-14 h-8 rounded-full transition-all duration-300 ${yellowBg ? 'bg-yellow-400' : 'bg-zinc-200'}`}
+                className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 role="switch"
                 aria-checked={yellowBg}
                 aria-label="노란 배경 모드 전환"
               >
-                <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${yellowBg ? 'left-7' : 'left-1'}`} />
+                <span className={`relative block w-14 h-8 rounded-full transition-all duration-300 ${yellowBg ? 'bg-yellow-400' : 'bg-zinc-200'}`}>
+                  <span className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${yellowBg ? 'left-7' : 'left-1'}`} />
+                </span>
               </button>
             </div>
           </div>

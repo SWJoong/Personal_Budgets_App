@@ -34,7 +34,7 @@ export default function HelpSlideshow({ section, onClose }: Props) {
           </span>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-600 text-lg font-bold transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-500 hover:text-zinc-700 text-lg font-bold transition-colors"
             aria-label="닫기"
           >
             ✕
@@ -57,7 +57,7 @@ export default function HelpSlideshow({ section, onClose }: Props) {
 
         {/* 슬라이드 콘텐츠 */}
         <div className="px-6 pb-2 flex flex-col items-center gap-4 min-h-[200px] justify-center text-center">
-          <span className="text-6xl">{slide.icon}</span>
+          <span aria-hidden="true" className="text-6xl">{slide.icon}</span>
           <h3 className="text-xl font-black text-zinc-900">{slide.title}</h3>
           <p className="text-sm text-zinc-600 leading-relaxed">{slide.body}</p>
         </div>

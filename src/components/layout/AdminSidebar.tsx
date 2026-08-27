@@ -101,7 +101,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
           <button
             onClick={onToggle}
             title={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 text-slate-400 hover:text-white transition-all"
+            className="shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 text-slate-400 hover:text-white transition-all"
           >
             <span className="text-sm">{collapsed ? '▶' : '◀'}</span>
           </button>
@@ -146,7 +146,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                 {hasSub && (
                   <button
                     onClick={() => toggleSub(item.href)}
-                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-all shrink-0 mr-1"
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-all shrink-0 mr-1"
                     aria-label={isSubOpen ? '접기' : '펼치기'}
                   >
                     <span className="text-xs">{isSubOpen ? '▲' : '▼'}</span>

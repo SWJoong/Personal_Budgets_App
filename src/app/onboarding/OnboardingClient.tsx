@@ -121,7 +121,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
         {step === 'role' && (
           <div className="bg-white rounded-[2rem] p-8 shadow-xl ring-1 ring-zinc-200 animate-fade-in-up">
             <div className="text-center mb-8">
-              <span className="text-5xl block mb-4">👋</span>
+              <span aria-hidden="true" className="text-5xl block mb-4">👋</span>
               <h1 className="text-2xl font-black text-zinc-900 mb-2">반가워요!</h1>
               <p className="text-zinc-500 font-medium">당신은 어떤 사람인가요?</p>
             </div>
@@ -131,7 +131,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                 onClick={() => handleRoleSelect('participant')}
                 className="flex items-center gap-5 p-6 rounded-2xl ring-2 ring-zinc-200 hover:ring-primary hover:bg-primary/5 transition-all active:scale-[0.98] text-left group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
+                <div aria-hidden="true" className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
                   🙋
                 </div>
                 <div>
@@ -146,7 +146,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                 onClick={() => handleRoleSelect('supporter')}
                 className="flex items-center gap-5 p-6 rounded-2xl ring-2 ring-zinc-200 hover:ring-primary hover:bg-primary/5 transition-all active:scale-[0.98] text-left group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
+                <div aria-hidden="true" className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
                   🤝
                 </div>
                 <div>
@@ -170,12 +170,12 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
               className="flex items-center gap-2 text-zinc-400 hover:text-zinc-600 transition-colors mb-6 min-h-[44px]"
               aria-label="뒤로 가기"
             >
-              <span className="text-xl">←</span>
+              <span aria-hidden="true" className="text-xl">←</span>
               <span className="text-sm font-bold">뒤로</span>
             </button>
 
             <div className="text-center mb-8">
-              <span className="text-4xl block mb-3">{role === 'participant' ? '🙋' : '🤝'}</span>
+              <span aria-hidden="true" className="text-4xl block mb-3">{role === 'participant' ? '🙋' : '🤝'}</span>
               <h2 className="text-xl font-black text-zinc-900">
                 {role === 'participant' ? '사용자 프로필 설정' : '지원자 프로필 설정'}
               </h2>

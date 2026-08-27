@@ -34,7 +34,7 @@ function FaqModal({ onClose }: { onClose: () => void }) {
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center transition-colors"
+            className="min-w-[44px] min-h-[44px] rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center transition-colors"
             aria-label="닫기"
           >
             ✕

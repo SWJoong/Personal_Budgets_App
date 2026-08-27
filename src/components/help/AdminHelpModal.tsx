@@ -26,7 +26,7 @@ export default function AdminHelpModal({ page, onClose }: Props) {
           <h2 className="font-black text-zinc-900 text-lg">{page.pageTitle} 도움말</h2>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-600 text-xl font-bold transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-500 hover:text-zinc-700 text-xl font-bold transition-colors"
             aria-label="닫기"
           >
             ✕
@@ -37,7 +37,7 @@ export default function AdminHelpModal({ page, onClose }: Props) {
         <div className="px-6 py-4 flex flex-col gap-4 overflow-y-auto flex-1">
           {page.items.map((item, i) => (
             <div key={i} className="flex items-start gap-3">
-              <span className="text-2xl shrink-0 mt-0.5">{item.icon}</span>
+              <span aria-hidden="true" className="text-2xl shrink-0 mt-0.5">{item.icon}</span>
               <div>
                 <p className="font-bold text-zinc-900 text-sm">{item.title}</p>
                 <p className="text-sm text-zinc-500 leading-relaxed mt-0.5">{item.desc}</p>
