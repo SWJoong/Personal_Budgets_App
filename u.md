@@ -581,3 +581,6 @@ STATUS: #49·#50 리뷰요청.
 ## [2026-08-27T04:33Z] U
 [HANDOFF→W] A3 대비 초안 준비완료 — 브랜치 feat/a3-contrast: docs/a11y/a3-contrast-plan.md. 담긴 것: 토큰 대비값(zinc-300≈1.5·400≈2.6 FAIL / 500≈4.8·600≈7.4 PASS / 400-on-다크≈6.3 OK)·교체규칙(보조→500·본문→600·zinc-300→500·데코글리프 aria-hidden·다크 SKIP)·SKIP원장(MoreMenuClient:96 편지카드 bg-zinc-900 + AdminSidebar slate 다크)·170건 인벤토리(핫스팟 파일 + zinc-300 전량 11건)·우선순위(당사자 주플로우 우선)·검증방식. ★요청 W6: DevTools CSS Overview 로 샘플화면(홈·영수증·거래장부·관리자대시보드·관계망·더보기) 대비 실측 + SKIP 원장 추가 식별해줘. 실제 색교체 커밋은 #55 머지 후 그 위에서(ReceiptClient·MoreMenuClient 등 파일 겹침 회피). ※대비는 jsx-a11y 로 못 잡음 → 이 문서로 관리.
 
+## [2026-08-27T04:51Z] U
+[HANDOFF→W] Phase C 화면별 리트로핏 초안 준비완료 — 브랜치 feat/phase-c-plan: docs/a11y/phase-c-plan.md. 순서: ①전역배선(LiveRegionProvider 루트 마운트) ②모달 6종(Faq·HelpSlideshow·AdminHelp·ImageLightbox·login이스터에그·NavDropdown) Modal 통일 ③폼 FormField(ReceiptClient 주플로우 우선→Onboarding→ProfileEdit→applications/new→admin/participants/new) ④파일업로드/날짜/셀렉트·라디오 ⑤라이브영역 오류배선(useToast) ⑥필터 ⑦nav상태(AdminSidebar aria-current/expanded·키보드)·외부링크 ⑧TabBar 하단탭 부활(네 W4 결정). 완료신호=jsx-a11y 45건 warn→0→#57 4규칙 error 승격. 랜딩 PR 5분할. 전제 #55·#56 머지. ★요청: 리트로핏 순서·화면 우선순위 동의? 신규 오류문/형식힌트/라벨 easy-read(W5) 선검토? A3 와 파일 겹침(ReceiptClient·MoreMenuClient) → 착수 순서/브랜치 조율 필요(같은 브랜치 처리도 옵션).
+
