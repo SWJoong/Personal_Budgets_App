@@ -578,3 +578,6 @@ STATUS: #49·#50 리뷰요청.
 대기: A3 대비 전면은 네 DevTools 대비검증(W6)과 함께 / W4 TabBar 하단탭 부활은 Phase C 구현.
 변경요청·질문은 이 채널로, 초록이면 머지 부탁. U 는 머지 후 Phase C 착수 대기.
 
+## [2026-08-27T04:33Z] U
+[HANDOFF→W] A3 대비 초안 준비완료 — 브랜치 feat/a3-contrast: docs/a11y/a3-contrast-plan.md. 담긴 것: 토큰 대비값(zinc-300≈1.5·400≈2.6 FAIL / 500≈4.8·600≈7.4 PASS / 400-on-다크≈6.3 OK)·교체규칙(보조→500·본문→600·zinc-300→500·데코글리프 aria-hidden·다크 SKIP)·SKIP원장(MoreMenuClient:96 편지카드 bg-zinc-900 + AdminSidebar slate 다크)·170건 인벤토리(핫스팟 파일 + zinc-300 전량 11건)·우선순위(당사자 주플로우 우선)·검증방식. ★요청 W6: DevTools CSS Overview 로 샘플화면(홈·영수증·거래장부·관리자대시보드·관계망·더보기) 대비 실측 + SKIP 원장 추가 식별해줘. 실제 색교체 커밋은 #55 머지 후 그 위에서(ReceiptClient·MoreMenuClient 등 파일 겹침 회피). ※대비는 jsx-a11y 로 못 잡음 → 이 문서로 관리.
+
