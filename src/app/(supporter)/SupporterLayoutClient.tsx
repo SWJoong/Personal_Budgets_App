@@ -103,11 +103,12 @@ export function SupporterLayoutClient({
         </>
       )}
 
-      <main
+      {/* 페이지가 자체 <main> 을 렌더하므로 여기는 <div> — main 랜드마크 중첩 방지(KWCAG 8.1.1). */}
+      <div
         className={`flex-1 w-full transition-all duration-300 ${mainML} print:ml-0 relative min-h-screen pt-14 md:pt-0 print:pt-0`}
       >
         {children}
-      </main>
+      </div>
 
       <FaqButton variant="admin" />
     </div>

@@ -58,13 +58,13 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
   return (
     <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
       <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
+        <Link href="/" className="text-zinc-500 hover:text-zinc-700 transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
           ←
         </Link>
         <h1 className="text-sm font-black text-zinc-800">달력</h1>
       </header>
 
-      <main className="flex-1 p-6 flex flex-col gap-4 max-w-sm mx-auto w-full">
+      <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-4 max-w-sm mx-auto w-full">
         <div className="flex items-center justify-between">
           <button
             onClick={() => goMonth(-1)}
@@ -83,11 +83,11 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
           </button>
         </div>
 
-        <p className="text-xs text-zinc-400 text-center">이번 달에 쓴 돈: {won(monthTotal)}</p>
+        <p className="text-xs text-zinc-500 text-center">이번 달에 쓴 돈: {won(monthTotal)}</p>
 
         <div className="grid grid-cols-7 gap-1 text-center">
           {WEEKDAYS.map((w) => (
-            <span key={w} className="text-xs font-bold text-zinc-400 py-1">{w}</span>
+            <span key={w} className="text-xs font-bold text-zinc-600 py-1">{w}</span>
           ))}
           {cells.map((day, i) => {
             if (day === null) return <span key={`blank-${i}`} />
@@ -100,7 +100,7 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
                 key={key}
                 onClick={() => setSelectedDate(isSelected ? null : key)}
                 className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 min-h-[44px] transition-colors ${
-                  isSelected ? 'bg-zinc-900 text-white' : hasSpending ? 'bg-zinc-100 text-zinc-800' : 'text-zinc-400'
+                  isSelected ? 'bg-zinc-900 text-white' : hasSpending ? 'bg-zinc-100 text-zinc-800' : 'text-zinc-500'
                 }`}
               >
                 <span className="text-xs font-bold">{day}</span>
@@ -117,7 +117,7 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
             {selectedDate ? `${selectedDate} 에 쓴 돈` : '날짜를 눌러보세요'}
           </h2>
           {selectedDate && selectedUsages.length === 0 && (
-            <p className="text-zinc-400 text-sm leading-relaxed">이 날은 쓴 돈이 없어요.</p>
+            <p className="text-zinc-600 text-sm leading-relaxed">이 날은 쓴 돈이 없어요.</p>
           )}
           {selectedUsages.map((u) => (
             <div key={u.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center justify-between">

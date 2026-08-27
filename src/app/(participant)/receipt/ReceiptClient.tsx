@@ -155,7 +155,7 @@ export default function ReceiptClient({
         <h1 className="text-sm font-black text-zinc-800">지출 기록하기</h1>
       </header>
 
-      <main className="flex-1 p-6 flex flex-col gap-6 max-w-sm mx-auto w-full">
+      <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-6 max-w-sm mx-auto w-full">
         {!allocationId ? (
           <section className="p-8 rounded-3xl bg-zinc-100 text-center">
             <p className="text-zinc-500 font-medium leading-relaxed">아직 예산이 정해지지 않았어요.<br />담당 선생님에게 말씀해 주세요.</p>

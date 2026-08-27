@@ -172,7 +172,7 @@ function GoogleLoginContent() {
             {infoOpen && (
               <div className="px-5 pb-5 pt-1 text-sm text-zinc-700 space-y-5 border-t border-zinc-100">
                 <div>
-                  <h3 className="font-bold text-zinc-800 mb-1.5">📋 프로젝트 개요</h3>
+                  <h2 className="font-bold text-zinc-800 mb-1.5">📋 프로젝트 개요</h2>
                   <p className="text-xs text-zinc-600 leading-relaxed">
                     발달장애인 당사자가 자신의 예산을 시각적으로 쉽게 이해하고 관리할 수 있도록 돕는 웹 앱입니다.
                     <strong> 쉬운 정보(Easy Read)</strong> 원칙을 적용해 당사자·지원자·관리자 세 역할을 지원합니다.
@@ -180,7 +180,7 @@ function GoogleLoginContent() {
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-zinc-800 mb-1.5">✨ 주요 기능</h3>
+                  <h2 className="font-bold text-zinc-800 mb-1.5">✨ 주요 기능</h2>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-zinc-600">
                     <span>• SVG 주머니·지폐 잔액 시각화</span>
                     <span>• 영수증 OCR (GPT-4o)</span>
@@ -196,7 +196,7 @@ function GoogleLoginContent() {
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-zinc-800 mb-1.5">🏗️ 기술 스택</h3>
+                  <h2 className="font-bold text-zinc-800 mb-1.5">🏗️ 기술 스택</h2>
                   <div className="flex flex-wrap gap-1.5 text-xs">
                     {["Next.js 15", "React 19", "TypeScript", "Tailwind CSS 4", "Supabase", "GPT-4o", "Kakao Maps", "Vercel"].map((t) => (
                       <span key={t} className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{t}</span>
