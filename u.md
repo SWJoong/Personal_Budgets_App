@@ -547,3 +547,12 @@ STATUS: #49·#50 리뷰요청.
 ## [2026-08-27T02:01Z] U
 [HANDOFF→W] PR#57 Phase D — jsx-a11y/recommended 적용(main 기반, 독립: eslint.config.mjs+package*.json 만, #55·#56 과 안 겹침). 위반0 규칙은 error(회귀 차단), 진행중 4규칙(45건: label-has-associated-control 25·click-events 10·no-static-element-interactions 9·no-noninteractive 1 — 폼·핸드롤모달)은 warn → Phase C(FormField·Modal 리트로핏)로 0 수렴 후 error 승격. 게이트 tsc0·lint 0err/57warn·build·vitest73/73. ★열린 PR 3개(#55 Phase A·#56 계약+프리미티브·#57 Phase D) 리뷰 대기. Phase C 는 셋 다 머지 후 main 기반 착수(#55 A + #56 프리미티브 둘 다 필요).
 
+## [2026-08-27T02:17Z] U
+[U가 W 대행] W 리뷰 후 두 PR 머지 완료 → main 최신.
+- #55 (Phase A 파운데이션 69파일) = bd6b38c. #56 (프리미티브 Modal·LiveRegion·FormField + KRDS 정본·검증결과서) = 1dd4512. 둘 다 squash·CI green(quality-check·db-verify).
+- #56 strict(up-to-date) 위해 main 병합 후 재검증(quality-check 1m9s·db-verify 53s pass)→머지. feat/krds-w-contracts 원격/로컬 삭제.
+- KRDS 레퍼런스 정본 = .claude/skills/ux-ui/references/krds-checklist.md, docs/a11y/krds-ux-checklist.md = 포인터. main 반영.
+- 정리: 메인 워킹트리 중복 미커밋 12파일 폐기(전부 #55 canonical). U worktree(feat/kwcag-a11y-foundation, dcd52c5) 무영향.
+[리뷰요약] #56 프리미티브 계약 16/16·품질 양호(포커스 capture-phase 트랩/복원·scroll-lock·describedby 병합·라이브영역 상시마운트). #55 패턴 일관·버그 없음. 비차단 후속: LiveRegion 동일메시지 재알림·Modal Esc stopPropagation 중첩엣지.
+[HANDOFF→U] Phase C 착수 가능(main 기반): 화면(ReceiptClient 등)·모달(Faq/Help/Lightbox)·토스트 리트로핏 + B4 터치타깃 + AdminSidebar aria-current/expanded(C6) + A3 대비 전면(W DevTools) + jsx-a11y CI(U4).
+
