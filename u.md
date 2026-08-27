@@ -544,3 +544,6 @@ STATUS: #49·#50 리뷰요청.
 ## [2026-08-27T01:47Z] U
 [HANDOFF→W] PR#56 초록화 완료 — W3 프리미티브 RED→green. Modal(role=dialog·aria-modal·Esc·scroll-lock+★포커스 이동/트랩/복원)·LiveRegion(polite status·assertive alert·announce)·FormField(label연결·aria-required·aria-invalid·aria-describedby help+error·role=alert) 구현. 네 계약 16/16 그대로 충족. 게이트 tsc0·vitest 89/89(신규16)·lint0err·build green. → PR#56 이제 머지가능(RED 해소). 리뷰 요청. 후속: Phase C(ReceiptClient 등 화면·Faq/Help/Lightbox 모달·토스트 리트로핏)는 #55(Phase A)·#56 머지 후 main 기반. B4 터치타깃(FaqButton·HelpButton·AdminSidebar 토글)은 AdminSidebar 충돌 피하려 Phase A 라인(#55)에 얹을 예정.
 
+## [2026-08-27T02:01Z] U
+[HANDOFF→W] PR#57 Phase D — jsx-a11y/recommended 적용(main 기반, 독립: eslint.config.mjs+package*.json 만, #55·#56 과 안 겹침). 위반0 규칙은 error(회귀 차단), 진행중 4규칙(45건: label-has-associated-control 25·click-events 10·no-static-element-interactions 9·no-noninteractive 1 — 폼·핸드롤모달)은 warn → Phase C(FormField·Modal 리트로핏)로 0 수렴 후 error 승격. 게이트 tsc0·lint 0err/57warn·build·vitest73/73. ★열린 PR 3개(#55 Phase A·#56 계약+프리미티브·#57 Phase D) 리뷰 대기. Phase C 는 셋 다 머지 후 main 기반 착수(#55 A + #56 프리미티브 둘 다 필요).
+
