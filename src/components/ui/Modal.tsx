@@ -19,11 +19,21 @@ export function Modal({
   onClose,
   label,
   children,
+  containerClassName = 'flex items-center justify-center p-4',
+  overlayClassName = 'bg-black/40',
+  panelClassName = 'max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl',
 }: {
   open: boolean
   onClose: () => void
   label: string
   children: ReactNode
+  /** 바깥 컨테이너(정렬) 클래스. 기본: 중앙 정렬. 바텀시트·우측 드로어는 override. */
+  containerClassName?: string
+  /** 배경 오버레이 클래스. 기본: bg-black/40. backdrop-blur·불투명도는 여기서 조정. */
+  overlayClassName?: string
+  /** 대화상자 패널 클래스. 기본: 흰 카드. 이미지 뷰어·드로어·바텀시트는 override.
+   *  (role=dialog·relative z-10·outline-none 은 항상 자동 부여되므로 여기엔 시각 스타일만.) */
+  panelClassName?: string
 }) {
   const mounted = useMounted()
   const dialogRef = useRef<HTMLDivElement>(null)
@@ -89,15 +99,15 @@ export function Modal({
   if (!mounted || !open) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
+    <div className={`fixed inset-0 z-[99999] ${containerClassName}`}>
+      <div className={`absolute inset-0 ${overlayClassName}`} onClick={onClose} aria-hidden="true" />
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label={label}
         tabIndex={-1}
-        className="relative z-10 max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl outline-none"
+        className={`relative z-10 outline-none ${panelClassName}`}
       >
         {children}
       </div>

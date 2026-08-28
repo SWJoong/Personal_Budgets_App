@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AccessibilityProvider } from "@/hooks/useAccessibility";
+import { LiveRegionProvider } from "@/components/ui/LiveRegion";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -33,7 +34,10 @@ export default function RootLayout({
           본문 바로가기
         </a>
         <AccessibilityProvider>
-          {children}
+          {/* 라이브 영역(polite/assertive) 전역 마운트 — useToast().announce 로 폼 오류·저장·OCR 진행을 스크린리더에 전달(비어 있어도 상시 DOM 유지). */}
+          <LiveRegionProvider>
+            {children}
+          </LiveRegionProvider>
         </AccessibilityProvider>
         <Analytics />
         <SpeedInsights />

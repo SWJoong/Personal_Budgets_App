@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useTransition, Suspense } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { demoSignIn, type DemoRole } from "@/app/actions/demoAuth";
+import { Modal } from "@/components/ui/Modal";
 
 const isDemoLoginEnabled = process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED === "true";
 
@@ -221,47 +222,45 @@ function GoogleLoginContent() {
         </div>
       </div>
 
-      {/* 이스터에그 */}
-      {easterEggOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"
-          onClick={() => setEasterEggOpen(false)}
-        >
-          <div
-            className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p className="text-2xl mb-4 text-center">💬</p>
-            <p className="text-sm text-slate-700 leading-relaxed mb-1">
-              &quot;훌륭한 삶이란 사랑으로 힘을 얻고 지식으로 길잡이를 삼는 삶이다.&quot;
-            </p>
-            <p className="text-xs text-slate-400 text-right mb-4">— 버트런드 러셀</p>
-            <p className="text-xs text-slate-500 italic leading-relaxed mb-1">
-              &quot;The good life is one inspired by love and guided by knowledge.&quot;
-            </p>
-            <p className="text-xs text-slate-400 text-right mb-5">— Bertrand Russell</p>
-            <div className="h-px bg-slate-100 mb-4" />
-            <p className="text-xs text-slate-500 leading-relaxed mb-1">
-              &quot;행복의 비결은 이것이다: 당신의 관심사를 가능한 한 넓게 키우고,
-              당신의 관심사에 반응하는 것들에 대해 가능한 한 우호적으로 반응하라.&quot;
-            </p>
-            <p className="text-xs text-slate-400 text-right mb-5">— 버트런드 러셀, 《행복의 정복》</p>
-            <div className="w-full rounded-xl overflow-hidden mb-5">
-              <img
-                src="/images/26oJy.jpg"
-                alt="이스터에그 이미지"
-                className="w-full object-contain max-h-48"
-              />
-            </div>
-            <button
-              onClick={() => setEasterEggOpen(false)}
-              className="w-full py-2 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-700 transition-colors"
-            >
-              닫기
-            </button>
-          </div>
+      {/* 이스터에그 — Modal 프리미티브로 포커스 트랩/복원·Esc·scroll-lock 확보 */}
+      <Modal
+        open={easterEggOpen}
+        onClose={() => setEasterEggOpen(false)}
+        label="버트런드 러셀 인용"
+        containerClassName="flex items-center justify-center p-6"
+        overlayClassName="bg-black/60 backdrop-blur-sm"
+        panelClassName="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl"
+      >
+        <p className="text-2xl mb-4 text-center">💬</p>
+        <p className="text-sm text-slate-700 leading-relaxed mb-1">
+          &quot;훌륭한 삶이란 사랑으로 힘을 얻고 지식으로 길잡이를 삼는 삶이다.&quot;
+        </p>
+        <p className="text-xs text-slate-400 text-right mb-4">— 버트런드 러셀</p>
+        <p className="text-xs text-slate-500 italic leading-relaxed mb-1">
+          &quot;The good life is one inspired by love and guided by knowledge.&quot;
+        </p>
+        <p className="text-xs text-slate-400 text-right mb-5">— Bertrand Russell</p>
+        <div className="h-px bg-slate-100 mb-4" />
+        <p className="text-xs text-slate-500 leading-relaxed mb-1">
+          &quot;행복의 비결은 이것이다: 당신의 관심사를 가능한 한 넓게 키우고,
+          당신의 관심사에 반응하는 것들에 대해 가능한 한 우호적으로 반응하라.&quot;
+        </p>
+        <p className="text-xs text-slate-400 text-right mb-5">— 버트런드 러셀, 《행복의 정복》</p>
+        <div className="w-full rounded-xl overflow-hidden mb-5">
+          {/* eslint-disable-next-line @next/next/no-img-element -- 정적 이스터에그 이미지, next/image 최적화 불필요 */}
+          <img
+            src="/images/26oJy.jpg"
+            alt="이스터에그 이미지"
+            className="w-full object-contain max-h-48"
+          />
         </div>
-      )}
+        <button
+          onClick={() => setEasterEggOpen(false)}
+          className="w-full py-2 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-700 transition-colors"
+        >
+          닫기
+        </button>
+      </Modal>
     </>
   );
 }
