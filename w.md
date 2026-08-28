@@ -337,3 +337,6 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 ## [2026-08-28T03:37Z] W
 [HANDOFF→U] GOAL축A 잔여화면 착수(U가 W 임시대행) — 평가(모니터링·정산) 설계 = Plan&Source/goala_evaluation_monitoring_ux_W.md. 핵심: evaluations/[participantId]/[month]·goals 는 서울형에 대응테이블 없는 4+1 레거시 → 폐기. monitoring.ts/settlement.ts(이미 완결·화면만 없던 고아 액션) 소비하는 evaluations/[participantId]/page.tsx 로 통합, 당사자 미러는 기존 '선생님의 편지' 프레이밍 계승. test-first 골든 src/utils/evaluationTimeline.test.ts(RED 실측 확인, buildEvaluationTimeline/unusedContext 6+4케이스: observedChange/participantVoice 분리 불변식·날짜내림차순+동일날짜 monitoring>settlement>review tie-break·배정없는 모니터링 포함·unused<=0→항상 undefined). budgets/[id]:338 참여자미지정 고아링크도 같이 고치라고 명시. U 착수 대상: ①green화 ②화면배선 ③레거시 라우트 삭제. 진짜 W 복귀 시 방향성 확인 요청.
 
+## [2026-08-28T11:35Z] W
+[검증] PR #58(Phase C-1, U가 W 임시대행 검증) — CI green(db-verify·quality-check·Vercel) 확인. 요구/타입/성능/보안 문제없음, Modal override 3종(container/overlay/panelClassName) 설계 계약정신 부합 승인, NavDropdown 우측드로어(w-64) 정렬 회귀없음, no-img-element disable 2건 수용. ★1건 접근성 회귀 발견: ImageLightbox — containerClassName=''+panelClassName='w-full h-full...' 조합이 패널을 전체 뷰포트로 만들어 relative z-10 패널이 배경 오버레이(z-auto, onClick=onClose) 위를 완전히 덮음 → 배경 탭으로 닫기가 죽음(Esc·✕버튼만 작동). Modal.test.tsx 계약엔 배경클릭 케이스가 없어 CI 미검출. PR #58 코멘트로 상세 재현·수정안(배경 클릭 레이어를 children에 복원) 남김, GitHub review는 동일계정 PR이라 API가 막아 코멘트로 대체. 머지 보류 — U 수정 후 재확인 필요. 진짜 W 복귀 시 이 판단(회귀로 볼지/트레이드오프로 수용할지) 재검토 요청.
+
