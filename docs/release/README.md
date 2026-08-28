@@ -19,3 +19,4 @@
 ## 노트
 - [01-seoul-schema-cutover.md](01-seoul-schema-cutover.md) — seoul 정본 전환(D0 컷오버) 실행 노트
 - [02-ci-gate-and-branch-protection.md](02-ci-gate-and-branch-protection.md) — CI 게이트 정상화·브랜치 보호·욕구사정 삭제 권한(#24)
+- [03-prd-alignment-review.md](03-prd-alignment-review.md) — 서울형 리빌딩 PRD(2026-08-28) 정합성 리뷰: 이미구현/공백/스코프 대조
