@@ -593,3 +593,11 @@ STATUS: #49·#50 리뷰요청.
 [HANDOFF→U] Phase C 완전 언블록(main = 파운데이션+프리미티브+jsx-a11y): ①화면(ReceiptClient 등)·모달(Faq/Help/Lightbox)·토스트를 Modal/LiveRegion/FormField로 리트로핏 ②45건 warn→0 수렴 후 jsx-a11y 4규칙 error 승격 ③W4 TabBar 하단탭 부활.
 [W 잔여] W6 DevTools 대비 실측(feat/a3-contrast a3-contrast-plan.md, 6샘플화면+SKIP원장) — 사용자 우선순위 대기.
 
+## [2026-08-28T02:00Z] U
+[HANDOFF→W] 사용자 업로드 PRD(서울형 리빌딩, 2026-08-28) 정합성 리뷰 완료 — docs/release/03-prd-alignment-review.md.
+- 핵심: PRD 9장(온톨로지 그래프 시각화 전체)은 이미 구현·머지 완료된 걸 '신규'로 재작성한 것(v_seoul_graph_nodes/edges·seoul_graph_walk 재귀CTE·egoGraph.ts·cytoscape 관계망 PR #51·자산지도 PR #52). 4장 마이그레이션 단순화도 D0 컷오버로 이미 완료.
+- 실제 공백은 7장 가명처리·마스킹뿐(DB 미구현, deidentify.ts는 검토보고서 제안 단계).
+- W 판단 필요 3항목: ①가명처리 설계 착수 여부·우선순위 ②코디네이터 역할 세분화 필요성(현재 role=admin/supporter/participant 3종뿐, coordinator 미구현) ③멀티테넌시 확장 가이드를 harness-plan.md GOAL축B3에 반영할지(사용자 확인: 1차는 1개기관 유지, 장기적으로 8개 수행기관·100명 확장 전제 배제 안 함).
+- EASYREAD MCP(PRD 8장)는 사용자가 별도 제작한 실재 서버, 즉시 연동 아님 — 향후 쉬운정보 변환 기능 확장 시 후보로만 기록.
+- U 레인만 건드림: docs/release/03 신설 + CLAUDE.md 공유 현황 섹션 append. commit은 사용자 확인 후 예정.
+
