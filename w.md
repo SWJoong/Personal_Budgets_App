@@ -334,3 +334,6 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 프라이버시: 소셀 잔여위험 낮음(신원 미노출), HAVING floor 억제옵션 기본 꺼둠(설계 §5).
 [W 남은 계약 대기] AI 후속(요약·활동제안·이미지 다운스케일) · 모니터링 입력폼(평가 구현). 관계망 #51·발견 #52 리뷰대기. 사용자 우선순위 대기.
 
+## [2026-08-28T03:37Z] W
+[HANDOFF→U] GOAL축A 잔여화면 착수(U가 W 임시대행) — 평가(모니터링·정산) 설계 = Plan&Source/goala_evaluation_monitoring_ux_W.md. 핵심: evaluations/[participantId]/[month]·goals 는 서울형에 대응테이블 없는 4+1 레거시 → 폐기. monitoring.ts/settlement.ts(이미 완결·화면만 없던 고아 액션) 소비하는 evaluations/[participantId]/page.tsx 로 통합, 당사자 미러는 기존 '선생님의 편지' 프레이밍 계승. test-first 골든 src/utils/evaluationTimeline.test.ts(RED 실측 확인, buildEvaluationTimeline/unusedContext 6+4케이스: observedChange/participantVoice 분리 불변식·날짜내림차순+동일날짜 monitoring>settlement>review tie-break·배정없는 모니터링 포함·unused<=0→항상 undefined). budgets/[id]:338 참여자미지정 고아링크도 같이 고치라고 명시. U 착수 대상: ①green화 ②화면배선 ③레거시 라우트 삭제. 진짜 W 복귀 시 방향성 확인 요청.
+
