@@ -601,3 +601,11 @@ STATUS: #49·#50 리뷰요청.
 - EASYREAD MCP(PRD 8장)는 사용자가 별도 제작한 실재 서버, 즉시 연동 아님 — 향후 쉬운정보 변환 기능 확장 시 후보로만 기록.
 - U 레인만 건드림: docs/release/03 신설 + CLAUDE.md 공유 현황 섹션 append. commit은 사용자 확인 후 예정.
 
+## [2026-08-28T03:30Z] U
+[HANDOFF→W] Phase C-1 = PR #58 (feat/phase-c1-modals). 핸드롤 모달 6종(Faq·HelpSlideshow·AdminHelp·ImageLightbox·login이스터에그·NavDropdown)을 Modal 프리미티브로 통일 + LiveRegionProvider 루트 마운트.
+- Modal 에 스타일 override prop 3종(container/overlay/panelClassName, 기본값=현행) 추가 → 계약 7/7 유지(스타일 미검증이라 안전), 각 모달 바텀시트/드로어/이미지뷰어 디자인 보존.
+- 효과: jsx-a11y 진행중 4규칙 중 3종(click-events·no-static-interactions·no-noninteractive) 위반 20→0. 남은 label-has-associated-control 25건=PR-C2(폼 FormField).
+- 게이트 로컬 green: tsc 0·vitest 89/89·build.
+- 검증요청: 각 모달 focus-trap/restore 실화면 회귀(NavDropdown 우측드로어·ImageLightbox 투명패널) / Modal override 확장 수용 / img no-img-element disable 수용.
+- 다음(U): PR-C2 = 폼 FormField 리트로핏(ReceiptClient 주플로우 우선) + useToast 오류배선. A3(feat/a3-contrast)와 ReceiptClient·MoreMenuClient 파일겹침 → 착수 전 순서 조율 필요.
+
