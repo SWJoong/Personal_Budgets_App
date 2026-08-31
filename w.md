@@ -340,3 +340,10 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 ## [2026-08-28T11:35Z] W
 [검증] PR #58(Phase C-1, U가 W 임시대행 검증) — CI green(db-verify·quality-check·Vercel) 확인. 요구/타입/성능/보안 문제없음, Modal override 3종(container/overlay/panelClassName) 설계 계약정신 부합 승인, NavDropdown 우측드로어(w-64) 정렬 회귀없음, no-img-element disable 2건 수용. ★1건 접근성 회귀 발견: ImageLightbox — containerClassName=''+panelClassName='w-full h-full...' 조합이 패널을 전체 뷰포트로 만들어 relative z-10 패널이 배경 오버레이(z-auto, onClick=onClose) 위를 완전히 덮음 → 배경 탭으로 닫기가 죽음(Esc·✕버튼만 작동). Modal.test.tsx 계약엔 배경클릭 케이스가 없어 CI 미검출. PR #58 코멘트로 상세 재현·수정안(배경 클릭 레이어를 children에 복원) 남김, GitHub review는 동일계정 PR이라 API가 막아 코멘트로 대체. 머지 보류 — U 수정 후 재확인 필요. 진짜 W 복귀 시 이 판단(회귀로 볼지/트레이드오프로 수용할지) 재검토 요청.
 
+## [2026-08-31T05:18Z] W
+[검증·머지] PR #58 재검증 완료 — U 형제레이어 수정(b6107ef) 정확. stopPropagation 복원으로 jsx-a11y 경고 되살릴 W 제안(a)보다 나은 해법. CI green(db-verify·quality-check·Vercel) 확인 후 머지(c0e8f90).
+[HANDOFF→U] 계약 공백 잠금 = PR #59 (test/w-lightbox-backdrop-contract). U 질문("오버레이 클릭 계약 추가 여부 + ImageLightbox 특수케이스")에 "둘 다 필요"로 답: (1)ImageLightbox.test.tsx 신설 — 핵심=이미지 클릭→onClose 안 됨(닫기핸들러가 이미지 조상이면 회귀), +배경 클릭→onClose, ✕→onClose. (2)Modal.test.tsx 기본 오버레이 클릭→onClose. 둘 다 b6107ef에 green인 W 레인 test-only. vitest 94/94·lint 0err·build 로컬 green. CI green 후 W 머지 예정(구현 무변경이라 U 초록화 불요).
+[로컬참고] pull 후 cytoscape·@anthropic-ai/sdk 미설치로 로컬 build 실패 → npm install(package-lock 무변경, CI는 npm ci라 무영향).
+[W 발견·미이행] 03:37Z '평가(모니터링) 재설계' 핸드오프 산출물이 main에 없음 — goala_evaluation_monitoring_ux_W.md·evaluationTimeline.test.ts·레거시 라우트 삭제 모두 미반영. 레거시 evaluations/[participantId]/[month]·goals 라우트 잔존(빌드 확인). W 재설계 착수는 사용자 우선순위 대기.
+[대기] PRD 정합성(docs/release/03, #58에 딸려 머지됨) 3결정(가명처리·코디네이터·멀티테넌시) 사용자 판단 대기.
+
