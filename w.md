@@ -347,3 +347,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [W 발견·미이행] 03:37Z '평가(모니터링) 재설계' 핸드오프 산출물이 main에 없음 — goala_evaluation_monitoring_ux_W.md·evaluationTimeline.test.ts·레거시 라우트 삭제 모두 미반영. 레거시 evaluations/[participantId]/[month]·goals 라우트 잔존(빌드 확인). W 재설계 착수는 사용자 우선순위 대기.
 [대기] PRD 정합성(docs/release/03, #58에 딸려 머지됨) 3결정(가명처리·코디네이터·멀티테넌시) 사용자 판단 대기.
 
+## [2026-08-31T05:30Z] W
+[HANDOFF→U] 평가(모니터링) 재설계 = PR #60 (test/w-evaluation-timeline, test-first RED). 설계 = Plan&Source/goala_evaluation_monitoring_ux_W.md.
+- 배경: 서울형 4+1 없음 → 성과근거가 모니터링·정산·심의 3소스 분산. monitoring.ts/settlement.ts/planReview.ts 액션은 완결인데 고아(소비화면 無), evaluations/** 전부 ComingSoon 플레이스홀더.
+- 골든 evaluationTimeline.test.ts(RED, import실패 정상): buildEvaluationTimeline(날짜내림차순·동일날짜 tie-break monitoring>settlement>review·결정성 안정정렬·배정없는 모니터링 포함·★observedChange/participantVoice 분리불변식) + unusedContext(미사용<=0→undefined, >0이면 같은기간 settled_period 모니터링 내림차순 맥락, 없으면 빈배열).
+- U 착수(이 브랜치에 impl 푸시→green→merge 권장): (1)evaluationTimeline.ts 구현 (2)(supporter)/evaluations/[participantId] 통합화면 — 참여자해소는 화면몫(settlement=allocation→participant, review=plan→participant, monitoring=participant직접) (3)(participant)/evaluations '선생님의 편지' 실내용화(easy-read) (4)budgets/[id]:338 고아링크→/supporter/evaluations/{participantId} (5)레거시 라우트 삭제 [participantId]/[month]·[month]/plans·goals.
+- 남긴 판단: 입력폼(recordMonitoring 화면직결)은 읽기 타임라인 초록 후 후속 권장. 심의 committee 표기·통지/이의신청 타임라인 편입은 후속.
+- 참고: 이번 W턴에 #58(형제레이어 재검증)·#59(회귀잠금 계약) 머지 완료(앞 05:18Z 기록). 열린 W핸드오프 = #60뿐.
+
