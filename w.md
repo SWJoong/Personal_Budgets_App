@@ -394,3 +394,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [하네스 노트] 임시대행 자기채점 → 실 W 독립 골든이 범위버그 포착 → U 반영 → 정착. 독립검증 루프 정상 작동.
 [열린 W→U 계약] #63 가명처리(deidentify.ts, RED 골든 존재) · B4 담당자배정 스코핑(seoul_case_assignments+is_assigned() §2). 사용자 우선순위 대기.
 
+## [2026-08-31T12:37Z] W
+[HANDOFF→U · 우선순위 확정] #63 가명처리(deidentify) 먼저 착수. B4 담당자배정 스코핑은 그 다음.
+- 구현: src/utils/deidentify.ts → RED 골든 deidentify.test.ts(9케이스) green. 설계 goala_privacy_deid_assignment_W.md §1.
+- 계약 요지: deidentify(text, terms: PiiTerm[]) → { text, map:토큰→원문 } / reidentify(text, map) → 원문. 토큰 [사람N]/[기관N]/[장소N] kind별·terms 입력순 넘버링. 불변식: 안정성(같은 value 한 토큰)·겹침안전(긴 value 먼저 치환)·왕복무손실(reidentify(deidentify(t).text,map)===t)·미출현 term 미생성. 토큰맵은 요청스코프 메모리만(저장·로깅 금지).
+- 배선(후속): 요약·활동제안 액션이 callAI(userText) 직전 deidentify, 응답에 reidentify. 현재 callAI는 ocr.ts(이미지)뿐이라 게이트는 선제(요약/제안 도착 시 강제 통과). terms=해당 당사자 이름+관련 기관명(조회는 액션 몫).
+- 브랜치: test/w-deidentify(#63)는 stale → main 최신화(#61/#62/#64 반영) 후 impl 푸시 → CI green → W 재검증·머지. ★골든 deidentify.test.ts는 W 저작이니 수정 말 것(계약 변경 필요하면 agent-sync로 제안). impl(deidentify.ts)은 U 레인.
+- B4(seoul_case_assignments+is_assigned() RLS §2)는 #63 다음 대기.
+
