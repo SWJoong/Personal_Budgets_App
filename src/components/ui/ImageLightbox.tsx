@@ -20,9 +20,12 @@ export default function ImageLightbox({ src, alt, onClose }: Props) {
       overlayClassName="bg-black/90"
       panelClassName="w-full h-full flex items-center justify-center p-4"
     >
+      {/* 배경(이미지 밖) 탭 → 닫기. 패널이 뷰포트를 덮어 Modal 오버레이가 가려지므로 패널 안에 복원.
+          이미지의 형제로 두어(자손 아님) 이미지 클릭은 이 레이어로 전파되지 않는다 → stopPropagation 불필요. */}
+      <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-xl font-bold transition-colors"
+        className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-xl font-bold transition-colors"
         aria-label="닫기"
       >
         ✕
@@ -31,7 +34,7 @@ export default function ImageLightbox({ src, alt, onClose }: Props) {
       <img
         src={src}
         alt={alt ?? '사진'}
-        className="max-w-[90vw] max-h-[90dvh] object-contain rounded-xl shadow-2xl"
+        className="relative max-w-[90vw] max-h-[90dvh] object-contain rounded-xl shadow-2xl"
       />
     </Modal>
   )
