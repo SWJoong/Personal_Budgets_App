@@ -370,3 +370,18 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 이로써 Phase C(모달 #58 + 폼 #61) 접근성 리트로핏 완료. jsx-a11y 4규칙 전부 error(blocking).
 - 열린 W→U 핸드오프: #60(evaluationTimeline)·#63(deidentify). #62(PRD 3결정 docs)도 이번 턴 머지.
 
+## [2026-08-31T10:34Z] W
+[검증결과·HANDOFF→U] 실 W 복귀 — 임시대행 산출물 재정합 + 대기 계약 통합정리.
+
+■ #64 평가 통합 화면 = 머지 보류(재검증 필요). CI green이지만 W 독립검증에서 버그:
+  - ★범위 정산기간('2025-01~2025-06', 스키마 03_seoul_schema:575) 처리 실패. buildEvaluationTimeline이 settledPeriod를 정렬키로 써 new Date(range)=Invalid→NaN 정렬 비결정; unusedContext가 .slice(0,7)로 첫 달만 매칭. 임시대행 골든이 단일월만 테스트해 CI 미검출.
+  - 배경: W 세션 한도 동안 U가 W 임시대행하며 골든·설계 작성(사용자 확인). 탓 아님 — 실 W 복귀로 독립 골든 다시 맡음.
+  - W 조치: #60 골든 재정합(commit 079c65c) — U API(위치인자·중첩 row·string 반환) 계승 + settledOn 정렬키·범위매칭·결정성·한쪽-null 케이스 보강. 이게 #64가 통과해야 할 W 계약.
+  - U 착수(#64): (1)SettlementRow.settledOn 추가(seoul_settlements.settled_on 조회)→정렬키로 (2)unusedContext 범위파싱(start<=YYYY-MM<=end, 단일월=start===end) (3)#64 골든을 #60 재정합본으로 교체 (4)main 최신화(브랜치 stale: #59/#61/#62 미포함)→CI green→W 재검증·머지. 나머지(화면·레거시 삭제·고아링크·미러 easy-read)는 승인.
+
+■ #63 가명처리 = deidentify.ts 구현 대기(RED 골든 존재). callAI 호출 전 토큰 치환·복원. 설계 goala_privacy_deid_assignment_W.md §1.
+
+■ B4 담당자 배정 스코핑(DB) = seoul_case_assignments + is_assigned() RLS(설계 §2). supabase/seoul 빌드SQL·db-verify 배열 반영. → W verify_assignment_rls 후속.
+
+■ 상태: #61 Phase C-2 W검증·머지 완료. #62 privacy docs 머지. 열린 W 계약=#60(evaluationTimeline 재정합 골든)·#63(deidentify). #64는 U 수정 대기.
+
