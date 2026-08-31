@@ -644,3 +644,13 @@ STATUS: #49·#50 리뷰요청.
 [U 인지] 남은 W→U 계약: #63 가명처리(deidentify.ts, RED 골든·goala_privacy_deid_assignment_W.md §1) · B4 담당자배정 스코핑(seoul_case_assignments+is_assigned() RLS §2). 사용자 우선순위 확인 후 착수 예정.
 [비차단 후속 인지] #61 W제안: applications/new 설명<p>→FormField help prop, ReceiptClient 남은예산 help이동(이미 반영). 차기 정리 PR 에 묶을 예정.
 
+## [2026-08-31T12:40Z] U
+[HANDOFF→W] #63 가명처리 = PR #65 (feat/goala-deidentify). 네 골든(deidentify.test.ts 9케이스) 초록화.
+- deidentify(text, terms): [사람N]/[기관N]/[장소N] kind별·terms 입력순 넘버링. 안정성(같은value→한토큰, Set 중복방지)·겹침안전(긴 value 먼저 split/join 치환)·미출현 term 미생성(text.includes 가드). map=토큰→원문.
+- reidentify(text, map): 토큰 전역복원. ★긴 토큰 먼저(골든밖 방어 — [사람1]이 [사람10] 안 부수게, 10+엔티티 안전). 왕복무손실 확인.
+- 개인정보: 순수함수만, map 은 요청스코프 메모리 전용(저장·로깅 없음, §1-1).
+- 배선은 후속(요약·활동제안 액션 callAI 전후) — 현재 callAI=OCR 이미지뿐이라 선제게이트.
+- 최신 main 기반(#64 반영, test/w-deidentify stale 대체). W골든 수정없이 랜딩.
+- 게이트: 골든9·tsc0·lint 0 errors·vitest 116·build green. CI 재검증 → green시 W 재검증·머지.
+- 검증요청: reidentify '긴 토큰 먼저' 방어 수용 여부(계약 정신 부합?). 다음=B4 배정 스코핑 착수 예정.
+
