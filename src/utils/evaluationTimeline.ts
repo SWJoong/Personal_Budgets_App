@@ -21,7 +21,10 @@ export interface MonitoringRow {
 export interface SettlementRow {
   id: string
   allocationId: string
+  /** 단일월 'YYYY-MM' 또는 범위 'YYYY-MM~YYYY-MM'(스키마 03:575). 범위일 수 있어 정렬 키로 못 쓴다. */
   settledPeriod: string
+  /** 실제 정산일(ISO) — 타임라인 정렬 키. settledPeriod(범위 가능)의 new Date()=Invalid 회피. */
+  settledOn: string
   acceptedAmount: number
   rejectedAmount: number
   recoveredAmount: number
@@ -66,7 +69,7 @@ export function buildEvaluationTimeline(
 ): TimelineEntry[] {
   const entries: TimelineEntry[] = [
     ...monitoring.map((m): TimelineEntry => ({ kind: 'monitoring', date: m.monitoringDate, id: m.id, monitoring: m })),
-    ...settlements.map((s): TimelineEntry => ({ kind: 'settlement', date: s.settledPeriod, id: s.id, settlement: s })),
+    ...settlements.map((s): TimelineEntry => ({ kind: 'settlement', date: s.settledOn, id: s.id, settlement: s })),
     ...reviews.map((r): TimelineEntry => ({ kind: 'review', date: r.reviewDate, id: r.id, review: r })),
   ]
 
@@ -90,12 +93,16 @@ export function unusedContext(
 ): string | undefined {
   if (settlement.unusedAmount <= 0) return undefined
 
-  const period = settlement.settledPeriod.slice(0, 7) // 'YYYY-MM'
-  const match = monitoring.find(
-    (m) =>
-      m.allocationId === settlement.allocationId &&
-      m.monitoringDate.slice(0, 7) === period &&
-      !!m.observedChange,
-  )
+  // settledPeriod 는 단일월 'YYYY-MM' 또는 범위 'YYYY-MM~YYYY-MM' — 범위 안의 달을 모두 매칭
+  // ('YYYY-MM' 문자열은 길이 고정·제로패딩이라 사전식 비교가 곧 시간순 비교).
+  const [startRaw, endRaw] = settlement.settledPeriod.split('~')
+  const start = startRaw.trim().slice(0, 7)
+  const end = (endRaw ?? startRaw).trim().slice(0, 7) // 단일월이면 end === start
+
+  const match = monitoring.find((m) => {
+    if (m.allocationId !== settlement.allocationId || !m.observedChange) return false
+    const month = m.monitoringDate.slice(0, 7)
+    return month >= start && month <= end
+  })
   return match?.observedChange ?? undefined
 }

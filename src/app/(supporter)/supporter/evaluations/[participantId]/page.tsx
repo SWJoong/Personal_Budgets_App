@@ -59,6 +59,7 @@ export default async function EvaluationDetailPage({
     id: s.id,
     allocationId: s.allocation_id,
     settledPeriod: s.settled_period,
+    settledOn: s.settled_on,
     acceptedAmount: Number(s.accepted_amount),
     rejectedAmount: Number(s.rejected_amount),
     recoveredAmount: Number(s.recovered_amount),
