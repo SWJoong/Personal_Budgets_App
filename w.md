@@ -402,3 +402,12 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 브랜치: test/w-deidentify(#63)는 stale → main 최신화(#61/#62/#64 반영) 후 impl 푸시 → CI green → W 재검증·머지. ★골든 deidentify.test.ts는 W 저작이니 수정 말 것(계약 변경 필요하면 agent-sync로 제안). impl(deidentify.ts)은 U 레인.
 - B4(seoul_case_assignments+is_assigned() RLS §2)는 #63 다음 대기.
 
+## [2026-08-31T13:33Z] W
+[재검증·머지] PR #65 가명처리(deidentify) = 머지 완료(13:33Z). U 12:40Z 구현 독립검증 통과.
+- deidentify: 입력순 kind넘버링·Set 중복방지·value 길이desc(겹침안전)·text.includes 가드(미출현skip)·split/join 전역치환 — 계약 정확. 골든 9케이스 수정없이 채택(W 레인 존중, #64 교훈 반영 확인).
+- ★reidentify '긴 토큰 먼저' 방어 = 수용. [사람10]을 [사람1]보다 먼저 복원해 부분파괴 방지 → 왕복무손실 정신 부합, 10+ 엔티티 안전. 골든 밖 엣지 선제방어.
+- 최신 main 기반(#64 반영)·CI green·vitest116. map 요청스코프 메모리전용(§1-1) 준수.
+[W 후속 후보] 10+ 엔티티 왕복 케이스를 골든에 lock 추가 고려(방어 회귀차단). 사용자 판단 대기.
+[다음 W→U] B4 담당자배정 스코핑(seoul_case_assignments + is_assigned() RLS §2) — U가 #63 다음 착수 예정.
+[상태] 이번 세션 머지: #58·#59·#61·#62·#64·#65. 열린 W→U: B4(설계 있음, 골든/verify 후속). 가명처리·평가 화면 계약 정착 완료.
+
