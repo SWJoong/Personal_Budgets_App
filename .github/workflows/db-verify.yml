@@ -55,6 +55,7 @@ jobs:
             supabase/seoul/09_ontology_classification.sql
             supabase/seoul/10_fk_ization.sql
             supabase/seoul/11_provider_domains.sql
+            supabase/seoul/12_case_assignments.sql
           )
           for f in "${build[@]}"; do
             echo "=== apply $f ==="
@@ -64,7 +65,8 @@ jobs:
           for f in supabase/seoul/03_seoul_schema.sql \
                    supabase/seoul/09_ontology_classification.sql \
                    supabase/seoul/10_fk_ization.sql \
-                   supabase/seoul/11_provider_domains.sql; do
+                   supabase/seoul/11_provider_domains.sql \
+                   supabase/seoul/12_case_assignments.sql; do
             psql -v ON_ERROR_STOP=1 -q -f "$f"
           done
 
