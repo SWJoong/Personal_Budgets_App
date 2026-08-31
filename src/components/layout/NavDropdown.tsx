@@ -1,10 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useMounted } from '@/hooks/useMounted'
+import { Modal } from '@/components/ui/Modal'
 
 type NavItem = {
   href: string
@@ -45,48 +44,36 @@ function SoonBadge() {
 
 export default function NavDropdown() {
   const [isOpen, setIsOpen] = useState(false)
-  const mounted = useMounted()
   const pathname = usePathname()
 
-  // 페이지 이동 시 자동 닫기
+  // 페이지 이동 시 자동 닫기 (Esc·scroll-lock·포커스 트랩/복원은 Modal 프리미티브가 담당)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 라우트 변경 시 드롭다운 닫기(외부 nav 상태 동기화)
     setIsOpen(false)
   }, [pathname])
 
-  // 열린 동안 body 스크롤 잠금
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [isOpen])
-
-  // Escape 키로 닫기
-  useEffect(() => {
-    if (!isOpen) return
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setIsOpen(false)
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [isOpen])
-
-  const drawer = mounted && isOpen ? createPortal(
+  return (
     <>
-      {/* 배경 오버레이 */}
-      <div
-        className="fixed inset-0 bg-black/40"
-        style={{ zIndex: 99998 }}
-        onClick={() => setIsOpen(false)}
-        aria-hidden="true"
-      />
+      <button
+        onClick={() => setIsOpen((v) => !v)}
+        className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-all active:scale-95"
+        aria-label={isOpen ? '메뉴 닫기' : '메뉴 열기'}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+      >
+        <span className="text-zinc-600 text-base font-black leading-none select-none">
+          {isOpen ? '✕' : '☰'}
+        </span>
+      </button>
 
-      {/* 우측 슬라이드 드로어 */}
-      <div
-        className="fixed top-0 right-0 bottom-0 w-64 bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
-        style={{ zIndex: 99999 }}
-        role="dialog"
-        aria-modal="true"
-        aria-label="페이지 이동 메뉴"
+      {/* 우측 슬라이드 드로어 — Modal 로 포커스 트랩/복원·Esc·scroll-lock 확보(중앙 대신 우측 정렬 override) */}
+      <Modal
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        label="페이지 이동 메뉴"
+        containerClassName="flex justify-end"
+        overlayClassName="bg-black/40"
+        panelClassName="h-full w-64 bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
       >
         {/* 드로어 헤더 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
@@ -167,26 +154,7 @@ export default function NavDropdown() {
             )
           })}
         </nav>
-      </div>
-    </>,
-    document.body
-  ) : null
-
-  return (
-    <>
-      <button
-        onClick={() => setIsOpen((v) => !v)}
-        className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-all active:scale-95"
-        aria-label={isOpen ? '메뉴 닫기' : '메뉴 열기'}
-        aria-expanded={isOpen}
-        aria-haspopup="dialog"
-      >
-        <span className="text-zinc-600 text-base font-black leading-none select-none">
-          {isOpen ? '✕' : '☰'}
-        </span>
-      </button>
-
-      {drawer}
+      </Modal>
     </>
   )
 }

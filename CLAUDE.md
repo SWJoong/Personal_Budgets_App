@@ -262,3 +262,4 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 - **활성(W)**: 축B(#17·#18·#20) 랜딩·verify PG15 green 확인 → verify CI 자동화 스펙 `[HANDOFF→U]`(`ci_db_verify_spec_W.md`) + 수동작업 게이트 컨벤션 신설.
 - **활성(U)**: CI 게이트 정상화(`quality-check`+`db-verify` both required·`strict`) + main 브랜치 보호 + **lint blocking 승격**(선재 22건 정리) + 욕구사정 삭제=담당자 계약 초록화(#24). 실행노트 `docs/release/02`.
 - **다음**: 지출↔분류축(`domain`/`subdomain`) UI 연결은 **W 백필 설계 확정 후** 착수(디자인 레인). GOAL축 A 잔여 화면은 W UX·easy-read 설계 후. copay 교차계층 계약 대기.
+- **PRD 대조(U, 2026-08-28)**: 사용자 업로드 「서울형 리빌딩 PRD」 정합성 리뷰 완료 — `docs/release/03-prd-alignment-review.md`. 9장 그래프 시각화 등은 이미 구현·머지된 재발견, 가명처리·마스킹(7장)은 실제 공백으로 확인. W 판단 대기: ①가명처리 설계 착수 여부·우선순위 ②코디네이터 역할 세분화 여부 ③멀티테넌시 확장 가이드(GOAL축B3) 반영 여부.
