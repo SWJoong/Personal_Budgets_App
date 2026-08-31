@@ -1,13 +1,98 @@
+import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import ComingSoon from '@/components/ui/ComingSoon'
+import { getMonitoringRecords } from '@/app/actions/monitoring'
+import { getSettlements } from '@/app/actions/settlement'
 
-export const metadata = { title: '평가' }
+export const metadata = { title: '선생님이 남긴 기록' }
 
-export default async function EvaluationsPage() {
+// 당사자 미러 — "선생님의 편지" 프레이밍 계승(설계 §3b). 모니터링은 읽기만(RLS 로 본인 것만).
+// 행정 언어("정산·모니터링") 대신 쉬운 말(§4). 미사용액은 실패로 읽히지 않게 긍정 고정 문구.
+const METHOD_EASY: Record<string, string> = {
+  visit: '만났어요',
+  phone: '전화했어요',
+  app: '앱으로 봤어요',
+  document: '서류로 봤어요',
+}
+
+const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
+
+export default async function ParticipantEvaluationsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  return <ComingSoon title="선생님의 편지" emoji="💌" />
+  // 인자 없이 호출 → RLS 가 본인 것만 반환(기존 시그니처 재사용).
+  const [{ records }, { settlements }] = await Promise.all([
+    getMonitoringRecords(),
+    getSettlements(),
+  ])
+
+  return (
+    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
+      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
+        <Link
+          href="/more"
+          className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label="뒤로 가기"
+        >
+          ←
+        </Link>
+        <h1 className="text-sm font-black text-zinc-800">💌 선생님이 남긴 기록</h1>
+      </header>
+
+      <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-6 max-w-sm mx-auto w-full">
+        {/* 모니터링 = 선생님이 남긴 편지 */}
+        {records.length === 0 ? (
+          <section className="p-8 rounded-3xl bg-zinc-100 text-center">
+            <p className="text-zinc-500 font-medium leading-relaxed">
+              아직 남긴 기록이 없어요.<br />선생님을 만나면 여기에 나와요.
+            </p>
+          </section>
+        ) : (
+          <section className="flex flex-col gap-3">
+            {records.map((r) => (
+              <article key={r.id} className="p-5 rounded-3xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-zinc-400">
+                    {r.method ? METHOD_EASY[r.method] ?? '' : ''}
+                  </span>
+                  <span className="text-xs text-zinc-400">{r.monitoring_date}</span>
+                </div>
+                {r.observed_change && (
+                  <p className="text-base text-zinc-800 leading-relaxed">{r.observed_change}</p>
+                )}
+                {r.participant_voice && (
+                  <div className="rounded-2xl bg-zinc-50 p-3">
+                    <p className="text-xs text-zinc-400 font-bold mb-1">내가 한 말</p>
+                    <p className="text-sm text-zinc-700 leading-relaxed">“{r.participant_voice}”</p>
+                  </div>
+                )}
+              </article>
+            ))}
+          </section>
+        )}
+
+        {/* 정산 = 쓴 돈은 어떻게 됐나요 (미사용은 긍정 프레이밍 고정 문구) */}
+        {settlements.length > 0 && (
+          <section className="flex flex-col gap-3">
+            <h2 className="text-sm font-bold text-zinc-500">쓴 돈은 어떻게 됐나요</h2>
+            {settlements.map((s) => (
+              <div key={s.id} className="p-5 rounded-3xl bg-white ring-1 ring-zinc-200 flex flex-col gap-2">
+                <span className="text-xs text-zinc-400">{s.settled_period}</span>
+                <p className="text-base text-zinc-800 leading-relaxed">
+                  받은 돈 <b>{won(Number(s.accepted_amount))}</b>
+                </p>
+                {Number(s.unused_amount) > 0 && (
+                  <p className="text-sm text-zinc-600 bg-green-50 rounded-2xl p-3 leading-relaxed">
+                    아직 다 안 쓴 돈이 있어요. 괜찮아요, 잘못한 게 아니에요.
+                  </p>
+                )}
+              </div>
+            ))}
+          </section>
+        )}
+      </main>
+    </div>
+  )
 }

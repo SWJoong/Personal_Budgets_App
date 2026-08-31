@@ -54,6 +54,7 @@ export interface MonitoringRow {
   method: string | null
   observed_change: string | null
   participant_voice: string | null
+  allocation_id: string | null
 }
 
 /** 참여자 본인 또는 실무자 — RLS 가 실제 볼 수 있는 범위를 정한다 */
@@ -64,7 +65,7 @@ export async function getMonitoringRecords(participantId?: string): Promise<{ er
 
   let query = supabase
     .from('seoul_monitoring_records')
-    .select('id, participant_id, monitoring_date, method, observed_change, participant_voice')
+    .select('id, participant_id, monitoring_date, method, observed_change, participant_voice, allocation_id')
     .order('monitoring_date', { ascending: false })
 
   if (participantId) query = query.eq('participant_id', participantId)

@@ -213,3 +213,38 @@ export async function createReviewCommittee(input: { name: string; compositionNo
     return { error: e instanceof Error ? e.message : '오류가 발생했습니다.' }
   }
 }
+
+export interface PlanReviewRow {
+  id: string
+  decision: 'approved' | 'conditional' | 'rejected'
+  reason: string | null
+  review_date: string
+}
+
+/**
+ * 심의 이력 읽기 — 참여자의 계획들에 대한 결정을 최신순으로 (평가 화면 §3 ③ 읽기 참조).
+ * 결정 변경 UI 는 없음(정본은 review/·decidePlanReview). RLS 는 기존 정책 재사용(신규 정책 없음).
+ */
+export async function getPlanReviews(
+  participantId: string,
+): Promise<{ error?: string; reviews: PlanReviewRow[] }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.', reviews: [] }
+
+  const { data, error } = await supabase
+    .from('seoul_plan_reviews')
+    .select('id, decision, reason, review_date, seoul_utilization_plans!inner(participant_id)')
+    .eq('seoul_utilization_plans.participant_id', participantId)
+    .order('review_date', { ascending: false })
+
+  if (error) return { error: error.message, reviews: [] }
+
+  const reviews: PlanReviewRow[] = (data ?? []).map((r) => ({
+    id: r.id as string,
+    decision: r.decision as PlanReviewRow['decision'],
+    reason: (r.reason ?? null) as string | null,
+    review_date: r.review_date as string,
+  }))
+  return { reviews }
+}
