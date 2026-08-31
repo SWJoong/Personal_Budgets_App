@@ -307,8 +307,9 @@ export default function PlanDetailClient({
                 />
               </div>
               <div className="w-28 flex flex-col gap-0.5">
-                <label className="text-[10px] text-zinc-400 font-medium">예상 금액 (원)</label>
+                <label htmlFor={`service-cost-${i}`} className="text-[10px] text-zinc-400 font-medium">예상 금액 (원)</label>
                 <input
+                  id={`service-cost-${i}`}
                   type="number"
                   value={s.estimatedCost}
                   onChange={(e) => {
@@ -404,8 +405,9 @@ export default function PlanDetailClient({
               {/* 누가 심의했는지 기록한다. 구성·정족수가 유효한지는 앱이 판단하지
                   않는다 — 심사처가 전달한 내용을 그대로 남기는 칸이다. */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500 font-medium">심의 주체</label>
+                <label htmlFor="review-committee" className="text-xs text-zinc-500 font-medium">심의 주체</label>
                 <select
+                  id="review-committee"
                   value={committeeId}
                   onChange={(e) => setCommitteeId(e.target.value)}
                   className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"

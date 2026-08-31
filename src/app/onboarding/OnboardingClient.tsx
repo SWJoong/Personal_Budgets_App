@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import SelfCheckFeedback from '@/components/ui/SelfCheckFeedback'
+import { FormField } from '@/components/ui/FormField'
+import { useToast } from '@/components/ui/LiveRegion'
 
 interface Person {
   id: string
@@ -27,6 +29,7 @@ type Step = 'role' | 'profile' | 'complete'
 export default function OnboardingClient({ userId, userEmail, userName, userAvatar, supporters, participants }: Props) {
   const router = useRouter()
   const supabase = createClient()
+  const { announce } = useToast()
 
   const [step, setStep] = useState<Step>('role')
   const [role, setRole] = useState<Role | null>(null)
@@ -38,6 +41,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [nameError, setNameError] = useState('')
 
   const handleRoleSelect = (r: Role) => {
     setRole(r)
@@ -53,12 +57,15 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
 
   const handleComplete = async () => {
     if (!role || !name.trim()) {
-      setError('이름을 입력해 주세요.')
+      const msg = '이름을 입력해 주세요.'
+      setNameError(msg)
+      announce(msg, 'assertive')
       return
     }
 
     setLoading(true)
     setError('')
+    setNameError('')
 
     try {
       // Update profile
@@ -95,7 +102,9 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
         router.refresh()
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '저장 중 오류가 발생했습니다.')
+      const msg = err instanceof Error ? err.message : '저장 중 오류가 발생했습니다.'
+      setError(msg)
+      announce(msg, 'assertive')
       setLoading(false)
     }
   }
@@ -201,29 +210,35 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
               </div>
 
               {/* Name */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-bold text-zinc-500 ml-1">이름 *</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="이름을 입력해 주세요"
-                  className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-lg font-bold transition-all"
-                  required
-                />
-              </div>
+              <FormField id="onboarding-name" label="이름" required error={nameError || undefined}>
+                {(field) => (
+                  <input
+                    {...field}
+                    type="text"
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value)
+                      if (nameError) setNameError('')
+                    }}
+                    placeholder="이름을 입력해 주세요"
+                    className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-lg font-bold transition-all"
+                    required
+                  />
+                )}
+              </FormField>
 
               {/* Participant-specific fields */}
               {role === 'participant' && (
                 <>
                   {/* Budget Type */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-zinc-500 ml-1">
+                  <fieldset className="flex flex-col gap-2">
+                    <legend className="text-sm font-bold text-zinc-500 ml-1 mb-2">
                       <EasyTerm formal="예산 구조" easy="돈의 종류" />
-                    </label>
+                    </legend>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
+                        aria-pressed={budgetType === 'single'}
                         onClick={() => setBudgetType('single')}
                         className={`p-4 rounded-2xl text-center transition-all ring-2 ${
                           budgetType === 'single'
@@ -236,6 +251,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                       </button>
                       <button
                         type="button"
+                        aria-pressed={budgetType === 'multiple'}
                         onClick={() => setBudgetType('multiple')}
                         className={`p-4 rounded-2xl text-center transition-all ring-2 ${
                           budgetType === 'multiple'
@@ -247,19 +263,20 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                         <span className="text-sm font-bold">둘 이상</span>
                       </button>
                     </div>
-                  </div>
+                  </fieldset>
 
                   {/* Supporter Selection */}
                   {supporters.length > 0 && (
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-bold text-zinc-500 ml-1">
+                    <fieldset className="flex flex-col gap-2">
+                      <legend className="text-sm font-bold text-zinc-500 ml-1 mb-2">
                         <EasyTerm formal="담당 지원자" easy="나를 도와주는 선생님" />
-                      </label>
+                      </legend>
                       <div className="flex flex-col gap-2">
                         {supporters.map((s) => (
                           <button
                             key={s.id}
                             type="button"
+                            aria-pressed={selectedSupporter === s.id}
                             onClick={() => setSelectedSupporter(s.id === selectedSupporter ? '' : s.id)}
                             className={`flex items-center gap-3 p-4 rounded-2xl transition-all ring-2 text-left ${
                               selectedSupporter === s.id
@@ -279,20 +296,21 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                           </button>
                         ))}
                       </div>
-                    </div>
+                    </fieldset>
                   )}
                 </>
               )}
 
               {/* Supporter-specific: participant selection */}
               {role === 'supporter' && participants.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-bold text-zinc-500 ml-1">담당 당사자 (여러 명 선택 가능)</label>
+                <fieldset className="flex flex-col gap-2">
+                  <legend className="text-sm font-bold text-zinc-500 ml-1 mb-2">담당 당사자 (여러 명 선택 가능)</legend>
                   <div className="flex flex-col gap-2">
                     {participants.map((p) => (
                       <button
                         key={p.id}
                         type="button"
+                        aria-pressed={selectedParticipants.includes(p.id)}
                         onClick={() => toggleParticipant(p.id)}
                         className={`flex items-center gap-3 p-4 rounded-2xl transition-all ring-2 text-left ${
                           selectedParticipants.includes(p.id)
@@ -312,20 +330,22 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                       </button>
                     ))}
                   </div>
-                </div>
+                </fieldset>
               )}
 
               {/* Bio */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-bold text-zinc-500 ml-1">나를 표현하는 한 마디 (선택)</label>
-                <input
-                  type="text"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="예: 여행을 좋아해요!"
-                  className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all"
-                />
-              </div>
+              <FormField id="onboarding-bio" label="나를 표현하는 한 마디 (선택)">
+                {(field) => (
+                  <input
+                    {...field}
+                    type="text"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="예: 여행을 좋아해요!"
+                    className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all"
+                  />
+                )}
+              </FormField>
 
               {/* Submit */}
               <button

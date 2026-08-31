@@ -137,8 +137,11 @@ main ─────────────────────────
 (`transactions`/`budget_line_items.category`, `support_goals.support_area`) + JSONB로 분산.**
 - **B1 분류 참조테이블 승격** + `category` **FK화** → 사정·목표·예산·거래·평가를 **단일 분류축**으로 연결.
 - **B2 `needs_assessment` 엔티티 신설** (복지부 서식 §4 욕구사정: 대·중분류 × 제한점 × 욕구·희망).
-- **B3 `organizations` 멀티테넌시** — 현재 단일기관 하드코딩(`@nowondaycare.org`) → organizations + 스코프 RLS
-  (base의 `seoul_executing_agencies` 참조데이터와 대조).
+- **B3 `organizations` 멀티테넌시** — 현재 단일기관(`@nowondaycare.org` 이메일 도메인) 결합 → organizations + 스코프 RLS.
+  **확장 전제(사용자 확정 2026-08-31, PRD 결정 ③)**: 1차는 단일기관·30명 유지하되 **8개 수행기관·100명**을 설계 상한으로 가정.
+  원칙 ⑴ 테넌트-루트(`participants` 등)에 org 스코프 **하드코딩 금지** → `seoul_executing_agencies`(또는 신규 `organizations`) **FK 참조**. ⑵ 지금 org FK 선제도입은 YAGNI(1개 기관 확정) → **진입점만 문서화**, 구현 보류. 설계: [goala_privacy_deid_assignment_W.md](../Plan&Source/goala_privacy_deid_assignment_W.md) §3.
+- **B4 담당자 배정 스코핑**(사용자 확정 2026-08-31, PRD 결정 ②) — role 은 **3종 유지**(coordinator 미도입: 권한차등 요구 미확인). 현재 RLS 는 **모든 실무자가 모든 당사자 열람**(검토보고서 ⑥). `seoul_case_assignments`(participant×supporter) + `is_assigned()` RLS 헬퍼로 "실무자는 배정된 당사자만"(관리자는 전체). 8기관 확장(B3) 시 필수·같은 RLS 계층이라 함께 설계. 설계 §2 → **W** 설계·`verify_*.sql`, **U** DB 구현.
+- **B5 가명처리 게이트웨이·노드 마스킹**(사용자 확정 2026-08-31, PRD 결정 ①·전면 착수) — PRD 7장 5단계 + 그래프 노드 마스킹. 앱층 `deidentify.ts`(AI 호출 전 이름·기관명 토큰 치환·복원, **골든 test-first**) + DB층 그래프 뷰 마스킹. 현재 AI 노출은 OCR뿐이나 요약·제안 확장 대비 게이트 강제. 설계 §1 → **W** 골든·설계, **U** 게이트웨이·마스킹 구현.
 - 제외(base가 이미 해결): 정체성 이원화, 서울 신청/동의 모델. 설계만 존재: value_nodes, PCT 성과측정 6클래스.
 - → **W**(`/pl` 설계권위: 온톨로지 RDF ↔ base 대조·확정, 두 온톨로지[서울형 6 ↔ 복지부 8] 판정)
   → **U**(`/backend` 마이그레이션·서버액션).

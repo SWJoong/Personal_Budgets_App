@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createApplication, recordBenefitStatus, type PublicAssistance } from '@/app/actions/application'
+import { FormField } from '@/components/ui/FormField'
+import { useToast } from '@/components/ui/LiveRegion'
 
 interface ParticipantOption {
   id: string
@@ -20,6 +22,11 @@ interface CohortOption {
 export default function NewApplicationPage() {
   const supabase = createClient()
   const router = useRouter()
+  const { announce } = useToast()
+  const fail = (msg: string) => {
+    setError(msg)
+    announce(msg, 'assertive')
+  }
 
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -60,11 +67,11 @@ export default function NewApplicationPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!participantId) {
-      setError('당사자를 선택해주세요.')
+      fail('당사자를 선택해주세요.')
       return
     }
     if (!cohortId) {
-      setError('차수를 선택해주세요.')
+      fail('차수를 선택해주세요.')
       return
     }
 
@@ -79,7 +86,7 @@ export default function NewApplicationPage() {
       })
 
       if (result.error) {
-        setError(result.error)
+        fail(result.error)
         return
       }
 
@@ -94,14 +101,14 @@ export default function NewApplicationPage() {
           participatesInMohwPilot,
         })
         if (benefitResult.error) {
-          setError(`신청서는 접수됐지만 수급현황 저장에 실패했어요: ${benefitResult.error}`)
+          fail(`신청서는 접수됐지만 수급현황 저장에 실패했어요: ${benefitResult.error}`)
           return
         }
       }
 
       router.push(`/supporter/applications/${result.applicationId}`)
     } catch (e) {
-      setError(e instanceof Error ? e.message : '저장에 실패했습니다.')
+      fail(e instanceof Error ? e.message : '저장에 실패했습니다.')
     } finally {
       setSaving(false)
     }
@@ -139,73 +146,85 @@ export default function NewApplicationPage() {
           <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200">
             <legend className="text-xs font-black text-zinc-400 uppercase tracking-widest px-1">신청 정보</legend>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500 font-medium">당사자 *</label>
-              <select
-                value={participantId}
-                onChange={(e) => setParticipantId(e.target.value)}
-                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
-                required
-              >
-                <option value="">선택해주세요</option>
-                {participants.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-              {participants.length === 0 && (
-                <p className="text-[11px] text-zinc-400 leading-relaxed mt-1">
-                  등록된 당사자가 없어요. 먼저 당사자 관리에서 등록해주세요.
-                </p>
+            <FormField id="app-participant" label="당사자" required>
+              {(field) => (
+                <>
+                  <select
+                    {...field}
+                    value={participantId}
+                    onChange={(e) => setParticipantId(e.target.value)}
+                    className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                    required
+                  >
+                    <option value="">선택해주세요</option>
+                    {participants.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                  {participants.length === 0 && (
+                    <p className="text-[11px] text-zinc-400 leading-relaxed mt-1">
+                      등록된 당사자가 없어요. 먼저 당사자 관리에서 등록해주세요.
+                    </p>
+                  )}
+                </>
               )}
-            </div>
+            </FormField>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500 font-medium">차수 *</label>
-              <select
-                value={cohortId}
-                onChange={(e) => setCohortId(e.target.value)}
-                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
-                required
-              >
-                <option value="">선택해주세요</option>
-                {cohorts.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
-                ))}
-              </select>
-            </div>
+            <FormField id="app-cohort" label="차수" required>
+              {(field) => (
+                <select
+                  {...field}
+                  value={cohortId}
+                  onChange={(e) => setCohortId(e.target.value)}
+                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                  required
+                >
+                  <option value="">선택해주세요</option>
+                  {cohorts.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
+                  ))}
+                </select>
+              )}
+            </FormField>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500 font-medium">접수번호</label>
-              <input
-                type="text"
-                value={receiptNumber}
-                onChange={(e) => setReceiptNumber(e.target.value)}
-                placeholder="선택 입력"
-                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
-              />
-            </div>
+            <FormField id="app-receipt" label="접수번호">
+              {(field) => (
+                <input
+                  {...field}
+                  type="text"
+                  value={receiptNumber}
+                  onChange={(e) => setReceiptNumber(e.target.value)}
+                  placeholder="선택 입력"
+                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                />
+              )}
+            </FormField>
           </fieldset>
 
           <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200">
             <legend className="text-xs font-black text-zinc-400 uppercase tracking-widest px-1">수급 현황</legend>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500 font-medium">공공부조 수급현황</label>
-              <select
-                value={publicAssistance}
-                onChange={(e) => setPublicAssistance(e.target.value as PublicAssistance | '')}
-                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
-              >
-                <option value="">아직 확인 못함</option>
-                <option value="basic_livelihood">기초생활수급</option>
-                <option value="near_poor">차상위(조건부수급)</option>
-                <option value="none">해당없음</option>
-              </select>
-              <p className="text-[11px] text-zinc-400 leading-relaxed mt-1">
-                기초생활수급·차상위는 본인부담금이 면제됩니다. 비워 두면 예산 승인 시
-                &lsquo;확인 전&rsquo;으로 남고, 당사자 화면에도 그렇게 표시됩니다.
-              </p>
-            </div>
+            <FormField id="app-public-assistance" label="공공부조 수급현황">
+              {(field) => (
+                <>
+                  <select
+                    {...field}
+                    value={publicAssistance}
+                    onChange={(e) => setPublicAssistance(e.target.value as PublicAssistance | '')}
+                    className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                  >
+                    <option value="">아직 확인 못함</option>
+                    <option value="basic_livelihood">기초생활수급</option>
+                    <option value="near_poor">차상위(조건부수급)</option>
+                    <option value="none">해당없음</option>
+                  </select>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed mt-1">
+                    기초생활수급·차상위는 본인부담금이 면제됩니다. 비워 두면 예산 승인 시
+                    &lsquo;확인 전&rsquo;으로 남고, 당사자 화면에도 그렇게 표시됩니다.
+                  </p>
+                </>
+              )}
+            </FormField>
 
             <label className="flex items-center gap-3 min-h-[44px] cursor-pointer">
               <input
