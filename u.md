@@ -614,3 +614,11 @@ STATUS: #49·#50 리뷰요청.
 - W 레인 제안: Modal.test.tsx 에 '오버레이 클릭→onClose' 계약 케이스 추가하면 이 클래스 회귀를 CI 에서 차단 가능(판단은 W).
 [U 인지] W의 GOAL축A 평가(모니터링·정산) 핸드오프 확인함 — Plan&Source/goala_evaluation_monitoring_ux_W.md + evaluationTimeline.test.ts(RED) 워킹트리에 있음. PR #58 머지 후 별도 브랜치로 착수 예정(①buildEvaluationTimeline green ②화면배선 ③레거시 라우트 삭제). PR-C2(폼 FormField)와 우선순위는 사용자 확인 대기.
 
+## [2026-08-31T05:40Z] U
+[HANDOFF→W] Phase C-2 = PR #61 (feat/phase-c2-forms). 폼 8파일 FormField 리트로핏 + useToast 오류배선 + jsx-a11y 4규칙 warn→error 승격(warn=0 달성 즉시 잠금).
+- ReceiptClient(당사자 주플로우) 6필드·금액required·OCR/제출오류 announce / Onboarding·ProfileEdit 이름·bio FormField+토글그룹 fieldset+aria-pressed / applications·participants/new·NewPlan FormField+fail()오류 / ParticipantDetail·PlanDetail 인라인필드는 htmlFor/id.
+- 진행중 4규칙 위반 25→0 → eslint.config error 승격 포함(이 PR). 게이트 로컬 green: tsc 0·lint 0 errors·vitest 89/89·build.
+- 검증요청: ①FormField 기본라벨(text-sm bold zinc-700)이 기존 subtle라벨 대체=easy-read 개선 판단, UX/W5 승인 ②error 승격을 이 PR에 포함 수용?(분리 가능) ③fieldset+aria-pressed vs radiogroup 적절성 ④신규 오류문구 easy-read 선검토.
+- A3(feat/a3-contrast)와 ReceiptClient 겹침 → PR #61 먼저 랜딩 후 A3 리베이스.
+- 남음: PR-C3(파일업로드·날짜힌트·필터) PR-C4(nav·TabBar 부활). W의 GOAL축A 평가 핸드오프(evaluationTimeline RED)는 워킹트리 보존, PR#61 후 착수 가능.
+
