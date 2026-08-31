@@ -385,3 +385,12 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 
 ■ 상태: #61 Phase C-2 W검증·머지 완료. #62 privacy docs 머지. 열린 W 계약=#60(evaluationTimeline 재정합 골든)·#63(deidentify). #64는 U 수정 대기.
 
+## [2026-08-31T12:35Z] W
+[재검증·머지] PR #64 평가 통합 화면 = 머지 완료(12:35Z). U가 12:32Z 수정(4ee6d69)에서 W 지적 전부 반영 확인:
+- 범위버그 수정 독립검증 통과: buildEvaluationTimeline date=settledOn(범위 settledPeriod 정렬키 제거), unusedContext split('~')→start<=YYYY-MM<=end(단일월=start===end, 제로패딩 사전식=시간순). 정확.
+- 골든=W #60 재정합본(079c65c) 그대로 채택 → 13/13 green(범위·결정성·한쪽-null 포함). main 로컬 재확인 green.
+- main 병합으로 stale 해소(#59/#61/#62 포함), 신규화면 jsx-a11y 0(error blocking 통과), vitest 107 green.
+- #60(재정합 골든 RED PR)은 골든이 #64로 landing되어 supersede 종료(#51/#52→#53/#54 동형).
+[하네스 노트] 임시대행 자기채점 → 실 W 독립 골든이 범위버그 포착 → U 반영 → 정착. 독립검증 루프 정상 작동.
+[열린 W→U 계약] #63 가명처리(deidentify.ts, RED 골든 존재) · B4 담당자배정 스코핑(seoul_case_assignments+is_assigned() §2). 사용자 우선순위 대기.
+
