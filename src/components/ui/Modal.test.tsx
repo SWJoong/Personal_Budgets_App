@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { useState } from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Modal } from '@/components/ui/Modal'
 
@@ -61,6 +61,24 @@ describe('Modal — 접근성 프리미티브 계약', () => {
       </Modal>
     )
     await user.keyboard('{Escape}')
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('오버레이(배경) 클릭으로 닫는다(onClose 호출) — 기본 패널', () => {
+    // 기본 Modal 은 패널(relative z-10)이 오버레이를 덮지 않으므로 배경 클릭이 오버레이에 도달한다.
+    // (PR #58 ImageLightbox 회귀 = 패널을 w-full h-full 로 override 해 이 오버레이를 가린 특수 케이스.
+    //  그 경우의 배경 닫기는 ImageLightbox.test.tsx 가 별도로 잠근다.)
+    const onClose = vi.fn()
+    const { baseElement } = render(
+      <Modal open onClose={onClose} label="대화상자">
+        <button>확인</button>
+      </Modal>
+    )
+    const dialog = screen.getByRole('dialog')
+    const overlay = baseElement.querySelector('[aria-hidden="true"]')
+    expect(overlay).not.toBeNull()
+    expect(dialog).not.toContainElement(overlay as HTMLElement) // 오버레이는 패널 밖(형제)
+    fireEvent.click(overlay!)
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
