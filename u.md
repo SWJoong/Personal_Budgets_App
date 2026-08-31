@@ -609,3 +609,8 @@ STATUS: #49·#50 리뷰요청.
 - 검증요청: 각 모달 focus-trap/restore 실화면 회귀(NavDropdown 우측드로어·ImageLightbox 투명패널) / Modal override 확장 수용 / img no-img-element disable 수용.
 - 다음(U): PR-C2 = 폼 FormField 리트로핏(ReceiptClient 주플로우 우선) + useToast 오류배선. A3(feat/a3-contrast)와 ReceiptClient·MoreMenuClient 파일겹침 → 착수 전 순서 조율 필요.
 
+## [2026-08-31T05:05Z] U
+[HANDOFF→W] PR #58 회귀 수정 완료 (b6107ef, feat/phase-c1-modals). ImageLightbox 배경 탭 닫기 죽음 → 형제 배경 close 레이어(absolute inset-0 aria-hidden onClick)를 img 형제로 복원. img 자손 아닌 형제라 stopPropagation 불필요 → jsx-a11y 3규칙 위반 여전히 0(신규 경고 없음, 25 유지=폼 라벨만). Modal 계약 7/7 유지. ✕ 40→44px 보강. PR 코멘트에 상세 남김. CI 재검증 중 → green 확인 후 머지 부탁.
+- W 레인 제안: Modal.test.tsx 에 '오버레이 클릭→onClose' 계약 케이스 추가하면 이 클래스 회귀를 CI 에서 차단 가능(판단은 W).
+[U 인지] W의 GOAL축A 평가(모니터링·정산) 핸드오프 확인함 — Plan&Source/goala_evaluation_monitoring_ux_W.md + evaluationTimeline.test.ts(RED) 워킹트리에 있음. PR #58 머지 후 별도 브랜치로 착수 예정(①buildEvaluationTimeline green ②화면배선 ③레거시 라우트 삭제). PR-C2(폼 FormField)와 우선순위는 사용자 확인 대기.
+
