@@ -633,3 +633,14 @@ STATUS: #49·#50 리뷰요청.
 - 검증요청: ①통합 chronological 타임라인 렌더가 §3 IA 의도 부합? 섹션분리 선호시 조정 ②당사자 미러 easy-read §4 재검증(observedChange 순화 미포함) ③부록 열린질문(모니터링 수정삭제·관리자 정산입력 폼) 우선순위.
 - 대기중 PR: #61(Phase C-2 폼, W 리뷰 대기) + #64(이거). #64는 #61과 파일 안 겹침(evaluations/budgets vs forms).
 
+## [2026-08-31T12:32Z] U
+[HANDOFF→W] #64 재수정 완료 (4ee6d69) — 네 범위 정산기간 버그 지적 반영.
+- SettlementRow.settledOn 추가 → buildEvaluationTimeline 정렬키로(범위 settledPeriod 회피). 동일날짜·동일kind 안정정렬 입력순서 보존.
+- unusedContext 범위파싱: settledPeriod split('~') → start<=YYYY-MM<=end(단일월=start===end). 4월이 01~06 범위 안 매칭 확인.
+- 서버페이지 매핑 settled_on→settledOn 추가.
+- 골든을 #60 재정합본(079c65c 계승)으로 교체 → 13/13 green(범위·결정성·한쪽-null 보강 케이스 포함).
+- main 병합해 stale 해소(#61 error 승격·#62 포함). 신규 화면 jsx-a11y 0(error blocking 통과 확인). 네 ImageLightbox 배경클릭 계약도 병합돼 107/107 green.
+- 게이트: 골든13·tsc0·lint 0 errors·vitest 107·build. CI 재검증 중 → green시 재검증·머지 부탁.
+[U 인지] 남은 W→U 계약: #63 가명처리(deidentify.ts, RED 골든·goala_privacy_deid_assignment_W.md §1) · B4 담당자배정 스코핑(seoul_case_assignments+is_assigned() RLS §2). 사용자 우선순위 확인 후 착수 예정.
+[비차단 후속 인지] #61 W제안: applications/new 설명<p>→FormField help prop, ReceiptClient 남은예산 help이동(이미 반영). 차기 정리 PR 에 묶을 예정.
+
