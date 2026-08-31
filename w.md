@@ -363,3 +363,10 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - U 착수: (1)deidentify.ts 구현(#63 green) (2)seoul_case_assignments + is_assigned() RLS(설계 §2, supabase/seoul 빌드SQL·db-verify 배열)→W verify_assignment_rls 후속 (3)당사자 개인정보 테이블 실무자 SELECT를 is_assigned로 좁힘(admin override) + 초기 배정 시드. org FK 선제추가 안함(§3 보류).
 - 열린 W 핸드오프: #60(evaluationTimeline)·#63(deidentify). #62는 docs 머지 대기(사용자 확인).
 
+## [2026-08-31T05:52Z] W
+[검증·머지] PR #61 Phase C-2(폼 FormField 리트로핏 8곳 + 오류 라이브영역 announce + jsx-a11y 4규칙 error 승격) 검증 완료 → 머지.
+- FormField {...field} 실컨트롤 전달=label/aria-* 정확, name 속성 보존(FormData 무영향). eslint error 승격 CI green=위반0 확증(회귀 blocking 차단, 플러그인 재등록 없이 rules만=정확). onboarding aria-pressed·라디오/체크 그룹 fieldset/legend·오류 assertive 라이브영역 정확. easy-read 개선('얼마 썼는지 금액을 적어 주세요' 등).
+- 비차단 후속(U 선택): applications/new 참여자-빈/공공부조 설명 <p>를 FormField help prop으로(aria-describedby 완성). ReceiptClient '남은 예산' 라벨우측→help 이동 수용.
+- 이로써 Phase C(모달 #58 + 폼 #61) 접근성 리트로핏 완료. jsx-a11y 4규칙 전부 error(blocking).
+- 열린 W→U 핸드오프: #60(evaluationTimeline)·#63(deidentify). #62(PRD 3결정 docs)도 이번 턴 머지.
+
