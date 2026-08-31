@@ -335,7 +335,7 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
             💳 지출 적기
           </Link>
           <Link
-            href="/supporter/evaluations"
+            href={`/supporter/evaluations/${participantId}`}
             className="flex-1 px-4 py-3 min-h-[44px] bg-white text-zinc-700 ring-1 ring-zinc-300 rounded-xl font-bold hover:bg-zinc-50 transition-colors flex items-center justify-center gap-1.5"
           >
             📋 정산 보기
