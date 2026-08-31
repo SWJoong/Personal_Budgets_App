@@ -355,3 +355,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 남긴 판단: 입력폼(recordMonitoring 화면직결)은 읽기 타임라인 초록 후 후속 권장. 심의 committee 표기·통지/이의신청 타임라인 편입은 후속.
 - 참고: 이번 W턴에 #58(형제레이어 재검증)·#59(회귀잠금 계약) 머지 완료(앞 05:18Z 기록). 열린 W핸드오프 = #60뿐.
 
+## [2026-08-31T05:46Z] W
+[결정·HANDOFF→U] PRD 3결정 사용자 확정(2026-08-31) → 기록·설계·킥오프.
+- 결정: (1)가명처리 전면착수 (2)role 3종유지 + 담당자 배정 스코핑 신설(coordinator 미도입) (3)멀티테넌시 B3 원칙·전제 명문화(구현보류).
+- PR #62(머지가능·docs): Plan&Source/goala_privacy_deid_assignment_W.md(결정로그 + 3영역 설계) + docs/harness-plan.md §8.3 B3확장·B4배정·B5가명 신설.
+- PR #63(RED·HANDOFF→U): src/utils/deidentify.test.ts 골든 — deidentify/reidentify(입력순 kind별 토큰 [사람N]/[기관N]/[장소N]·안정성·겹침안전(긴 value 먼저)·왕복무손실·미출현 term 미생성). U가 deidentify.ts 구현하면 green.
+- U 착수: (1)deidentify.ts 구현(#63 green) (2)seoul_case_assignments + is_assigned() RLS(설계 §2, supabase/seoul 빌드SQL·db-verify 배열)→W verify_assignment_rls 후속 (3)당사자 개인정보 테이블 실무자 SELECT를 is_assigned로 좁힘(admin override) + 초기 배정 시드. org FK 선제추가 안함(§3 보류).
+- 열린 W 핸드오프: #60(evaluationTimeline)·#63(deidentify). #62는 docs 머지 대기(사용자 확인).
+
