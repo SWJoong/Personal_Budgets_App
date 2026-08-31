@@ -13,13 +13,13 @@ const eslintConfig = defineConfig([
     files: ["**/*.{jsx,tsx}"],
     rules: {
       ...jsxA11y.flatConfigs.recommended.rules,
-      // 진행 중 카테고리 — Phase C(FormField·Modal 리트로핏)에서 위반을 0 으로 수렴시킨 뒤 error 로 승격 예정.
-      // 지금 error 로 두면 진행 중 위반(폼 레이블·핸드롤 모달)이 CI 를 막아 #55/#56 병렬 진행을 방해하므로 warn.
-      // 나머지 recommended 규칙(현재 위반 0)은 error 로 회귀를 차단한다.
-      "jsx-a11y/label-has-associated-control": "warn",
-      "jsx-a11y/click-events-have-key-events": "warn",
-      "jsx-a11y/no-static-element-interactions": "warn",
-      "jsx-a11y/no-noninteractive-element-interactions": "warn",
+      // Phase C(#58 모달 통일 + PR-C2 폼 FormField·fieldset 리트로핏)로 아래 4규칙 위반을 0 으로 수렴 완료.
+      // → recommended 기본값(error)으로 승격해 회귀를 CI(blocking)에서 자동 차단한다.
+      // (핸드롤 모달의 오버레이 onClick·폼 레이블 미연결이 전부 프리미티브로 해소됨.)
+      "jsx-a11y/label-has-associated-control": "error",
+      "jsx-a11y/click-events-have-key-events": "error",
+      "jsx-a11y/no-static-element-interactions": "error",
+      "jsx-a11y/no-noninteractive-element-interactions": "error",
     },
   },
   // Override default ignores of eslint-config-next.

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createUtilizationPlan } from '@/app/actions/utilizationPlan'
+import { FormField } from '@/components/ui/FormField'
 
 interface Candidate {
   applicationId: string
@@ -51,19 +52,21 @@ export default function NewPlanClient({ candidates }: { candidates: Candidate[] 
         </p>
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-zinc-500 font-medium">당사자 *</label>
-            <select
-              value={applicationId}
-              onChange={(e) => setApplicationId(e.target.value)}
-              className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
-            >
-              <option value="">선택해주세요</option>
-              {candidates.map((c) => (
-                <option key={c.applicationId} value={c.applicationId}>{c.participantName}</option>
-              ))}
-            </select>
-          </div>
+          <FormField id="new-plan-application" label="당사자" required>
+            {(field) => (
+              <select
+                {...field}
+                value={applicationId}
+                onChange={(e) => setApplicationId(e.target.value)}
+                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+              >
+                <option value="">선택해주세요</option>
+                {candidates.map((c) => (
+                  <option key={c.applicationId} value={c.applicationId}>{c.participantName}</option>
+                ))}
+              </select>
+            )}
+          </FormField>
 
           <button
             onClick={handleCreate}

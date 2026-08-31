@@ -7,6 +7,8 @@ import { recordServiceUsage } from '@/app/actions/serviceUsage'
 import { analyzeReceipt } from '@/app/actions/ocr'
 import { searchPlaces, type PlaceResult } from '@/app/actions/geocode'
 import { findOrCreateProvider } from '@/app/actions/serviceProvider'
+import { FormField } from '@/components/ui/FormField'
+import { useToast } from '@/components/ui/LiveRegion'
 
 const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 
@@ -46,10 +48,12 @@ export default function ReceiptClient({
   spendingRules: string[]
 }) {
   const router = useRouter()
+  const { announce } = useToast()
   const [pending, startTransition] = useTransition()
   const [ocrLoading, setOcrLoading] = useState(false)
   const [ocrNotice, setOcrNotice] = useState('')
   const [error, setError] = useState('')
+  const [amountError, setAmountError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
@@ -82,7 +86,9 @@ export default function ReceiptClient({
       lng: place.lng,
     })
     if (result.error || !result.providerId) {
-      setError(result.error || '장소 등록에 실패했어요.')
+      const msg = result.error || '장소 등록에 실패했어요.'
+      setError(msg)
+      announce(msg, 'assertive')
       return
     }
     setSelectedPlace({ name: place.place_name, providerId: result.providerId })
@@ -97,14 +103,18 @@ export default function ReceiptClient({
     setPhoto({ base64, mimeType, previewUrl: URL.createObjectURL(file) })
 
     setOcrLoading(true)
+    announce('사진에서 내용을 읽는 중이에요.')
     try {
       const result = await analyzeReceipt(base64)
       if (result.success && result.data) {
         if (result.data.amount) setAmount(String(result.data.amount))
         if (result.data.date) setDate(result.data.date)
         if (result.data.store) setDescription(result.data.store)
+        announce('사진에서 내용을 다 읽었어요.')
       } else {
-        setOcrNotice('사진에서 내용을 읽지 못했어요. 아래 칸에 직접 입력해 주세요.')
+        const notice = '사진에서 내용을 읽지 못했어요. 아래 칸에 직접 입력해 주세요.'
+        setOcrNotice(notice)
+        announce(notice)
       }
     } finally {
       setOcrLoading(false)
@@ -115,11 +125,14 @@ export default function ReceiptClient({
     e.preventDefault()
     if (!allocationId) return
     if (!amount || Number(amount) <= 0) {
-      setError('금액을 입력해 주세요.')
+      const msg = '얼마 썼는지 금액을 적어 주세요.'
+      setAmountError(msg)
+      announce(msg, 'assertive')
       return
     }
 
     setError('')
+    setAmountError('')
     startTransition(async () => {
       const result = await recordServiceUsage({
         participantId,
@@ -134,6 +147,7 @@ export default function ReceiptClient({
       })
       if (result.error) {
         setError(result.error)
+        announce(result.error, 'assertive')
         return
       }
       setAmount('')
@@ -191,18 +205,22 @@ export default function ReceiptClient({
             )}
 
             <div className="flex flex-col gap-2">
-              <label className="text-xs text-zinc-500 font-medium">영수증 사진 (있으면 자동으로 채워줘요)</label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handlePhotoSelected(file)
-                }}
-                className="text-sm"
-              />
+              <FormField id="receipt-photo" label="영수증 사진" help="사진이 있으면 날짜·금액을 자동으로 채워줘요.">
+                {(field) => (
+                  <input
+                    {...field}
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handlePhotoSelected(file)
+                    }}
+                    className="text-sm"
+                  />
+                )}
+              </FormField>
               {photo && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photo.previewUrl} alt="영수증 미리보기" className="w-full max-h-48 object-contain rounded-xl ring-1 ring-zinc-200" />
@@ -211,46 +229,56 @@ export default function ReceiptClient({
               {!ocrLoading && ocrNotice && <p className="text-xs text-amber-600 leading-relaxed">{ocrNotice}</p>}
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500 font-medium">날짜</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
-              />
-            </div>
+            <FormField id="usage-date" label="날짜">
+              {(field) => (
+                <input
+                  {...field}
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                />
+              )}
+            </FormField>
 
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <label className="text-xs text-zinc-500 font-medium">얼마 썼어요? (원)</label>
-                {remaining !== null && (
-                  <span className="text-xs text-zinc-400">남은 예산 {won(remaining)}</span>
-                )}
-              </div>
-              <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0"
-                className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
-              />
-            </div>
+            <FormField
+              id="amount"
+              label="얼마 썼어요? (원)"
+              required
+              error={amountError || undefined}
+              help={remaining !== null ? `남은 예산 ${won(remaining)}` : undefined}
+            >
+              {(field) => (
+                <input
+                  {...field}
+                  type="number"
+                  value={amount}
+                  onChange={(e) => {
+                    setAmount(e.target.value)
+                    if (amountError) setAmountError('')
+                  }}
+                  placeholder="0"
+                  className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                />
+              )}
+            </FormField>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500 font-medium">무엇에 썼어요?</label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="예: 웹툰 학원 수강료"
-                className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
-              />
-            </div>
+            <FormField id="description" label="무엇에 썼어요?">
+              {(field) => (
+                <input
+                  {...field}
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="예: 웹툰 학원 수강료"
+                  className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                />
+              )}
+            </FormField>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500 font-medium">어디에서 썼어요? (선택)</label>
-              {selectedPlace ? (
+            {selectedPlace ? (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-bold text-zinc-700">어디에서 썼어요? (선택)</span>
                 <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-100">
                   <span className="text-sm font-bold text-zinc-700">📍 {selectedPlace.name}</span>
                   <button
@@ -261,60 +289,67 @@ export default function ReceiptClient({
                     다시 찾기
                   </button>
                 </div>
-              ) : (
-                <>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={placeQuery}
-                      onChange={(e) => setPlaceQuery(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handlePlaceSearch() } }}
-                      placeholder="장소 이름으로 찾아보세요"
-                      className="flex-1 p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={handlePlaceSearch}
-                      disabled={placeSearching}
-                      className="px-4 rounded-xl bg-zinc-200 text-zinc-700 text-sm font-bold disabled:opacity-50 min-h-[44px] min-w-[44px]"
-                    >
-                      찾기
-                    </button>
+              </div>
+            ) : (
+              <FormField id="place-search" label="어디에서 썼어요? (선택)">
+                {(field) => (
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex gap-2">
+                      <input
+                        {...field}
+                        type="text"
+                        value={placeQuery}
+                        onChange={(e) => setPlaceQuery(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handlePlaceSearch() } }}
+                        placeholder="장소 이름으로 찾아보세요"
+                        className="flex-1 p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handlePlaceSearch}
+                        disabled={placeSearching}
+                        className="px-4 rounded-xl bg-zinc-200 text-zinc-700 text-sm font-bold disabled:opacity-50 min-h-[44px] min-w-[44px]"
+                      >
+                        찾기
+                      </button>
+                    </div>
+                    {placeResults.length > 0 && (
+                      <ul className="flex flex-col gap-1 mt-1">
+                        {placeResults.map((p) => (
+                          <li key={p.id}>
+                            <button
+                              type="button"
+                              onClick={() => handlePlaceSelect(p)}
+                              className="w-full text-left p-3 rounded-xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-400 transition-all"
+                            >
+                              <span className="text-sm font-bold text-zinc-700 block">{p.place_name}</span>
+                              <span className="text-xs text-zinc-400">{p.road_address_name || p.address_name}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                  {placeResults.length > 0 && (
-                    <ul className="flex flex-col gap-1 mt-1">
-                      {placeResults.map((p) => (
-                        <li key={p.id}>
-                          <button
-                            type="button"
-                            onClick={() => handlePlaceSelect(p)}
-                            className="w-full text-left p-3 rounded-xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-400 transition-all"
-                          >
-                            <span className="text-sm font-bold text-zinc-700 block">{p.place_name}</span>
-                            <span className="text-xs text-zinc-400">{p.road_address_name || p.address_name}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </>
-              )}
-            </div>
+                )}
+              </FormField>
+            )}
 
             {requestedServices.length > 0 && (
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500 font-medium">내 계획 중 어떤 것인가요? (선택)</label>
-                <select
-                  value={requestedServiceId}
-                  onChange={(e) => setRequestedServiceId(e.target.value)}
-                  className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
-                >
-                  <option value="">고르지 않을래요</option>
-                  {requestedServices.map((rs) => (
-                    <option key={rs.id} value={rs.id}>{rs.service_name}</option>
-                  ))}
-                </select>
-              </div>
+              <FormField id="requested-service" label="내 계획 중 어떤 것인가요? (선택)">
+                {(field) => (
+                  <select
+                    {...field}
+                    value={requestedServiceId}
+                    onChange={(e) => setRequestedServiceId(e.target.value)}
+                    className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                  >
+                    <option value="">고르지 않을래요</option>
+                    {requestedServices.map((rs) => (
+                      <option key={rs.id} value={rs.id}>{rs.service_name}</option>
+                    ))}
+                  </select>
+                )}
+              </FormField>
             )}
 
             <button

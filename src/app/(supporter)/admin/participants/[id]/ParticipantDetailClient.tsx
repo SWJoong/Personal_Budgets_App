@@ -180,8 +180,9 @@ export default function ParticipantDetailClient({
               {/* 기한은 심사처가 전달하는 값이라 앱이 계산하지 않는다. 비어 있으면
                   비어 있다고 보여주고 실무자가 안내받은 날짜를 그대로 적게 한다. */}
               <div className="flex items-center gap-2 pt-2 border-t border-zinc-100">
-                <label className="text-xs text-zinc-500 font-medium shrink-0">이의신청 기한</label>
+                <label htmlFor={`appeal-due-${a.id}`} className="text-xs text-zinc-500 font-medium shrink-0">이의신청 기한</label>
                 <input
+                  id={`appeal-due-${a.id}`}
                   type="date"
                   defaultValue={a.due_on ?? ''}
                   onBlur={(e) => handleRecordDueDate(a.id, e.target.value || null)}

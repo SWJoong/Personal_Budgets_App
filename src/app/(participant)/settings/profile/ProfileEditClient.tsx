@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateProfile } from '@/app/actions/profile'
+import { FormField } from '@/components/ui/FormField'
+import { useToast } from '@/components/ui/LiveRegion'
 
 interface Props {
   profile: {
@@ -18,6 +20,7 @@ interface Props {
 
 export default function ProfileEditClient({ profile, userEmail, isAdminEmail }: Props) {
   const router = useRouter()
+  const { announce } = useToast()
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<{type: 'success' | 'error', message: string} | null>(null)
 
@@ -29,10 +32,14 @@ export default function ProfileEditClient({ profile, userEmail, isAdminEmail }: 
     try {
       const formData = new FormData(e.currentTarget)
       await updateProfile(formData)
-      setToast({ type: 'success', message: '프로필이 저장되었습니다.' })
+      const msg = '프로필이 저장되었습니다.'
+      setToast({ type: 'success', message: msg })
+      announce(msg)
       router.refresh()
     } catch (err) {
-      setToast({ type: 'error', message: err instanceof Error ? err.message : '저장 실패' })
+      const msg = err instanceof Error ? err.message : '저장 실패'
+      setToast({ type: 'error', message: msg })
+      announce(msg, 'assertive')
     } finally {
       setLoading(false)
     }
@@ -61,20 +68,22 @@ export default function ProfileEditClient({ profile, userEmail, isAdminEmail }: 
       </div>
 
       {/* Name */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-zinc-500 ml-1">이름</label>
-        <input
-          name="name"
-          type="text"
-          defaultValue={profile.name || ''}
-          className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-lg font-bold transition-all"
-          required
-        />
-      </div>
+      <FormField id="profile-name" label="이름" required>
+        {(field) => (
+          <input
+            {...field}
+            name="name"
+            type="text"
+            defaultValue={profile.name || ''}
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-lg font-bold transition-all"
+            required
+          />
+        )}
+      </FormField>
 
       {/* Role */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-zinc-500 ml-1">역할</label>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-sm font-bold text-zinc-500 ml-1 mb-2">역할</legend>
         {isAdminEmail ? (
           <div className="p-4 rounded-2xl bg-red-50 ring-1 ring-red-200">
             <input type="hidden" name="role" value="admin" />
@@ -101,19 +110,21 @@ export default function ProfileEditClient({ profile, userEmail, isAdminEmail }: 
             </label>
           </div>
         )}
-      </div>
+      </fieldset>
 
       {/* Bio */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-zinc-500 ml-1">나를 표현하는 한 마디</label>
-        <input
-          name="bio"
-          type="text"
-          defaultValue={profile.bio || ''}
-          placeholder="예: 여행을 좋아해요!"
-          className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all"
-        />
-      </div>
+      <FormField id="profile-bio" label="나를 표현하는 한 마디">
+        {(field) => (
+          <input
+            {...field}
+            name="bio"
+            type="text"
+            defaultValue={profile.bio || ''}
+            placeholder="예: 여행을 좋아해요!"
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all"
+          />
+        )}
+      </FormField>
 
       <button
         type="submit"
