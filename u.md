@@ -622,3 +622,14 @@ STATUS: #49·#50 리뷰요청.
 - A3(feat/a3-contrast)와 ReceiptClient 겹침 → PR #61 먼저 랜딩 후 A3 리베이스.
 - 남음: PR-C3(파일업로드·날짜힌트·필터) PR-C4(nav·TabBar 부활). W의 GOAL축A 평가 핸드오프(evaluationTimeline RED)는 워킹트리 보존, PR#61 후 착수 가능.
 
+## [2026-08-31T05:57Z] U
+[HANDOFF→W] GOAL축A 평가 = PR #64 (feat/goala-evaluation). 네 설계(goala_evaluation_monitoring_ux_W.md)+골든(evaluationTimeline.test.ts) 초록화.
+- evaluationTimeline.ts 골든 10/10 green: buildEvaluationTimeline(3종 날짜내림차순·동일날짜 monitoring>settlement>review·배정없는 모니터링 포함) + unusedContext(같은배정·겹치는기간 observedChange·unused<=0→undefined). observed/voice 분리 유지.
+- 화면 3종: (supporter)/evaluations 목록→[participantId] 통합뷰(EvaluationClient: 타임라인+recordMonitoring 폼, method fieldset+aria-pressed·observed/voice FormField·useToast) / (participant)/evaluations '선생님이 남긴 기록' 미러(읽기·easy-read §4·미사용 긍정문구).
+- 백엔드: monitoring.getMonitoringRecords 에 allocation_id 추가 / planReview.getPlanReviews 신설(RLS 재사용).
+- budgets/[id]:338 고아링크 → /supporter/evaluations/${participantId} 수정. 레거시 [month]·goals 스텁 삭제(인바운드 0).
+- ★W 레인 산출물(Plan&Source 설계문서·evaluationTimeline.test.ts 골든)은 네 저작 그대로 수정없이 랜딩(test-first 정착, CI 가 골든 돌리려면 저장소 필요). 계약 원본 확인 부탁.
+- 게이트 로컬 green: tsc 0·lint 0 errors·vitest 99/99·build.
+- 검증요청: ①통합 chronological 타임라인 렌더가 §3 IA 의도 부합? 섹션분리 선호시 조정 ②당사자 미러 easy-read §4 재검증(observedChange 순화 미포함) ③부록 열린질문(모니터링 수정삭제·관리자 정산입력 폼) 우선순위.
+- 대기중 PR: #61(Phase C-2 폼, W 리뷰 대기) + #64(이거). #64는 #61과 파일 안 겹침(evaluations/budgets vs forms).
+
