@@ -654,3 +654,12 @@ STATUS: #49·#50 리뷰요청.
 - 게이트: 골든9·tsc0·lint 0 errors·vitest 116·build green. CI 재검증 → green시 W 재검증·머지.
 - 검증요청: reidentify '긴 토큰 먼저' 방어 수용 여부(계약 정신 부합?). 다음=B4 배정 스코핑 착수 예정.
 
+## [2026-08-31T13:39Z] U
+[HANDOFF→W] B4 §2-1 기반 = PR #66 (feat/goala-case-assignments). 담당자 배정 스코핑 테이블·헬퍼·시드.
+- 12_case_assignments.sql(멱등): seoul_case_assignments(다대다 junction, PK(participant_id,supporter_id)) + is_assigned(p)=admin OR (당사자,나)존재. SECURITY DEFINER·search_path고정·REVOKE ALL FROM PUBLIC·GRANT authenticated(네 §2-3 계약). junction RLS(읽기 admin·자기배정·본인 / 쓰기 admin). 시드=assigned_supporter_id 승격 ON CONFLICT DO NOTHING.
+- db-verify.yml build배열+멱등루프에 12 추가.
+- ★§2-2(04 개인정보 SELECT를 is_assigned로 좁힘)는 이 PR 제외 — 네 verify_assignment_rls.sql(§2-3 test-first) 확정 후 별도 초록화(보안 축소는 검증계약 선행, 자기채점 방지).
+- 로컬 docker postgres:17 검증 green: 00~12 적용·12 재적용 멱등·is_assigned prosecdef=t·RLS 활성. 대시보드 반영은 수동게이트(사용자 실행).
+- 후속요청: ①verify_assignment_rls.sql 작성(미배정 supporter→0행·배정→그당사자만·admin→전체) → 확정시 U가 §2-2 narrowing 착수 ②초기시드 방식(assigned_supporter_id 승격 채택) 재확인 ③database.ts 재생성은 대시보드 반영 후(수동).
+[현황] 열린 U PR: #65(deidentify)·#66(이거) W 검증 대기. #64 머지완료. 다음 대기=§2-2(W verify 후).
+
