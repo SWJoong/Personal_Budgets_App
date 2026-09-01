@@ -42,11 +42,16 @@ export function reidentify(text: string, map: Record<string, string>): string
 - 빈 terms → `{ text: 원문, map: {} }`. 같은 value 중복 term → 토큰 하나.
 - `reidentify` 는 map 의 모든 토큰을 전역 복원(등장 순서 무관).
 
-### 1-3. 배선 (U)
-- `ocr.ts`: OCR 결과에서 인식된 상호/이름을 저장·표시 전 마스킹(선택). AI **입력**은 이미지라 게이트 우회 불가 —
-  이미지 최소화(영수증 crop)는 후속.
-- (향후) 요약·제안 액션: `callAI(userText)` 직전 반드시 `deidentify(userText, terms)` → 응답에 `reidentify`.
-  terms 는 해당 당사자의 이름 + 관련 기관명(조회는 액션 몫).
+### 1-3. 배선 — 선제 게이트 (사용자 확정 2026-09-01)
+현재 텍스트→AI 액션은 없다(요약·제안 미구현, `callAI` 소비자는 `ocr.ts` 뿐, 그마저 이미지+식별자 없는 프롬프트).
+게이트를 **선제로** 세워 요약·제안이 생기는 순간 가명처리가 자동 보장되게 한다:
+- **래퍼 `callAIDeidentified(userText, terms, opts)`**(U 구현 `src/utils/aiDeidentify.ts`): `deidentify → callAI →
+  reidentify` 단일 경로. 골든 `src/utils/aiDeidentify.test.ts`(W). 텍스트 AI 액션은 이 래퍼만 부른다.
+- **경계 강제 `src/utils/aiGateBoundary.test.ts`**(W): 서버 액션이 `callAI` 를 직접 import 하면 CI 실패
+  (`ocr.ts` 예외). → 우회 불가 — 요약·제안 액션은 반드시 래퍼 경유하게 강제된다.
+- `ocr.ts`: 입력이 이미지라 게이트 우회 불가·프롬프트에 식별자 없음 → 예외. OCR **결과** 텍스트의 저장·표시 전
+  마스킹은 선택 후속(영수증 crop 등).
+- 액션이 넘길 `terms` = 해당 당사자 이름 + 관련 기관명(조회는 액션 몫).
 
 ### 1-4. 그래프 노드 마스킹 (DB층 — B4 와 결합, 후속)
 - `v_seoul_graph_nodes` 의 person 라벨을, 뷰어가 그 당사자에 **배정되지 않았으면**(§2 `is_assigned`) 이름 대신
@@ -97,10 +102,12 @@ M:N(공동배정)을 택하지 않았으므로(결정 ②) **#66 채택 보류**
 
 ## U 핸드오프 체크리스트
 1. **[B5·완료]** `src/utils/deidentify.ts` 구현 → 골든 green (PR #65 머지).
-2. **[B4·정정]** 배정 스코핑은 **이미 구현됨**(§2-0). 남은 일 = `verify_assignment_rls.sql`(W 작성 완료)을
-   `db-verify.yml` verify 배열에 **1줄 추가**하고 docker:17 에서 GREEN 확인(스코핑 작동 실증). 새 테이블·RLS 축소 없음.
+2. **[B4·완료]** 배정 스코핑은 이미 구현됨(§2-0). `verify_assignment_rls.sql`(회귀잠금) + `db-verify.yml` 배선
+   완료(PR #68 머지). CI 에서 스코핑 작동 실증(A0~A4).
 3. **[B4·보류]** PR #66(`seoul_case_assignments` M:N)·04 RLS `is_assigned` 전환은 **공동배정 실요구 시까지 보류**(§2-2).
-4. **[후속]** 요약·제안 액션에 `deidentify`/`reidentify` 배선 · 그래프 노드 마스킹 뷰.
+4. **[B5·게이트]** `callAIDeidentified` 래퍼(U 구현 `src/utils/aiDeidentify.ts`) → 골든 `aiDeidentify.test.ts` green.
+   경계 `aiGateBoundary.test.ts` 가 서버 액션의 직접 `callAI` 사용 차단(§1-3). 요약·제안 액션은 래퍼 경유.
+   그래프 노드 마스킹 뷰(§1-4)는 후속.
 5. **[하지 않음]** `participants.agency_id` 등 org FK 선제 추가(§3, 보류).
 
 ## 남긴 판단 (진짜 W 복귀·후속)
