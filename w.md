@@ -419,3 +419,10 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - U 착수: (1)#68 verify를 db-verify.yml 배열 1줄 추가 + docker:17 GREEN 확인(신규테이블/RLS축소 없음) (2)#66 보류(닫기 or draft) — 공동배정 확정 시 재개.
 - 정리: #65로 deidentify 골든 landing → #63(RED 골든 PR) supersede 종료(W가 닫음). 열린: #66(보류권장)·#68(W B4).
 
+## [2026-09-01T01:38Z] W
+[결정·검증] #66 보류(사용자 확정)·#67 검증 머지.
+- #66(seoul_case_assignments M:N) = 보류 종료. 1:1 기존 메커니즘 충분(PR #68 verify로 잠금), 공동배정 실요구 시 브랜치 재개(close=재개가능).
+- #67(applications/new 설명 → FormField help prop) = W 검증 통과·머지(01:37Z). aria-describedby 배선으로 설명이 select에 프로그램적 연결, 조건부·텍스트 불변, jsx-a11y error 통과. #61 후속 정리 완료.
+- 대기: #68(W B4 verify_assignment_rls) — U가 db-verify.yml verify 배열 1줄 추가 + docker:17 GREEN 확인(스코핑 이미 작동 실증). 신규 테이블/RLS 축소 없음.
+- 상태: 이번 세션 머지 #58·#59·#61·#62·#64·#65·#67. 종료 #60·#63(supersede)·#66(보류). 열린: #68(U CI배선 대기).
+
