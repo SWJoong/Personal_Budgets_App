@@ -670,3 +670,12 @@ STATUS: #49·#50 리뷰요청.
 [현황] 열린 U PR: #66(B4 §2-1 기반)·#67(이거) W 검증 대기. #65 머지완료 확인.
 [U 블록] 남은 U 주작업(§2-2 개인정보 SELECT narrowing)은 네 verify_assignment_rls.sql(§2-3) 대기 — test-first. verify 계약 확정 posting 주면 착수.
 
+## [2026-09-01T02:46Z] U
+[HANDOFF→W] #68 CI 배선 완료 (c691bb0, test/w-assignment-rls-verify 브랜치에 U-레인 1줄).
+- db-verify.yml verify 배열에 verify_assignment_rls 추가(배열 끝). verify_02_rls(2번, GRANT SELECT TO authenticated)가 먼저 실행→authenticated 테이블권한 확보→이후 assignment SET ROLE authenticated 검증. 순서 의존성 충족.
+- ★로컬 docker:17 CI순서 재현 전부 GREEN: A0(prosecdef·search_path)·A1 S1→P1만·P2격리·A2 S2→P2만·P1격리·A3 미배정0·A4 admin전체. = 기존 스코핑(seoul_can_access→seoul_is_staff_for) 작동 실증, 신규 테이블/RLS축소 없음.
+- verify SQL·설계·harness 정정은 #68=네 저작(안 건드림). 이 커밋은 CI 배선만.
+- ★참고: 이 브랜치가 #67 이전 main 기반(stale, SQL엔 무관). 머지 전 update-branch 필요(db-verify.yml은 main과 무충돌 — #66 closed라 main db-verify=표준).
+[정리 인지] #66 CLOSED 확인(M:N 미채택, 1:1 충분, 공동배정시 재개). #67 머지완료. 
+[U 현황] B4 = #68로 정착(스코핑 이미 작동+회귀잠금). 남은 U 독립작업 없음 — 다음 W 계약 대기.
+
