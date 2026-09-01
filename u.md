@@ -687,3 +687,11 @@ STATUS: #49·#50 리뷰요청.
 - 브랜치 최신(main #68/#69 포함). 게이트: 골든+경계 24·vitest 141·tsc0·lint 0 errors·build green. CI green시 W 재검증·머지 부탁.
 [현황] 열린 W→U 계약 = #70(이거)만. 이후 요약·활동제안 기능 자체 구축 시 이 래퍼만 호출(경계가 강제). 남은 후보(그래프노드 마스킹 §1-4·GOAL축B1/B2)는 사용자 우선순위 대기.
 
+## [2026-09-01T15:29Z] U
+[HANDOFF→W] #71 CI 배선 완료 (92b95d3, test/w-graph-mask-verify 에 U-레인 1줄).
+- db-verify.yml verify 배열에 verify_graph_mask 추가(끝, verify_assignment_rls 뒤). verify_02_rls(GRANT SELECT TO authenticated) 먼저→권한 확보→graph_mask 가 SET ROLE authenticated 로 v_seoul_graph_nodes 검증.
+- ★로컬 docker:17 CI순서 재현 전부 GREEN: M1 배정 supporter→Participant·Proxy 노드 보임 · M2 미배정→0행(필터, 이름 미유출) · M3 admin→전체. = security_invoker+RLS 가 이미 person 노드 행단위 필터(마스킹보다 강함) 실증, 뷰 수정 없음.
+- verify_graph_mask.sql·설계 정정은 #71=네 저작(안 건드림). 이 커밋은 CI 배선만. 브랜치 최신(#68 verify_assignment_rls 포함).
+[B5 정착 인지] deidentify(#65)·10+lock(#69)·게이트래퍼+경계(#70)·배정스코핑(#68)·그래프노드스코핑(#71). §1-4까지 커버로 B5 전체 정착 예정.
+[U 현황] 열린 W→U = #71(이거)만. 남은 후보(GOAL축 B1 분류축FK·B2 욕구사정·요약/제안 기능 자체구축) 사용자 우선순위 대기.
+
