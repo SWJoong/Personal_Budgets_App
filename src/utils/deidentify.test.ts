@@ -86,4 +86,21 @@ describe('reidentify — 토큰 → 원문 복원 계약', () => {
     expect(text).not.toContain('아름드리')
     expect(reidentify(text, map)).toBe(original)
   })
+
+  it('★10+ 엔티티 왕복 무손실 — 두 자리 번호([사람10]·[사람11])에서도 부분파괴 없이 복원', () => {
+    // #65 에서 reidentify 가 '긴 토큰 먼저' 정렬로 방어한 케이스를 계약으로 잠근다.
+    // 닫는 괄호 `]` 덕에 현재 포맷('[사람1]')에선 '[사람10]' 부분문자열 충돌이 없지만, 이 골든은
+    // ①10 이상 번호 매김 ②대량 왕복 무손실을 고정 — 토큰 포맷이 바뀌어 충돌이 되살아나면 잡는다.
+    // 이름값은 토큰 라벨 글자(사·람·숫자)와 겹치지 않게 2글자로 고른다.
+    const names = ['철수', '영희', '민준', '서연', '도윤', '하은', '지호', '수아', '예준', '시우', '유나'] // 11명
+    const terms = names.map((n) => person(n))
+    const original = names.map((n) => `${n}님`).join(' ')
+    const { text, map } = deidentify(original, terms)
+
+    expect(Object.keys(map)).toHaveLength(11)
+    expect(map['[사람10]']).toBe('시우') // 두 자리 번호 매김
+    expect(map['[사람11]']).toBe('유나')
+    for (const n of names) expect(text).not.toContain(n) // 원문 이름이 남지 않는다
+    expect(reidentify(text, map)).toBe(original) // ★[사람1] 이 [사람10]/[사람11] 을 부수지 않고 전부 복원
+  })
 })
