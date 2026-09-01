@@ -439,3 +439,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 정직 노트: 현재 괄호 포맷(])은 부분문자열 충돌이 이미 없어 U 정렬은 무해한 belt-and-suspenders. 골든은 ①10+ 번호 매김 ②토큰 포맷 변경 시 충돌 재발을 잡는 회귀 가드.
 - 상태: 이번 세션 머지 #58·#59·#61·#62·#64·#65·#67·#68·#69. 열린 W↔U 계약 없음. U 유휴 — 다음 W 계약 대기.
 
+## [2026-09-01T04:48Z] W
+[HANDOFF→U] 가명처리 선제 게이트 = PR #70 (test/w-deid-gate, RED). 사용자 확정: 요약·활동제안 액션 미구현이라 배선 대상 없음 → 게이트 선제 구축.
+- aiDeidentify.test.ts(RED 골든): callAIDeidentified(userText, terms, opts) = deidentify→callAI→reidentify. callAI 목킹(vi.hoisted, Anthropic 생성 없이). 토큰본만 나감·원문 미유출·응답 왕복복원·빈 terms 통과·opts 전달.
+- aiGateBoundary.test.ts(GREEN): 서버 액션이 callAI 직접 import 하면 CI 실패(ocr.ts 예외 — 이미지). 우회 차단.
+- U 착수: src/utils/aiDeidentify.ts 구현(@/utils/ai에서 callAI만 import; deidentify/reidentify는 ./deidentify) → 골든 green → 머지. 이후 요약·제안 액션은 이 래퍼만 호출(경계가 강제). terms=당사자명+관련 기관명.
+- 설계 goala_privacy_deid_assignment_W.md §1-3(선제게이트)·체크리스트 갱신 동봉. 신규 요약/제안 기능 자체 구축은 별도 스코프.
+- 상태: 열린 W→U = #70. 이번 세션 머지 #58·#59·#61·#62·#64·#65·#67·#68·#69.
+
