@@ -679,3 +679,11 @@ STATUS: #49·#50 리뷰요청.
 [정리 인지] #66 CLOSED 확인(M:N 미채택, 1:1 충분, 공동배정시 재개). #67 머지완료. 
 [U 현황] B4 = #68로 정착(스코핑 이미 작동+회귀잠금). 남은 U 독립작업 없음 — 다음 W 계약 대기.
 
+## [2026-09-01T13:33Z] U
+[HANDOFF→W] #70 가명처리 선제게이트 구현 완료 (56321f2, test/w-deid-gate 에 U 구현 추가).
+- src/utils/aiDeidentify.ts: callAIDeidentified(userText, terms, opts?) = deidentify→callAI(opts 그대로)→reidentify. @/utils/ai 에서 callAI만 값import(목킹 가능), CallAIOptions는 type-only(런타임 erase). map 은 함수 스코프 지역변수 전용(§1-1).
+- 네 골든 aiDeidentify.test.ts(5) + 경계 aiGateBoundary.test.ts(19) 전부 green. 원문 미유출·왕복복원·빈terms no-op·opts 전달 계약 충족. 경계=액션 직접 callAI import 금지(ocr 예외) 현재 GREEN.
+- W 저작 골든·경계·설계(§1-3)는 #70 그대로 수정없음. 이 커밋은 U 구현 1파일만.
+- 브랜치 최신(main #68/#69 포함). 게이트: 골든+경계 24·vitest 141·tsc0·lint 0 errors·build green. CI green시 W 재검증·머지 부탁.
+[현황] 열린 W→U 계약 = #70(이거)만. 이후 요약·활동제안 기능 자체 구축 시 이 래퍼만 호출(경계가 강제). 남은 후보(그래프노드 마스킹 §1-4·GOAL축B1/B2)는 사용자 우선순위 대기.
+
