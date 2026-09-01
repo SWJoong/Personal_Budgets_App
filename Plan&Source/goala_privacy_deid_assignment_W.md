@@ -54,33 +54,33 @@ export function reidentify(text: string, map: Record<string, string>): string
 
 ---
 
-## §2. 담당자 배정 스코핑 (결정 ②)
+## §2. 담당자 배정 스코핑 (결정 ②) — ★정정: 이미 구현됨
 
-### 2-1. 테이블 · 헬퍼 (U 구현 — `supabase/seoul/` 빌드 SQL)
-```sql
-CREATE TABLE IF NOT EXISTS public.seoul_case_assignments (
-  participant_id UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
-  supporter_id   UUID NOT NULL REFERENCES public.profiles(id)     ON DELETE CASCADE,
-  assigned_on    DATE NOT NULL DEFAULT CURRENT_DATE,
-  PRIMARY KEY (participant_id, supporter_id)
-);
--- admin 은 전체, supporter 는 배정된 당사자만. SECURITY DEFINER + search_path 고정.
-CREATE OR REPLACE FUNCTION public.is_assigned(p_participant UUID) RETURNS boolean ...
-```
-- `is_assigned(p)` = 현재 사용자가 **admin** 이면 true; **supporter** 면 `seoul_case_assignments(p, auth.uid())` 존재; 아니면 false.
-- 당사자 본인 접근은 기존 self 정책 유지(이 헬퍼는 실무자 경로에만 덧댐).
+### 2-0. 실측 정정 (실 W, 2026-09-01)
+원안은 신규 M:N `seoul_case_assignments` + `is_assigned()` 를 제안했으나, **실측 결과 배정 스코핑은 이미
+구현·작동 중**이다. 신규 테이블 없이:
+- `participants.assigned_supporter_id`(01_core §7 · 1:1 FK·인덱스·시드)
+- `seoul_is_staff_for(p)` = `admin OR assigned_supporter_id = auth.uid()`(01_core:310) — `is_assigned` 의 1:1 판
+- `seoul_can_access(p)` = `self OR seoul_is_staff_for(p)`(01_core:324)
+- **04_seoul_rls 당사자 개인정보 SELECT = 전부 `seoul_can_access(participant_id)`**, `participants_select`(02_core:38)=`seoul_can_access(id)` → **실무자는 이미 배정된 당사자만 열람.**
 
-### 2-2. 적용 (U — 04_seoul_rls 대조)
-- 당사자 개인정보 테이블의 **실무자 SELECT** 정책을 `is_assigned(participant_id)` 로 좁힘:
-  `participants` · `seoul_monitoring_records` · `seoul_utilization_plans` · `seoul_budget_allocations` ·
-  `transactions`/`seoul_service_usages` 등(정확 목록·컬럼은 U 가 04 대조). admin 은 override 로 전체.
-- **초기 시드**: 현재 전원 열람 운영 → 도입 시 기존 담당관계를 `seoul_case_assignments` 에 시드하지 않으면
-  실무자 화면이 빈다. 마이그레이션에 시드(또는 관리자 배정 화면 선행). **운영 마찰 주의**(대직 커버 = admin 대행/임시 배정).
+PRD 리뷰의 "모든 실무자가 모든 당사자 열람"(검토보고서 ⑥)은 **리빌드 이전 옛 상태**였고 seoul 빌드가 이미
+고쳤다. → 결정 ②의 실질 남은 일 = **이 동작을 회귀로부터 잠그는 verify** 뿐. (이 정정을 놓치고 원안대로
+핸드오프했으면 U가 중복 테이블을 만들 뻔했다 — 핸드오프 직전 실측의 가치.)
 
-### 2-3. verify 계약 (W 후속 — `Plan&Source/ontology/seoul/verify_assignment_rls.sql`)
-- `is_assigned` prosecdef=true · search_path 고정 · `REVOKE ALL FROM PUBLIC` · admin 전체 가시.
-- 미배정 supporter 가 타인 당사자 SELECT → **0행**. 배정 supporter → 그 당사자만. admin → 전체.
-- graph 노드 마스킹(§1-4) 도입 시 같은 파일에 마스킹 케이스 추가.
+### 2-1. W 조치 — 회귀 잠금 verify (작성됨)
+`Plan&Source/ontology/seoul/verify_assignment_rls.sql`: 지원자3(배정2·미배정1)+관리자+당사자2 시드로
+**교차 supporter 격리**를 잠근다 — 배정=자기 당사자만·타인 격리(A1b·A2b), 미배정=0행(A3), admin=전체(A4),
+`seoul_is_staff_for` prosecdef·search_path(A0). 기존 메커니즘에 대해 **GREEN이어야 정상**(스코핑 작동 실증).
+U는 `db-verify.yml` verify 배열에 1줄 추가만(구현 변경 없음).
+
+### 2-2. PR #66 (M:N 확장) — 채택 보류
+U가 원안대로 `seoul_case_assignments`(M:N junction) + `is_assigned()` 를 #66으로 구현(additive·멱등, 04 RLS
+축소는 이 verify 확정까지 보류 — 규율 좋음). 그러나 2-0 로 1:1 기존 메커니즘이 이미 충분하고 사용자가 지금
+M:N(공동배정)을 택하지 않았으므로(결정 ②) **#66 채택 보류**. 사유: 배정 소스 이중화(`assigned_supporter_id`
+↔ `seoul_case_assignments` 드리프트 위험) · 미배선 junction(죽은 코드).
+→ **공동배정(참여자당 복수 담당자)이 실제 요구가 되면** #66 을 되살려 04 RLS 를 `is_assigned` 로 전환(§3 멀티테넌시
+확장과 같은 계층에서). 그때 graph 노드 마스킹(§1-4)도 같은 verify 에 케이스 추가.
 
 ---
 
@@ -96,10 +96,10 @@ CREATE OR REPLACE FUNCTION public.is_assigned(p_participant UUID) RETURNS boolea
 ---
 
 ## U 핸드오프 체크리스트
-1. **[B5·즉시]** `src/utils/deidentify.ts` 구현 → 골든 `deidentify.test.ts` green.
-2. **[B4·DB]** `seoul_case_assignments` + `is_assigned()` → `supabase/seoul/` 빌드 SQL(멱등). `db-verify` build 배열 반영.
-   초기 배정 시드 or 관리자 배정 화면. → W `verify_assignment_rls.sql` 작성 후 수동적용 게이트.
-3. **[B4·04 RLS]** 당사자 개인정보 테이블 실무자 SELECT 를 `is_assigned` 로 좁힘(admin override).
+1. **[B5·완료]** `src/utils/deidentify.ts` 구현 → 골든 green (PR #65 머지).
+2. **[B4·정정]** 배정 스코핑은 **이미 구현됨**(§2-0). 남은 일 = `verify_assignment_rls.sql`(W 작성 완료)을
+   `db-verify.yml` verify 배열에 **1줄 추가**하고 docker:17 에서 GREEN 확인(스코핑 작동 실증). 새 테이블·RLS 축소 없음.
+3. **[B4·보류]** PR #66(`seoul_case_assignments` M:N)·04 RLS `is_assigned` 전환은 **공동배정 실요구 시까지 보류**(§2-2).
 4. **[후속]** 요약·제안 액션에 `deidentify`/`reidentify` 배선 · 그래프 노드 마스킹 뷰.
 5. **[하지 않음]** `participants.agency_id` 등 org FK 선제 추가(§3, 보류).
 
