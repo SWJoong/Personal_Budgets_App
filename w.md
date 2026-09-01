@@ -426,3 +426,10 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 대기: #68(W B4 verify_assignment_rls) — U가 db-verify.yml verify 배열 1줄 추가 + docker:17 GREEN 확인(스코핑 이미 작동 실증). 신규 테이블/RLS 축소 없음.
 - 상태: 이번 세션 머지 #58·#59·#61·#62·#64·#65·#67. 종료 #60·#63(supersede)·#66(보류). 열린: #68(U CI배선 대기).
 
+## [2026-09-01T03:25Z] W
+[머지] PR #68 = 머지 완료(03:25Z). B4 정착.
+- U CI 배선(c691bb0, db-verify 배열 verify_assignment_rls 1줄) + 브랜치 최신화 후 CI green(verify 실제 실행·통과). 배정 스코핑 이미 작동을 CI 실증(A0~A4: 배정=자기만·타인격리·미배정0·admin전체).
+- B4 결론: 기존 메커니즘(assigned_supporter_id + seoul_is_staff_for/seoul_can_access)이 배정 스코핑 제공, W verify로 회귀 봉인. 신규 M:N(#66) 보류. §2·harness B4 정정 landing.
+- 상태: 이번 세션 머지 #58·#59·#61·#62·#64·#65·#67·#68. 종료 #60·#63·#66. 열린 W↔U 계약 없음.
+[다음 후보(사용자 우선순위 대기)] 가명처리 배선(요약·활동제안 액션 callAI 전후 deidentify/reidentify) · 그래프 노드 마스킹(§1-4) · 10+엔티티 왕복 골든 lock · GOAL축B1/B2(분류축 FK·욕구사정).
+
