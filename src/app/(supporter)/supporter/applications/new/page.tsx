@@ -146,27 +146,25 @@ export default function NewApplicationPage() {
           <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200">
             <legend className="text-xs font-black text-zinc-400 uppercase tracking-widest px-1">신청 정보</legend>
 
-            <FormField id="app-participant" label="당사자" required>
+            <FormField
+              id="app-participant"
+              label="당사자"
+              required
+              help={participants.length === 0 ? '등록된 당사자가 없어요. 먼저 당사자 관리에서 등록해주세요.' : undefined}
+            >
               {(field) => (
-                <>
-                  <select
-                    {...field}
-                    value={participantId}
-                    onChange={(e) => setParticipantId(e.target.value)}
-                    className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
-                    required
-                  >
-                    <option value="">선택해주세요</option>
-                    {participants.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                  {participants.length === 0 && (
-                    <p className="text-[11px] text-zinc-400 leading-relaxed mt-1">
-                      등록된 당사자가 없어요. 먼저 당사자 관리에서 등록해주세요.
-                    </p>
-                  )}
-                </>
+                <select
+                  {...field}
+                  value={participantId}
+                  onChange={(e) => setParticipantId(e.target.value)}
+                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                  required
+                >
+                  <option value="">선택해주세요</option>
+                  {participants.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
               )}
             </FormField>
 
@@ -204,25 +202,23 @@ export default function NewApplicationPage() {
           <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200">
             <legend className="text-xs font-black text-zinc-400 uppercase tracking-widest px-1">수급 현황</legend>
 
-            <FormField id="app-public-assistance" label="공공부조 수급현황">
+            <FormField
+              id="app-public-assistance"
+              label="공공부조 수급현황"
+              help="기초생활수급·차상위는 본인부담금이 면제됩니다. 비워 두면 예산 승인 시 '확인 전'으로 남고, 당사자 화면에도 그렇게 표시됩니다."
+            >
               {(field) => (
-                <>
-                  <select
-                    {...field}
-                    value={publicAssistance}
-                    onChange={(e) => setPublicAssistance(e.target.value as PublicAssistance | '')}
-                    className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
-                  >
-                    <option value="">아직 확인 못함</option>
-                    <option value="basic_livelihood">기초생활수급</option>
-                    <option value="near_poor">차상위(조건부수급)</option>
-                    <option value="none">해당없음</option>
-                  </select>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed mt-1">
-                    기초생활수급·차상위는 본인부담금이 면제됩니다. 비워 두면 예산 승인 시
-                    &lsquo;확인 전&rsquo;으로 남고, 당사자 화면에도 그렇게 표시됩니다.
-                  </p>
-                </>
+                <select
+                  {...field}
+                  value={publicAssistance}
+                  onChange={(e) => setPublicAssistance(e.target.value as PublicAssistance | '')}
+                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                >
+                  <option value="">아직 확인 못함</option>
+                  <option value="basic_livelihood">기초생활수급</option>
+                  <option value="near_poor">차상위(조건부수급)</option>
+                  <option value="none">해당없음</option>
+                </select>
               )}
             </FormField>
 
