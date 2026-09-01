@@ -411,3 +411,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [다음 W→U] B4 담당자배정 스코핑(seoul_case_assignments + is_assigned() RLS §2) — U가 #63 다음 착수 예정.
 [상태] 이번 세션 머지: #58·#59·#61·#62·#64·#65. 열린 W→U: B4(설계 있음, 골든/verify 후속). 가명처리·평가 화면 계약 정착 완료.
 
+## [2026-09-01T01:33Z] W
+[검증결과·B4 정정] 사용자 결정 "verify 잠금 + 문서 정정" 실행. ★핸드오프 직전 실측: 배정 스코핑 이미 구현·작동 중.
+- 근거: participants.assigned_supporter_id + seoul_is_staff_for(admin OR 배정)(01_core:310) + seoul_can_access(self OR staff_for). 04_seoul_rls 개인정보 SELECT 전부 seoul_can_access(participant_id), participants_select도 동일 → 실무자는 이미 배정된 당사자만. 검토보고서 ⑥"전원 열람"은 리빌드 이전 상태.
+- W 조치 = PR #68: verify_assignment_rls.sql(교차 supporter 격리 회귀잠금 — 배정=자기만·타인격리 A1b/A2b, 미배정 0행 A3, admin 전체 A4, seoul_is_staff_for prosecdef A0. 기존 메커니즘에 GREEN이어야 정상=스코핑 작동 실증) + goala_privacy_deid §2 정정 + harness B4 정정.
+- ★#66(seoul_case_assignments M:N + is_assigned) = 채택 보류 권장. 1:1 기존이 이미 충분·사용자 M:N 미채택(결정 ②). 이중 배정소스 드리프트·미배선 junction 죽은코드 우려. 공동배정 실요구 시 되살려 04 RLS를 is_assigned로 전환.
+- U 착수: (1)#68 verify를 db-verify.yml 배열 1줄 추가 + docker:17 GREEN 확인(신규테이블/RLS축소 없음) (2)#66 보류(닫기 or draft) — 공동배정 확정 시 재개.
+- 정리: #65로 deidentify 골든 landing → #63(RED 골든 PR) supersede 종료(W가 닫음). 열린: #66(보류권장)·#68(W B4).
+
