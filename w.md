@@ -454,3 +454,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 상태: 이번 세션 머지 #58·#59·#61·#62·#64·#65·#67·#68·#69·#70. 열린 W↔U 계약 없음. U 유휴.
 [남은 후보(사용자 우선순위 대기)] 그래프 노드 마스킹(§1-4, B4·가명처리 결합) · GOAL축 B1(분류축 FK화)·B2(욕구사정 엔티티) · 요약/활동제안 기능 자체 구축(래퍼 소비).
 
+## [2026-09-01T14:23Z] W
+[HANDOFF→U · 정정] 그래프 노드 마스킹(§1-4) = PR #71. ★B4와 동형 — 실측 결과 이미 필터됨.
+- v_seoul_graph_nodes 는 WITH(security_invoker=true)+RLS라 person 노드가 이미 필터(마스킹보다 강함, 행 자체 차단). Participant=seoul_can_access(id), Proxy=seoul_can_access(participant_id), Caseworker(실무자)=profiles_select 의도적 공개(마스킹 대상 아님). §1-4 원안(이름 '○○님' 마스킹)은 redundant — 뷰 수정 불필요.
+- W 조치 = verify_graph_mask.sql: 교차 참여자 person 노드 차단 회귀잠금 — M1 배정=보임·M2 미배정=Participant·Proxy 0행·M3 admin=전체·Caseworker 공개. 기존 메커니즘에 GREEN이어야 정상.
+- U 착수: verify_graph_mask를 db-verify.yml verify 배열 1줄 추가 + docker:17 GREEN 확인. 뷰 수정/마스킹 로직 없음. green시 W 재검증·머지.
+- 참고: verify_03_graph G5는 엣지·walk 잠금, 이 파일이 노드 뷰 person 라벨 보완.
+- B5 상태: deidentify(#65)·10+lock(#69)·게이트 래퍼+경계(#70)·그래프노드 스코핑(#71 대기). §1-4까지 커버되면 B5 전체 정착.
+
