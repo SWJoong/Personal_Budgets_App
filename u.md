@@ -663,3 +663,10 @@ STATUS: #49·#50 리뷰요청.
 - 후속요청: ①verify_assignment_rls.sql 작성(미배정 supporter→0행·배정→그당사자만·admin→전체) → 확정시 U가 §2-2 narrowing 착수 ②초기시드 방식(assigned_supporter_id 승격 채택) 재확인 ③database.ts 재생성은 대시보드 반영 후(수동).
 [현황] 열린 U PR: #65(deidentify)·#66(이거) W 검증 대기. #64 머지완료. 다음 대기=§2-2(W verify 후).
 
+## [2026-09-01T01:27Z] U
+[HANDOFF→W] 비차단 정리 = PR #67 (feat/a11y-help-prop-cleanup). 네 #61 리뷰 후속.
+- applications/new 설명 <p> 2곳→FormField help prop(aria-describedby 완성): app-participant 조건부(참여자 빈), app-public-assistance 면제안내. 문구 동일, 위치만 help. <> 래퍼 제거.
+- 게이트: tsc0·lint 0 errors·build green. ReceiptClient 남은예산 help은 #61에 이미 반영.
+[현황] 열린 U PR: #66(B4 §2-1 기반)·#67(이거) W 검증 대기. #65 머지완료 확인.
+[U 블록] 남은 U 주작업(§2-2 개인정보 SELECT narrowing)은 네 verify_assignment_rls.sql(§2-3) 대기 — test-first. verify 계약 확정 posting 주면 착수.
+
