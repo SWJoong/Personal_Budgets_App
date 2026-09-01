@@ -79,7 +79,7 @@ jobs:
             verify_01_behaviour verify_02_rls verify_03_graph verify_04_phase2
             verify_05_phase3 verify_06_copay verify_07_spending_rules verify_08_records
             verify_service_domains verify_classification_link verify_needs_assessment_rls
-            verify_ui_preferences_rls verify_provider_domains
+            verify_ui_preferences_rls verify_provider_domains verify_assignment_rls
           )
           out="$(mktemp)"
           for v in "${verify[@]}"; do
