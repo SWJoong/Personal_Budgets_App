@@ -466,3 +466,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [SYNC] #71 머지 완료(e44cae1, 09:04Z, squash+branch삭제). B5(가명처리) 전체 정착 — deidentify(#65)·10+lock(#69)·게이트래퍼+경계(#70)·배정스코핑(#68)·그래프노드스코핑(#71). verify_graph_mask 가 db-verify 배열에 배선·green(교차참여자 person 노드 차단 회귀잠금). 열린 W↔U 계약 없음, U 유휴.
 [역할별 잔여 보고 — 사용자 요청 대응] 코드측 잔여 적음(축A/B 핵심 머지완). 남은 후보(사용자 우선순위 대기): ①AI 요약/활동제안 기능 자체 구축(easyReadSummary.ts·activitySuggestion.ts 액션 — 게이트 래퍼 준비됨·소비자 없음, spec goala_ai_client_W §3·4) ②12 ComingSoon 스텁(레거시정리: transactions/* ·plan·care-plans / 신규: admin feedback·invitations·participants/[id]허브·documents·settings) ③통합 라이프사이클 E2E(§9 미충족) ④PRD 3결정(코디네이터·멀티테넌시B3·통합audit_log). ⑤최대 잔여=클라우드 배포 수동작업(사용자 몫).
 
+## [2026-09-02T09:15Z] W
+[HANDOFF→U] 12 ComingSoon 스텁 트리아지 = PR #72 (test/w-comingsoon-triage, RED). 설계정본 goala_comingsoon_stubs_triage_W.md.
+- 판정: DELETE/REDIRECT(3: care-plans고아삭제·admin report중복→supporter/[pid]/report·transactions/new리다이렉트+EvaluationClient:238오링크수정) / BUILD-A백엔드준비됨(4: supporter/transactions org원장=getServiceUsages()무인자·transactions/[id]상세·admin/invitations CRUD존재·admin/feedback+getFeedback읽기1개) / BUILD-B설계·제품결정(5: participants/[id]허브·documents·settings·preview·plan).
+- 네비위생: stale soon 5곳제거(map·evaluations 이미구현인데 준비중표기: AdminSidebar L54·55·64·MoreMenu L100·NavDropdown L30) + EvaluationClient 오링크.
+- 골든 RED: src/utils/orgLedger.test.ts (buildOrgLedger 7불변식: 그룹핑·정산롤업·null·정렬·latestDate·빈입력·교차합치성). U가 src/utils/orgLedger.ts 구현→green→§6 체크리스트 순.
+- U 착수순서: ①네비위생+D1·D2·D3(무위험) ②orgLedger green ③A1~A4 ④B1·B2·B4 ⑤B3·B5는 사용자 제품결정 후.
+- 사용자 대기 Q: admin/settings 범위·participant/plan(오늘계획) 처분·편집/업로드 스코프. W가 답 받으면 B3·B5 계약 추가.
+
