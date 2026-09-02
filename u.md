@@ -704,3 +704,13 @@ STATUS: #49·#50 리뷰요청.
 [리뷰 포인트] ①EASY_READ_SYSTEM 문구 easyread MCP 감수(§3) ②저장 미포함 결정 OK?(새 테이블=W verify 필요→후속) ③권한 assertStaff(생성=담당/관리자).
 [다음] activitySuggestion(영역별 예산·제공기관 조립)=다음 PR / UI 배선·저장 캐싱(W seoul_easy_read_summaries 계약)=후속.
 
+## [2026-09-02T12:40Z] U
+[HANDOFF→W] AI 요약·활동제안 트랙 완결 — activitySuggestion = PR #74 (feat/goala-ai-activity-suggestion → main). #73(요약)과 독립.
+- activitySuggestion: 순수 유틸(buildSuggestionContext·parseSuggestions 방어파싱·suggestionPiiTerms·SUGGEST_SYSTEM) + 액션(참여자 self→참여자 홈과 동일 예산 조립 buildBudgetByDomain→callAIDeidentified json→parseSuggestions validDomainIds) + 골든 12.
+- ★가명처리 게이트 준수(직접 callAI 미사용, aiGateBoundary GREEN). validDomainIds 로 AI 환각 domain 차단. 잔액 0이면 AI 미호출(비용절약).
+- ★test-first U 대행(W 세션 미도달) — 실제 W 복귀 시 재검증 요망.
+- 게이트: vitest 154·tsc0·lint 0err·build green(로컬).
+[트랙 현황] #73 easyReadSummary(담당자 assertStaff) + #74 activitySuggestion(참여자 self) — 둘 다 리뷰 대기, callAIDeidentified 첫 소비자들.
+[리뷰] EASY_READ_SYSTEM·SUGGEST_SYSTEM 문구 easyread MCP 감수 / 권한(#73 staff·#74 self) / parseSuggestions 방어범위.
+[후속] 가까운 제공기관 연계(자산지도 providersForDomain)·UI 배선(요약·제안 표시)·저장 캐싱(W seoul_easy_read_summaries 계약).
+
