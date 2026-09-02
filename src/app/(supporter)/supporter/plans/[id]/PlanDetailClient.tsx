@@ -15,6 +15,7 @@ import {
   createReviewCommittee,
   type ReviewCommitteeRow,
 } from '@/app/actions/planReview'
+import EasyReadSummary from './EasyReadSummary'
 
 interface SelfNarrative {
   strengths_talents: string | null
@@ -371,6 +372,8 @@ export default function PlanDetailClient({
           ))
         )}
       </section>
+
+      <EasyReadSummary planId={planId} />
 
       {/* 작성 중일 때만 저장·제출. 제출하면 심의 대기(submitted)로 넘어간다. */}
       {isDraft && (
