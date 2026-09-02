@@ -97,7 +97,6 @@ export default function MoreMenuClient({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <SoonBadge />
                 <span aria-hidden="true" className="text-2xl">▸</span>
               </div>
             </Link>
