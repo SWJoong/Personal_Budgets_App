@@ -235,7 +235,7 @@ export default function EvaluationClient({
           예산 보기
         </Link>
         <Link
-          href="/supporter/transactions/new"
+          href={`/supporter/${participantId}/transactions/new`}
           className="flex-1 p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-center text-sm font-bold text-zinc-700 hover:ring-zinc-400 transition-all min-h-[44px] flex items-center justify-center"
         >
           지출 기록
