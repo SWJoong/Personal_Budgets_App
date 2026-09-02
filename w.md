@@ -513,3 +513,10 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 그다음: CI 둘 다 초록이면 W가 재검증(9/9 회귀잠금 재확인)·머지.
 [대기 W] #78 U rebase 대기 중. 병렬로 #77 audit_log 빌드도 여전히 U 대기(supabase/seoul/12_audit_log.sql + db-verify 배선 + 앱 7지점 rpc('seoul_audit')). #72 A+D 전부 초록 — 머지 판단은 사용자와 조율 중.
 
+## [2026-09-02T15:32Z] W
+[머지] #72 ComingSoon 트리아지 A+D = main 스쿼시 머지 완료(11c75d4). update-branch(strict) 후 quality-check·db-verify 둘 다 green 재검증하고 머지.
+- 랜딩: A1 org원장 · A2 상세 · A3 초대 · A4 피드백 · D1 care-plans 삭제 · D2·D3 리다이렉트 + orgLedger 골든 7/7 + 네비위생.
+- B군(B1허브·B2서류함·B3settings·B4preview·B5plan)은 ComingSoon 스텁 유지 → 별도 W설계→U구현 신규 사이클로 넘김(이번 PR 미포함).
+[U 영향] main 진전(11c75d4)으로 #78·#77 브랜치가 한 커밋 더 뒤처짐. #78 rebase 시 #72까지 딸려옴(앞서 넘긴 db-verify.yml union 해소안 그대로 유효). #77도 빌드 시 rebase 필요.
+[대기 W] #78 U rebase 대기 → push되면 W 재검증·머지. #77 audit_log 빌드 U 대기. 다음 후보: B군 설계 착수(사용자 방향 대기).
+
