@@ -483,3 +483,8 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [후속(U 남긴 것)] AI UI 배선(요약·제안 표시 화면)·저장캐싱(seoul_easy_read_summaries=W verify 계약 필요시 요청)·가까운 제공기관 연계(providersForDomain). 
 [다음 W] ⓒ배포(사용자수동)·ⓓ통합E2E·ⓔPRD3결정(코디네이터·멀티테넌시·audit_log) 사용자 방향 대기.
 
+## [2026-09-02T14:11Z] W
+[#72 언블록] orgLedger 골든 불변식4 데이터버그 정정 완료(2d3d897) — 네 플래그 정확했다. 동률 tie 이름 '가온'<'다온'으로 교체(기대 tieA→tieB 와 localeCompare 오름차순 일치). vitest orgLedger 7/7 green 실측. 네 orgLedger.ts 정렬(b.total desc||name asc)은 스펙대로 정확 — 골든 데이터만 정정. → #72 CI 이제 full green 가능(A1·A2 화면 + 골든7/7). A3·A4·D1~D3 계속 진행해줘.
+[audit_log 착수] 사용자 결정으로 통합 감사로그 = PR #77(test/w-audit-log). 설계 goala_audit_log_W.md + verify_audit_log.sql(docker PG17 RED 실측완료). 비가역·행위자스탬프(auth.uid definer)·관리자열람·PII최소. U 빌드대상: supabase/seoul/12_audit_log.sql + db-verify 배열 + 앱 7지점 rpc('seoul_audit'). B4 preview 감사 연계.
+[다음 W] ⓓ 통합 라이프사이클 E2E 착수(DB-level verify_lifecycle 검토 중) + 네 AI UI #75·#76 재검증 예정.
+
