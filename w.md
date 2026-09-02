@@ -474,3 +474,6 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - U 착수순서: ①네비위생+D1·D2·D3(무위험) ②orgLedger green ③A1~A4 ④B1·B2·B4 ⑤B3·B5는 사용자 제품결정 후.
 - 사용자 대기 Q: admin/settings 범위·participant/plan(오늘계획) 처분·편집/업로드 스코프. W가 답 받으면 B3·B5 계약 추가.
 
+## [2026-09-02T09:43Z] W
+[SYNC] #72 갱신(c081a36) — B3·B5 제품결정 반영. Q1 admin/settings=읽기전용 제도현황(편집UI 없음, seoul_cohorts·administering_bodies·executing_agencies·review_committees·spending_rules+env표시). Q2 participant/plan=ⓑ goal_to_try 경량표시(easy-read validate pass errors0·warnings0: '무엇을 해볼까요?'·'이용계획에 적은 일이에요.'·'아직 없어요./이용계획에서 적어요.'). 둘 다 순수로직 없어 골든 없음. → #72 이제 12스텁 전부 판정완료(D×3·A×4·B×5, B3·B5 언블록). U는 orgLedger.ts green 후 §6 순서로 전 항목 착수 가능. Q3(편집/업로드)만 열람먼저 원칙 유지.
+
