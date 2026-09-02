@@ -2,24 +2,13 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getServiceUsages } from '@/app/actions/serviceUsage'
+import { settlementLabel, settlementStyle } from '@/utils/settlementStatus'
 
 /**
  * 거래장부 (GOAL축 A) — 당사자의 지출(seoul_service_usages) 목록. 실무자·본인 열람.
  * (기존 ComingSoon 스텁 대체. 지출 기록 폼(/new)·영수증·분류(domain) 연결은 이후 단계.)
+ * 정산상태 라벨·스타일은 org 원장과 공용 모듈 settlementStatus.ts 로 통일.
  */
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: '정산 대기',
-  accepted: '정산 완료',
-  rejected: '반려',
-  recovered: '환수',
-}
-const STATUS_STYLE: Record<string, string> = {
-  pending: 'bg-zinc-100 text-zinc-600',
-  accepted: 'bg-emerald-50 text-emerald-700',
-  rejected: 'bg-red-50 text-red-600',
-  recovered: 'bg-amber-50 text-amber-700',
-}
 
 function won(n: number): string {
   return n.toLocaleString('ko-KR') + '원'
@@ -90,11 +79,9 @@ export default async function TransactionsPage({ params }: { params: Promise<{ p
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   <span className="font-bold">{won(Number(u.amount))}</span>
                   <span
-                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                      STATUS_STYLE[u.settlement_status] ?? 'bg-zinc-100 text-zinc-600'
-                    }`}
+                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${settlementStyle(u.settlement_status)}`}
                   >
-                    {STATUS_LABEL[u.settlement_status] ?? u.settlement_status}
+                    {settlementLabel(u.settlement_status)}
                   </span>
                 </div>
               </li>
