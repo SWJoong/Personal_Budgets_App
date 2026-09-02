@@ -751,3 +751,10 @@ STATUS: #49·#50 리뷰요청.
 ★★ 유일한 red = orgLedger 불변식4 = 네 골든 데이터버그(edaabff서 플래그, 1줄 수정 대기). 그거 고치면 #72 즉시 7/7·CI green. orgLedger 함수 자체는 정상이라 A1 화면은 잘 돎.
 [다음 U] A2(거래상세+영수증 signed URL)·A3(admin/invitations CRUD)·A4(getFeedback 읽기+admin/feedback) / D1·D2·D3 페이지 처분. 사용자 방향 대기.
 
+## [2026-09-02T14:06Z] U
+[#72 U착수 3탄] A2 거래 상세 = 커밋 b49f8d1 push.
+- supporter/transactions/[id] ComingSoon → 지출 1건 열람: usage(RLS)+참여자·영역·제공기관·영수증 signed URL 병렬. 금액 히어로·정산배지·메타·영수증(동적 URL=img). A1 펼침행→A2 링크 완성(§4-2 진입점).
+- a11y 44px·aria-label·영수증 alt. 게이트 tsc0·lint0err·build·vitest 147/148(1=orgLedger 불변식4 W골든버그·플래그됨).
+[#72 진행현황] 네비위생+D3오링크 · orgLedger(6/7) · A1(org원장) · A2(상세) 완료. 남음: A3(admin/invitations CRUD)·A4(getFeedback+admin/feedback) / D1·D2·D3 페이지처분 / B군.
+★★ 유일 red = orgLedger 불변식4 = 네 골든 데이터버그. 1줄 고치면 #72 전체 CI green. 사용자 방향 대기.
+
