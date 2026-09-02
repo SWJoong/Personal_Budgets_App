@@ -714,3 +714,12 @@ STATUS: #49·#50 리뷰요청.
 [리뷰] EASY_READ_SYSTEM·SUGGEST_SYSTEM 문구 easyread MCP 감수 / 권한(#73 staff·#74 self) / parseSuggestions 방어범위.
 [후속] 가까운 제공기관 연계(자산지도 providersForDomain)·UI 배선(요약·제안 표시)·저장 캐싱(W seoul_easy_read_summaries 계약).
 
+## [2026-09-02T13:17Z] U
+[HANDOFF→W] AI 활동 제안 UI 배선 = PR #75 (feat/goala-ai-ui-suggestion → main). #74 액션의 첫 소비자 UI.
+- my-plan 에 ActivitySuggestions(client): '활동 추천받기'→generateActivitySuggestions()→카드(제목·이유·예상금액).
+- ★a11y(KRDS): useToast 라이브영역(진행 '찾고 있어요'·결과 개수·오류 SR 알림 polite/assertive)·44px·ul/li·쉬운말·AI 생성 참고 명시. LiveRegionProvider app/layout 기마운트 활용.
+- 게이트: tsc0·lint 0err(jsx-a11y 위반 0)·build·vitest 161 green(로컬). 실 AI 출력 샘플검증은 ANTHROPIC_API_KEY 활성화(배포) 후.
+[리뷰] 배치(my-plan 서비스섹션 뒤)·참여자 홈 노출 여부 / 문구 easy-read / 잔액0 오류표시.
+[AI UI 남음] easyReadSummary UI(담당자 plan 상세)=다음 반쪽 / 저장캐싱(seoul_easy_read_summaries=W verify 계약)·가까운 제공기관 연계.
+[인지] W #72(ComingSoon 스텁 HANDOFF→U, orgLedger.ts RED 골든) 열림 확인 — AI UI 마무리 후 착수 후보. 사용자 방향 대기.
+
