@@ -169,12 +169,48 @@
   (계약 = 읽기 쿼리 + 표시). 진입점: AdminSidebar `시스템 설정`(soon 제거).
 - **주의**: env 값(도메인·슈퍼관리자)은 **표시만**, 절대 편집/전송 안 함. 슈퍼관리자 이메일은 부분 마스킹.
 
-### 4-8. `admin/participants/[id]/preview` — 당사자 뷰 미리보기 (B4)
-- **범위**: 관리자가 특정 당사자의 홈을 **그 사람 눈으로** 확인(easy-read·개인화 검수용). `PreviewBanner` 로
-  이미 라우팅 배선됨(`router.push(.../preview)`).
-- **설계 결정 필요**: (a) 당사자 홈(`(participant)/page.tsx`)을 `participantId` 오버라이드로 렌더 vs
-  (b) 별도 읽기전용 미러. 권장 (a) — 홈 서버컴포넌트가 대상 participantId 를 받도록 파라미터화(RLS 는 admin 이라
-  통과). 코드 중복 없이 재사용. **PreviewBanner 상단 고정 배너로 "미리보기 중" 명시**(오조작 방지).
+### 4-8. `admin/participants/[id]/preview` — 당사자 뷰 미리보기 (B4) · **보강 설계 (W, 2026-09-02)**
+
+**목적**: 관리자가 특정 당사자의 홈을 **그 사람 눈으로** 본다 — easy-read·화면 개인화(§`goala_ui_preferences_W`)가
+실제로 그 당사자에게 어떻게 보이는지 검수. 신규 화면이 아니라 **당사자 홈의 관리자 대리 렌더**.
+
+**4-8-1. 렌더 메커니즘 — 공유 뷰 추출 (코드 중복 0)**
+현재 `(participant)/page.tsx` 는 `getCurrentParticipant()`(auth.uid→participants) 로 **세션 당사자**를 해석해
+잔액·영역별(`buildBudgetByDomain`)·본인부담(`describeCopay`)·`ui_preferences` 블록을 렌더한다. preview 는
+**같은 화면을 대상 participantId 로** 그려야 한다. → 권장:
+- **공유 서버 컴포넌트 `ParticipantHomeView({ participantId, mode })` 로 홈 본문 추출.**
+  - `(participant)/page.tsx`: `participantId = getCurrentParticipant()`, `mode='live'`.
+  - `admin/participants/[id]/preview/page.tsx`: `participantId = params.id`, `mode='preview'`, **`seoul_is_admin()` 게이트**.
+- 대안(b) `getCurrentParticipant(overrideId?)` 에 admin 전용 오버라이드 인자 — 더 작지만 함수 책임이 흐려짐.
+  권장은 (a)(뷰 추출) — 렌더 로직 1벌 유지·테스트 표면 동일.
+
+**4-8-2. ★뮤테이션 안전 (이 화면의 핵심 위험 — 설계가 반드시 막아야 함)**
+당사자 홈에는 **쓰기 동작**이 있다: 하단 FAB `📷 내가 쓴 돈 적기`(지출 생성)·화면설정 저장 등. 관리자가
+preview 중 이를 누르면 **관리자 권한(RLS admin)으로 그 당사자 데이터에 실제 기록**될 수 있다(유령 지출·오설정).
+- **`mode='preview'` 에서 참여자 쓰기 액션을 비활성/숨김**: FAB·지출기록·영수증 업로드는 preview 에서
+  **렌더하지 않거나 disabled**(클릭 시 "미리보기에서는 기록할 수 없어요" 안내). 읽기 위젯만 활성.
+- **편집 모드(`PreviewBanner` ✏️)**: 배너에 이미 view↔edit 토글이 있다. edit 모드가 허용하는 쓰기는
+  **`ui_preferences` 대리 설정 하나로 한정**(§`goala_ui_preferences_W` §8 = 담당/관리자 대리 허용, 이미 계약됨).
+  그 외(지출·계획)는 edit 모드에서도 preview 경로로 만들지 않는다(각 정본 화면에서 하도록 링크).
+- → U 는 `ParticipantHomeView` 가 `mode` 를 받아 쓰기 요소를 **조건부 렌더**. 이 조건이 이 화면의 계약.
+
+**4-8-3. 배너·이탈 (오인 방지)**
+- `PreviewBanner`(구현됨): 상단 sticky, 호박색 "👁 미리보기 모드" + 참여자 셀렉트 + `✕ 닫기`
+  (→`admin/participants/[id]`). **preview 전 구간에서 항상 보이게**(당사자 데이터를 관리자 자기 것으로 오인 방지).
+- 배너 문구는 관리자용 표준어(당사자 노출 아님) — easy-read 대상 아님. 단 **본문은 당사자 easy-read 그대로**
+  (그게 검수 목적).
+
+**4-8-4. 보안·RLS·감사**
+- **게이트**: `seoul_is_admin()`(관리자 전용). 실무자에겐 노출 안 함(대리 열람은 배정 스코프 다른 경로).
+- RLS 는 admin 이라 대상 당사자 데이터 통과 — preview 는 **권한 확장이 아니라 표시 대상 전환**.
+- ★**민감성**: 남의 화면을 그대로 보는 기능이라 **감사 로그 후속 대상**(ⓔ `audit_log` 결정과 연계 — 누가 누구를
+  언제 preview 했는지). 이번 스코프는 기능 자체, 감사는 audit_log 도입 시 훅 추가(§별도).
+
+**4-8-5. 계약·게이트**
+- **순수 로직 신규 없음**(잔액·영역별은 기구현 골든 재사용) → **신규 골든 없음**. W 게이트 =
+  ① 뮤테이션 안전(preview 에서 쓰기 요소 부재/disabled) **컴포넌트 계약** — U 가 `ParticipantHomeView`
+  `mode='preview'` 렌더 테스트(선택) ② a11y(배너 랜드마크·닫기 44px) ③ 설계 리뷰.
+- 진입점: `PreviewBanner`(배선됨) + `admin/participants/[id]` 상세에서 "미리보기" 링크.
 
 ### 4-9. `participant/plan` — 해보고 싶은 것 (B5) · **RESOLVED: ⓑ `goal_to_try` 경량 표시** (사용자 2026-09-02)
 신규 엔티티(ⓒ)·완전 제외(ⓐ)가 아니라, 당사자가 이용계획에 이미 적은 **`seoul_self_narratives.goal_to_try`
