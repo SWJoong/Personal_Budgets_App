@@ -53,9 +53,21 @@ export function reidentify(text: string, map: Record<string, string>): string
   마스킹은 선택 후속(영수증 crop 등).
 - 액션이 넘길 `terms` = 해당 당사자 이름 + 관련 기관명(조회는 액션 몫).
 
-### 1-4. 그래프 노드 마스킹 (DB층 — B4 와 결합, 후속)
-- `v_seoul_graph_nodes` 의 person 라벨을, 뷰어가 그 당사자에 **배정되지 않았으면**(§2 `is_assigned`) 이름 대신
-  '○○님'으로. security_invoker 뷰 컨벤션 유지. W `verify_graph_mask.sql` 후속, U 뷰 수정.
+### 1-4. 그래프 노드 사람-이름 스코핑 — ★정정: 이미 필터됨 (실 W, 2026-09-01)
+원안은 "미배정 뷰어에게 person 라벨을 '○○님' 마스킹" 이었으나, 실측 결과 `v_seoul_graph_nodes` 는
+`WITH (security_invoker=true)` 라 person 노드가 이미 **RLS 로 필터**된다(마스킹보다 강함 — 남의 참여자
+person 노드는 이름은커녕 행 자체가 안 나온다):
+- **Participant** 노드: participants RLS = `seoul_can_access(id)`
+- **Proxy** 노드: seoul_proxies RLS = `seoul_can_access(participant_id)`
+- **Caseworker** 노드: `profiles_select` 로 실무자·관리자 이름은 **의도적 공개**(직원 명단, "누구나 담당자
+  이름을 볼 수 있어야") — 마스킹 대상 아님.
+→ 별도 마스킹 로직·뷰 수정 **불필요**. B4 와 동형(security_invoker + RLS 가 이미 스코프). 남은 W 값 =
+그 필터를 회귀로부터 잠그는 verify(작성됨).
+
+**W 조치**: `Plan&Source/ontology/seoul/verify_graph_mask.sql` — 교차 참여자 person 노드 차단 회귀잠금
+(M1 배정=보임 · M2 미배정=Participant·Proxy 0행 · M3 admin=전체 · Caseworker 공개). 기존 메커니즘에
+**GREEN 이어야 정상**. U 는 `db-verify.yml` verify 배열에 1줄 추가만. (verify_03_graph G5 는 엣지·walk 를
+이미 잠갔고, 이 파일이 노드 뷰의 person 라벨을 보완.)
 
 ---
 
@@ -105,10 +117,11 @@ M:N(공동배정)을 택하지 않았으므로(결정 ②) **#66 채택 보류**
 2. **[B4·완료]** 배정 스코핑은 이미 구현됨(§2-0). `verify_assignment_rls.sql`(회귀잠금) + `db-verify.yml` 배선
    완료(PR #68 머지). CI 에서 스코핑 작동 실증(A0~A4).
 3. **[B4·보류]** PR #66(`seoul_case_assignments` M:N)·04 RLS `is_assigned` 전환은 **공동배정 실요구 시까지 보류**(§2-2).
-4. **[B5·게이트]** `callAIDeidentified` 래퍼(U 구현 `src/utils/aiDeidentify.ts`) → 골든 `aiDeidentify.test.ts` green.
-   경계 `aiGateBoundary.test.ts` 가 서버 액션의 직접 `callAI` 사용 차단(§1-3). 요약·제안 액션은 래퍼 경유.
-   그래프 노드 마스킹 뷰(§1-4)는 후속.
-5. **[하지 않음]** `participants.agency_id` 등 org FK 선제 추가(§3, 보류).
+4. **[B5·게이트·완료]** `callAIDeidentified` 래퍼(`src/utils/aiDeidentify.ts`) + 경계(`aiGateBoundary.test.ts`)로
+   텍스트→AI de-id 강제(§1-3, PR #70 머지).
+5. **[B5·그래프·정정]** 그래프 노드 person 라벨은 이미 security_invoker+RLS 로 **필터**됨(§1-4, 마스킹 불필요).
+   `verify_graph_mask.sql`(W 작성)로 회귀잠금 → U 는 `db-verify.yml` verify 배열에 1줄 추가만.
+6. **[하지 않음]** `participants.agency_id` 등 org FK 선제 추가(§3, 보류).
 
 ## 남긴 판단 (진짜 W 복귀·후속)
 - 배정 스코핑 초기 시드 방식(마이그레이션 시드 vs 관리자 배정 화면 선행) — 소규모 운영 마찰 최소화 관점에서 재확인.

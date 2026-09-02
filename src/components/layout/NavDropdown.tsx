@@ -27,7 +27,7 @@ const NAV_ITEMS: NavItem[] = [
     label: '더보기',
     subs: [
       { href: '/my-plan',              icon: '🎯', label: '내 이용계획' },
-      { href: '/evaluations',          icon: '💌', label: '지원자 선생님의 편지', soon: true },
+      { href: '/evaluations',          icon: '💌', label: '지원자 선생님의 편지' },
       { href: '/more?open=display',    icon: '🌗', label: '화면 설정' },
       { href: '/more?open=files',      icon: '📁', label: '내 서류함' },
     ],
