@@ -49,7 +49,7 @@ const menuItems: MenuItem[] = [
   },
   { name: '이용계획 · 심의', href: '/supporter/plans',        icon: '🎯' },
   { name: '영수증 검토 대기', href: '/supporter/review',       icon: '🧾' },
-  { name: '회계/거래장부',    href: '/supporter/transactions', icon: '📒', soon: true },
+  { name: '회계/거래장부',    href: '/supporter/transactions', icon: '📒' },
   { name: '증빙/서류 보관함', href: '/supporter/documents',    icon: '📁', soon: true },
   { name: '계획과 평가',      href: '/supporter/evaluations',  icon: '📋' },
   { name: '활동 지도',        href: '/supporter/map',          icon: '🗺️' },
