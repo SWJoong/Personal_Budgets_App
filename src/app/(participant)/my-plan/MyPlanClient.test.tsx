@@ -17,6 +17,13 @@ vi.mock('@/app/actions/appeal', () => ({
   fileAppeal: (...args: unknown[]) => fileAppealMock(...args),
 }))
 
+// AI 활동 제안 자식 컴포넌트는 서버 액션(activitySuggestion → ai.ts/Anthropic)을 import 하므로
+// jsdom 에서 모듈 로드 시 "browser-like environment" 로 터진다. 이 테스트 대상은 이의신청·통지라
+// AI 제안과 무관 → 자식을 스텁으로 격리(단위 경계). ActivitySuggestions 자체 검증은 별도.
+vi.mock('./ActivitySuggestions', () => ({
+  default: () => null,
+}))
+
 const basePlan = { id: 'plan-1', application_id: 'app-1', cohort_id: 'cohort-1', status: 'rejected' }
 const baseNotification = { id: 'notif-1', is_read_by_participant: true }
 const baseReview = { id: 'review-1', decision: 'rejected', reason: '요건 미충족' }
