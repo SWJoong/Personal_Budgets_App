@@ -49,9 +49,9 @@
 |---|--------|------|------|
 | B1 | `supporter/participants/[id]` (당사자 통합 현황) | IA 결정 | 허브 화면 — §4-3. 액션은 전부 존재(집계뷰 조합). |
 | B2 | `supporter/documents` (증빙/서류 보관함) | 백엔드(문서 목록) | Storage `documents` 버킷 나열 액션 신설 필요. §4-6. |
-| B3 | `admin/settings` (시스템 설정) | 제품결정 | 무엇을 설정? 차수·기관·심의위 등은 시드. 범위 정의 필요 — §4-7(열린질문). |
+| B3 | `admin/settings` (시스템 설정) | ✅결정: 읽기전용 | "제도 현황" 읽기 대시보드(편집 UI 없음). 실측 테이블 조합 — §4-7. |
 | B4 | `admin/participants/[id]/preview` (당사자 뷰 미리보기) | 설계 | `PreviewBanner` 로 이미 배선. 관리자가 당사자 홈을 그 사람 눈으로 봄. §4-8. |
-| B5 | `participant/plan` (오늘 계획) | **제품결정** | `my-plan`(이용계획, 구현됨)과 **다른 개념**(일일 활동계획). 서울형 스코프에 "오늘 계획"이 실제 필요한지 사용자 확인 — §4-9(열린질문). |
+| B5 | `participant/plan` (해보고 싶은 것) | ✅결정: ⓑ | `seoul_self_narratives.goal_to_try` 경량 표시(easy-read pass). `my-plan` 데이터 재사용 — §4-9. |
 
 ---
 
@@ -149,10 +149,25 @@
 - **IA**: 당사자별 서류 그룹 · 파일(제목·유형·업로드일·[열기 signed URL]). 업로드는 후속(열람 우선).
 - **주의**: 스토리지 signed URL 패턴(`extractStoragePath`+`createSignedUrl`) 준수(CLAUDE.md Storage 규칙).
 
-### 4-7. `admin/settings` — 시스템 설정 (B3) · **열린 질문**
-- 서울형에서 "설정"의 실체를 먼저 정의해야 함. 후보: 기관정보 표시·차수(`seoul_program_phases`) 열람·
-  심의위원 명단·이메일 도메인(`ALLOWED_EMAIL_DOMAINS`) 안내. **대부분 시드/env 라 편집 UI 가 정말 필요한지**
-  사용자 확인. → 최소안: 읽기전용 "제도 현황"(현재 차수·기관·정책 요약) 카드. **사용자 결정 대기.**
+### 4-7. `admin/settings` — 시스템 설정 (B3) · **RESOLVED: 읽기전용 "제도 현황"** (사용자 2026-09-02)
+편집 UI 를 만들지 않는다(제도 데이터는 07 시드·env 라 앱에서 편집할 것이 없음, 과설계 회피). 관리자가 현재
+운영 전제를 한눈에 확인하는 **읽기전용 대시보드**로 구현.
+- **데이터(실측 테이블)**: 차수 `seoul_cohorts` · 시행주체 `seoul_administering_bodies` · 수행기관
+  `seoul_executing_agencies` · 심의위원회 `seoul_review_committees` · 지출규칙 `seoul_spending_rules`
+  (정책 요약, `enforcement` 표시) · 허용 이메일 도메인 `ALLOWED_EMAIL_DOMAINS`(env, 서버컴포넌트에서 노출).
+- **IA(카드 나열, 편집 컨트롤 없음)**:
+  ```
+  [헤더] 시스템 설정 (읽기 전용)
+  ① 운영 기관: 시행주체 · 수행기관 목록(이름·연락)
+  ② 사업 차수: seoul_cohorts(차수명·기간·상태)
+  ③ 심의위원회: seoul_review_committees(위원 명단·역할)
+  ④ 지출 정책: seoul_spending_rules 요약 — enforcement='block' 0건 원칙 명시(막지 않고 기록)
+  ⑤ 접근 정책: 허용 이메일 도메인 · 슈퍼관리자 이메일(마스킹)
+  ```
+- **RLS**: 전부 `seoul_is_admin()` 열람(기존 정책 재사용). 신규 정책 불필요.
+- **백엔드**: 신규 액션 최소 — 서버컴포넌트에서 위 테이블 `select`(관리자 세션). 순수 로직 없음 → **골든 없음**
+  (계약 = 읽기 쿼리 + 표시). 진입점: AdminSidebar `시스템 설정`(soon 제거).
+- **주의**: env 값(도메인·슈퍼관리자)은 **표시만**, 절대 편집/전송 안 함. 슈퍼관리자 이메일은 부분 마스킹.
 
 ### 4-8. `admin/participants/[id]/preview` — 당사자 뷰 미리보기 (B4)
 - **범위**: 관리자가 특정 당사자의 홈을 **그 사람 눈으로** 확인(easy-read·개인화 검수용). `PreviewBanner` 로
@@ -161,11 +176,27 @@
   (b) 별도 읽기전용 미러. 권장 (a) — 홈 서버컴포넌트가 대상 participantId 를 받도록 파라미터화(RLS 는 admin 이라
   통과). 코드 중복 없이 재사용. **PreviewBanner 상단 고정 배너로 "미리보기 중" 명시**(오조작 방지).
 
-### 4-9. `participant/plan` — 오늘 계획 (B5) · **제품결정**
-- `my-plan`(이용계획서=제도 문서)과 **개념이 다름**: `/plan` 은 당사자의 **일일/단기 활동 계획**(오늘 뭐 할지).
-  서울형 스키마엔 대응 테이블 없음. → **선택지**: ⓐ 스코프에서 제외하고 나비 항목 제거(가장 단순),
-  ⓑ `seoul_self_narratives.goal_to_try`(하고싶은 것)를 쉬운말로 보여주는 경량 화면으로 대체,
-  ⓒ 신규 "오늘 할 일" 엔티티(범위 큼). **사용자 결정 대기.** 권장 ⓑ(기존 데이터 재사용, easy-read 부합).
+### 4-9. `participant/plan` — 해보고 싶은 것 (B5) · **RESOLVED: ⓑ `goal_to_try` 경량 표시** (사용자 2026-09-02)
+신규 엔티티(ⓒ)·완전 제외(ⓐ)가 아니라, 당사자가 이용계획에 이미 적은 **`seoul_self_narratives.goal_to_try`
+(하고 싶은 것)**를 쉬운말로 보여주는 **읽기 우선 경량 화면**으로 대체한다. 기존 데이터 재사용 — 신규 테이블·
+백엔드 없음. (편집은 `my-plan` 이 정본, 이 화면은 표시 + 그리로 안내.)
+- **데이터**: 당사자 본인의 최신 계획 `seoul_self_narratives.goal_to_try`. `my-plan/page.tsx` 가 이미 narrative
+  를 읽으므로 **같은 조회 재사용**(RLS 가 본인 것만). 여러 항목이면 줄바꿈/목록으로.
+- **IA(당사자, 모바일)**:
+  ```
+  [헤더 ←] 무엇을 해볼까요?
+  {goal_to_try 를 큰 글씨·쉬운말로}   ← 있으면
+  (없으면) 아직 없어요.  [이용계획에서 적어요 → /my-plan]
+  ```
+- **★easy-read 카피 (`validate_easy_read` = pass, errors 0·warnings 0 실측 2026-09-02)**:
+  | 위치 | 카피 |
+  |---|---|
+  | 화면 제목 | `무엇을 해볼까요?` |
+  | 안내(값 있을 때) | `이용계획에 적은 일이에요.` |
+  | 빈 상태 | `아직 없어요.` + `이용계획에서 적어요.` (→ `/my-plan`) |
+- **순수 로직 없음 → 골든 없음**(계약 = narrative 읽기 + 표시 + 빈상태). W 게이트 = 위 easy-read 검증(완료) + a11y.
+- **네비**: `/plan` 뱃지·라벨은 유지하되 라벨을 화면 제목과 맞춘다(NavDropdown L21 `나의 계획`·MoreMenu L119
+  `오늘 계획` → 실제 화면 성격에 맞게 U 가 조정, soon 제거).
 
 ---
 
@@ -225,10 +256,13 @@ export function buildOrgLedger(rows: OrgUsageRow[]): OrgLedgerSummary
 7. **[B1]** `supporter/participants/[id]` 통합 허브(집계+링크) + 목록 행 링크 배선.
 8. **[B2]** `documents` 목록 액션 + `supporter/documents` 화면.
 9. **[B4]** `admin/participants/[id]/preview` — 당사자 홈 participantId 파라미터화 재사용 + 배너.
-10. **[B3·B5]** `admin/settings`·`participant/plan` = **사용자 제품결정 후**(§4-7·§4-9).
+10. **[B3]** `admin/settings` = 읽기전용 "제도 현황" 대시보드(§4-7, 결정 완료). **[B5]** `participant/plan` =
+    `goal_to_try` 경량 표시(§4-9, 결정 완료·easy-read pass). 둘 다 순수로직 없어 골든 없음 — 착수 가능.
 11. 구현 후 당사자 노출 신규 문구 → W `validate_easy_read` 재검증 요청. a11y(폼=FormField·모달=Modal) 준수.
 
-## 7. 사용자 제품결정 요청 (W 대기)
-- **Q1** `admin/settings` 범위: 읽기전용 "제도 현황"으로 충분한가, 편집 UI 가 필요한 설정 항목이 있나?(§4-7)
-- **Q2** `participant/plan`(오늘 계획): ⓐ제외 / ⓑ`goal_to_try` 경량표시 / ⓒ신규 엔티티 중?(§4-9, 권장 ⓑ)
-- **Q3** 상세·피드백·서류함의 **편집/답변/업로드**를 이번 스코프에 포함할지(권장: 열람 먼저 green → 쓰기 후속).
+## 7. 사용자 제품결정 (기록)
+- **Q1 — RESOLVED(2026-09-02): 읽기전용.** `admin/settings` = 편집 UI 없이 "제도 현황" 읽기 대시보드(§4-7).
+- **Q2 — RESOLVED(2026-09-02): ⓑ.** `participant/plan` = `seoul_self_narratives.goal_to_try` 경량 표시(§4-9,
+  easy-read pass). ⓐ제외·ⓒ신규엔티티 기각.
+- **Q3 — 미해결(권장 유지):** 상세·피드백·서류함의 **편집/답변/업로드**는 이번 스코프 밖(열람 먼저 green → 쓰기
+  후속). U 가 열람 화면부터 착수. 쓰기 필요 시 별도 W 계약.
