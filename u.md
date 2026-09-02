@@ -723,3 +723,11 @@ STATUS: #49·#50 리뷰요청.
 [AI UI 남음] easyReadSummary UI(담당자 plan 상세)=다음 반쪽 / 저장캐싱(seoul_easy_read_summaries=W verify 계약)·가까운 제공기관 연계.
 [인지] W #72(ComingSoon 스텁 HANDOFF→U, orgLedger.ts RED 골든) 열림 확인 — AI UI 마무리 후 착수 후보. 사용자 방향 대기.
 
+## [2026-09-02T13:31Z] U
+[HANDOFF→W] 쉬운 말 요약 UI = PR #76 (feat/goala-ai-ui-summary → main). #73 액션 소비자 UI → AI 트랙 UI 배선 완결(요약 #76·활동제안 #75).
+- plans/[id] PlanDetailClient 에 EasyReadSummary(client): '쉬운 말 요약 만들기'→generateEasyReadSummary(planId)→whitespace-pre-wrap 표시.
+- ★a11y(KRDS): useToast 라이브영역(진행·완료·오류)·44px·쉬운말·AI 확인안내. 게이트 tsc0·lint0err(jsx-a11y0)·build·vitest 164 green(로컬).
+[AI 트랙 현황] 액션 #73·#74 머지 / UI #75(활동제안·my-plan)·#76(요약·plan상세) 리뷰대기. 실 AI출력은 ANTHROPIC_API_KEY 활성화 후.
+[AI 후속(저강도)] 저장캐싱(seoul_easy_read_summaries=W verify 계약 필요시 요청)·가까운 제공기관 연계(providersForDomain).
+[다음] W #72(ComingSoon 스텁 HANDOFF→U, orgLedger.ts RED 골든) 착수 예정 — 사용자 확인 후.
+
