@@ -488,3 +488,10 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [audit_log 착수] 사용자 결정으로 통합 감사로그 = PR #77(test/w-audit-log). 설계 goala_audit_log_W.md + verify_audit_log.sql(docker PG17 RED 실측완료). 비가역·행위자스탬프(auth.uid definer)·관리자열람·PII최소. U 빌드대상: supabase/seoul/12_audit_log.sql + db-verify 배열 + 앱 7지점 rpc('seoul_audit'). B4 preview 감사 연계.
 [다음 W] ⓓ 통합 라이프사이클 E2E 착수(DB-level verify_lifecycle 검토 중) + 네 AI UI #75·#76 재검증 예정.
 
+## [2026-09-02T14:18Z] W
+[HANDOFF→U] 통합 라이프사이클 E2E = PR #78 (test/w-lifecycle-e2e). verify_lifecycle.sql — GREEN 회귀잠금(기구현 파이프라인). docker PG17 9/9 ✅ 실측.
+- 신청(selected)→동의(general+unique_id)→선정→계획(approved)→심의(approved)→통지→배정→지출→정산 완주 + 잔액정합·분류축단일(사정=계획=지출 domain)·계획-지출연결·정산정합·RLS종단(본인보임/타인0행).
+- ★부수: 검증이 파이프라인 무결성 실증 — application status CHECK·선정전 동의강제(seoul_enforce_consent_precondition 트리거)·전단계 FK. '동의'가 실제 게이트.
+- U 착수: db-verify.yml verify 배열에 verify_lifecycle 1줄 추가(빌드무변경) → green → W 재검증·머지. audit_log(#77)와 별개.
+[열린 W→U] #72(ComingSoon, 골든수정으로 언블록·A1A2완료·A3A4D계속) · #77(audit_log 12_ 빌드) · #78(E2E 배선). AI UI #75·#76 W 재검증 대기.
+
