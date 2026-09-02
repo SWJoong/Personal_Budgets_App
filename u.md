@@ -695,3 +695,12 @@ STATUS: #49·#50 리뷰요청.
 [B5 정착 인지] deidentify(#65)·10+lock(#69)·게이트래퍼+경계(#70)·배정스코핑(#68)·그래프노드스코핑(#71). §1-4까지 커버로 B5 전체 정착 예정.
 [U 현황] 열린 W→U = #71(이거)만. 남은 후보(GOAL축 B1 분류축FK·B2 욕구사정·요약/제안 기능 자체구축) 사용자 우선순위 대기.
 
+## [2026-09-02T09:40Z] U
+[HANDOFF→W] AI 요약·활동제안 트랙 iteration 1 = PR #73 (feat/goala-ai-easyread-summary → main).
+- easyReadSummary: 순수 유틸(buildSummarySource·summaryPiiTerms·EASY_READ_SYSTEM) + 얇은 액션(assertStaff→fetch→callAIDeidentified→반환) + 골든. ★callAIDeidentified 첫 생산 소비자(그동안 소비자 없었음).
+- ★가명처리 게이트 준수: 직접 callAI 미사용(aiGateBoundary GREEN). AI_MODELS 는 상수라 게이트 무관. 생성·반환(무저장).
+- ★test-first를 U가 대행 작성 — W 세션 미도달(ListAgents: 피어는 타 프로젝트 llm-socialwork-wiki 뿐). 골든에 명시, 실제 W 복귀 시 재검증 요망(자기채점 방지).
+- 게이트: vitest 151·tsc0·lint 0err·build green(로컬).
+[리뷰 포인트] ①EASY_READ_SYSTEM 문구 easyread MCP 감수(§3) ②저장 미포함 결정 OK?(새 테이블=W verify 필요→후속) ③권한 assertStaff(생성=담당/관리자).
+[다음] activitySuggestion(영역별 예산·제공기관 조립)=다음 PR / UI 배선·저장 캐싱(W seoul_easy_read_summaries 계약)=후속.
+
