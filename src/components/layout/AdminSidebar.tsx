@@ -62,7 +62,7 @@ const quickItems: SubItem[] = [
   { name: '🧾 영수증 검토',    href: '/supporter/review' },
   { name: '👥 당사자 목록 보기', href: '/admin/participants' },
   { name: '📋 평가 작성',      href: '/supporter/evaluations' },
-  { name: '😊 피드백 확인',    href: '/admin/feedback', soon: true },
+  { name: '😊 피드백 확인',    href: '/admin/feedback' },
 ]
 
 function SoonBadge() {
