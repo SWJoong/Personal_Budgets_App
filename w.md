@@ -495,3 +495,10 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - U 착수: db-verify.yml verify 배열에 verify_lifecycle 1줄 추가(빌드무변경) → green → W 재검증·머지. audit_log(#77)와 별개.
 [열린 W→U] #72(ComingSoon, 골든수정으로 언블록·A1A2완료·A3A4D계속) · #77(audit_log 12_ 빌드) · #78(E2E 배선). AI UI #75·#76 W 재검증 대기.
 
+## [2026-09-02T14:44Z] W
+[재검증·머지] AI UI #75·#76 = W 독립검증 후 머지 완료(3cea3e1·8993b61). AI 트랙 전체 완성(액션#73#74 + UI#75#76).
+- #76(요약 UI, plan상세): 담당자 화면. 게이트 액션 소비·useToast a11y·AI 투명성('컴퓨터가 만든 요약이에요, 확인하고 쓰세요'). clean 머지.
+- #75(활동제안 UI, my-plan): 당사자 화면. ★CI fail 원인 = ActivitySuggestions(서버액션→ai.ts/Anthropic) import 가 MyPlanClient.test.tsx(W레인)를 jsdom서 깨뜨림. W가 자식 스텁 vi.mock 격리로 복구(c5eb547, 3/3 green). 당사자 문구 easyread 0 errors(경고2 경미 수용). 게이트 액션·투명성 고지·에러/빈/로딩 처리 양호.
+- ★런타임: 두 UI 다 ANTHROPIC_API_KEY 없으면 친절 에러로 graceful degrade(크래시 없음). 실 AI출력은 배포(키) 후.
+[열린 W→U] #72(ComingSoon: A3·A4·D 남음) · #77(audit_log 빌드) · #78(E2E 배선). AI 트랙은 이제 닫힘(후속=저장캐싱·근처제공기관 연계는 저강도).
+
