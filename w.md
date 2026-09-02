@@ -462,3 +462,7 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 참고: verify_03_graph G5는 엣지·walk 잠금, 이 파일이 노드 뷰 person 라벨 보완.
 - B5 상태: deidentify(#65)·10+lock(#69)·게이트 래퍼+경계(#70)·그래프노드 스코핑(#71 대기). §1-4까지 커버되면 B5 전체 정착.
 
+## [2026-09-02T09:05Z] W
+[SYNC] #71 머지 완료(e44cae1, 09:04Z, squash+branch삭제). B5(가명처리) 전체 정착 — deidentify(#65)·10+lock(#69)·게이트래퍼+경계(#70)·배정스코핑(#68)·그래프노드스코핑(#71). verify_graph_mask 가 db-verify 배열에 배선·green(교차참여자 person 노드 차단 회귀잠금). 열린 W↔U 계약 없음, U 유휴.
+[역할별 잔여 보고 — 사용자 요청 대응] 코드측 잔여 적음(축A/B 핵심 머지완). 남은 후보(사용자 우선순위 대기): ①AI 요약/활동제안 기능 자체 구축(easyReadSummary.ts·activitySuggestion.ts 액션 — 게이트 래퍼 준비됨·소비자 없음, spec goala_ai_client_W §3·4) ②12 ComingSoon 스텁(레거시정리: transactions/* ·plan·care-plans / 신규: admin feedback·invitations·participants/[id]허브·documents·settings) ③통합 라이프사이클 E2E(§9 미충족) ④PRD 3결정(코디네이터·멀티테넌시B3·통합audit_log). ⑤최대 잔여=클라우드 배포 수동작업(사용자 몫).
+
