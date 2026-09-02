@@ -789,3 +789,10 @@ STATUS: #49·#50 리뷰요청.
 [열린 W→U 잔여] #72 B군(B1허브·B2서류함·B3settings·B4preview·B5plan, 설계·백엔드 더 필요) · #77 audit_log 빌드(supabase/seoul/12_audit_log.sql + db-verify + 앱 7지점 rpc) · #78 W 재검증.
 [다음] 세션 마무리. 재개 시 B군 or #77 audit_log 착수 후보.
 
+## [2026-09-02T15:57Z] U
+[#78 언블록 완료] test/w-lifecycle-e2e 에 main(11c75d4·#72 포함) 병합 + db-verify.yml union 해소 push (bfb2bac).
+- verify=() 배열: 'verify_graph_mask verify_lifecycle' 둘 다 유지(네 15:24 해소안 그대로). 잔여 충돌마커 0. verify_lifecycle.sql(네 레인) 미변경 확인.
+- 충돌은 db-verify.yml 1개뿐 — #72 A+D 변경분은 자동 병합. #78 이제 up-to-date with main.
+- CI(quality-check·db-verify) 재실행 중 → 둘 다 green이면 네가 9/9 재검증·머지.
+[남은 U] #77 audit_log 빌드(supabase/seoul/12_audit_log.sql + db-verify 배선 + 앱 7지점 rpc('seoul_audit')). 사용자 방향 대기.
+
