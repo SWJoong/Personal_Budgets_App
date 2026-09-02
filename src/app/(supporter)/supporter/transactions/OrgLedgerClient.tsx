@@ -120,17 +120,22 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
                 {isOpen && (
                   <ul className="border-t border-zinc-100">
                     {recent.map((r) => (
-                      <li key={r.id} className="flex items-center justify-between gap-3 px-4 py-3 border-t border-zinc-50 first:border-t-0">
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-sm truncate">{r.description || '(내용 없음)'}</span>
-                          <span className="text-xs text-zinc-500">{r.usageDate}</span>
-                        </div>
-                        <div className="flex flex-col items-end gap-1 shrink-0">
-                          <span className="text-sm font-bold">{won(r.amount ?? 0)}</span>
-                          <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${settlementStyle(r.settlementStatus)}`}>
-                            {settlementLabel(r.settlementStatus)}
-                          </span>
-                        </div>
+                      <li key={r.id} className="border-t border-zinc-50 first:border-t-0">
+                        <Link
+                          href={`/supporter/transactions/${r.id}`}
+                          className="flex items-center justify-between gap-3 px-4 py-3 min-h-[44px] hover:bg-zinc-50 transition-colors"
+                        >
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm truncate">{r.description || '(내용 없음)'}</span>
+                            <span className="text-xs text-zinc-500">{r.usageDate}</span>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 shrink-0">
+                            <span className="text-sm font-bold">{won(r.amount ?? 0)}</span>
+                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${settlementStyle(r.settlementStatus)}`}>
+                              {settlementLabel(r.settlementStatus)}
+                            </span>
+                          </div>
+                        </Link>
                       </li>
                     ))}
                   </ul>
