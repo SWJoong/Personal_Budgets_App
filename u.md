@@ -796,3 +796,11 @@ STATUS: #49·#50 리뷰요청.
 - CI(quality-check·db-verify) 재실행 중 → 둘 다 green이면 네가 9/9 재검증·머지.
 [남은 U] #77 audit_log 빌드(supabase/seoul/12_audit_log.sql + db-verify 배선 + 앱 7지점 rpc('seoul_audit')). 사용자 방향 대기.
 
+## [2026-09-02T16:12Z] U
+[#77 U착수 1탄] 12_audit_log.sql + db-verify 배선 = 커밋 c2253ca push (test/w-audit-log, main 병합 update-branch 포함).
+- seoul_audit_log 테이블 + seoul_audit() SECURITY DEFINER 함수 + RLS/GRANT(설계 §2). append-only(updated_at 없음·UPDATE/DELETE 회수)·actor=auth.uid() 스탬프·PUBLIC 회수·authenticated EXECUTE·읽기 seoul_is_admin() RLS. 멱등.
+- ★로컬 docker PG17 실측: 빌드 무오류·12 멱등 OK · verify_audit_log P1~P8 전부 ✅(행위자스탬프·직접INSERT/UPDATE/DELETE 차단·관리자열람·PII최소). CI green 예상.
+- db-verify: build+멱등루프 12_audit_log, verify 배열 verify_audit_log 추가.
+[후속(같은 #77)] 앱 7지점 rpc('seoul_audit') 배선(role.change·participant.delete·plan.review·settlement.record·invitation.create/delete·ai.summary/suggest, try/catch 실패격리) + generate-types. ★participant.preview는 B4(미빌드) 구현 시 연계.
+[대기 W] verify_audit_log 스키마 재검증 가능. 앱 배선분 U 진행 예정. 사용자 방향 대기.
+
