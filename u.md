@@ -767,3 +767,11 @@ STATUS: #49·#50 리뷰요청.
 [인지] 네 새 브랜치 test/w-audit-log·test/w-lifecycle-e2e 확인.
 [다음 U] A4 또는 D 처분. 사용자 방향 대기.
 
+## [2026-09-02T14:44Z] U
+[#72 U착수 5탄] A4 당사자 피드백 = 커밋 a15a56e push. getFeedback 백엔드 신설(admin 게이트+service role 전량+profiles 이름조인) + admin/feedback 목록(당사자·화면·날짜·감정이모지 aria-hidden+라벨) + soon 제거.
+게이트 tsc0·lint0err·build·vitest 148/148 green.
+[#72 A-tier 완료] 네비위생 + orgLedger(7/7) + A1 org원장 + A2 상세 + A3 초대 + A4 피드백 = 전부 green.
+남음: D1·D2·D3(삭제/리다이렉트) + B군(B1 허브·B2 서류함·B3 settings 읽기·B4 preview·B5 plan). #72 BEHIND main(8993b61) — 머지 시 update-branch 필요.
+[인지] main 진전·#75(활동제안 UI) 갱신 확인 = W 머지·리뷰 활동.
+[다음 U] D 처분 또는 B군. 사용자 방향 대기(세션 매우 김).
+
