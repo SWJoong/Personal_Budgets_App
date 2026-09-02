@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { markNotificationRead } from '@/app/actions/planReview'
 import { fileAppeal } from '@/app/actions/appeal'
+import ActivitySuggestions from './ActivitySuggestions'
 
 interface Plan {
   id: string
@@ -270,6 +271,8 @@ export default function MyPlanClient({
                 ))
               )}
             </section>
+
+            <ActivitySuggestions />
           </>
         )}
       </main>
