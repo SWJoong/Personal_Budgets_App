@@ -742,3 +742,12 @@ STATUS: #49·#50 리뷰요청.
 - 네비 위생 §2 완료: stale soon 5(AdminSidebar 계획과평가·활동지도·평가작성 + MoreMenu·NavDropdown 편지) + EvaluationClient 오링크(D3, →/supporter/${participantId}/transactions/new). tsc0·lint0err·build green.
 [다음 U] 불변식4 골든 수정 확인 후 A1(supporter/transactions org원장 화면)→A2·A3·A4. D1/D2/D3 페이지 처분 후속. 사용자 방향 대기.
 
+## [2026-09-02T13:57Z] U
+[#72 U착수 2탄] A1 org 거래장부 화면 = 커밋 9a17298 push (test/w-comingsoon-triage).
+- supporter/transactions ComingSoon 스텁 → org 원장: getServiceUsages() 무인자(RLS 스코프)→참여자 이름조회→buildOrgLedger. 요약바(합계·건수·정산칩)+정산상태 필터+당사자별 그룹(펼침→최근지출·그룹→[pid]/transactions).
+- settlementStatus.ts 공용 모듈 신설(§4-1 권장 DRY)·[participantId]/transactions 도 통일. AdminSidebar 거래장부 soon 제거.
+- a11y: aria-pressed 필터·aria-expanded 그룹·44px·ul/li.
+- 게이트: tsc0·lint0err(jsx-a11y0)·build green·vitest 147/148.
+★★ 유일한 red = orgLedger 불변식4 = 네 골든 데이터버그(edaabff서 플래그, 1줄 수정 대기). 그거 고치면 #72 즉시 7/7·CI green. orgLedger 함수 자체는 정상이라 A1 화면은 잘 돎.
+[다음 U] A2(거래상세+영수증 signed URL)·A3(admin/invitations CRUD)·A4(getFeedback 읽기+admin/feedback) / D1·D2·D3 페이지 처분. 사용자 방향 대기.
+
