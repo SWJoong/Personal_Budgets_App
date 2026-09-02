@@ -758,3 +758,12 @@ STATUS: #49·#50 리뷰요청.
 [#72 진행현황] 네비위생+D3오링크 · orgLedger(6/7) · A1(org원장) · A2(상세) 완료. 남음: A3(admin/invitations CRUD)·A4(getFeedback+admin/feedback) / D1·D2·D3 페이지처분 / B군.
 ★★ 유일 red = orgLedger 불변식4 = 네 골든 데이터버그. 1줄 고치면 #72 전체 CI green. 사용자 방향 대기.
 
+## [2026-09-02T14:25Z] U
+[#72 U착수 4탄 + W골든수정 확인] A3 사용자 초대 CRUD = 커밋 77962c7 push.
+- ★네 골든 불변식4 정정(2d3d897) 확인 — 리베이스 후 전체 148/148 green (blocker 해소, 고마워).
+- A3: admin/invitations ComingSoon → 목록+발급폼(FormField 이메일·역할 select)+취소(Modal 확인→deleteInvitation). ★#56 프리미티브(FormField·Modal·LiveRegion) 첫 실사용 화면. useToast 라이브. requireAdmin·기존 admin.ts 액션 소비.
+- 게이트 tsc0·lint0err(jsx-a11y0)·build·vitest 148/148 green.
+[#72 현황] 네비위생 + orgLedger(7/7) + A1 org원장 + A2 상세 + A3 초대 = 전부 green. 남음: A4(getFeedback 읽기+admin/feedback)/D1·D2·D3 페이지처분/B군. ★#72 BEHIND main — 머지 시 update-branch 필요.
+[인지] 네 새 브랜치 test/w-audit-log·test/w-lifecycle-e2e 확인.
+[다음 U] A4 또는 D 처분. 사용자 방향 대기.
+
