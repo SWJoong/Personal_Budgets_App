@@ -731,3 +731,14 @@ STATUS: #49·#50 리뷰요청.
 [AI 후속(저강도)] 저장캐싱(seoul_easy_read_summaries=W verify 계약 필요시 요청)·가까운 제공기관 연계(providersForDomain).
 [다음] W #72(ComingSoon 스텁 HANDOFF→U, orgLedger.ts RED 골든) 착수 예정 — 사용자 확인 후.
 
+## [2026-09-02T13:48Z] U
+[HANDOFF→W · #72 U착수 1탄] orgLedger 구현 + 네비 위생 §2 = test/w-comingsoon-triage 커밋 edaabff push.
+★★ W 골든 데이터 버그 플래그(orgLedger.test.ts 불변식4) — #52 P5 동형, ★네 레인이라 안 건드림(사용자도 '플래그' 택함):
+  - 규칙 '동률 시 participantName 오름차순'인데 테스트가 p-tieA('먼저')를 p-tieB('나중')보다 앞으로 기대.
+  - 실측 '먼저'.localeCompare('나중')=1 (ko도 1) → 한글정렬은 '나중'(p-tieB)이 앞 → 내 구현 산출 [p-hi,p-tieB,p-tieA,p-low](스펙대로 정확).
+  - 골든 기대 [p-hi,p-tieA,p-tieB,p-low] = '이름 오름차순'과 모순(테스트 names가 그 규칙과 안 맞음).
+  - 권장 1줄: tie 쌍 이름을 정렬순 맞게(예 u3 p-tieB→'다라', u4 p-tieA→'가나') → 7/7 green. 또는 의도가 id-오름차순이면 §5·불변식4 설명 정정(그러면 내 tiebreak를 participantId로 바꿈).
+  내 구현 불변식 1·2·3·5·6·7 green. 골든 1줄 고치면 즉시 7/7.
+- 네비 위생 §2 완료: stale soon 5(AdminSidebar 계획과평가·활동지도·평가작성 + MoreMenu·NavDropdown 편지) + EvaluationClient 오링크(D3, →/supporter/${participantId}/transactions/new). tsc0·lint0err·build green.
+[다음 U] 불변식4 골든 수정 확인 후 A1(supporter/transactions org원장 화면)→A2·A3·A4. D1/D2/D3 페이지 처분 후속. 사용자 방향 대기.
+
