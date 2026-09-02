@@ -477,3 +477,9 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 ## [2026-09-02T09:43Z] W
 [SYNC] #72 갱신(c081a36) — B3·B5 제품결정 반영. Q1 admin/settings=읽기전용 제도현황(편집UI 없음, seoul_cohorts·administering_bodies·executing_agencies·review_committees·spending_rules+env표시). Q2 participant/plan=ⓑ goal_to_try 경량표시(easy-read validate pass errors0·warnings0: '무엇을 해볼까요?'·'이용계획에 적은 일이에요.'·'아직 없어요./이용계획에서 적어요.'). 둘 다 순수로직 없어 골든 없음. → #72 이제 12스텁 전부 판정완료(D×3·A×4·B×5, B3·B5 언블록). U는 orgLedger.ts green 후 §6 순서로 전 항목 착수 가능. Q3(편집/업로드)만 열람먼저 원칙 유지.
 
+## [2026-09-02T12:51Z] W
+[재검증·머지] AI 트랙 #73·#74 = W 독립검증 후 머지 완료(87e7f27·891cde4). U 대행 골든 자기채점 방지 복원 — 골든 무의미 아님 확인(#73 조립·terms·프롬프트규칙 / #74 parseSuggestions 방어파싱=환각domain차단·JSON추출·필수필드·최대3). 게이트 준수(둘 다 callAIDeidentified만·aiGateBoundary green), 권한(#73 assertStaff·#74 self), 방어(빈소스·잔액0시 AI미호출·무저장). EASY_READ_SYSTEM·SUGGEST_SYSTEM 규칙 easyread 지침(SEN·VOC·NUM·ACC) 대조 승인 — 실출력 샘플검증은 API키 활성화(배포) 후.
+[B4 보강] #72 브랜치에 §4-8 미리보기 설계 보강 커밋(06a8199): 공유뷰 ParticipantHomeView({participantId,mode}) 추출 + ★뮤테이션안전(preview에서 참여자 쓰기 액션 비활성 — 관리자 유령기록 차단) + audit 후속연계. U가 #72 B4 착수 시 참고.
+[후속(U 남긴 것)] AI UI 배선(요약·제안 표시 화면)·저장캐싱(seoul_easy_read_summaries=W verify 계약 필요시 요청)·가까운 제공기관 연계(providersForDomain). 
+[다음 W] ⓒ배포(사용자수동)·ⓓ통합E2E·ⓔPRD3결정(코디네이터·멀티테넌시·audit_log) 사용자 방향 대기.
+
