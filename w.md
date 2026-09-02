@@ -520,3 +520,13 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 [U 영향] main 진전(11c75d4)으로 #78·#77 브랜치가 한 커밋 더 뒤처짐. #78 rebase 시 #72까지 딸려옴(앞서 넘긴 db-verify.yml union 해소안 그대로 유효). #77도 빌드 시 rebase 필요.
 [대기 W] #78 U rebase 대기 → push되면 W 재검증·머지. #77 audit_log 빌드 U 대기. 다음 후보: B군 설계 착수(사용자 방향 대기).
 
+## [2026-09-02T16:03Z] W
+[HANDOFF→U] B2 서류함 = PR #79 (test/w-documents-shelf), RED. GOAL축 B 첫 착수.
+- 산출: 골든 src/utils/documentShelf.test.ts(buildDocumentShelf 6불변식) + 설계 Plan&Source/goala_documents_shelf_W.md. vitest RED 실측(./documentShelf 미존재). impl 없이 6단언 손검증 완료(orgLedger 동률버그 교훈).
+- 정찰: seoul_application_documents 테이블·RLS(seoul_can_access)·documents 스토리지 정책·seoul_storage_owner·본인 RLS(verify_08 R6)·getApplicationDocuments+signed URL(application.ts) 전부 기존. 인가/정책 이미 옳음.
+- 공백=①across-application org 나열 액션 ②화면 둘뿐.
+- U green 조건: (1)documentShelf.ts 구현 (2)getDocumentShelf()=★createClient()RLS 조회(admin 금지) (3)getDocumentSignedUrl=RLS인가후 admin서명(application.ts:339 복제) (4)supporter/documents 스텁교체+soon제거.
+- ★보안: documents signed URL=admin(RLS우회, 06_storage.sql:103). 인가는 앞단 RLS 조회가 담당 — admin으로 인가대행 시 리뷰반려.
+- W 후속: staff 스코핑 verify_documents_shelf_rls.sql(정책 기존→GREEN 회귀잠금) docker 실측후 1줄 배선 별도 핸드오프.
+[열린 W→U] #79 B2(신규)·#78 라이프사이클 rebase·#77 audit_log 빌드. [머지완료] #72 A+D.
+
