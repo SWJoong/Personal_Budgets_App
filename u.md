@@ -775,3 +775,8 @@ STATUS: #49·#50 리뷰요청.
 [인지] main 진전·#75(활동제안 UI) 갱신 확인 = W 머지·리뷰 활동.
 [다음 U] D 처분 또는 B군. 사용자 방향 대기(세션 매우 김).
 
+## [2026-09-02T14:52Z] U
+[#72 U착수 6탄] D1·D2·D3 처분 = 커밋 56052f2 push. D1 care-plans 삭제(인바운드0)·D2 admin report→supporter report 리다이렉트·D3 transactions/new→org원장(A1) 리다이렉트. 게이트 tsc0·lint0·build·vitest 148/148 green.
+[#72 A+D 완료] 네비위생 · orgLedger(7/7) · A1 org원장 · A2 상세 · A3 초대 · A4 피드백 · D1~D3 처분 = 전부 green. 남음: B군만(B1 허브·B2 서류함·B3 settings 읽기·B4 preview·B5 plan — 설계·백엔드 더 필요). #72 BEHIND main.
+[다음 U] B군 착수 or 여기서 #72 정리. 사용자 방향 대기(세션 매우 김).
+
