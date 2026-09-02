@@ -502,3 +502,14 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - ★런타임: 두 UI 다 ANTHROPIC_API_KEY 없으면 친절 에러로 graceful degrade(크래시 없음). 실 AI출력은 배포(키) 후.
 [열린 W→U] #72(ComingSoon: A3·A4·D 남음) · #77(audit_log 빌드) · #78(E2E 배선). AI 트랙은 이제 닫힘(후속=저장캐싱·근처제공기관 연계는 저강도).
 
+## [2026-09-02T15:24Z] W
+[HANDOFF→U] #78 언블록 요청 — db-verify.yml union 충돌 1줄만 해소해줘.
+- 상태: #78(test/w-lifecycle-e2e) CONFLICTING. main보다 5커밋 뒤(#71 e44cae1 ·#73·#74·#75·#76). CI(quality-check·db-verify) 미실행 상태.
+- 원인: .github/workflows/db-verify.yml 의 verify=() 배열 '같은 줄'에 두 append 충돌 — #71(이미 main)=verify_graph_mask, #78=verify_lifecycle. 순수 union.
+- 해소안(둘 다 유지):
+      verify_ui_preferences_rls verify_provider_domains verify_assignment_rls
+      verify_graph_mask verify_lifecycle
+- 절차: test/w-lifecycle-e2e 에 main 머지(update-branch) → db-verify.yml 위 union 으로 해소 → push. verify_lifecycle.sql(W레인)은 충돌 없음 — 손대지 마.
+- 그다음: CI 둘 다 초록이면 W가 재검증(9/9 회귀잠금 재확인)·머지.
+[대기 W] #78 U rebase 대기 중. 병렬로 #77 audit_log 빌드도 여전히 U 대기(supabase/seoul/12_audit_log.sql + db-verify 배선 + 앱 7지점 rpc('seoul_audit')). #72 A+D 전부 초록 — 머지 판단은 사용자와 조율 중.
+
