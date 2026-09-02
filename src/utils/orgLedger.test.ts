@@ -68,12 +68,14 @@ describe('buildOrgLedger — null amount (불변식 3)', () => {
 })
 
 describe('buildOrgLedger — 정렬 결정성 (불변식 4)', () => {
-  it('total 내림차순 → 동률 시 participantName 오름차순', () => {
+  it('total 내림차순 → 동률 시 participantName 오름차순(localeCompare)', () => {
+    // 동률(5000)인 두 명의 이름을 오름차순이 명확하도록 고름: '가온' < '다온'(ㄱ<ㄷ) → tieA 가 tieB 앞.
+    // (이름 오름차순 규칙과 기대 id 순서가 일치해야 함 — U 플래그 반영, W 골든 데이터 정정.)
     const out = buildOrgLedger([
-      row('u1', 'p-low', '가나다', 1000, 'pending', '2026-08-01'),
-      row('u2', 'p-hi', '하마', 9000, 'pending', '2026-08-01'),
-      row('u3', 'p-tieB', '나중', 5000, 'pending', '2026-08-01'),
-      row('u4', 'p-tieA', '먼저', 5000, 'pending', '2026-08-01'),
+      row('u1', 'p-low', '나래', 1000, 'pending', '2026-08-01'),   // total 최저 → 이름 무관 마지막
+      row('u2', 'p-hi', '한별', 9000, 'pending', '2026-08-01'),    // total 최고 → 이름 무관 첫째
+      row('u3', 'p-tieB', '다온', 5000, 'pending', '2026-08-01'),  // 동률, '다온'
+      row('u4', 'p-tieA', '가온', 5000, 'pending', '2026-08-01'),  // 동률, '가온' < '다온' → 앞
     ])
     expect(out.participants.map(p => p.participantId)).toEqual(['p-hi', 'p-tieA', 'p-tieB', 'p-low'])
   })
