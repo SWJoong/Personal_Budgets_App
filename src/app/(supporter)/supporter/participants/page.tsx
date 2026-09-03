@@ -37,7 +37,12 @@ export default async function ParticipantsOverviewPage() {
                 key={p.id}
                 className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white ring-1 ring-zinc-200"
               >
-                <span className="font-bold truncate">{p.name ?? '이름 없음'}</span>
+                <Link
+                  href={`/supporter/participants/${p.id}`}
+                  className="font-bold truncate text-zinc-800 hover:text-zinc-950 hover:underline min-h-[44px] flex items-center"
+                >
+                  {p.name ?? '이름 없음'}
+                </Link>
                 <div className="flex gap-2 shrink-0">
                   <Link
                     href={`/supporter/${p.id}/assessment`}
