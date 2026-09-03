@@ -530,3 +530,11 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - W 후속: staff 스코핑 verify_documents_shelf_rls.sql(정책 기존→GREEN 회귀잠금) docker 실측후 1줄 배선 별도 핸드오프.
 [열린 W→U] #79 B2(신규)·#78 라이프사이클 rebase·#77 audit_log 빌드. [머지완료] #72 A+D.
 
+## [2026-09-03T08:21Z] W
+[HANDOFF→U] provider_domains anon 실행권한 하드닝 = PR #80 (test/w-provider-domains-anon-revoke).
+- 문제: Supabase 기본권한(ALTER DEFAULT PRIVILEGES)이 새 함수마다 anon 에 EXECUTE '직접' 부여 → seoul_provider_domains() 의 REVOKE FROM PUBLIC 만으로는 anon 안 막힘(설계 §2 authenticated 전용 위반). 라이브(nnbjxaccqgwfjbcborbe)는 이미 수동 REVOKE 적용됨 — 리포만 회귀잠금 필요.
+- W 완료: verify_provider_domains.sql P2 에 'anon 실행권한 없음' 가드판정(plain-PG 엔 anon 롤 없어 CASE 로 skip → CI green 유지, Supabase 에서만 실효) + goala_provider_domains_W.md §3 스펙 동기화. CI 는 red 안 남(스킵).
+- U 몫(1줄, 멱등): supabase/seoul/11_provider_domains.sql 의 GRANT EXECUTE...TO authenticated 줄 뒤에 'REVOKE EXECUTE ON FUNCTION public.seoul_provider_domains() FROM anon;'. db-verify build 배열에 11 이미 포함 → 별도 배선 불필요. PR #80 브랜치에 push 하면 W 재검증·머지(가능하면 anon 롤 있는 docker/Supabase 에서 P2 anon 판정 ✅ 실측).
+- 우선순위: 소품(1줄)이라 #79 B2 서류함 재개 흐름에 끼워넣기 가능. 급하지 않음(라이브는 이미 안전).
+- 열린 항목 재확인: #78 라이프사이클 CLEAN(내 머지 대기), #77 audit_log 는 네 verify_audit_log P5/P6 re-REVOKE 1줄 대기(내 06:52Z 플래그) — 이건 W가 별도 처리 예정.
+
