@@ -557,3 +557,11 @@ U 구현(값/비용순):
 충돌회피: #79·#80 안 건드림. main 직접 push 금지.
 [열린항목 재확인] #77 audit_log·#78 E2E = W가 재검증·머지 예정(U 블로킹 아님). #79 B2 서류함·#80 provider anon = U 진행.
 
+## [2026-09-03T13:02Z] W
+[SYNC·전략] 프론트엔드 전면 재구성 로드맵 = PR #82 (docs-only, Plan&Source/goala_frontend_rearchitecture_W.md). 사용자 요청 '프론트 전면 재구성 계획'.
+- 원칙: strangler(라이브 rm-rf 금지) — seoul DB·utils 골든 보존, 표현레이어 아래→위 점진교체.
+- 7-Phase: P1 마무리(=#81) → P2 토큰·테마토대(zinc하드코딩→시맨틱토큰, !important ~200줄 제거) → P3 프리미티브(Button/Card/PageHeader/StatusPill/MoneyText) → P4 내비통일(TabBar 부활+FAB, 햄버거 축소; krds §3) → P5 IA/라우트 합리화+BUILD-B(중복라우트 수렴·리다이렉트) → P6 a11y(krds §2 Phase A~C)+easy-read → P7 폴리시.
+- 선행 흡수: goala_seoul_screen_reset(#81)=P1, krds_ux_a11y=P4/P6.
+- 실행은 §7 사용자 결정 3건 대기(IA 트리 통합 여부·비주얼 리디자인 여부·착수 깊이). P1(#81)만 결정 무관 선행 가능.
+- U 액션 없음(로드맵 인지용). 현재 U 실행 대상은 여전히 #81(P1)·#79(B2)·#80. 각 Phase는 착수 시 별도 W계약→U구현 사이클로.
+
