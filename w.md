@@ -538,3 +538,12 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - 우선순위: 소품(1줄)이라 #79 B2 서류함 재개 흐름에 끼워넣기 가능. 급하지 않음(라이브는 이미 안전).
 - 열린 항목 재확인: #78 라이프사이클 CLEAN(내 머지 대기), #77 audit_log 는 네 verify_audit_log P5/P6 re-REVOKE 1줄 대기(내 06:52Z 플래그) — 이건 W가 별도 처리 예정.
 
+## [2026-09-03T09:38Z] W
+[SYNC·배포] 서울형 클라우드 배포 진행(사용자 주도, 커넥터 승인: '구축단계만 커넥터로 스키마, 운영은 수동'). 라이브 상태 공유:
+- Supabase 라이브 프로젝트 = nnbjxaccqgwfjbcborbe (Seoul ap-northeast-2, PG17). seoul 빌드 00~11 전체를 Supabase MCP 커넥터로 적용·검증 완료. 검증수치: seoul테이블29·뷰12(전부 security_invoker)·정책93·함수15·트리거11·도메인14(서울6+복지부8)·중분류27·차수1·수행기관1·private버킷3·RLS없는테이블0·보안advisor ERROR 0.
+- ★provider_domains 하드닝(배포중 발견): Supabase는 ALTER DEFAULT PRIVILEGES로 새 함수마다 anon 에 EXECUTE 를 직접 부여 → 11의 REVOKE FROM PUBLIC 만으론 anon 실행이 안 막힌다(plain-PG verify는 anon 롤 없어 못 잡음). 라이브 DB에 REVOKE EXECUTE...FROM anon 수동 적용해 authenticated 전용 복원(anon:false 확인). 리포 수정 = 브랜치 test/w-provider-domains-anon-revoke / PR #80 진행중(W: verify_provider_domains P2 anon가드 추가 · U: 11_provider_domains.sql 에 REVOKE FROM anon 1줄).
+- 라이브 DB 기준선 = main #72(11c75d4) + 위 anon revoke. ★아직 라이브 미적용: 12_audit_log.sql(#77)·verify_lifecycle(#78) — 둘 다 main 미머지. #77 머지 후 12_audit_log 를 대시보드/커넥터로 적용해야 감사로그가 라이브(멱등). 그전까지 앱 seoul_audit rpc 는 함수 부재라 auditLog 실패격리로 무시(그리고 #77 앱배선도 main 미포함이라 현재 배포엔 영향 없음).
+- 수동 설정 완료: Auth Google 프로바이더 · URL Configuration(Site=personal-budgets-app-gp8t.vercel.app + redirect 와일드카드 localhost/vercel/-*) · Kakao Web 플랫폼. Email 프로바이더 OFF(구글 전용) · ★NEXT_PUBLIC_DEMO_MODE 미설정(프로덕션 인증 스푸핑 방지).
+- Vercel personal-budgets-app-gp8t: env 등록(Supabase URL/anon/service_role·SITE_URL·SUPER_ADMIN_EMAIL·ANTHROPIC_API_KEY·KAKAO 2종·AI_MODEL 3종) → main #72 프로덕션 재배포 READY(new env 반영). 관리자 로그인 검증 진행 중.
+[U 후속 필요] ①#77 audit_log·#78 E2E = W 재검증·머지 대기 → 머지 시 main 자동 프로덕션 재배포 + 12_audit_log 라이브 적용(커넥터/대시보드) 필요. ②#79 B2 서류함(RED)·#80 provider anon revoke 진행중. ③참고: agent-sync 브랜치 푸시가 Vercel 실패빌드 노이즈 유발 — 선택적으로 Ignored Build Step 로 억제 가능.
+
