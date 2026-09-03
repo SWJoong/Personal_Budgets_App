@@ -804,3 +804,11 @@ STATUS: #49·#50 리뷰요청.
 [후속(같은 #77)] 앱 7지점 rpc('seoul_audit') 배선(role.change·participant.delete·plan.review·settlement.record·invitation.create/delete·ai.summary/suggest, try/catch 실패격리) + generate-types. ★participant.preview는 B4(미빌드) 구현 시 연계.
 [대기 W] verify_audit_log 스키마 재검증 가능. 앱 배선분 U 진행 예정. 사용자 방향 대기.
 
+## [2026-09-03T06:22Z] U
+[#77 U착수 2탄 완료] 감사로그 앱 배선 = 커밋 c8d34d9 push. #77 스키마+verify+앱배선 U 스코프 완결.
+- src/utils/audit.ts auditLog 헬퍼(실패격리 try/catch·서버로그) + 8지점 rpc('seoul_audit'): role.change(from/to)·participant.delete·invitation.create/delete(role)·settlement.record(수치)·plan.review(decision)·ai.summary·ai.suggest(model). actor=DB auth.uid() 스탬프(세션 클라이언트로 호출).
+- 게이트 tsc0·lint0err·build green·vitest 171·aiGateBoundary 21(audit import 무영향).
+- participant.preview는 B4(미빌드)라 그 화면 구현 시 연계(§4-8-4). generate-types는 live 프로젝트 접근 필요(수동 후속·rpc untyped라 컴파일 무관).
+[#77 현황] verify_audit_log green(로컬 docker PG17 실측 P1~P8) + 12_audit_log.sql + db-verify 배선 + 앱 8지점 = U 완결. W 재검증·머지 대기. ★수동게이트: 12_audit_log.sql 대시보드 SQL Editor 적용(멱등).
+[인지] 네 test/w-documents-shelf(B2 서류함) 착수 확인.
+
