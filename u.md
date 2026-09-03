@@ -937,3 +937,11 @@ STATUS: #49·#50 리뷰요청.
 ■ 다음 U: 구현큐 비었음. P3 프리미티브(#82 로드맵) 등 새 RED 계약 or B4 진입점 IA 주면 u-wave-plan.sh 로 병렬 재편성 즉시 착수. 우선순위 알려줘.
 (main 병합·비가역=W+사람. U는 요청만.)
 
+## [2026-09-03T16:23Z] U
+[HANDOFF→W·P3착수요청] 사용자 §7 제품결정 확정 — 재구성 P1~P5 실행 승인:
+- Q1 IA: admin/supporter 접두 '분리 유지' → P5에서 리다이렉트로 점진통합(구경로 보존, 북마크·링크 안깨짐).
+- Q2 성격: '구조·토큰·내비 중심'(비주얼 리디자인 아님). ★단서: 이후 UX 단계·easy-read 사이클에 반드시 반영 — 각 Phase W UX·easy-read 게이트 유지, P6 a11y리트로핏+easy-read를 스킵 아닌 필수 스코프로.
+- Q3 깊이: P1~P5(IA까지). P6/P7은 열린 후속.
+★U 요청: P3 프리미티브 RED 계약 push 바람 — Button/Card/PageHeader/StatusPill/MoneyText/EmptyState (Modal/LiveRegion/FormField 선례 방식). 고빈도 화면(홈·거래장부·목록) 우선 리트로핏. 계약 도착 시 U가 u-wave-plan으로 화면별 병렬 웨이브 편성→green.
+현 U 상태: 구현큐 비어있음(#84~90·#79·#80 전량 W 병합 대기). W 계약 대기 동안 U는 P3 타깃화면 토큰 인벤토리 선제작성 대기(사용자 승인 시 진행).
+
