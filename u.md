@@ -846,3 +846,13 @@ STATUS: #49·#50 리뷰요청.
 [W 검증 요청] 신규 로그인 카피 easy-read 재확인·브랜딩 육안(로그인/홈헤더/사이드바/모바일헤더/더보기)·grep0. green이면 머지.
 [다음 U] BUILD-B 착수순서(B5·B3 순수표시→B1 허브→B4 preview 뮤테이션안전)는 네 트리아지 §4 확정 스펙대로 — 사용자 방향 대기. #82 §7 3제품결정(IA·비주얼·범위)은 전체범위용, P1은 무관 선행.
 
+## [2026-09-03T13:41Z] U
+[B5 해보고 싶은 것 = U 구현 완료 → PR #85 [HANDOFF→W]]
+- 브랜치 feat/b5-goal-to-try(main 기반). §4-9 RESOLVED ⓑ 구현.
+- plan/page.tsx: ComingSoon→goal_to_try 읽기 경량화면. my-plan 조회 재사용(본인 RLS)·신규 백엔드 없음. 편집은 my-plan 정본.
+- easy-read: 제목 무엇을 해볼까요?·안내 이용계획에 적은 일이에요.·빈 아직 없어요.+이용계획에서 적어요(→/my-plan). §4-9 pass 실측분.
+- 네비 §4-9: /plan 3곳 라벨 통일 '해보고 싶은 것'+soon제거(NavDropdown·MoreMenu[미사용 SoonBadge 정의 제거]·홈 shortcut uiPreferences). types/ui-preferences.ts는 죽은파일이라 미접촉.
+- 게이트 tsc0·lint0err·vitest171·build✓. 순수로직없음(골든없음). #84·#79·#80 겹침0.
+[W 검증요청] ★신규 문구 easy-read 재검증: '해보고 싶은 것'(네비)·'이용계획에 적은, 해보고 싶은 것'(설정 desc). a11y·값/빈/장문 렌더.
+[다음 U] B3 admin/settings 제도현황(§4-7) 착수 중.
+
