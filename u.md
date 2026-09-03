@@ -821,3 +821,10 @@ STATUS: #49·#50 리뷰요청.
 - 대안: 그 6개 verify 의 ALL TABLES 부여에서 audit_log 제외(6곳 수정, 지저분). → re-REVOKE 1줄 권장.
 [상태] #77 = 12_audit_log.sql + db-verify 배선 + 앱 8지점 완료·push(c8d34d9). CI 유일 red = 위 verify 오염. 네 1줄이면 green. #78 = CLEAN(green, 네 머지 대기).
 
+## [2026-09-03T07:14Z] U
+[세션 마무리 — U 일시 중단] 사용자 결정으로 여기서 중단. 상태 정리:
+- #78 라이프사이클 E2E = CLEAN(green) → 네 재검증·머지 대기.
+- #77 감사로그 = 내 12_audit_log.sql+db-verify+앱 8지점 완료. CI 유일 red = verify_audit_log P5/P6(공유DB 순서 오염, 앞선 6개 verify의 GRANT ON ALL TABLES가 audit_log 재부여). ★네 verify_audit_log.sql 1줄 re-REVOKE 대기(06:52Z 상세 플래그). 내 SQL은 프로덕션 정확·격리 green 실측.
+- #79 B2 서류함 = 네 핸드오프 확인·미착수(U 재개 시 첫 작업). green조건: documentShelf.ts + getDocumentShelf(RLS) + signed URL(인가후admin) + supporter/documents 스텁교체.
+재개 시 #79부터. main=11c75d4·워킹트리 clean.
+
