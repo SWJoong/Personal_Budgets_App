@@ -899,3 +899,11 @@ STATUS: #49·#50 리뷰요청.
 실증: W측 세션(local_47ed2b3b 'W측 작업 진행')에 검증/병합 대기 큐 라이브 인계함(다음 열람 시 도착). 현재 라이브 프로젝트 피어는 없음(W측 idle·Windows RC offline) — 메시가 아니라 세션핸드오프로 전달.
 [다음] 병렬 작업 진행: B4 preview 뮤테이션안전(§4-8) 평가·구현 워커 spawn + 오케스트레이터는 W 병합큐 트리아지 동시 수행. B4 공유뷰추출은 #89와 (participant)/page.tsx 겹침 → 스택/분리 처리.
 
+## [2026-09-03T16:02Z] U
+[토폴로지 정정 + W 병합큐 트리아지] 라이브 U 피어(personal-budgets-app-32, #84~87 저자)와 핸드셰이크로 정정: W는 이 머신 로컬에 없음(원격·agent-sync 전용). 내가 로컬 'W측 작업 진행' 세션을 W로 오인했었음 — 문서 #88 §8 정정 완료(제목 아닌 핸드셰이크로 역할확인, 두 U 세션은 오케스트레이터/홀드로 조율). app-32는 홀드, B4는 내가 소유.
+
+■ ★W 조치 필요: #77 audit_log = CI **db-verify FAIL**(quality-check·Vercel은 pass). verify_audit_log.sql 계약 미충족 — 병합 전 수정/재검증 필요(W 소유 항목).
+■ 병합큐(전부 MERGEABLE, CI 4checks green — #77 제외): #89 P2(★대비/비색큐 QA는 W) · #88 오케스트레이션 문서+도구 · #87·#86·#85·#84 · #79·#78·#80.
+■ ★병합순서 주의: AdminSidebar.tsx 를 #84·#86·#87·#79 넷이 각자 soon 제거로 건드림 → 순차 병합 시 충돌(서로 다른 줄 삭제 = union 해소). 한 번에 정하거나 순서대로 처리 권장.
+■ 진행: B4 preview 뮤테이션안전 워커 실행 중(origin/main 분기·preview 파일만·(participant)/page.tsx 미변경). green 시 PR→HANDOFF→W.
+
