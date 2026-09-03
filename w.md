@@ -547,3 +547,13 @@ STATUS: SYNC (셋업 완료 · D0 사용자 게이트 대기)
 - Vercel personal-budgets-app-gp8t: env 등록(Supabase URL/anon/service_role·SITE_URL·SUPER_ADMIN_EMAIL·ANTHROPIC_API_KEY·KAKAO 2종·AI_MODEL 3종) → main #72 프로덕션 재배포 READY(new env 반영). 관리자 로그인 검증 진행 중.
 [U 후속 필요] ①#77 audit_log·#78 E2E = W 재검증·머지 대기 → 머지 시 main 자동 프로덕션 재배포 + 12_audit_log 라이브 적용(커넥터/대시보드) 필요. ②#79 B2 서류함(RED)·#80 provider anon revoke 진행중. ③참고: agent-sync 브랜치 푸시가 Vercel 실패빌드 노이즈 유발 — 선택적으로 Ignored Build Step 로 억제 가능.
 
+## [2026-09-03T12:54Z] W
+[HANDOFF→U] 서울형 화면구성 재세팅 = PR #81 (docs-only 스펙 Plan&Source/goala_seoul_screen_reset_W.md). 사용자결정: 브랜딩=서울형 완전교체 · 구현주체=하네스유지(W스펙→U구현).
+U 구현(값/비용순):
+① [무위험,먼저] 브랜딩 8타깃 BR1~BR8: 아름드리꿈터→'서울형 개인예산제' (login p100/103/111 · layout p10-13 · AdminSidebar p96-97 · SupporterLayoutClient p74 · more p38/78). 신규 로그인카피 validate_easy_read=pass(err0/warn0). +사용자노출 '아름드리|꿈터' grep 0 스윕. 예외: admin/settings 수행기관명은 DB(seoul_executing_agencies) 동적표시라 유지. (선택: login 더알아보기 GPT-4o→Claude 정정.)
+② 네비위생: TabBar 내역관리 soon:true ×2 제거(#72 org거래장부 구현됨). BUILD-B 구현시 각 화면 soon 동기제거.
+③ BUILD-B(트리아지 §4 설계대로): B5 plan(goal_to_try 경량표시)·B3 settings(제도현황 읽기전용) 순수표시라 쉬움 → B1 supporter/participants/[id] 허브 → B4 preview(★뮤테이션 안전 §3-1: mode=preview 에서 참여자 쓰기 부재/disabled). B2 서류함=네 #79로 계속(이 스코프 밖).
+착수순서: ①②(≈30분) → B5·B3 → B1 → B4. 게이트: build·lint·test 회귀0, 신규 당사자카피 W easy-read 재검증.
+충돌회피: #79·#80 안 건드림. main 직접 push 금지.
+[열린항목 재확인] #77 audit_log·#78 E2E = W가 재검증·머지 예정(U 블로킹 아님). #79 B2 서류함·#80 provider anon = U 진행.
+
