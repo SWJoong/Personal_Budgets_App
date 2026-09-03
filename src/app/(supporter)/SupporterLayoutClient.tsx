@@ -71,7 +71,7 @@ export function SupporterLayoutClient({
         >
           <span className="text-xl">{mobileMenuOpen ? '✕' : '☰'}</span>
         </button>
-        <h1 className="text-sm font-bold">아름드리꿈터 관리</h1>
+        <h1 className="text-sm font-bold">서울형 개인예산제</h1>
         <div className="w-[44px]" />
       </div>
 

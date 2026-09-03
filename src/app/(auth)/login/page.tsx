@@ -97,10 +97,10 @@ function GoogleLoginContent() {
               💰
             </button>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-              아름드리꿈터
+              서울형 개인예산제
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
-              아름드리꿈터 선생님과 이용자를 위한 앱이에요
+              선생님과 이용자가 함께 쓰는 앱이에요
             </p>
           </div>
 
@@ -108,7 +108,7 @@ function GoogleLoginContent() {
           {error && (
             <div className="rounded-2xl bg-red-50 border border-red-200 p-4 text-sm text-red-800 leading-relaxed">
               <p className="font-bold mb-1">이 앱에 들어올 수 없는 이메일이에요.</p>
-              <p>아름드리꿈터 선생님이라면 기관 이메일로 로그인해주세요.</p>
+              <p>선생님이라면 기관 이메일로 로그인해주세요.</p>
               <p>이용자라면 담당 선생님께 문의해주세요.</p>
             </div>
           )}
@@ -184,7 +184,7 @@ function GoogleLoginContent() {
                   <h2 className="font-bold text-zinc-800 mb-1.5">✨ 주요 기능</h2>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-zinc-600">
                     <span>• SVG 주머니·지폐 잔액 시각화</span>
-                    <span>• 영수증 OCR (GPT-4o)</span>
+                    <span>• 영수증 OCR (Claude)</span>
                     <span>• 월별계획 · 전월 복사</span>
                     <span>• 지원목표 · 4+1 평가</span>
                     <span>• 이용계획서 자동 생성</span>
@@ -199,7 +199,7 @@ function GoogleLoginContent() {
                 <div>
                   <h2 className="font-bold text-zinc-800 mb-1.5">🏗️ 기술 스택</h2>
                   <div className="flex flex-wrap gap-1.5 text-xs">
-                    {["Next.js 15", "React 19", "TypeScript", "Tailwind CSS 4", "Supabase", "GPT-4o", "Kakao Maps", "Vercel"].map((t) => (
+                    {["Next.js 15", "React 19", "TypeScript", "Tailwind CSS 4", "Supabase", "Claude", "Kakao Maps", "Vercel"].map((t) => (
                       <span key={t} className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{t}</span>
                     ))}
                   </div>

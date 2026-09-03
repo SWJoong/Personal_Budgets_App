@@ -7,10 +7,10 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: {
-    default: "아름드리꿈터 개인예산 관리",
-    template: "%s · 아름드리꿈터 개인예산",
+    default: "서울형 개인예산제",
+    template: "%s · 서울형 개인예산제",
   },
-  description: "아름드리꿈터 자기주도 개인예산 관리 앱",
+  description: "서울형 개인예산제 관리 앱",
 };
 
 export default function RootLayout({

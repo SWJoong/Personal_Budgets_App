@@ -93,8 +93,8 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
       <div className={`flex items-center h-14 shrink-0 ${collapsed ? 'justify-center px-2' : 'justify-between px-4'}`}>
         {!collapsed && (
           <Link href="/admin" className="block hover:opacity-80 transition-opacity min-w-0 flex-1 mr-2">
-            <h2 className="text-white font-bold text-base tracking-tight leading-tight truncate">아름드리꿈터</h2>
-            <span className="text-slate-400 text-xs font-normal">관리자 뷰 (회계장부)</span>
+            <h2 className="text-white font-bold text-base tracking-tight leading-tight truncate">서울형 개인예산제</h2>
+            <span className="text-slate-400 text-xs font-normal">관리자</span>
           </Link>
         )}
         {onToggle && (
