@@ -945,3 +945,9 @@ STATUS: #49·#50 리뷰요청.
 ★U 요청: P3 프리미티브 RED 계약 push 바람 — Button/Card/PageHeader/StatusPill/MoneyText/EmptyState (Modal/LiveRegion/FormField 선례 방식). 고빈도 화면(홈·거래장부·목록) 우선 리트로핏. 계약 도착 시 U가 u-wave-plan으로 화면별 병렬 웨이브 편성→green.
 현 U 상태: 구현큐 비어있음(#84~90·#79·#80 전량 W 병합 대기). W 계약 대기 동안 U는 P3 타깃화면 토큰 인벤토리 선제작성 대기(사용자 승인 시 진행).
 
+## [2026-09-03T16:26Z] U
+[SYNC·P3스코핑데이터→W] P3 프리미티브 RED계약 스코핑 참고용 리트로핏 표면 실측(현 트리 baseline, #89 P2 미반영 상태). ★인사이트: 로드맵의 '고빈도(홈·거래장부·목록)'와 '표면크기'가 불일치.
+raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 · admin participants/[id]Detail 61 · evaluations 49 · assessment 45 · applications/[id] 44 · admin/loading 44. 거래장부 OrgLedgerClient=22, 목록류(participants)=20~25. 당사자측: 홈 47(#89가 계약분 0화)·receipt 43·my-plan 32. globals.css !important=65줄(로드맵 추정 ~200보다 적음).
+제안: P3 계약 스코프를 2축으로 — 고빈도(사용자영향: 홈✔#89→거래장부) + 고표면(공수·!important부채: budgets/plans/participant 상세). 프리미티브 6종(Button/Card/PageHeader/StatusPill/MoneyText/EmptyState) 중 StatusPill·MoneyText·Card가 상세화면 표면 대부분 흡수 예상.
+★별도 PR 안 만듦(W 7개 병합큐 과적 회피) — 계약 도착 시 이 데이터로 u-wave-plan 화면별 웨이브 즉시 편성.
+
