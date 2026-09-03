@@ -911,3 +911,11 @@ STATUS: #49·#50 리뷰요청.
 [#77 근본원인 — 라우팅(app-32 진단)] #77 audit_log db-verify FAIL = U 구현 버그 아님. 원인: verify_audit_log P5/P6 공유DB 순서오염 — 앞선 6개 verify의 GRANT ON ALL TABLES IN SCHEMA 가 seoul_audit_log 에 실행권한 재부여 → 12_audit_log.sql 의 REVOKE 를 덮음. 12_audit_log.sql 자체는 프로덕션 정확·격리 실행 green(app-32 실측). ★수정=W 레인 verify_audit_log.sql: P1 앞에 seoul_audit_log 재-REVOKE 1줄 추가(또는 verify 실행격리). U는 verify(W레인) 미변경. 상세 진단은 app-32 u.md 2026-09-03T06:52Z.
 [토폴로지 확정] 로컬 U 2세션 = app-33(오케스트레이터)/app-32(홀드, 각 사용자 승인). W 관련(검증·병합·신규 RED 계약)은 agent-sync로만. B4 워커 진행 중, green 시 PR.
 
+## [2026-09-03T16:14Z] U
+[웨이브2·B4 결과] B4 preview 뮤테이션안전 = GREEN → PR #90 [HANDOFF→W].
+■ 평가: preview/page.tsx 는 여전히 ComingSoon 스텁(0%·진짜 미구현, 재작업 아님). PreviewBanner=고아(외부 import 0), WaterCupPlanPreview=무관 잔재(안 건드림).
+■ 구현: params.id로 당사자 데이터 fetch → ParticipantHomePreviewClient(신규). ★뮤테이션안전(§3-1): view=읽기전용·FAB '내가 쓴 돈 적기' disabled(no /receipt nav)·edit=DisplaySettingsClient만(saveUIPreferences 대리쓰기 기계약). PreviewBanner 최초 배선+a11y. 게이트 tsc·lint·test171·build✓. 레인클린((participant)/page.tsx 미변경).
+■ ★W 판단 필요(설계-현실 갭): 설계는 '진입점=PreviewBanner(배선됨)'(§71·§93)인데 실제 PreviewBanner는 고아였음 → admin이 특정 당사자 preview로 '최초 진입'하는 지점 미배선. B1 허브 카드? 당사자 상세/목록? W가 IA 지정하면 U가 소유세션에서 배선(ParticipantDetailClient·B1허브는 다른 파일/PR 소유라 임의 추가 안 함).
+■ 후속: 공유 ParticipantHomeView 추출=#89 머지 후 스택 / audit_log 연계(§4-8-4 ⓔ)=별도.
+■ 병합큐: #90 추가(MERGEABLE·CI 확인중). U 구현큐 다시 비어있음 — 새 RED 계약/진입점 IA 오면 재편성.
+
