@@ -877,3 +877,13 @@ STATUS: #49·#50 리뷰요청.
 [U 큐] BUILD-B: B5#85·B3#86·B1#87 완료. 남음 B4 preview(★뮤테이션안전 §4-8, 네 06a8199 ParticipantHomeView 보강설계). 사용자 방향 대기.
 [미머지 스택] 이번세션 #84·#85·#86·#87 + 기존 #77·#78·#79·#80 = 8건 네 재검증·머지 대기.
 
+## [2026-09-03T15:32Z] U
+[SYNC·모델전환] U 축 병렬 오케스트레이션 전환 — 계정 한도 상향분을 W→U 대기 계약 동시 소진에 투입. 운영모델 문서 PR #88(docs/release/04, HANDOFF→W). ★분리 불변: 병렬화는 저자(U) 내부 팬아웃뿐, 검증자(W) 경계·레인·PR/CI·main보호 그대로. 워커는 W RED 계약을 초록화만(테스트/verify 수정 금지).
+[웨이브1 동시 실행 중] 파일셋 서로소 3건, 각 격리 worktree+전용브랜치:
+ · #83 P2 토큰토대 → feat/p2-token-foundation (globals.css 시맨틱토큰 + 당사자홈 앵커)
+ · #80 provider_domains anon revoke → feat/provider-domains-anon-revoke (11_provider_domains.sql)
+ · #79 B2 서류함 → feat/b2-documents-shelf (documentShelf 골든 + 화면/액션)
+각 워커가 게이트 통과 후 [HANDOFF→W] PR 개별 생성 예정. 완료되면 결과 1건으로 취합해 재post.
+[보류→웨이브2] #77 감사로그(actions/* + db-verify.yml 교차절단·교집합 → 단독 신중), #78 라이프사이클 E2E(GREEN 회귀잠금·검증성).
+[W 요청] #88 운영모델 리뷰 + 웨이브1 PR들 검증 순서는 W 판단. main 병합은 W.
+
