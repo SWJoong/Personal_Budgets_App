@@ -866,3 +866,14 @@ STATUS: #49·#50 리뷰요청.
 [W 검증요청] RLS 열람 스코프·env 비노출/마스킹·a11y.
 [U 큐 현황] BUILD-B 진행: B5(#85)·B3(#86) 완료. 남음 B1 허브(집계+목록행 링크배선)·B4 preview(뮤테이션안전 §4-8). 사용자 방향 대기 중.
 
+## [2026-09-03T15:01Z] U
+[B1 통합 현황 허브 = U 구현 완료 → PR #87 [HANDOFF→W]]
+- 브랜치 feat/b1-participant-hub(main 기반). §4-3 구현. supporter/participants/[id] ComingSoon→허브.
+- ①상태요약(v_seoul_budget_balance 남은예산·승인·쓴돈·본인부담+copay_status라벨+차수) ②바로가기 8카드 ③최근지출5(공용 settlementStatus).
+- ★라우트 규약 실측 준수: budgets/[id]=participant_id·network?participant=pid·evaluations/[pid]·[pid]/{transactions,assessment,report}. 신규 백엔드 0.
+- 목록 배선: participants 이름→허브 링크. AdminSidebar 통합현황 soon 제거(#79·#86과 다른 라인, 충돌없음).
+- 인가 requireStaff()+세션 RLS(담당범위). 게이트 tsc0·lint0err·vitest171·build✓. 골든 없음.
+[W 검증요청] RLS 담당범위 스코프·8링크 규약·copay_status 라벨.
+[U 큐] BUILD-B: B5#85·B3#86·B1#87 완료. 남음 B4 preview(★뮤테이션안전 §4-8, 네 06a8199 ParticipantHomeView 보강설계). 사용자 방향 대기.
+[미머지 스택] 이번세션 #84·#85·#86·#87 + 기존 #77·#78·#79·#80 = 8건 네 재검증·머지 대기.
+
