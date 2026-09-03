@@ -922,3 +922,18 @@ STATUS: #49·#50 리뷰요청.
 ## [2026-09-03T16:16Z] U
 [SYNC·트리아지] 사용자요청 '추가 오케스트레이션 작업 확인'. 결과: U 구현큐 비어있음. 열린 PR #84·#85·#86·#87·#89·#90 + #79·#80 전부 CI 4체크 green·MERGEABLE·CLEAN — 전량 W 검증·병합 대기. 전 브랜치 main 대비 -0(리베이스 불요), 로컬 클린. ★u.md 16:02Z의 AdminSidebar 순차병합 충돌 경고 = merge-tree 시뮬로 반증(b1↔b3↔#79 전쌍 exit=0 클린; soon제거가 비인접 메뉴줄이라 3-way 자동해소). W는 순서무관 병합 가능. 남은 블로커: #77 audit_log=W레인 verify_audit_log.sql 수정 / P3+ = §7 사용자결정 3건→W 프리미티브 RED계약→U 웨이브. 신규 U착수 대상 없음 — 스폰 안 함('이미구현 함정' 회피).
 
+## [2026-09-03T16:22Z] U
+[U→W 액션 요청 · 검증/병합 + 판단 2건 (통합, 사용자 요청)]
+■ 검증·병합 대기(전부 MERGEABLE·CI green, W 독립검증 후 main 병합):
+ · #90 B4 preview 뮤테이션안전 — 검증=preview 쓰기 disabled 컴포넌트계약+a11y+설계리뷰(골든없음)
+ · #89 P2 토큰토대 — ★검증=대비4.5:1(S4)+비색큐(S5) 4모드 육안. #83 RED 포함→#89 머지 시 #83 close
+ · #88 U 병렬 오케스트레이션 운영모델+도구(u-wave-plan.sh)+CLAUDE.md 현황
+ · #87 B1허브 · #86 B3설정 · #85 B5 · #84 브랜딩 (app-32 저자·홀드중)
+ · #79 B2서류함 · #78 라이프사이클E2E · #80 provider anon (W계약 브랜치에 U impl 담김)
+ ★병합순서 주의: #84·#86·#87·#79 가 AdminSidebar.tsx 공유(각자 soon 제거) → 순차 병합 union 충돌. 순서 정하거나 일괄.
+■ 판단 2건:
+ ① #77 audit_log db-verify FAIL = U 버그 아님. 원인=verify_audit_log P5/P6 공유DB 순서오염(앞 6개 verify의 GRANT ON ALL TABLES가 seoul_audit_log 재부여→REVOKE 덮음). 12_audit_log.sql 은 프로덕션·격리 green. ★수정=W레인 verify_audit_log.sql P1 앞 re-REVOKE 1줄(app-32 진단 u.md 06:52Z) → 적용 시 green.
+ ② B4 진입점 IA: 설계는 '진입점=PreviewBanner(배선됨)'(§71·§93)인데 실제 고아였음. admin이 특정 당사자 preview로 최초 진입하는 지점(B1허브 카드/당사자 상세/목록) W 지정 → U가 소유세션서 배선.
+■ 다음 U: 구현큐 비었음. P3 프리미티브(#82 로드맵) 등 새 RED 계약 or B4 진입점 IA 주면 u-wave-plan.sh 로 병렬 재편성 즉시 착수. 우선순위 알려줘.
+(main 병합·비가역=W+사람. U는 요청만.)
+
