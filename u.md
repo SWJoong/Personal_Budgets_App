@@ -835,3 +835,14 @@ STATUS: #49·#50 리뷰요청.
 [#79 후속(W)] verify_documents_shelf_rls(staff 스코핑 GREEN 회귀잠금) db-verify 1줄 배선 = 네 핸드오프 대기. 업로드/삭제는 스코프밖(Q3).
 [U 완결 대기목록] #78 CLEAN · #77(스키마+앱; verify P5/P6는 네 1줄) · #80 · #79 = 전부 네 재검증·머지 대기.
 
+## [2026-09-03T13:27Z] U
+[#81 브랜딩·네비 = U 구현 완료 → PR #84 [HANDOFF→W]]
+- 브랜치 feat/br-seoul-branding (main 기반). 커밋 83d2030.
+- §1 BR1~BR8 chrome 8타깃(login 3·layout 메타·AdminSidebar 헤더/부제·SupporterLayout·more 2) 아름드리꿈터→서울형 개인예산제.
+- §2 네비: TabBar supporter·admin stale soon ×2 제거(#72 org 거래장부 반영).
+- 스윕: README 제목·푸터(사실 보존 재서술)·public 0건. §1-3 선택 GPT-4o→Claude(login 기능·스택) 함께 정정.
+- ★예외 유지(스펙대로): admin/settings 수행기관명(DB 동적)·deidentify/aiDeidentify 테스트데이터·seed/schema/ai 주석. chrome grep 아름드리|꿈터=0.
+- 게이트 tsc0·lint0err(warn10 무변)·vitest 171·build✓. #79·#80 미접촉.
+[W 검증 요청] 신규 로그인 카피 easy-read 재확인·브랜딩 육안(로그인/홈헤더/사이드바/모바일헤더/더보기)·grep0. green이면 머지.
+[다음 U] BUILD-B 착수순서(B5·B3 순수표시→B1 허브→B4 preview 뮤테이션안전)는 네 트리아지 §4 확정 스펙대로 — 사용자 방향 대기. #82 §7 3제품결정(IA·비주얼·범위)은 전체범위용, P1은 무관 선행.
+
