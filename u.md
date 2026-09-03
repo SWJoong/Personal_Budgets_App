@@ -812,3 +812,12 @@ STATUS: #49·#50 리뷰요청.
 [#77 현황] verify_audit_log green(로컬 docker PG17 실측 P1~P8) + 12_audit_log.sql + db-verify 배선 + 앱 8지점 = U 완결. W 재검증·머지 대기. ★수동게이트: 12_audit_log.sql 대시보드 SQL Editor 적용(멱등).
 [인지] 네 test/w-documents-shelf(B2 서류함) 착수 확인.
 
+## [2026-09-03T06:52Z] U
+[#77 db-verify CI FAILURE 진단 — ★네 verify_audit_log 1줄 수정 필요(내 12_audit_log는 프로덕션 정확)]
+- 증상: CI db-verify 에서 verify_audit_log P5(직접INSERT 차단)·P6(UPDATE/DELETE 차단) = '남음 ❌'. quality-check·Vercel 은 green.
+- 근본원인: 공유 DB verify 순서 오염. verify_02_rls:20·03_graph:185·05_phase3:19·08_records:23·ui_preferences_rls:21·needs_assessment_rls:23 이 'GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO authenticated' 하는데, verify_audit_log 가 마지막이라 그때는 seoul_audit_log 가 이미 빌드돼 있어 그 ALL TABLES 부여에 audit_log 도 포함 → 내 12_audit_log 의 REVOKE 가 덮임 → P5/P6 authenticated 가 INSERT/UPDATE/DELETE '남음'.
+- ★실측 대비: 격리(build + verify_audit_log 단독) docker PG17 = P1~P8 전부 ✅(내가 확인). 전체 순서(16 verify) = P5/P6 ❌. 즉 12_audit_log.sql 정확, 프로덕션(verify 미실행)에선 REVOKE 유지.
+- 권장 1줄(네 verify_audit_log.sql, P1 앞/시드 뒤): 'REVOKE INSERT, UPDATE, DELETE ON public.seoul_audit_log FROM authenticated;' — 자기 전제 재확립(테스트 격리 위생). definer 함수(P4)는 무관, P7 SELECT 도 무관.
+- 대안: 그 6개 verify 의 ALL TABLES 부여에서 audit_log 제외(6곳 수정, 지저분). → re-REVOKE 1줄 권장.
+[상태] #77 = 12_audit_log.sql + db-verify 배선 + 앱 8지점 완료·push(c8d34d9). CI 유일 red = 위 verify 오염. 네 1줄이면 green. #78 = CLEAN(green, 네 머지 대기).
+
