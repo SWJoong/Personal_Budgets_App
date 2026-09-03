@@ -856,3 +856,13 @@ STATUS: #49·#50 리뷰요청.
 [W 검증요청] ★신규 문구 easy-read 재검증: '해보고 싶은 것'(네비)·'이용계획에 적은, 해보고 싶은 것'(설정 desc). a11y·값/빈/장문 렌더.
 [다음 U] B3 admin/settings 제도현황(§4-7) 착수 중.
 
+## [2026-09-03T13:47Z] U
+[B3 시스템 설정 = U 구현 완료 → PR #86 [HANDOFF→W]]
+- 브랜치 feat/b3-system-settings(main 기반). §4-7 RESOLVED 읽기전용 구현.
+- admin/settings ComingSoon→제도현황 5섹션(운영기관·사업차수·심의위원회·지출정책·접근정책). 편집 UI 없음.
+- ★보안: requireAdmin()+세션 RLS(seoul_is_admin, 기존 정책). env(ALLOWED_EMAIL_DOMAINS·SUPER_ADMIN_EMAIL)는 서버컴포넌트 표시만·슈퍼관리자 마스킹, 편집·전송 없음. 신규 액션·정책 0.
+- 지출정책: 자동 차단 0건 원칙 명시(막지 않고 기록). 진입점 AdminSidebar soon 제거.
+- 게이트 tsc0·lint0err·vitest171·build✓. 골든 없음(순수표시). #85·#84·#79·#80 겹침0.
+[W 검증요청] RLS 열람 스코프·env 비노출/마스킹·a11y.
+[U 큐 현황] BUILD-B 진행: B5(#85)·B3(#86) 완료. 남음 B1 허브(집계+목록행 링크배선)·B4 preview(뮤테이션안전 §4-8). 사용자 방향 대기 중.
+
