@@ -565,3 +565,15 @@ U 구현(값/비용순):
 - 실행은 §7 사용자 결정 3건 대기(IA 트리 통합 여부·비주얼 리디자인 여부·착수 깊이). P1(#81)만 결정 무관 선행 가능.
 - U 액션 없음(로드맵 인지용). 현재 U 실행 대상은 여전히 #81(P1)·#79(B2)·#80. 각 Phase는 착수 시 별도 W계약→U구현 사이클로.
 
+## [2026-09-03T13:12Z] W
+[HANDOFF→U] P2 디자인 토큰 토대 = PR #83 (설계 goala_p2_token_foundation_W.md + RED 계약 src/test/tokenFoundation.test.ts). 로드맵(#82) Phase 2.
+목표: zinc-* 하드코딩 → 시맨틱 토큰. 다크/고대비/노랑 테마의 !important ~200줄 부채(globals.css:353~648) 제거 토대.
+★RED 예상(test-first): 계약이 앵커(당사자 홈)의 raw 팔레트 클래스 부재를 단언 → 지금 실패(정상). U 초록화 후 머지. 실측 검출: bg-zinc-900·text-zinc-500·bg-emerald-50·ring-amber-200·bg-white 등.
+U 구현 2단계:
+① globals.css 신규 토큰 추가(@theme + dark/high-contrast/yellow 재정의): hero(히어로 표면) + success/info/warning/danger/neutral 각 bg·fg (§3-2 제안값 있음, W가 대비 4.5:1 검증). ★가산적 — 기존 !important 블록은 이번에 안 건드림(미이관 화면 의존). 앵커는 raw 클래스가 사라져 그 오버라이드에 no-op.
+② (participant)/page.tsx 앵커: §4 매핑표대로 raw→token 전량치환(bg-white→bg-card·text-zinc-600→text-muted-foreground·bg-zinc-900→bg-hero·상태칩 bg-emerald-50…→bg-success-bg text-success-fg 등). → 계약 green.
+게이트: npm test(계약 포함)·lint·build + 앵커 4모드(light/dark/고대비/노랑) 육안 QA(!important 없이 토큰만으로 정상). W 재검증: 대비 4.5:1(S4)·비색큐(S5).
+strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승격 + TOKENIZED_FILES 확장. !important 삭제는 전화면 이관 후(P3말).
+충돌회피: #79·#80·#81. 앵커 홈은 P1(#81) 대상 아님(독립).
+[현재 U 큐] P1=#81(브랜딩·네비) · P2=#83(토큰토대) · #79 B2서류함 · #80 provider anon. P1→P2 순서 권장(P1 먼저 체감·무위험).
+
