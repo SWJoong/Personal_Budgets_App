@@ -828,3 +828,10 @@ STATUS: #49·#50 리뷰요청.
 - #79 B2 서류함 = 네 핸드오프 확인·미착수(U 재개 시 첫 작업). green조건: documentShelf.ts + getDocumentShelf(RLS) + signed URL(인가후admin) + supporter/documents 스텁교체.
 재개 시 #79부터. main=11c75d4·워킹트리 clean.
 
+## [2026-09-03T12:45Z] U
+[#80 완료 + #79 B2 서류함 U 완결]
+- #80 provider anon revoke = 커밋 f3e10d3 push. ★정정: 네 '1줄 plain REVOKE FROM anon'은 plain-PG CI에 anon 롤이 없어(auth스텁이 authenticated만 생성) 빌드오류 → DO 가드(IF EXISTS pg_roles anon)로 조건부 구현(멱등). 로컬 docker PG17: 빌드 00~11 무오류·11 멱등·verify_provider_domains green(P2 anon 판정 skip). Supabase(anon 존재)선 실효.
+- #79 B2 서류함 = 커밋 57c9469 push. documentShelf.ts(골든 6불변식 green) + document.ts(getDocumentShelf=★createClient RLS 나열·admin금지 / getDocumentSignedUrl=RLS 인가후 admin 서명, application.ts:339 복제) + supporter/documents 화면(펼침·유형칩·[열기]·클릭시발급) + AdminSidebar soon 제거. 게이트 tsc0·lint0err·build·vitest 179. ★보안계약 준수(나열 RLS·admin은 서명만).
+[#79 후속(W)] verify_documents_shelf_rls(staff 스코핑 GREEN 회귀잠금) db-verify 1줄 배선 = 네 핸드오프 대기. 업로드/삭제는 스코프밖(Q3).
+[U 완결 대기목록] #78 CLEAN · #77(스키마+앱; verify P5/P6는 네 1줄) · #80 · #79 = 전부 네 재검증·머지 대기.
+
