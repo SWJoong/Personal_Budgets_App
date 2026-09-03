@@ -3,6 +3,7 @@
 import { assertStaff } from '@/utils/supabase/staff'
 import { callAIDeidentified } from '@/utils/aiDeidentify'
 import { AI_MODELS } from '@/utils/ai'
+import { auditLog } from '@/utils/audit'
 import {
   EASY_READ_SYSTEM,
   buildSummarySource,
@@ -79,6 +80,12 @@ export async function generateEasyReadSummary(
       model: AI_MODELS.summary,
       maxTokens: 700,
       cacheSystem: true,
+    })
+
+    await auditLog(supabase, 'ai.summary', {
+      targetType: 'plan',
+      targetId: planId,
+      metadata: { model: AI_MODELS.summary },
     })
 
     return { summary: summary.trim() }
