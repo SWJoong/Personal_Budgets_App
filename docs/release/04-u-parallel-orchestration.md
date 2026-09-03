@@ -80,6 +80,11 @@ test-first(W가 RED 계약을 먼저 박고 U가 초록화). 이 문서는 *U �
 3. 각 워커는 **격리 worktree**(별도 디렉터리)에서 돌아 파일시스템상 서로 안 보인다. 브랜치도 전용.
    → 웨이브 내 충돌은 구조적으로 0. 잔여 충돌은 **병합 시점(W)** 에서만, 레인 우선순위로 해소.
 
+> **자동화**: 위 1~2 + 계약 상태 분류는 [`scripts/u-wave-plan.sh`](../../scripts/u-wave-plan.sh)가 한다.
+> `[HANDOFF→U]` 오픈 PR을 수집해 파일 교집합·서로소 웨이브를 제안하고, 각 핸드오프를
+> **RED(구현대기) / U구현있음(검증대기) / 스펙(코드0)** 으로 분류한다. ★핵심: 겹침만이 아니라
+> **이미 끝난 일에 워커를 붙이는 실수**(첫 웨이브에서 실제 발생 — 부록 참조)를 STATE 분류로 막는다.
+
 > `AdminSidebar.tsx`·`globals.css`·seoul build SQL·`actions/*` 처럼 **여러 기능이 공유하기 쉬운 파일**은
 > 웨이브 편성 시 특히 교집합을 확인한다. 상습 교집합 = 모듈 경계 재설계 신호.
 
@@ -119,7 +124,7 @@ test-first(W가 RED 계약을 먼저 박고 U가 초록화). 이 문서는 *U �
 ## 7. 매 웨이브 루틴 (오케스트레이터)
 
 1. `agent-sync.sh pull` — W 최신 상태.
-2. 대기 W→U 핸드오프 나열 → 변경 파일셋 뽑아 **서로소 웨이브** 편성(§4).
+2. `scripts/u-wave-plan.sh` 실행 → RED(구현대기)만 **서로소 웨이브**로 편성(§4). 스펙·이미구현은 자동 스킵.
 3. 게이트 베이스라인 확인(main green 전제 — CI 보호).
 4. 워커 N spawn(§5) — 한 메시지에서 동시 실행.
 5. 완료 알림 수집 → 리포트 취합 → BLOCKER/레인노트 있으면 개입.
@@ -136,15 +141,22 @@ test-first(W가 RED 계약을 먼저 박고 U가 초록화). 이 문서는 *U �
 
 ---
 
-## 부록 · 첫 웨이브 (기록)
+## 부록 · 첫 웨이브 (실행 기록 + 교훈)
 
-W→U 대기 계약 중 파일셋이 서로소인 3건으로 첫 웨이브 편성:
+파일셋이 서로소인 3건(#83·#80·#79)으로 첫 웨이브를 격리 worktree에 띄웠다. **그 직후 오케스트레이터가
+각 W 계약 브랜치의 커밋 로그를 점검**하다가 다음을 발견:
 
-| 워커 | W 계약 | 서브레인(파일) | 축 |
+| 워커 | W 계약 | 브랜치 실제 상태 | 조치 |
 |---|---|---|---|
-| P2 | #83 P2 토큰 토대 | `src/app/globals.css`, `(participant)/page.tsx` | frontend |
-| ANON | #80 provider_domains anon | `supabase/seoul/11_provider_domains.sql` | backend |
-| DOCS | #79 B2 서류함 | `documentShelf.ts`·`actions/document.ts`·`documents/{page,DocumentShelfClient}.tsx`·`AdminSidebar.tsx` | feature |
+| P2 | #83 P2 토큰 토대 | W RED 커밋만 존재 → **진짜 미구현** | ✅ 유지·구현 진행 |
+| ANON | #80 provider_domains anon | `feat … anon EXECUTE 회수 [U]` 커밋 이미 존재 | ⛔ **중복** → 중지·worktree 정리 |
+| DOCS | #79 B2 서류함 | `feat … documentShelf 골든 green + 화면 [U]` 이미 존재 | ⛔ **중복** → 중지(푸시 전) |
 
-보류(웨이브 2 이후): #77 감사로그(다수 `actions/*` + `.github/workflows/db-verify.yml` 교집합·교차절단 →
-단독 신중 처리), #78 라이프사이클 E2E(GREEN 회귀잠금 — 검증성).
+**교훈 → 하네스 개선**: `[HANDOFF→U]` 라벨만 보고 워커를 붙이면 *이미 끝난 일*을 다시 한다. 그래서
+`u-wave-plan.sh`에 **STATE 분류**(RED 구현대기 / U구현있음 검증대기 / 스펙 코드0)를 추가해, 스폰 전에
+파일 겹침뿐 아니라 **완료 여부**까지 걸러 낸다(§4 자동화). 중지된 두 워커는 아무것도 push하지 않아
+부작용 0 — 격리 worktree + push-후-핸드오프 규율의 안전성 실증.
+
+**실제 U 구현 큐(도구 판정)**: `#83`(P2) 1건뿐. 나머지 W→U PR(#77·#78·#79·#80)은 *이미 구현되어
+W 검증 대기*, #81은 코드 없는 스펙. 즉 겉보기 6건 백로그의 실제 미구현은 1건 — 오케스트레이터
+점검이 없었으면 최대 5배의 재작업이 발생할 뻔했다.
