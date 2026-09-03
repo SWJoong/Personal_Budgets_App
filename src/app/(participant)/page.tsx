@@ -29,11 +29,11 @@ const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
  * over/unplanned 를 붉은 경고 대신 부드럽게(설계 §5·§6, validate_easy_read pass).
  */
 const PARTICIPANT_STATUS: Record<BudgetStatus, { label: string; cls: string }> = {
-  ok: { label: '쓰는 중이에요', cls: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
-  unused: { label: '아직 안 썼어요', cls: 'bg-sky-50 text-sky-700 ring-sky-200' },
-  over: { label: '조금 넘게 썼어요', cls: 'bg-amber-50 text-amber-700 ring-amber-200' },
-  unplanned: { label: '계획에 없이 썼어요', cls: 'bg-amber-50 text-amber-700 ring-amber-200' },
-  none: { label: '아직 없어요', cls: 'bg-zinc-100 text-zinc-500 ring-zinc-200' },
+  ok: { label: '쓰는 중이에요', cls: 'bg-success-bg text-success-fg ring-success-fg/20' },
+  unused: { label: '아직 안 썼어요', cls: 'bg-info-bg text-info-fg ring-info-fg/20' },
+  over: { label: '조금 넘게 썼어요', cls: 'bg-warning-bg text-warning-fg ring-warning-fg/20' },
+  unplanned: { label: '계획에 없이 썼어요', cls: 'bg-warning-bg text-warning-fg ring-warning-fg/20' },
+  none: { label: '아직 없어요', cls: 'bg-neutral-bg text-neutral-fg ring-neutral-fg/20' },
 }
 
 /** 서울형 6영역 아이콘(seed label 기준, program='seoul'). */
@@ -70,14 +70,14 @@ export default async function Home() {
   if (!participant) {
     return (
       <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-        <header className="flex h-16 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+        <header className="flex h-16 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
           <h1 className="text-xl font-bold tracking-tight">서울형 개인예산</h1>
         </header>
         <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-6 max-w-sm mx-auto">
           <span aria-hidden="true" className="text-8xl">👋</span>
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-bold tracking-tight">반가워요!</h2>
-            <p className="text-zinc-500 font-medium leading-relaxed">
+            <p className="text-muted-foreground font-medium leading-relaxed">
               아직 예산 정보가 없어요.<br />담당 선생님에게 말씀해 주세요.
             </p>
           </div>
@@ -137,30 +137,30 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-28">
-      <header className="flex h-16 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+      <header className="flex h-16 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <h1 className="text-xl font-bold tracking-tight">{participant.name ?? profile?.name ?? '나'}님의 예산</h1>
         {/* 더보기(설정 등)를 상단 헤더로 이관 — 하단은 단일 FAB 만(§6). */}
         <Link
           href="/more"
           aria-label="더보기"
-          className="w-11 h-11 -mr-2 flex items-center justify-center text-2xl text-zinc-500 hover:text-zinc-700 transition-colors"
+          className="w-11 h-11 -mr-2 flex items-center justify-center text-2xl text-muted-foreground hover:text-foreground transition-colors"
         >
           ⚙
         </Link>
       </header>
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-6 max-w-sm mx-auto w-full">
         {!balance ? (
-          <section className="p-8 rounded-3xl bg-zinc-100 text-center">
-            <p className="text-zinc-500 font-medium leading-relaxed">
+          <section className="p-8 rounded-3xl bg-muted text-center">
+            <p className="text-muted-foreground font-medium leading-relaxed">
               아직 정해진 예산이 없어요.<br />선생님들이 확인하면 여기에 나와요.
             </p>
           </section>
         ) : (
           <>
-            <section className="p-8 rounded-3xl bg-zinc-900 text-white flex flex-col gap-2">
-              <span className="text-sm font-bold text-zinc-400">지금 쓸 수 있는 돈</span>
+            <section className="p-8 rounded-3xl bg-hero text-hero-foreground flex flex-col gap-2">
+              <span className="text-sm font-bold text-hero-foreground/70">지금 쓸 수 있는 돈</span>
               <span className="text-4xl font-black tracking-tight">{won(Number(balance.remaining))}</span>
-              <span className="text-xs font-medium text-zinc-400 leading-relaxed">
+              <span className="text-xs font-medium text-hero-foreground/70 leading-relaxed">
                 {/* 기준은 차수 상한이 아니라 이 사람에게 승인된 금액이다 — remaining 과 같은 축이어야
                     "전체 240만인데 왜 150만만 남았지?" 같은 혼란이 생기지 않는다. */}
                 전체 {won(Number(balance.allocated_amount))} 중 {won(Number(balance.spent))} 사용했어요
@@ -173,14 +173,14 @@ export default async function Home() {
               return (
                 <section
                   className={`p-6 rounded-3xl flex flex-col gap-1.5 ring-1 ${
-                    copay.pending ? 'bg-amber-50 ring-amber-200' : 'bg-white ring-zinc-200'
+                    copay.pending ? 'bg-warning-bg ring-warning-fg/20' : 'bg-card ring-border'
                   }`}
                 >
-                  <span className="text-sm font-bold text-zinc-500">{copay.title}</span>
+                  <span className="text-sm font-bold text-muted-foreground">{copay.title}</span>
                   {copay.amount > 0 && (
                     <span className="text-2xl font-black tracking-tight">{won(copay.amount)}</span>
                   )}
-                  <span className="text-xs font-medium text-zinc-500 leading-relaxed">{copay.note}</span>
+                  <span className="text-xs font-medium text-muted-foreground leading-relaxed">{copay.note}</span>
                 </section>
               )
             })()}
@@ -188,8 +188,8 @@ export default async function Home() {
             {showDomains && enabled.has('domain_breakdown') && (
               <section className="flex flex-col gap-3">
                 <div>
-                  <h2 className="text-sm font-bold text-zinc-500">영역별로 보기</h2>
-                  <p className="text-xs text-zinc-600 mt-0.5">어디에 썼는지 봐요.</p>
+                  <h2 className="text-sm font-bold text-muted-foreground">영역별로 보기</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">어디에 썼는지 봐요.</p>
                 </div>
                 <ul className="flex flex-col gap-3">
                   {budgetRows.map((r) => {
@@ -200,10 +200,10 @@ export default async function Home() {
                     return (
                       <li
                         key={r.domainId}
-                        className={`p-5 rounded-3xl ring-1 flex flex-col gap-2 ${dim ? 'bg-zinc-50 ring-zinc-100' : 'bg-white ring-zinc-200'}`}
+                        className={`p-5 rounded-3xl ring-1 flex flex-col gap-2 ${dim ? 'bg-muted ring-border' : 'bg-card ring-border'}`}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className={`font-bold flex items-center gap-2 ${dim ? 'text-zinc-500' : 'text-zinc-800'}`}>
+                          <span className={`font-bold flex items-center gap-2 ${dim ? 'text-muted-foreground' : 'text-foreground'}`}>
                             <span aria-hidden="true" className="text-lg">
                               {icon}
                             </span>
@@ -214,10 +214,10 @@ export default async function Home() {
                         {canSpendMore ? (
                           <div>
                             <span className="text-2xl font-black tracking-tight">{won(Math.max(0, r.remaining))}</span>
-                            <p className="text-xs text-zinc-600 mt-0.5">이만큼 더 쓸 수 있어요.</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">이만큼 더 쓸 수 있어요.</p>
                           </div>
                         ) : dim ? null : (
-                          <p className="text-sm text-zinc-500">{won(r.usageSum)} 썼어요.</p>
+                          <p className="text-sm text-muted-foreground">{won(r.usageSum)} 썼어요.</p>
                         )}
                       </li>
                     )
@@ -234,18 +234,18 @@ export default async function Home() {
           if (shortcuts.length === 0) return null
           return (
             <section className="flex flex-col gap-3">
-              <h2 className="text-sm font-bold text-zinc-500">바로 가기</h2>
+              <h2 className="text-sm font-bold text-muted-foreground">바로 가기</h2>
               <div className="grid grid-cols-2 gap-2">
                 {shortcuts.map((b) => (
                   <Link
                     key={b}
                     href={SHORTCUT_HREF[b]!}
-                    className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center gap-3 hover:bg-zinc-50 transition-colors min-h-[44px]"
+                    className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center gap-3 hover:bg-muted transition-colors min-h-[44px]"
                   >
                     <span aria-hidden="true" className="text-2xl">
                       {BLOCK_METADATA[b].icon}
                     </span>
-                    <span className="font-bold text-zinc-800">{BLOCK_METADATA[b].label}</span>
+                    <span className="font-bold text-foreground">{BLOCK_METADATA[b].label}</span>
                   </Link>
                 ))}
               </div>
@@ -255,21 +255,21 @@ export default async function Home() {
 
         {enabled.has('recent_usages') && (
           <section className="flex flex-col gap-3">
-            <h2 className="text-sm font-bold text-zinc-500">최근에 쓴 돈</h2>
+            <h2 className="text-sm font-bold text-muted-foreground">최근에 쓴 돈</h2>
             {recentUsages && recentUsages.length > 0 ? (
               <ul className="flex flex-col gap-2">
                 {recentUsages.map((u) => (
-                  <li key={u.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center justify-between">
+                  <li key={u.id} className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center justify-between">
                     <div className="flex flex-col">
                       <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
-                      <span className="text-xs text-zinc-500">{u.usage_date}</span>
+                      <span className="text-xs text-muted-foreground">{u.usage_date}</span>
                     </div>
                     <span className="font-bold">{won(Number(u.amount))}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-zinc-600 text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
+              <p className="text-muted-foreground text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
             )}
           </section>
         )}
