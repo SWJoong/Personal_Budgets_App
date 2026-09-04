@@ -10,6 +10,8 @@
  * ★ 당사자에게 이 금액을 보여주는 이유: 안 보여주면 승인 시점에는 아무 말이 없다가
  *   정산 때 24만원을 청구받게 된다. 발달장애인에게 예고 없는 청구는 그 자체로 해롭다.
  */
+import type { Intent } from '@/components/ui/StatusPill'
+
 export type CopayStatus =
   | 'not_applicable'
   | 'exempt_basic_livelihood'
@@ -71,5 +73,24 @@ export function copayStatusLabel(status: string | null | undefined): string {
     case 'unverified':              return '수급 구분 미확인'
     case 'not_applicable':          return '해당 없음 (부담금 제도 없는 차수)'
     default:                        return '알 수 없음'
+  }
+}
+
+/**
+ * copay 상태 → StatusPill intent(§3-3 일반 의미). 색은 보조, 라벨이 비색큐 단서.
+ * 면제=확정된 좋은 상태(success) · 부과=정보성 사실(info, 나중에 냄) ·
+ * 미확인=미결/주의(warning) · 그 외=중립(neutral).
+ */
+export function copayIntent(status: string | null | undefined): Intent {
+  switch (status) {
+    case 'exempt_basic_livelihood':
+    case 'exempt_near_poor':
+      return 'success'
+    case 'charged':
+      return 'info'
+    case 'unverified':
+      return 'warning'
+    default:
+      return 'neutral'
   }
 }

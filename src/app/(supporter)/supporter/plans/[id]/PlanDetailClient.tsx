@@ -16,6 +16,11 @@ import {
   type ReviewCommitteeRow,
 } from '@/app/actions/planReview'
 import EasyReadSummary from './EasyReadSummary'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { StatusPill, type Intent } from '@/components/ui/StatusPill'
+import { MoneyText } from '@/components/ui/MoneyText'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface SelfNarrative {
   strengths_talents: string | null
@@ -54,6 +59,17 @@ const STATUS_LABEL: Record<string, string> = {
   conditional: '조건부 승인',
   rejected: '반려됨',
   under_appeal: '이의신청 중',
+}
+
+// STATUS_LABEL(상태 글자) → StatusPill intent(비색큐 색). 표현 전용 매핑 — 로직 불변.
+const STATUS_INTENT: Record<string, Intent> = {
+  draft: 'neutral',
+  submitted: 'warning',
+  under_review: 'info',
+  approved: 'success',
+  conditional: 'warning',
+  rejected: 'danger',
+  under_appeal: 'warning',
 }
 
 const NARRATIVE_FIELDS: { key: keyof SelfNarrative; label: string }[] = [
@@ -249,52 +265,54 @@ export default function PlanDetailClient({
   return (
     <div className="flex flex-col gap-6">
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium leading-relaxed">
-          {error}
-        </div>
+        <Card variant="danger">
+          <p className="text-sm font-medium leading-relaxed">{error}</p>
+        </Card>
       )}
 
-      <section className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200">
-        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">계획 상태</span>
-        <p className="font-bold mt-1">{STATUS_LABEL[status] ?? status}</p>
-      </section>
+      <Card>
+        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">계획 상태</span>
+        <div className="mt-1">
+          <StatusPill label={STATUS_LABEL[status] ?? status} intent={STATUS_INTENT[status] ?? 'neutral'} />
+        </div>
+      </Card>
 
       {/* 작성 중(draft)이면 담당자가 여기서 나의 상황·요청 서비스를 채운다.
           당사자와 함께 면담하며 담당자가 대신 적는다(기관 확인). 제출 뒤에는 읽기 전용. */}
-      <section className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
-        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">나의 상황</span>
+      <Card className="flex flex-col gap-3">
+        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">나의 상황</span>
         {isDraft ? (
           NARRATIVE_FIELDS.map(({ key, label }) => (
             <div key={key} className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-400 font-medium">{label}</label>
+              <label className="text-xs text-muted-foreground font-medium">{label}</label>
               <textarea
                 value={form[key] ?? ''}
                 onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
                 placeholder="당사자와 함께 이야기한 내용을 적어주세요"
                 rows={2}
-                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm leading-relaxed focus:ring-zinc-400 focus:outline-none resize-none"
+                className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm leading-relaxed focus:ring-input focus:outline-none resize-none"
               />
             </div>
           ))
         ) : narrative ? (
           NARRATIVE_FIELDS.map(({ key, label }) => (
             <div key={key} className="flex flex-col gap-0.5">
-              <span className="text-xs text-zinc-400 font-medium">{label}</span>
-              <p className="text-sm text-zinc-700 leading-relaxed whitespace-pre-wrap">{narrative[key] || '—'}</p>
+              <span className="text-xs text-muted-foreground font-medium">{label}</span>
+              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{narrative[key] || '—'}</p>
             </div>
           ))
         ) : (
-          <p className="text-sm text-zinc-400">아직 작성되지 않았어요.</p>
+          <EmptyState emoji="📝" title="아직 작성되지 않았어요." />
         )}
-      </section>
+      </Card>
 
-      <section className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
-        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">요청 서비스</span>
+      <Card className="flex flex-col gap-3">
+        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">요청 서비스</span>
         {isDraft ? (
           services.map((s, i) => (
             <div key={i} className="flex gap-2 items-end">
               <div className="flex-1 flex flex-col gap-0.5">
-                <label className="text-[10px] text-zinc-400 font-medium">{i + 1}순위 — 무엇에 쓰나요?</label>
+                <label className="text-[10px] text-muted-foreground font-medium">{i + 1}순위 — 무엇에 쓰나요?</label>
                 <input
                   type="text"
                   value={s.serviceName}
@@ -304,11 +322,11 @@ export default function PlanDetailClient({
                     setServices(next)
                   }}
                   placeholder="예: 웹툰 학원 수강"
-                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none"
                 />
               </div>
               <div className="w-28 flex flex-col gap-0.5">
-                <label htmlFor={`service-cost-${i}`} className="text-[10px] text-zinc-400 font-medium">예상 금액 (원)</label>
+                <label htmlFor={`service-cost-${i}`} className="text-[10px] text-muted-foreground font-medium">예상 금액 (원)</label>
                 <input
                   id={`service-cost-${i}`}
                   type="number"
@@ -319,20 +337,20 @@ export default function PlanDetailClient({
                     setServices(next)
                   }}
                   placeholder="0"
-                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none"
                 />
               </div>
             </div>
           ))
         ) : requestedServices.length === 0 ? (
-          <p className="text-sm text-zinc-400">아직 작성되지 않았어요.</p>
+          <EmptyState emoji="🧾" title="아직 작성되지 않았어요." />
         ) : (
           requestedServices.map((rs) => (
-            <div key={rs.id} className="p-4 rounded-xl bg-zinc-50 ring-1 ring-zinc-100 flex flex-col gap-2">
+            <Card as="div" key={rs.id} variant="muted" className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-sm">{rs.priority}순위 · {rs.service_name}</span>
                 {rs.estimated_cost != null && (
-                  <span className="text-xs text-zinc-400">{Math.round(rs.estimated_cost).toLocaleString('ko-KR')}원</span>
+                  <span className="text-xs"><MoneyText value={rs.estimated_cost} emphasis="muted" /></span>
                 )}
               </div>
               {rs.approved_for_service === null ? (
@@ -343,77 +361,80 @@ export default function PlanDetailClient({
                       value={reviewNotes[rs.id] ?? ''}
                       onChange={(e) => setReviewNotes((prev) => ({ ...prev, [rs.id]: e.target.value }))}
                       placeholder="검토 의견 (선택)"
-                      className="p-2 rounded-lg bg-white ring-1 ring-zinc-200 text-xs focus:ring-zinc-400 focus:outline-none"
+                      className="p-2 rounded-lg bg-card ring-1 ring-border text-xs focus:ring-input focus:outline-none"
                     />
                     <div className="flex gap-2">
-                      <button
+                      <Button
+                        variant="positive"
+                        size="sm"
                         onClick={() => handleReviewService(rs.id, true)}
                         disabled={pending}
-                        className="flex-1 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-50 min-h-[36px]"
+                        className="flex-1"
                       >
                         승인
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
                         onClick={() => handleReviewService(rs.id, false)}
                         disabled={pending}
-                        className="flex-1 py-2 rounded-lg bg-zinc-200 text-zinc-700 text-xs font-bold hover:bg-zinc-300 disabled:opacity-50 min-h-[36px]"
+                        className="flex-1"
                       >
                         반려
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )
               ) : (
-                <span className={`text-xs font-bold ${rs.approved_for_service ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {rs.approved_for_service ? '승인됨' : '반려됨'}{rs.review_note ? ` — ${rs.review_note}` : ''}
-                </span>
+                <div className="flex flex-wrap items-center gap-1">
+                  <StatusPill
+                    label={rs.approved_for_service ? '승인됨' : '반려됨'}
+                    intent={rs.approved_for_service ? 'success' : 'danger'}
+                  />
+                  {rs.review_note && <span className="text-xs text-muted-foreground">— {rs.review_note}</span>}
+                </div>
               )}
-            </div>
+            </Card>
           ))
         )}
-      </section>
+      </Card>
 
       <EasyReadSummary planId={planId} />
 
       {/* 작성 중일 때만 저장·제출. 제출하면 심의 대기(submitted)로 넘어간다. */}
       {isDraft && (
         <div className="flex flex-col gap-2">
-          <button
-            onClick={handleSaveDraft}
-            disabled={pending}
-            className="p-3 rounded-xl bg-white ring-1 ring-zinc-300 text-zinc-700 font-bold text-sm disabled:opacity-50 min-h-[44px]"
-          >
+          <Button variant="secondary" onClick={handleSaveDraft} disabled={pending}>
             저장하기
-          </button>
-          <button
-            onClick={handleSubmitPlan}
-            disabled={pending}
-            className="p-3 rounded-xl bg-zinc-900 text-white font-bold text-sm disabled:opacity-50 min-h-[44px]"
-          >
+          </Button>
+          <Button variant="primary" onClick={handleSubmitPlan} disabled={pending}>
             제출하기 (심의 요청)
-          </button>
+          </Button>
         </div>
       )}
 
       {isAdmin && (
-        <section className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-4">
-          <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">심의 결과</span>
+        <Card className="flex flex-col gap-4">
+          <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">심의 결과</span>
           {latestReview ? (
             <div className="flex flex-col gap-1">
-              <span className="font-bold">{STATUS_LABEL[latestReview.decision] ?? latestReview.decision}</span>
-              {latestReview.reason && <p className="text-sm text-zinc-500 leading-relaxed">{latestReview.reason}</p>}
+              <StatusPill
+                label={STATUS_LABEL[latestReview.decision] ?? latestReview.decision}
+                intent={STATUS_INTENT[latestReview.decision] ?? 'neutral'}
+              />
+              {latestReview.reason && <p className="text-sm text-muted-foreground leading-relaxed">{latestReview.reason}</p>}
             </div>
           ) : status === 'submitted' || status === 'under_review' ? (
             <>
               {/* 누가 심의했는지 기록한다. 구성·정족수가 유효한지는 앱이 판단하지
                   않는다 — 심사처가 전달한 내용을 그대로 남기는 칸이다. */}
               <div className="flex flex-col gap-1">
-                <label htmlFor="review-committee" className="text-xs text-zinc-500 font-medium">심의 주체</label>
+                <label htmlFor="review-committee" className="text-xs text-muted-foreground font-medium">심의 주체</label>
                 <select
                   id="review-committee"
                   value={committeeId}
                   onChange={(e) => setCommitteeId(e.target.value)}
-                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none"
                 >
                   <option value="">기록 안 함</option>
                   {committees.map((c) => (
@@ -421,13 +442,13 @@ export default function PlanDetailClient({
                   ))}
                 </select>
                 {committees.length === 0 && (
-                  <p className="text-[11px] text-zinc-400 leading-relaxed mt-1">
+                  <p className="text-[11px] text-muted-foreground leading-relaxed mt-1">
                     등록된 심의 주체가 없어요. 심사처에서 전달받은 구성을 아래에 적어 두면
                     이후 심의에서 고를 수 있어요.
                   </p>
                 )}
                 <details className="mt-1">
-                  <summary className="text-[11px] text-zinc-500 cursor-pointer min-h-[32px] flex items-center">
+                  <summary className="text-[11px] text-muted-foreground cursor-pointer min-h-[32px] flex items-center">
                     + 심의 주체 새로 기록하기
                   </summary>
                   <div className="flex flex-col gap-2 pt-2">
@@ -436,23 +457,24 @@ export default function PlanDetailClient({
                       value={newCommitteeName}
                       onChange={(e) => setNewCommitteeName(e.target.value)}
                       placeholder="심의 주체 이름 (예: 2026년 3차 심의위원회)"
-                      className="p-2 rounded-lg bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                      className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none"
                     />
                     <textarea
                       value={newCommitteeNote}
                       onChange={(e) => setNewCommitteeNote(e.target.value)}
                       placeholder="구성 (심사처에서 전달받은 내용을 그대로 적어주세요)"
                       rows={2}
-                      className="p-2 rounded-lg bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none resize-none"
+                      className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none resize-none"
                     />
-                    <button
+                    <Button
                       type="button"
+                      variant="primary"
+                      size="sm"
                       onClick={handleCreateCommittee}
                       disabled={pending || !newCommitteeName.trim()}
-                      className="p-2 rounded-lg bg-zinc-900 text-white text-xs font-bold disabled:opacity-50 min-h-[36px]"
                     >
                       심의 주체 기록
-                    </button>
+                    </Button>
                   </div>
                 </details>
               </div>
@@ -462,46 +484,39 @@ export default function PlanDetailClient({
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="사유 (승인이 아니면 필수예요)"
                 rows={3}
-                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none resize-none"
+                className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none resize-none"
               />
               <div className="flex flex-col gap-2 sm:flex-row">
-                <button onClick={() => handleDecide('approved')} disabled={pending}
-                  className="flex-1 p-3 rounded-xl bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 disabled:opacity-50 min-h-[44px]">
+                <Button variant="positive" onClick={() => handleDecide('approved')} disabled={pending} className="flex-1">
                   승인
-                </button>
-                <button onClick={() => handleDecide('conditional')} disabled={pending}
-                  className="flex-1 p-3 rounded-xl bg-amber-500 text-white font-bold text-sm hover:bg-amber-600 disabled:opacity-50 min-h-[44px]">
+                </Button>
+                <Button variant="warning" onClick={() => handleDecide('conditional')} disabled={pending} className="flex-1">
                   조건부 승인
-                </button>
-                <button onClick={() => handleDecide('rejected')} disabled={pending}
-                  className="flex-1 p-3 rounded-xl bg-zinc-200 text-zinc-700 font-bold text-sm hover:bg-zinc-300 disabled:opacity-50 min-h-[44px]">
+                </Button>
+                <Button variant="danger" onClick={() => handleDecide('rejected')} disabled={pending} className="flex-1">
                   반려
-                </button>
+                </Button>
               </div>
             </>
           ) : (
-            <p className="text-sm text-zinc-400">아직 제출되지 않아 심의할 수 없어요.</p>
+            <EmptyState emoji="⏳" title="아직 제출되지 않아 심의할 수 없어요." />
           )}
-        </section>
+        </Card>
       )}
 
       {latestReview && (
-        <section className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
-          <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">통지</span>
+        <Card className="flex flex-col gap-3">
+          <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">통지</span>
           {notification ? (
-            <p className="text-sm text-zinc-600">
+            <p className="text-sm text-muted-foreground">
               발송됨 {notification.is_read_by_participant ? '· 당사자 확인 완료' : '· 아직 확인 전'}
             </p>
           ) : (
-            <button
-              onClick={handleSendNotification}
-              disabled={pending}
-              className="p-3 rounded-xl bg-zinc-900 text-white font-bold text-sm hover:bg-zinc-800 disabled:opacity-50 min-h-[44px]"
-            >
+            <Button variant="primary" onClick={handleSendNotification} disabled={pending}>
               통지 발송
-            </button>
+            </Button>
           )}
-        </section>
+        </Card>
       )}
     </div>
   )
