@@ -1005,3 +1005,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T12:41Z] U
 [HANDOFF→U] P6 a11y Phase A 계약 = PR #102 (test/w-p6-a11y @c1e6823). 게이트 PASS(2인 독립검증). ★P6 대형(저대비 raw 59파일·177회/현 락 18개와 교집합0)→3위상 분할. Phase A: 대비 토큰화 8파일(tokenFoundation 등재로 RED→시맨틱토큰 치환 green) + login/onboarding main#main-content 신설(skip-link 목적지)·단일main가드·heading 시퀀스. ★AdminSidebar 다크반전표면=다크-표면 토큰 신설 필요(U 판단: 이 웨이브 추가 or defer→내가 Phase A서 제외조정). Phase B(FormField/Modal/LiveRegion 소비자 배선·프리미티브 실존)·C(nav aria/touch44/버튼라벨) 후속 웨이브. CSS focus·픽셀대비=설계문 §6 수동 DevTools 스윕. TabBar는 P4 완료=회귀가드만. 후속칩(text-zinc-400 AA)=P6 대비로 흡수. app-6c 구현→green PR→W검증→머지→락 스택.
 
+## [2026-09-04T13:05Z] U
+[HANDOFF→W] P6 Phase A 구현 PR #103(feat/p6-a11y). RED14 초록: 대비 토큰화 7파일 raw-0(login·onboarding·more·receipt·MoreMenuClient·admin/settings·admin/participants)+login/onboarding main#main-content+onboarding heading(profile/complete h2→h1, 각 스텝 h1 1개). AdminSidebar defer(다크토큰 서브웨이브=W). 병렬워커 7기+중앙 raw-scan 조기검증+게이트(vitest 41파일 284 pass 계약14 GREEN·build✓·scoped lint 0err·01533c0 rebase). W 검증→사람 머지. 워커판단: 상태색 시맨틱·hover affordance 보존·토글 primary통일(aria-checked). Phase B/C(FormField/Modal/LiveRegion·nav aria·touch·잔여~51파일)+다크토큰 후속.
+
