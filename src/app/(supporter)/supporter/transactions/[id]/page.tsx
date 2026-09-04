@@ -1,12 +1,14 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getReceiptSignedUrl } from '@/app/actions/serviceUsage'
-import { settlementLabel, settlementStyle } from '@/utils/settlementStatus'
+import { settlementLabel, settlementIntent } from '@/utils/settlementStatus'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { MoneyText } from '@/components/ui/MoneyText'
+import { StatusPill } from '@/components/ui/StatusPill'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export const metadata = { title: '거래 상세' }
-
-const won = (n: number) => n.toLocaleString('ko-KR') + '원'
 
 /**
  * 거래 상세 (GOAL축 A, §4-2) — 지출 1건 열람. ComingSoon 스텁 대체.
@@ -42,47 +44,39 @@ export default async function TransactionDetailPage({ params }: { params: Promis
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-        <Link
-          href="/supporter/transactions"
-          aria-label="거래장부로 가기"
-          className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
-        >
-          ←
-        </Link>
-        <h1 className="text-xl font-bold tracking-tight truncate">{participant?.name ?? '당사자'}님의 지출</h1>
-      </header>
+      <PageHeader title={`${participant?.name ?? '당사자'}님의 지출`} backHref="/supporter/transactions" />
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-4">
         {/* 금액 히어로 */}
-        <section className="p-6 rounded-3xl bg-zinc-900 text-white text-center">
-          <p className="text-sm text-zinc-300">쓴 돈</p>
-          <p className="text-4xl font-black mt-1">{won(Number(usage.amount))}</p>
-          <span
-            className={`inline-block mt-3 text-xs font-bold px-3 py-1 rounded-full ${settlementStyle(usage.settlement_status)}`}
-          >
-            {settlementLabel(usage.settlement_status)}
-          </span>
-        </section>
+        <Card variant="hero" className="text-center">
+          <p className="text-sm text-hero-foreground/70">쓴 돈</p>
+          <p className="text-4xl font-black mt-1">
+            <MoneyText value={Number(usage.amount)} emphasis="hero" onHero />
+          </p>
+          <div className="mt-3 flex justify-center">
+            <StatusPill
+              label={settlementLabel(usage.settlement_status)}
+              intent={settlementIntent(usage.settlement_status)}
+            />
+          </div>
+        </Card>
 
         {/* 메타 */}
-        <section className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
+        <Card variant="default" className="flex flex-col gap-3">
           <Meta label="내용" value={usage.description || '(내용 없음)'} />
           <Meta label="날짜" value={usage.usage_date} />
           {domainLabel && <Meta label="영역" value={domainLabel} />}
           {providerName && <Meta label="제공기관" value={providerName} />}
-        </section>
+        </Card>
 
         {/* 영수증 */}
         <section className="flex flex-col gap-2">
-          <h2 className="text-xs font-black text-zinc-400 uppercase tracking-widest">영수증</h2>
+          <h2 className="text-xs font-black text-muted-foreground uppercase tracking-widest">영수증</h2>
           {receiptUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- 동적 signed URL(1시간 만료) 영수증이라 next/image 최적화 부적합
-            <img src={receiptUrl} alt="영수증 사진" className="w-full h-auto rounded-2xl ring-1 ring-zinc-200" />
+            <img src={receiptUrl} alt="영수증 사진" className="w-full h-auto rounded-2xl ring-1 ring-border" />
           ) : (
-            <p className="text-sm text-zinc-500 leading-relaxed p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-100">
-              영수증이 없어요.
-            </p>
+            <EmptyState title="영수증이 없어요." variant="inline" />
           )}
         </section>
       </main>
@@ -93,8 +87,8 @@ export default async function TransactionDetailPage({ params }: { params: Promis
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-zinc-400 font-medium">{label}</span>
-      <span className="text-sm text-zinc-800 leading-relaxed whitespace-pre-wrap">{value}</span>
+      <span className="text-xs text-muted-foreground font-medium">{label}</span>
+      <span className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{value}</span>
     </div>
   )
 }

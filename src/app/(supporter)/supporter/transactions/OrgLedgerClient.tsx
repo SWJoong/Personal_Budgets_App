@@ -2,15 +2,19 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { LinkButton } from '@/components/ui/LinkButton'
 import { buildOrgLedger, type OrgUsageRow } from '@/utils/orgLedger'
-import { settlementLabel, settlementStyle } from '@/utils/settlementStatus'
+import { settlementLabel, settlementIntent } from '@/utils/settlementStatus'
+import { StatusPill } from '@/components/ui/StatusPill'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { MoneyText } from '@/components/ui/MoneyText'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 /** org 원장 한 행 — buildOrgLedger 입력(OrgUsageRow) + 펼침 표시용 description. */
 export interface LedgerRow extends OrgUsageRow {
   description: string | null
 }
-
-const won = (n: number) => n.toLocaleString('ko-KR') + '원'
 
 const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: 'all', label: '전체' },
@@ -49,91 +53,97 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
   return (
     <div className="flex flex-col gap-4">
       {/* ① 요약 바 */}
-      <section className="p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 flex flex-col gap-2">
+      <Card variant="muted" className="flex flex-col gap-2">
         <div>
-          <span className="text-xs text-zinc-500">전체 지출</span>
-          <p className="text-2xl font-bold">{won(ledger.grandTotal)}</p>
-          <p className="text-xs text-zinc-500">{ledger.totalCount}건</p>
+          <span className="text-xs text-muted-foreground">전체 지출</span>
+          <p className="text-2xl font-bold">
+            <MoneyText value={ledger.grandTotal} emphasis="hero" />
+          </p>
+          <p className="text-xs text-muted-foreground">{ledger.totalCount}건</p>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {CHIPS.map((c) => (
-            <span key={c.key} className={`text-[11px] font-bold px-2 py-1 rounded-full ${settlementStyle(c.key)}`}>
-              {c.label} {ledger.byStatus[c.key].count}
-            </span>
+            <StatusPill
+              key={c.key}
+              label={`${c.label} ${ledger.byStatus[c.key].count}`}
+              intent={settlementIntent(c.key)}
+            />
           ))}
           {ledger.byStatus.other.count > 0 && (
-            <span className="text-[11px] font-bold px-2 py-1 rounded-full bg-zinc-100 text-zinc-600">
-              기타 {ledger.byStatus.other.count}
-            </span>
+            <StatusPill label={`기타 ${ledger.byStatus.other.count}`} intent="neutral" />
           )}
         </div>
-      </section>
+      </Card>
 
       {/* ② 정산상태 필터 */}
       <div role="group" aria-label="정산 상태로 거르기" className="flex flex-wrap gap-2">
         {STATUS_FILTERS.map((f) => {
           const active = status === f.value
           return (
-            <button
+            <Button
               key={f.value}
               onClick={() => setStatus(f.value)}
               aria-pressed={active}
-              className={`px-4 min-h-[44px] rounded-full text-sm font-bold ring-1 transition-colors ${
-                active ? 'bg-zinc-900 text-white ring-zinc-900' : 'bg-white text-zinc-600 ring-zinc-300 hover:ring-zinc-400'
-              }`}
+              variant={active ? 'primary' : 'secondary'}
+              size="sm"
             >
               {f.label}
-            </button>
+            </Button>
           )
         })}
       </div>
 
       {/* ③ 당사자별 그룹 */}
       {ledger.participants.length === 0 ? (
-        <p className="text-sm text-zinc-600 leading-relaxed py-8 text-center">해당하는 지출이 없어요.</p>
+        <EmptyState emoji="📭" title="해당하는 지출이 없어요." variant="inline" />
       ) : (
         <ul className="flex flex-col gap-2">
           {ledger.participants.map((p) => {
             const isOpen = expanded === p.participantId
             const recent = (byParticipant.get(p.participantId) ?? []).slice(0, 5)
             return (
-              <li key={p.participantId} className="rounded-2xl bg-white ring-1 ring-zinc-200 overflow-hidden">
+              <li key={p.participantId} className="rounded-2xl bg-card ring-1 ring-border overflow-hidden">
                 <div className="flex items-center justify-between gap-2 p-4">
                   <button
                     onClick={() => setExpanded(isOpen ? null : p.participantId)}
                     aria-expanded={isOpen}
                     className="flex-1 min-w-0 flex flex-col items-start gap-0.5 text-left min-h-[44px] justify-center"
                   >
-                    <span className="font-bold text-zinc-800 truncate w-full">{p.participantName}</span>
-                    <span className="text-xs text-zinc-500">
-                      {won(p.total)} · {p.count}건{p.latestDate ? ` · 최근 ${p.latestDate}` : ''}
+                    <span className="font-bold text-foreground truncate w-full">{p.participantName}</span>
+                    <span className="text-xs text-muted-foreground">
+                      <MoneyText value={p.total} emphasis="muted" /> · {p.count}건{p.latestDate ? ` · 최근 ${p.latestDate}` : ''}
                     </span>
                   </button>
-                  <Link
+                  <LinkButton
                     href={`/supporter/${p.participantId}/transactions`}
-                    className="shrink-0 px-3 min-h-[44px] rounded-xl bg-zinc-100 text-zinc-700 text-sm font-bold hover:bg-zinc-200 transition-colors flex items-center"
+                    variant="secondary"
+                    size="sm"
+                    className="shrink-0"
                   >
                     보기
-                  </Link>
+                  </LinkButton>
                 </div>
 
                 {isOpen && (
-                  <ul className="border-t border-zinc-100">
+                  <ul className="border-t border-border">
                     {recent.map((r) => (
-                      <li key={r.id} className="border-t border-zinc-50 first:border-t-0">
+                      <li key={r.id} className="border-t border-border first:border-t-0">
                         <Link
                           href={`/supporter/transactions/${r.id}`}
-                          className="flex items-center justify-between gap-3 px-4 py-3 min-h-[44px] hover:bg-zinc-50 transition-colors"
+                          className="flex items-center justify-between gap-3 px-4 py-3 min-h-[44px] hover:bg-muted transition-colors"
                         >
                           <div className="flex flex-col min-w-0">
                             <span className="text-sm truncate">{r.description || '(내용 없음)'}</span>
-                            <span className="text-xs text-zinc-500">{r.usageDate}</span>
+                            <span className="text-xs text-muted-foreground">{r.usageDate}</span>
                           </div>
                           <div className="flex flex-col items-end gap-1 shrink-0">
-                            <span className="text-sm font-bold">{won(r.amount ?? 0)}</span>
-                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${settlementStyle(r.settlementStatus)}`}>
-                              {settlementLabel(r.settlementStatus)}
+                            <span className="text-sm font-bold">
+                              <MoneyText value={r.amount ?? 0} />
                             </span>
+                            <StatusPill
+                              label={settlementLabel(r.settlementStatus)}
+                              intent={settlementIntent(r.settlementStatus)}
+                            />
                           </div>
                         </Link>
                       </li>
