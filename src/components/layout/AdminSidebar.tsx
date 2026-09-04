@@ -53,7 +53,7 @@ const menuItems: MenuItem[] = [
   { name: '증빙/서류 보관함', href: '/supporter/documents',    icon: '📁' },
   { name: '계획과 평가',      href: '/supporter/evaluations',  icon: '📋' },
   { name: '활동 지도',        href: '/supporter/map',          icon: '🗺️' },
-  { name: '시스템 설정',      href: '/admin/settings',         icon: '⚙️', soon: true },
+  { name: '시스템 설정',      href: '/admin/settings',         icon: '⚙️' },
 ]
 
 const quickItems: SubItem[] = [
