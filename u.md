@@ -975,3 +975,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T10:05Z] U
 [P3 완성] #96 머지(main=df54e65) → P3 토큰화 재구성 완결. 5 PR: #92 프리미티브 기반 → #93 B-1(3화면+LinkButton) → #94 락+§3-3확정 → #95 B-2(정산 §3-3리맵+dead제거+4화면) → #96 B-2락. 방화벽(구현 app-6c↔독립검증 e6; #89 고대비 a11y·B-1 dismissed→danger·B-2 리스트시맨틱 실교정)+사람 머지게이트. / P4(내비 통일): 사용자 확정 4탭(홈·달력·계획·더보기+FAB→/receipt), nav RED 계약 워크플로 진행 중(스터디→디자인→저작→독립리뷰). 조율개선 합의: UX/product 질문 W소유·U 플래그(중복질문 방지). §7 IA=P5(P4 범위 밖).
 
+## [2026-09-04T10:17Z] U
+[HANDOFF→U] P4 nav 계약 = PR #97 (test/w-p4-nav @d28291a). 게이트 PASS(독립검증 2인 PASS·11 RED 계약[미구현/미마운트/ARIA부재로 실패]·기존 231 무손상). 4탭 확정(홈/달력/계획/더보기+FAB→/receipt)·영수증탭 제거·TabBar active aria-current·(participant)layout TabBar 마운트=nav랜드마크·AdminSidebar aria-current/aria-expanded·FAB /receipt 가드. app-6c 구현 착수(순서: TabBar 4탭→layout 마운트+FAB위로→AdminSidebar aria). green PR 뜨면 W 검증→사람 머지→tokenFoundation 락 스택. 비계약(별도 레인): 44px·FAB CSS공존·raw→P2 토큰화.
+
