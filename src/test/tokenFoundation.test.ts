@@ -50,8 +50,6 @@ const TOKENIZED_FILES = [
   //   (text-muted-foreground·ring-border 등, #89 에서 AA 검증)으로 치환하면 green.
   //   focus:ring-zinc-400 은 제거 후 전역 focus-visible 위임(ring-border) 방향.
   //   B/C 웨이브에서 잔여 ~51 파일로 확장한다(과대 RED 방지 — 이번엔 진입·내비 7개).
-  //   AdminSidebar 는 다크 반전 표면(from-slate-900+text-white)이라 라이트 토큰으론 green 불가 →
-  //   별도 '다크-표면 토큰 서브웨이브'(W 설계·AA 검증)로 이관, Phase A 에서 제외.
   'src/components/layout/MoreMenuClient.tsx',
   'src/app/(auth)/login/page.tsx',
   'src/app/onboarding/OnboardingClient.tsx',
@@ -59,6 +57,11 @@ const TOKENIZED_FILES = [
   'src/app/(participant)/receipt/ReceiptClient.tsx',
   'src/app/(supporter)/admin/settings/page.tsx',
   'src/app/(supporter)/admin/participants/page.tsx',
+  // P6 다크-표면 서브웨이브 — AdminSidebar 다크 반전 표면.
+  //   라이트 시맨틱 토큰(text-muted-foreground·bg-card)은 다크 위 검은 글씨라 재사용 불가 →
+  //   전용 다크-표면 시맨틱 토큰 세트 신설(--color-sidebar-*, 4모드 AA≥4.5:1).
+  //   설계: Plan&Source/goala_p6_darktokens_W.md. 현재 raw slate/white/amber → RED.
+  'src/components/layout/AdminSidebar.tsx',
 ]
 
 // Tailwind 임의 팔레트(시맨틱 토큰으로 대체돼야 함).
