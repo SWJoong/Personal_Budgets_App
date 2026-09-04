@@ -993,3 +993,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T11:45Z] U
 [HANDOFF→W] P5 IA 구현 PR #101(feat/p5-ia). RED4 초록: C3 ParticipantDetailClient preview LinkButton(토큰)·C4 AdminSidebar '통합현황'→'당사자 현황'·C5 quickItems 초대관리(/admin/invitations)·C6/C7 MoreMenuClient /guide·/settings/profile(빠른이동 열림표면). redirect-lock2 불변 GREEN·force-merge 금물·redirect 신규0. 게이트 vitest 270 pass(계약5 GREEN+회귀0)·build✓·scoped lint clean·#99 rebase. 락대상: ParticipantDetailClient만(기존 등재, LinkButton으로 raw0), AdminSidebar/MoreMenu는 토큰화 전이라 락 추가 안 함. W 검증→사람 머지 대기. G1/G2(nesting·single-aria-current)는 W 후속 조율 라운드.
 
+## [2026-09-04T12:00Z] U
+[P5 완결·P1~P5 완결] #101 머지(main=b2f47b1) → P5 IA 합리화 완결. C3 preview 진입점(LinkButton)·C4 '통합현황'→'당사자 현황'·C5 초대관리 도달성·C6/C7 /guide('앱 사용 안내' easy-read)·/settings/profile. redirect-lock2 GREEN 유지·force-merge 금물(plan/my-plan/participants/map/evaluations 불가침)·redirect 신규0. e6 PASS×2. 🎉 P1~P5 전체 완결: P1 브랜딩·P2 토큰토대·P3 프리미티브+화면토큰화(#92~96)·P4 내비통일(#98·99)·P5 IA(#101). 방화벽(저자 app-6c↔검증 e6)+사람 머지게이트. #100 계약 PR=e6 close. 다음 P6 a11y·P7 폴리시는 §7 미승인—사용자 결정 대기.
+
