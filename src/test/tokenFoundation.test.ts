@@ -43,6 +43,11 @@ const TOKENIZED_FILES = [
   // P4 내비 통일(#98) — TabBar/ParticipantFab 토큰화
   'src/components/layout/TabBar.tsx',
   'src/components/layout/ParticipantFab.tsx',
+  // P6 다크-표면 서브웨이브 — AdminSidebar 다크 반전 표면.
+  //   라이트 시맨틱 토큰(text-muted-foreground·bg-card)은 다크 위 검은 글씨라 재사용 불가 →
+  //   전용 다크-표면 시맨틱 토큰 세트 신설(--color-sidebar-*, 4모드 AA≥4.5:1).
+  //   설계: Plan&Source/goala_p6_darktokens_W.md. 현재 raw slate/white/amber → RED.
+  'src/components/layout/AdminSidebar.tsx',
 ]
 
 // Tailwind 임의 팔레트(시맨틱 토큰으로 대체돼야 함).
