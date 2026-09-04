@@ -125,6 +125,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                 <Link
                   href={item.href}
                   title={collapsed ? item.name : undefined}
+                  aria-current={pathname === item.href ? 'page' : undefined}
                   className={`flex items-center gap-3 rounded-xl transition-all duration-150 flex-1 ${
                     collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
                   } ${isActive ? 'bg-white/10 text-white font-semibold shadow-sm' : 'hover:bg-white/5 hover:text-white'}`}
@@ -148,6 +149,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                     onClick={() => toggleSub(item.href)}
                     className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-all shrink-0 mr-1"
                     aria-label={isSubOpen ? '접기' : '펼치기'}
+                    aria-expanded={isSubOpen}
                   >
                     <span className="text-xs">{isSubOpen ? '▲' : '▼'}</span>
                   </button>
@@ -161,6 +163,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                     <Link
                       key={sub.href}
                       href={sub.href}
+                      aria-current={pathname === sub.href ? 'page' : undefined}
                       className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg transition-all ${
                         pathname === sub.href
                           ? 'bg-white/10 text-white font-bold'
@@ -184,6 +187,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
           <div className="h-px bg-white/10 mb-3" />
           <button
             onClick={() => setQuickOpen(p => !p)}
+            aria-expanded={quickOpen}
             className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-all"
           >
             <span className="text-base">⚡</span>
