@@ -45,41 +45,41 @@ export default async function AdminParticipantsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+      <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="flex items-center gap-3">
-          <Link href="/admin" className="text-zinc-400 hover:text-zinc-600 transition-colors">←</Link>
+          <Link href="/admin" className="text-muted-foreground hover:text-foreground transition-colors">←</Link>
           <h1 className="text-xl font-bold tracking-tight">당사자 관리</h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className="px-3 py-1 bg-red-50 rounded-full text-[10px] font-bold text-red-500">관리자</div>
+          <div className="px-3 py-1 bg-neutral-bg rounded-full text-[10px] font-bold text-neutral-fg">관리자</div>
           <AdminHelpButton pageKey="participants" />
         </div>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm">
-            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">등록된 당사자</span>
-            <p className="text-3xl font-black text-zinc-900 mt-1">{participants?.length || 0}명</p>
+          <div className="p-5 rounded-2xl bg-card ring-1 ring-border shadow-sm">
+            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">등록된 당사자</span>
+            <p className="text-3xl font-black text-foreground mt-1">{participants?.length || 0}명</p>
           </div>
-          <div className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 shadow-sm">
-            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">로그인 연결됨</span>
-            <p className="text-3xl font-black text-zinc-900 mt-1">{connectedCount}명</p>
+          <div className="p-5 rounded-2xl bg-card ring-1 ring-border shadow-sm">
+            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">로그인 연결됨</span>
+            <p className="text-3xl font-black text-foreground mt-1">{connectedCount}명</p>
           </div>
         </div>
 
         <Link
           href="/admin/participants/new"
-          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-zinc-900 text-white font-bold text-base hover:bg-zinc-800 transition-colors active:scale-[0.98] shadow-lg"
+          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:bg-primary-hover transition-colors active:scale-[0.98] shadow-lg"
         >
           <span className="text-xl">➕</span>
           새 당사자 등록
         </Link>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-xs font-black text-zinc-300 uppercase tracking-[0.2em] ml-1">당사자 목록</h2>
+          <h2 className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] ml-1">당사자 목록</h2>
           {rows.length === 0 ? (
-            <div className="p-8 rounded-2xl bg-zinc-50 text-center text-zinc-400 text-sm font-medium">
+            <div className="p-8 rounded-2xl bg-muted text-center text-muted-foreground text-sm font-medium">
               아직 등록된 당사자가 없어요.
             </div>
           ) : (
@@ -88,18 +88,18 @@ export default async function AdminParticipantsPage() {
                 <li key={p.id}>
                   <Link
                     href={`/admin/participants/${p.id}`}
-                    className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-400 transition-all flex items-center justify-between"
+                    className="p-4 rounded-2xl bg-card ring-1 ring-border hover:ring-primary transition-all flex items-center justify-between"
                   >
                     <div className="flex flex-col">
-                      <span className="font-bold text-zinc-900">{p.name}</span>
-                      <span className="text-xs text-zinc-400">{p.email}</span>
+                      <span className="font-bold text-foreground">{p.name}</span>
+                      <span className="text-xs text-muted-foreground">{p.email}</span>
                       {p.supporter?.name && (
-                        <span className="text-[11px] text-zinc-400 mt-0.5">담당: {p.supporter.name}</span>
+                        <span className="text-[11px] text-muted-foreground mt-0.5">담당: {p.supporter.name}</span>
                       )}
                     </div>
                     <span
                       className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                        p.auth_user_id ? 'bg-green-50 text-green-600' : 'bg-zinc-100 text-zinc-400'
+                        p.auth_user_id ? 'bg-success-bg text-success-fg' : 'bg-neutral-bg text-neutral-fg'
                       }`}
                     >
                       {p.auth_user_id ? '연결됨' : '로그인 대기'}

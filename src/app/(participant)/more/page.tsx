@@ -29,16 +29,16 @@ export default async function MorePage({
     .single()
 
   return (
-    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
+    <div className="flex flex-col min-h-dvh bg-muted text-foreground pb-10">
       <HelpAutoTrigger sectionKey="more" />
-      <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
+      <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-card/80 backdrop-blur-md border-b border-border">
         <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-800 transition-colors">
+          <Link href="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
             <span className="text-xl">←</span>
             <span className="text-sm font-bold">서울형 개인예산제</span>
           </Link>
-          <span className="text-zinc-300">·</span>
-          <h1 className="text-sm font-black text-zinc-800">⚙ 더보기</h1>
+          <span className="text-muted-foreground">·</span>
+          <h1 className="text-sm font-black text-foreground">⚙ 더보기</h1>
         </div>
         <div className="flex items-center gap-2">
           <HelpButton sectionKey="more" />
@@ -48,34 +48,34 @@ export default async function MorePage({
 
       <main id="main-content" tabIndex={-1} className="flex-1 p-4 w-full flex flex-col gap-6">
         {/* 프로필 요약 */}
-        <section className="flex items-center gap-4 p-6 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm">
-          <div className="w-16 h-16 rounded-3xl bg-zinc-100 flex items-center justify-center text-3xl font-black text-zinc-400">
+        <section className="flex items-center gap-4 p-6 rounded-[2rem] bg-card ring-1 ring-border shadow-sm">
+          <div className="w-16 h-16 rounded-3xl bg-muted flex items-center justify-center text-3xl font-black text-muted-foreground">
             {profile?.name?.[0] || '👤'}
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-black text-zinc-900">{profile?.name} 님</span>
-            <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{profile?.role === 'participant' ? '당사자' : profile?.role === 'supporter' ? '지원자' : profile?.role}</span>
+            <span className="text-xl font-black text-foreground">{profile?.name} 님</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{profile?.role === 'participant' ? '당사자' : profile?.role === 'supporter' ? '지원자' : profile?.role}</span>
           </div>
         </section>
 
         {/* 화면 설정 — 홈에 무엇을 볼지 고르기(화면 개인화) */}
         <Link
           href="/settings/display"
-          className="flex items-center gap-3 p-5 rounded-3xl bg-white ring-1 ring-zinc-200 shadow-sm hover:bg-zinc-50 transition-colors min-h-[44px]"
+          className="flex items-center gap-3 p-5 rounded-3xl bg-card ring-1 ring-border shadow-sm hover:bg-muted transition-colors min-h-[44px]"
         >
           <span aria-hidden="true" className="text-2xl">🎛️</span>
           <span className="flex flex-col">
-            <span className="font-black text-zinc-900">화면 설정</span>
-            <span className="text-xs text-zinc-400">홈에 무엇을 볼지 골라요</span>
+            <span className="font-black text-foreground">화면 설정</span>
+            <span className="text-xs text-muted-foreground">홈에 무엇을 볼지 골라요</span>
           </span>
-          <span className="ml-auto text-zinc-300 text-xl">›</span>
+          <span className="ml-auto text-muted-foreground text-xl">›</span>
         </Link>
 
         {/* 클라이언트 컴포넌트 (설정 및 로그아웃 핸들링) */}
         <MoreMenuClient fileLinks={[]} initialOpenSection={open} />
         
         <div className="text-center py-4">
-          <p className="text-[10px] font-bold text-zinc-300 uppercase tracking-[0.3em]">서울형 개인예산제</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">서울형 개인예산제</p>
         </div>
       </main>
     </div>
