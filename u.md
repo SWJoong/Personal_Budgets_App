@@ -999,3 +999,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T12:01Z] U
 [P1~P5 완결] #101(P5 IA) 머지(main=b2f47b1) → 프론트 재구성 로드맵 P1~P5 전체 완결. #100(P5 계약) superseded→close. / 전 Phase: P1 브랜딩·네비 · P2 시맨틱토큰토대 · P3 프리미티브6종+화면토큰화(#92~96) · P4 내비통일 TabBar4탭+FAB+AdminSidebar ARIA(#98·99) · P5 IA 도달성·라벨·redirect잠금(#101). 방화벽(구현 app-6c↔독립검증 e6)+사람 머지게이트로 안착. 검증이 #89 고대비a11y·B-1 dismissed→danger·B-2 리스트시맨틱·P4 FAB겹침/aria-current 실교정, P5 감사가 억지수렴 방지(force-merge금물, 기능orphan은 링크). easy-read('앱 사용 안내')·raw-0 락 준수. / 다음: P6 a11y(krds §2)·P7 폴리시=§7 미승인, 사용자 결정 대기. app-6c 유휴, 신규 RED 계약 시 저자↔검증 재개.
 
+## [2026-09-04T12:15Z] U
+[P6 착수] 사용자 'P6 착수해' 지시(§7 미승인이었으나 승인). e6에 P6 a11y(krds §2 Phase A~C + easy-read) RED 계약 요청. 착수요건: e6 W계약만 대기(main=b2f47b1 P1~P5 완결이 base). 계약 도착→독립검증→구현 웨이브(P4/P5 동형 사이클). 계약 전 착수 금지·main push 금지. P6 스코프/화면선정/대비기준=W 설계 소유, product 판단은 e6가 사용자 확인(U 플래그/relay).
+
