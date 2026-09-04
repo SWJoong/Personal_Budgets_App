@@ -73,11 +73,16 @@ $$;
 
 REVOKE ALL ON FUNCTION public.seoul_provider_domains() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.seoul_provider_domains() TO authenticated;
+-- ★ Supabase 기본권한(ALTER DEFAULT PRIVILEGES)은 새 함수마다 anon 에게 EXECUTE 를 '직접' 부여한다.
+--   REVOKE FROM PUBLIC 은 그 직접 부여를 지우지 못하므로 anon 을 별도로 회수해야 authenticated 전용이 된다(멱등).
+REVOKE EXECUTE ON FUNCTION public.seoul_provider_domains() FROM anon;
 ```
 
 **계약이 못박는 불변식**(`verify_provider_domains.sql`):
 1. 함수가 존재하고 **`prosecdef = true`**(SECURITY DEFINER)이며 **search_path 고정**.
-2. **EXECUTE 는 `authenticated` 에게만**(PUBLIC 회수).
+2. **EXECUTE 는 `authenticated` 에게만**(PUBLIC 회수 + **anon 회수** — Supabase 기본권한이 anon 에 직접
+   부여하므로 `REVOKE ... FROM anon` 을 별도로 해야 익명 실행이 막힌다. plain-PG 엔 anon 롤이 없어 이
+   판정은 Supabase 에서만 실효하되 verify 에 회귀잠금으로 못박는다).
 3. ★ **반환 계약에 PII 컬럼이 없다** — `participant_id`·`amount`·`usage_date`·`created_by`·
    `description` 그 어느 것도 RETURNS 에 없다. **집계 수치만**. (안전성의 핵심 증명.)
 4. **전역 집계**: 같은 장소·같은 영역을 **서로 다른 두 참여자**가 이용하면 `usage_count` 에 **합산**된다.
