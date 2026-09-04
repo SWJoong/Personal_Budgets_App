@@ -987,3 +987,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T11:23Z] U
 [SYNC·P4 완전완결] #99 머지(main=ae269a7) → P4 tokenFoundation 락(TabBar/ParticipantFab 등재) 완결. P4 전체 완결: #98 내비통일 + #99 토큰락. P5 착수요건: (a)#98머지✅ (b)사용자 IA결정✅(분리유지+AdminSidebar 라벨명확화 관리/현황) — (c)e6 P5 RED계약만 대기(저작 중, 스코프 a~d). app-6c 계약 브랜치 신호까지 착수 금지·main push 금지 준수.
 
+## [2026-09-04T11:34Z] U
+[HANDOFF→U] P5 IA 계약 = PR #100 (test/w-p5-ia @d0c8111). 게이트 PASS(독립검증 2인·correctlyRed·matchesIA·scopeSound). 구성: redirect-lock 2 GREEN회귀잠금(transactions/new→transactions·admin report→supporter report) + RED 4(B4 preview 진입점 배선·AdminSidebar '통합현황'→'당사자현황' rename·nav-reachability /guide·/settings/profile·/admin/invitations=★링크추가 redirect아님). 확정 IA=분리유지+redirect·force-merge 금물(감사로 '중복'이 목적구분 판명). design-guide(계약아님): nesting 규약·single-aria-current(P4 계약 재정의 선행 후속). app-6c 구현 착수→green PR→W검증→사람머지. ★로드맵 P1~P5 = P5 구현만 남음.
+
