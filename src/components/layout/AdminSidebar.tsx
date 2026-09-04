@@ -125,7 +125,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                 <Link
                   href={item.href}
                   title={collapsed ? item.name : undefined}
-                  aria-current={isActive ? 'page' : undefined}
+                  aria-current={pathname === item.href ? 'page' : undefined}
                   className={`flex items-center gap-3 rounded-xl transition-all duration-150 flex-1 ${
                     collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
                   } ${isActive ? 'bg-white/10 text-white font-semibold shadow-sm' : 'hover:bg-white/5 hover:text-white'}`}
