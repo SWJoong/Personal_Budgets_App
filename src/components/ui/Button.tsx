@@ -1,17 +1,17 @@
 'use client'
 
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { buttonClasses, type ButtonVariant, type ButtonSize } from './buttonStyles'
 
 /**
  * Button — 인터랙티브 컨트롤 프리미티브. 계약: src/components/ui/Button.test.tsx.
  * 손수 만든 primary ~39곳 + 승인/조건부/반려 3종을 표준화한다.
  * 터치44px·hover·disabled·focus-visible(전역)·비색큐 loading(스피너+글자)을 한 곳에 굽는다.
  * loading 은 aria-busy + 비대화(disabled) + 보이는 글자 라벨 유지 — 색/투명도 단독 상태표시 금지.
- * next/link 형태 액션은 형제 컴포넌트로(이 프리미티브는 <button> 전용).
+ * variant/size 토큰은 ./buttonStyles 공유(LinkButton 과 parity). 이 프리미티브는 <button> 전용.
  */
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'positive' | 'warning'
-export type ButtonSize = 'sm' | 'md'
+export type { ButtonVariant, ButtonSize }
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
@@ -19,20 +19,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean
   iconOnly?: boolean
   children?: ReactNode
-}
-
-const VARIANT_CLASS: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-primary-foreground hover:bg-primary-hover',
-  secondary: 'bg-card text-foreground ring-1 ring-border hover:bg-muted',
-  ghost: 'bg-transparent text-foreground hover:bg-muted',
-  danger: 'bg-danger text-primary-foreground hover:opacity-90',
-  positive: 'bg-positive text-primary-foreground hover:opacity-90',
-  warning: 'bg-warning text-primary-foreground hover:opacity-90',
-}
-
-const SIZE_CLASS: Record<ButtonSize, string> = {
-  sm: 'min-h-[44px] px-3 text-sm',
-  md: 'min-h-[44px] px-4 text-base',
 }
 
 export function Button({
@@ -47,13 +33,12 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const isDisabled = disabled || loading
-  const sizeClass = iconOnly ? 'min-h-[44px] min-w-[44px] px-0' : SIZE_CLASS[size]
   return (
     <button
       type={type ?? 'button'}
       disabled={isDisabled}
       aria-busy={loading || undefined}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl font-bold transition-colors disabled:opacity-50 ${sizeClass} ${VARIANT_CLASS[variant]} ${className}`.trim()}
+      className={`${buttonClasses(variant, size, iconOnly)} disabled:opacity-50 ${className}`.trim()}
       {...rest}
     >
       {loading && (
