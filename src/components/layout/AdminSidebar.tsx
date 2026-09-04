@@ -68,7 +68,7 @@ const quickItems: SubItem[] = [
 
 function SoonBadge() {
   return (
-    <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 ring-1 ring-amber-400/30">
+    <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-sidebar-badge text-sidebar-badge-foreground ring-1 ring-sidebar-badge-ring">
       준비중
     </span>
   )
@@ -89,27 +89,27 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
   }
 
   return (
-    <aside className="h-full w-full bg-gradient-to-b from-slate-900 to-slate-800 text-slate-300 flex flex-col pb-4 shadow-2xl overflow-y-auto overflow-x-hidden">
+    <aside className="h-full w-full bg-sidebar text-sidebar-foreground flex flex-col pb-4 shadow-2xl overflow-y-auto overflow-x-hidden">
       {/* 헤더 */}
       <div className={`flex items-center h-14 shrink-0 ${collapsed ? 'justify-center px-2' : 'justify-between px-4'}`}>
         {!collapsed && (
           <Link href="/admin" className="block hover:opacity-80 transition-opacity min-w-0 flex-1 mr-2">
-            <h2 className="text-white font-bold text-base tracking-tight leading-tight truncate">서울형 개인예산제</h2>
-            <span className="text-slate-400 text-xs font-normal">관리자</span>
+            <h2 className="text-sidebar-strong font-bold text-base tracking-tight leading-tight truncate">서울형 개인예산제</h2>
+            <span className="text-sidebar-muted-foreground text-xs font-normal">관리자</span>
           </Link>
         )}
         {onToggle && (
           <button
             onClick={onToggle}
             title={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/15 text-slate-400 hover:text-white transition-all"
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-sidebar-elevated hover:bg-sidebar-active text-sidebar-muted-foreground hover:text-sidebar-strong transition-all"
           >
             <span className="text-sm">{collapsed ? '▶' : '◀'}</span>
           </button>
         )}
       </div>
 
-      <div className="h-px bg-white/10 mx-3 mb-3 shrink-0" />
+      <div className="h-px bg-sidebar-border mx-3 mb-3 shrink-0" />
 
       {/* 메인 메뉴 */}
       <nav aria-label="주요 메뉴" className="flex-1 px-2 space-y-0.5">
@@ -129,7 +129,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                   aria-current={pathname === item.href ? 'page' : undefined}
                   className={`flex items-center gap-3 rounded-xl transition-all duration-150 flex-1 ${
                     collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
-                  } ${isActive ? 'bg-white/10 text-white font-semibold shadow-sm' : 'hover:bg-white/5 hover:text-white'}`}
+                  } ${isActive ? 'bg-sidebar-active text-sidebar-strong font-semibold shadow-sm outline outline-2 outline-sidebar-active-outline' : 'hover:bg-sidebar-hover hover:text-sidebar-strong'}`}
                 >
                   <span aria-hidden="true" className={`text-xl shrink-0 transition-transform ${isActive ? 'scale-110' : ''}`}>
                     {item.icon}
@@ -139,7 +139,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                       <span className="text-sm truncate flex-1">{item.name}</span>
                       {item.soon && <SoonBadge />}
                       {isActive && (
-                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse-gentle shrink-0" />
+                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-sidebar-marker animate-pulse-gentle shrink-0" />
                       )}
                     </>
                   )}
@@ -148,7 +148,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                 {hasSub && (
                   <button
                     onClick={() => toggleSub(item.href)}
-                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-all shrink-0 mr-1"
+                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-strong transition-all shrink-0 mr-1"
                     aria-label={isSubOpen ? '접기' : '펼치기'}
                     aria-expanded={isSubOpen}
                   >
@@ -167,8 +167,8 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                       aria-current={pathname === sub.href ? 'page' : undefined}
                       className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg transition-all ${
                         pathname === sub.href
-                          ? 'bg-white/10 text-white font-bold'
-                          : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                          ? 'bg-sidebar-active text-sidebar-strong font-bold outline outline-2 outline-sidebar-active-outline'
+                          : 'text-sidebar-muted-foreground hover:bg-sidebar-hover hover:text-sidebar-strong'
                       }`}
                     >
                       <span className="truncate">{sub.name}</span>
@@ -185,11 +185,11 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
       {/* 빠른 설정 섹션 */}
       {!collapsed && (
         <div className="px-2 mt-3 shrink-0">
-          <div className="h-px bg-white/10 mb-3" />
+          <div className="h-px bg-sidebar-border mb-3" />
           <button
             onClick={() => setQuickOpen(p => !p)}
             aria-expanded={quickOpen}
-            className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm text-sidebar-muted-foreground hover:text-sidebar-strong hover:bg-sidebar-hover transition-all"
           >
             <span className="text-base">⚡</span>
             <span className="flex-1 text-left font-bold">빠른 설정</span>
@@ -201,7 +201,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
                 <Link
                   key={q.href}
                   href={q.href}
-                  className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-all"
+                  className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg text-sidebar-muted-foreground hover:bg-sidebar-hover hover:text-sidebar-strong transition-all"
                 >
                   <span className="truncate">{q.name}</span>
                   {q.soon && <SoonBadge />}
@@ -215,14 +215,14 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
       {/* 사용자 정보 + 로그아웃 */}
       <div className="px-2 mt-3 space-y-1 shrink-0">
         {!collapsed && user && (
-          <div className="px-3 py-2 rounded-xl bg-white/5">
-            <p className="text-xs text-slate-400 truncate">{user.email}</p>
+          <div className="px-3 py-2 rounded-xl bg-sidebar-elevated">
+            <p className="text-xs text-sidebar-muted-foreground truncate">{user.email}</p>
           </div>
         )}
         <button
           onClick={handleLogout}
           title={collapsed ? '로그아웃' : undefined}
-          className={`flex items-center gap-3 w-full rounded-xl text-left text-sm hover:bg-white/5 transition-all text-slate-400 hover:text-white py-2.5 ${
+          className={`flex items-center gap-3 w-full rounded-xl text-left text-sm hover:bg-sidebar-hover transition-all text-sidebar-muted-foreground hover:text-sidebar-strong py-2.5 ${
             collapsed ? 'justify-center px-0' : 'px-3'
           }`}
         >

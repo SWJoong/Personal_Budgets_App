@@ -31,6 +31,22 @@
   --color-hero: hsl(222 47% 11%);
   --color-hero-foreground: hsl(210 40% 98%);
 
+  /* P6: 다크-표면 시맨틱 토큰 — Plan&Source/goala_p6_darktokens_W.md (AdminSidebar 다크 반전 표면).
+     라이트 토큰(foreground/card)은 다크 위 검은 글씨라 재사용 불가 → 전용 세트. 4모드 AA≥4.5:1. */
+  --color-sidebar: hsl(222 47% 11%);
+  --color-sidebar-foreground: hsl(214 20% 82%);
+  --color-sidebar-muted-foreground: hsl(215 20% 72%);
+  --color-sidebar-strong: hsl(0 0% 100%);
+  --color-sidebar-elevated: hsl(222 35% 15%);
+  --color-sidebar-hover: hsl(222 40% 18%);
+  --color-sidebar-active: hsl(222 40% 23%);
+  --color-sidebar-border: hsl(217 30% 30%);
+  --color-sidebar-marker: hsl(213 94% 68%);
+  --color-sidebar-badge: hsl(38 60% 24%);
+  --color-sidebar-badge-foreground: hsl(40 96% 76%);
+  --color-sidebar-badge-ring: hsl(38 70% 40%);
+  --color-sidebar-active-outline: transparent;
+
   --color-success-bg: hsl(145 60% 94%);
   --color-success-fg: hsl(145 63% 28%);
   --color-info-bg: hsl(205 85% 94%);
@@ -381,6 +397,21 @@ html.high-contrast {
      글자(--color-hero-foreground)를 검정(#000, 흰 위 21:1)으로 둬야 흰-위-흰 소실을 막는다. */
   --color-hero: #ffffff;
   --color-hero-foreground: #000000;
+
+  /* P6: 다크-표면 토큰 — 고대비(순흑백, 회색 muted 폐기, 활성은 outline #fff 로 구분). */
+  --color-sidebar: #000000;
+  --color-sidebar-foreground: #ffffff;
+  --color-sidebar-muted-foreground: #ffffff;
+  --color-sidebar-strong: #ffffff;
+  --color-sidebar-elevated: #000000;
+  --color-sidebar-hover: #1a1a1a;
+  --color-sidebar-active: #000000;
+  --color-sidebar-border: #ffffff;
+  --color-sidebar-marker: #ffffff;
+  --color-sidebar-badge: #ffffff;
+  --color-sidebar-badge-foreground: #000000;
+  --color-sidebar-badge-ring: #000000;
+  --color-sidebar-active-outline: #ffffff;
   --color-success-bg: #ffffff;
   --color-success-fg: #000000;
   --color-info-bg: #ffffff;
@@ -468,6 +499,21 @@ html.dark-mode {
   /* P2: 신규 토큰 재정의(§3-2) */
   --color-hero: hsl(222 47% 16%);
   --color-hero-foreground: hsl(210 40% 95%);
+
+  /* P6: 다크-표면 토큰 — 다크 모드(밝기 미세 상향). */
+  --color-sidebar: hsl(222 47% 13%);
+  --color-sidebar-foreground: hsl(214 20% 82%);
+  --color-sidebar-muted-foreground: hsl(215 20% 72%);
+  --color-sidebar-strong: hsl(0 0% 100%);
+  --color-sidebar-elevated: hsl(222 35% 16%);
+  --color-sidebar-hover: hsl(222 40% 19%);
+  --color-sidebar-active: hsl(222 40% 24%);
+  --color-sidebar-border: hsl(217 30% 32%);
+  --color-sidebar-marker: hsl(213 94% 68%);
+  --color-sidebar-badge: hsl(38 60% 24%);
+  --color-sidebar-badge-foreground: hsl(40 96% 76%);
+  --color-sidebar-badge-ring: hsl(38 70% 40%);
+  --color-sidebar-active-outline: transparent;
   --color-success-bg: hsl(145 40% 18%);
   --color-success-fg: hsl(145 55% 72%);
   --color-info-bg: hsl(205 45% 20%);
@@ -648,6 +694,21 @@ html.yellow-bg {
   --color-danger-fg: hsl(0 65% 40%);
   --color-neutral-bg: hsl(220 20% 93%);
   --color-neutral-fg: hsl(220 10% 38%);
+
+  /* 사이드바는 노랑 배경과 무관하게 다크 유지(상속 표류 방지 위해 라이트값 명시 미러). */
+  --color-sidebar: hsl(222 47% 11%);
+  --color-sidebar-foreground: hsl(214 20% 82%);
+  --color-sidebar-muted-foreground: hsl(215 20% 72%);
+  --color-sidebar-strong: hsl(0 0% 100%);
+  --color-sidebar-elevated: hsl(222 35% 15%);
+  --color-sidebar-hover: hsl(222 40% 18%);
+  --color-sidebar-active: hsl(222 40% 23%);
+  --color-sidebar-border: hsl(217 30% 30%);
+  --color-sidebar-marker: hsl(213 94% 68%);
+  --color-sidebar-badge: hsl(38 60% 24%);
+  --color-sidebar-badge-foreground: hsl(40 96% 76%);
+  --color-sidebar-badge-ring: hsl(38 70% 40%);
+  --color-sidebar-active-outline: transparent;
 }
 
 /* ─── 인쇄 / PDF 저장 ─── */

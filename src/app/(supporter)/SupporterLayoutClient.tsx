@@ -60,12 +60,12 @@ export function SupporterLayoutClient({
 
       {/* 모바일 상단 헤더 + 햄버거 */}
       <div
-        className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between h-14 px-4 bg-slate-900 text-white border-b border-slate-700 print:hidden"
+        className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between h-14 px-4 bg-sidebar text-sidebar-strong border-b border-sidebar-border print:hidden"
         data-print-hide
       >
         <button
           onClick={() => setMobileMenuOpen((v) => !v)}
-          className="p-2 rounded-lg hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="p-2 rounded-lg hover:bg-sidebar-hover transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
           aria-label={mobileMenuOpen ? '메뉴 닫기' : '메뉴 열기'}
           aria-expanded={mobileMenuOpen}
         >
@@ -91,7 +91,7 @@ export function SupporterLayoutClient({
             <div className="absolute top-3 right-3 z-10">
               <button
                 onClick={closeMenu}
-                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                className="p-2 rounded-lg bg-sidebar-elevated hover:bg-sidebar-active text-sidebar-strong transition-colors"
                 aria-label="메뉴 닫기"
               >
                 <span className="text-lg leading-none">✕</span>
