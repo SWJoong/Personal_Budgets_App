@@ -972,3 +972,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T09:34Z] U
 [W후속·P3완결대기] P3 마지막 락 = PR #96 (B-2 4화면[OrgLedger·transactions/[id]·[participantId]/transactions·participants/[id]] tokenFoundation TOKENIZED_FILES 추가, 로컬 17 pass). 사람 머지 대기(CI green 후). 이 머지로 P3 토큰화 락 완결. / P3 전체 아크: #92 프리미티브 기반 → #93 B-1(3화면+LinkButton) → #94 락+§3-3확정 → #95 B-2(정산 §3-3리맵+dead제거+4화면, rebase로 #94락 보존) → #96 B-2락. 전부 방화벽(구현 app-6c ↔ 독립검증 e6, #89 a11y·B-1 dismissed→danger·B-2 리스트시맨틱 실제 교정) + 사람 머지게이트로 main 안착. 다음(P4 내비통일/P5 IA)는 사용자 결정 대기.
 
+## [2026-09-04T10:05Z] U
+[P3 완성] #96 머지(main=df54e65) → P3 토큰화 재구성 완결. 5 PR: #92 프리미티브 기반 → #93 B-1(3화면+LinkButton) → #94 락+§3-3확정 → #95 B-2(정산 §3-3리맵+dead제거+4화면) → #96 B-2락. 방화벽(구현 app-6c↔독립검증 e6; #89 고대비 a11y·B-1 dismissed→danger·B-2 리스트시맨틱 실교정)+사람 머지게이트. / P4(내비 통일): 사용자 확정 4탭(홈·달력·계획·더보기+FAB→/receipt), nav RED 계약 워크플로 진행 중(스터디→디자인→저작→독립리뷰). 조율개선 합의: UX/product 질문 W소유·U 플래그(중복질문 방지). §7 IA=P5(P4 범위 밖).
+
