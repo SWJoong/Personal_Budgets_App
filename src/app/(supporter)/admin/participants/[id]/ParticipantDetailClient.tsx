@@ -21,7 +21,7 @@ const APPEAL_OUTCOME_LABEL: Record<string, string> = {
 
 // 이의신청 결과 → StatusPill intent(비색큐: 라벨이 1차 단서, 색은 보조).
 // 전부 반영=확정된 좋은 결과(success) · 일부 반영=부분 반영 정보성(info) ·
-// 그대로 유지=요청 미반영(danger) · 확인 대기=미결/주의(warning).
+// 그대로 유지=이의 기각 결과(neutral, 정당한 확정이라 빨강 아님) · 확인 대기=미결/주의(warning).
 const APPEAL_OUTCOME_INTENT: Record<string, Intent> = {
   pending: 'warning',
   upheld: 'success',

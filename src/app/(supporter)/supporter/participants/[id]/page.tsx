@@ -1,7 +1,13 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
-import { settlementLabel, settlementStyle } from '@/utils/settlementStatus'
+import { settlementLabel, settlementIntent } from '@/utils/settlementStatus'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { StatusPill } from '@/components/ui/StatusPill'
+import { MoneyText } from '@/components/ui/MoneyText'
+import { LinkButton } from '@/components/ui/LinkButton'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export const metadata = { title: '당사자 통합 현황' }
 
@@ -32,8 +38,6 @@ const COPAY_LABEL: Record<string, string> = {
   charged: '부과',
   unverified: '확인 전',
 }
-
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 
 export default async function ParticipantHubPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -83,68 +87,55 @@ export default async function ParticipantHubPage({ params }: { params: Promise<{
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-        <Link
-          href="/supporter/participants"
-          aria-label="목록으로 가기"
-          className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
-        >
-          ←
-        </Link>
-        <h1 className="text-xl font-bold tracking-tight">{name}님</h1>
-      </header>
+      <PageHeader title={`${name}님`} backHref="/supporter/participants" />
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6 flex flex-col gap-5">
         {/* ① 상태 요약 */}
-        <section className="rounded-2xl bg-white ring-1 ring-zinc-200 p-5">
+        <Card>
           {balance ? (
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2 flex-wrap">
-                {cohortName && (
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200">
-                    {cohortName}
-                  </span>
-                )}
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
-                  예산 배정됨
-                </span>
+                {cohortName && <StatusPill label={cohortName} intent="info" />}
+                <StatusPill label="예산 배정됨" intent="success" />
               </div>
               <div className="flex items-end justify-between gap-2">
                 <div>
-                  <p className="text-xs text-zinc-400 mb-0.5">남은 예산</p>
-                  <p className="text-2xl font-bold text-zinc-900">{won(balance.remaining)}</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">남은 예산</p>
+                  <p className="text-2xl font-bold">
+                    <MoneyText value={balance.remaining} emphasis="hero" />
+                  </p>
                 </div>
-                <p className="text-xs text-zinc-500 mb-1">
-                  승인 {won(balance.allocated_amount)} · 쓴 돈 {won(balance.spent)}
+                <p className="text-xs text-muted-foreground mb-1">
+                  승인 <MoneyText value={balance.allocated_amount} emphasis="muted" /> · 쓴 돈 <MoneyText value={balance.spent} emphasis="muted" />
                 </p>
               </div>
-              <div className="flex items-center justify-between text-sm pt-2 border-t border-zinc-100">
-                <span className="text-zinc-500">본인부담금</span>
-                <span className="text-zinc-800 font-medium">
-                  {balance.copay_amount ? won(balance.copay_amount) : '0원'}
-                  <span className="text-zinc-400 font-normal"> · {COPAY_LABEL[balance.copay_status] ?? balance.copay_status}</span>
+              <div className="flex items-center justify-between text-sm pt-2 border-t border-border">
+                <span className="text-muted-foreground">본인부담금</span>
+                <span className="text-foreground font-medium">
+                  {balance.copay_amount ? <MoneyText value={balance.copay_amount} emphasis="body" /> : '0원'}
+                  <span className="text-muted-foreground font-normal"> · {COPAY_LABEL[balance.copay_status] ?? balance.copay_status}</span>
                 </span>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-zinc-500 leading-relaxed">아직 예산이 배정되지 않았어요. 신청·선정 절차를 확인해 주세요.</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">아직 예산이 배정되지 않았어요. 신청·선정 절차를 확인해 주세요.</p>
           )}
-        </section>
+        </Card>
 
         {/* ② 바로가기 카드 */}
         <section>
-          <h2 className="text-sm font-bold text-zinc-500 mb-2 px-1">바로가기</h2>
+          <h2 className="text-sm font-bold text-muted-foreground mb-2 px-1">바로가기</h2>
           <div className="grid grid-cols-2 gap-3">
             {cards.map((c) => (
               <Link
                 key={c.label}
                 href={c.href}
-                className="flex items-center gap-3 p-4 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-900 hover:shadow-sm transition-all min-h-[44px]"
+                className="flex items-center gap-3 p-4 rounded-2xl bg-card ring-1 ring-border hover:ring-foreground hover:shadow-sm transition-all min-h-[44px]"
               >
                 <span aria-hidden="true" className="text-2xl shrink-0">{c.icon}</span>
                 <span className="flex flex-col min-w-0">
-                  <span className="text-sm font-bold text-zinc-800 truncate">{c.label}</span>
-                  <span className="text-xs text-zinc-400 truncate">{c.desc}</span>
+                  <span className="text-sm font-bold text-foreground truncate">{c.label}</span>
+                  <span className="text-xs text-muted-foreground truncate">{c.desc}</span>
                 </span>
               </Link>
             ))}
@@ -153,35 +144,30 @@ export default async function ParticipantHubPage({ params }: { params: Promise<{
 
         {/* ③ 최근 활동 */}
         <section>
-          <h2 className="text-sm font-bold text-zinc-500 mb-2 px-1">최근 지출</h2>
+          <h2 className="text-sm font-bold text-muted-foreground mb-2 px-1">최근 지출</h2>
           {usages.length === 0 ? (
-            <p className="text-sm text-zinc-400 leading-relaxed py-6 text-center rounded-2xl bg-white ring-1 ring-zinc-200">
-              아직 기록된 지출이 없어요.
-            </p>
+            <EmptyState title="아직 기록된 지출이 없어요." variant="inline" />
           ) : (
-            <ul className="rounded-2xl bg-white ring-1 ring-zinc-200 overflow-hidden">
+            <ul className="rounded-2xl bg-card ring-1 ring-border overflow-hidden">
               {usages.map((u) => (
-                <li key={u.id} className="flex items-center justify-between gap-3 px-4 py-3 border-t border-zinc-50 first:border-t-0">
+                <li key={u.id} className="flex items-center justify-between gap-3 px-4 py-3 border-t border-border first:border-t-0">
                   <div className="flex flex-col min-w-0">
-                    <span className="text-sm text-zinc-800 truncate">{u.description || '내용 없음'}</span>
-                    <span className="text-xs text-zinc-400">{u.usage_date}</span>
+                    <span className="text-sm text-foreground truncate">{u.description || '내용 없음'}</span>
+                    <span className="text-xs text-muted-foreground">{u.usage_date}</span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${settlementStyle(u.settlement_status)}`}>
-                      {settlementLabel(u.settlement_status)}
+                    <StatusPill label={settlementLabel(u.settlement_status)} intent={settlementIntent(u.settlement_status)} />
+                    <span className="text-sm font-bold">
+                      <MoneyText value={u.amount} emphasis="body" />
                     </span>
-                    <span className="text-sm font-bold text-zinc-900">{won(u.amount)}</span>
                   </div>
                 </li>
               ))}
             </ul>
           )}
-          <Link
-            href={`/supporter/${pid}/transactions`}
-            className="mt-2 block text-center text-sm font-bold text-zinc-500 hover:text-zinc-800 transition-colors min-h-[44px] flex items-center justify-center"
-          >
+          <LinkButton href={`/supporter/${pid}/transactions`} variant="ghost" className="mt-2 w-full">
             거래장부에서 모두 보기 →
-          </Link>
+          </LinkButton>
         </section>
       </main>
     </div>
