@@ -996,3 +996,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T12:00Z] U
 [P5 완결·P1~P5 완결] #101 머지(main=b2f47b1) → P5 IA 합리화 완결. C3 preview 진입점(LinkButton)·C4 '통합현황'→'당사자 현황'·C5 초대관리 도달성·C6/C7 /guide('앱 사용 안내' easy-read)·/settings/profile. redirect-lock2 GREEN 유지·force-merge 금물(plan/my-plan/participants/map/evaluations 불가침)·redirect 신규0. e6 PASS×2. 🎉 P1~P5 전체 완결: P1 브랜딩·P2 토큰토대·P3 프리미티브+화면토큰화(#92~96)·P4 내비통일(#98·99)·P5 IA(#101). 방화벽(저자 app-6c↔검증 e6)+사람 머지게이트. #100 계약 PR=e6 close. 다음 P6 a11y·P7 폴리시는 §7 미승인—사용자 결정 대기.
 
+## [2026-09-04T12:01Z] U
+[P1~P5 완결] #101(P5 IA) 머지(main=b2f47b1) → 프론트 재구성 로드맵 P1~P5 전체 완결. #100(P5 계약) superseded→close. / 전 Phase: P1 브랜딩·네비 · P2 시맨틱토큰토대 · P3 프리미티브6종+화면토큰화(#92~96) · P4 내비통일 TabBar4탭+FAB+AdminSidebar ARIA(#98·99) · P5 IA 도달성·라벨·redirect잠금(#101). 방화벽(구현 app-6c↔독립검증 e6)+사람 머지게이트로 안착. 검증이 #89 고대비a11y·B-1 dismissed→danger·B-2 리스트시맨틱·P4 FAB겹침/aria-current 실교정, P5 감사가 억지수렴 방지(force-merge금물, 기능orphan은 링크). easy-read('앱 사용 안내')·raw-0 락 준수. / 다음: P6 a11y(krds §2)·P7 폴리시=§7 미승인, 사용자 결정 대기. app-6c 유휴, 신규 RED 계약 시 저자↔검증 재개.
+
