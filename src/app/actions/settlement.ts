@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { assertAdmin } from '@/utils/supabase/staff'
 import { friendlyDbError } from '@/utils/supabase/errors'
 import { revalidatePath } from 'next/cache'
+import { auditLog } from '@/utils/audit'
 
 export interface SettlementInput {
   allocationId: string
@@ -46,6 +47,17 @@ export async function recordSettlement(input: SettlementInput) {
       .single()
 
     if (error || !data) return { error: `정산 등록 실패: ${friendlyDbError(error)}` }
+
+    await auditLog(supabase, 'settlement.record', {
+      targetType: 'settlement',
+      targetId: data.id as string,
+      metadata: {
+        accepted: input.acceptedAmount,
+        rejected: input.rejectedAmount ?? 0,
+        recovered: input.recoveredAmount ?? 0,
+        unused: input.unusedAmount ?? 0,
+      },
+    })
 
     revalidatePath('/supporter/settlements')
     return { success: true, settlementId: data.id as string }

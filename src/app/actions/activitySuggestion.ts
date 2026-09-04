@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
 import { callAIDeidentified } from '@/utils/aiDeidentify'
 import { AI_MODELS } from '@/utils/ai'
+import { auditLog } from '@/utils/audit'
 import { buildBudgetByDomain, type PlannedServiceRow } from '@/utils/budgetByDomain'
 import type { DomainSpine, DomainFlowRow } from '@/utils/domainAxisReport'
 import {
@@ -81,6 +82,13 @@ export async function generateActivitySuggestions(): Promise<
       maxTokens: 500,
       json: true,
       cacheSystem: true,
+    })
+
+    await auditLog(supabase, 'ai.suggest', {
+      targetType: 'participant',
+      targetId: participant.id,
+      participantId: participant.id,
+      metadata: { model: AI_MODELS.suggest },
     })
 
     return parseSuggestions(raw, { validDomainIds })

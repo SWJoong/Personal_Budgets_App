@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { assertAdmin, assertStaff } from '@/utils/supabase/staff'
 import { friendlyDbError } from '@/utils/supabase/errors'
 import { revalidatePath } from 'next/cache'
+import { auditLog } from '@/utils/audit'
 
 export interface PlanReviewInput {
   planId: string
@@ -50,6 +51,12 @@ export async function decidePlanReview(input: PlanReviewInput) {
 
     if (statusError) return { error: `심의는 저장됐지만 계획 상태 갱신에 실패했어요: ${statusError.message}` }
     if (!statusRow) return { error: '심의는 저장됐지만 해당 계획을 찾을 수 없어 상태를 갱신하지 못했어요.' }
+
+    await auditLog(supabase, 'plan.review', {
+      targetType: 'plan',
+      targetId: input.planId,
+      metadata: { decision: input.decision },
+    })
 
     // 승인·조건부승인이면 예산을 배정한다 — seoul_service_usages.allocation_id 가
     // NOT NULL 이라 이 행이 없으면 집행(Phase 3) 자체가 불가능하다. 차수의 기본

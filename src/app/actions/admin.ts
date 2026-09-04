@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { UserRole } from '@/types/database'
+import { auditLog } from '@/utils/audit'
 
 /**
  * 관리자 권한 검증
@@ -37,6 +38,8 @@ export async function updateUserRole(userId: string, newRole: UserRole) {
     return { error: '자신의 역할은 변경할 수 없습니다.' }
   }
 
+  const { data: before } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle()
+
   const { error } = await supabase
     .from('profiles')
     .update({ role: newRole })
@@ -45,6 +48,12 @@ export async function updateUserRole(userId: string, newRole: UserRole) {
   if (error) {
     return { error: `역할 변경 실패: ${error.message}` }
   }
+
+  await auditLog(supabase, 'role.change', {
+    targetType: 'user',
+    targetId: userId,
+    metadata: { from: before?.role ?? null, to: newRole },
+  })
 
   revalidatePath('/admin/settings')
   revalidatePath('/admin')
@@ -200,6 +209,8 @@ export async function deleteParticipant(participantId: string) {
       return { error: `삭제 실패: ${error.message}` }
     }
 
+    await auditLog(supabase, 'participant.delete', { targetType: 'participant', targetId: participantId })
+
     revalidatePath('/admin/participants')
     return { success: true }
   } catch (e) {
@@ -246,7 +257,7 @@ export async function createInvitation(formData: {
 }): Promise<{ success?: boolean; error?: string }> {
   const { supabase, user } = await verifyAdmin()
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('user_invitations')
     .insert({
       email: formData.email.trim().toLowerCase(),
@@ -254,11 +265,19 @@ export async function createInvitation(formData: {
       note: formData.note?.trim() || null,
       invited_by: user.id,
     })
+    .select('id')
+    .maybeSingle()
 
   if (error) {
     if (error.code === '23505') return { error: '이미 등록된 이메일입니다.' }
     return { error: `등록 실패: ${error.message}` }
   }
+
+  await auditLog(supabase, 'invitation.create', {
+    targetType: 'invitation',
+    targetId: data?.id ?? null,
+    metadata: { role: formData.role },
+  })
 
   revalidatePath('/admin/invitations')
   return { success: true }
@@ -277,6 +296,8 @@ export async function deleteInvitation(id: string): Promise<{ success?: boolean;
     .is('used_at', null)
 
   if (error) return { error: `삭제 실패: ${error.message}` }
+
+  await auditLog(supabase, 'invitation.delete', { targetType: 'invitation', targetId: id })
 
   revalidatePath('/admin/invitations')
   return { success: true }
