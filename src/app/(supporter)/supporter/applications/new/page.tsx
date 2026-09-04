@@ -37,6 +37,8 @@ export default function NewApplicationPage() {
 
   const [participantId, setParticipantId] = useState('')
   const [cohortId, setCohortId] = useState('')
+  const [participantError, setParticipantError] = useState('')
+  const [cohortError, setCohortError] = useState('')
   const [receiptNumber, setReceiptNumber] = useState('')
   // 신청서 §신청자 정보의 "공공부조 수급현황". 본인부담금 면제 판정의 유일한 입력이라
   // 접수 시점에 받아 둔다 — 심의 승인 때 배정이 만들어지면서 면제 여부가 확정된다.
@@ -66,12 +68,16 @@ export default function NewApplicationPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setParticipantError('')
+    setCohortError('')
     if (!participantId) {
-      fail('당사자를 선택해주세요.')
+      setParticipantError('당사자를 선택해주세요.')
+      announce('당사자를 선택해주세요.', 'assertive')
       return
     }
     if (!cohortId) {
-      fail('차수를 선택해주세요.')
+      setCohortError('차수를 선택해주세요.')
+      announce('차수를 선택해주세요.', 'assertive')
       return
     }
 
@@ -150,6 +156,7 @@ export default function NewApplicationPage() {
               id="app-participant"
               label="당사자"
               required
+              error={participantError || undefined}
               help={participants.length === 0 ? '등록된 당사자가 없어요. 먼저 당사자 관리에서 등록해주세요.' : undefined}
             >
               {(field) => (
@@ -168,7 +175,7 @@ export default function NewApplicationPage() {
               )}
             </FormField>
 
-            <FormField id="app-cohort" label="차수" required>
+            <FormField id="app-cohort" label="차수" required error={cohortError || undefined}>
               {(field) => (
                 <select
                   {...field}

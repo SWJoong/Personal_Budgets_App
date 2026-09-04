@@ -27,6 +27,8 @@ export default function NewParticipantPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [supporterId, setSupporterId] = useState('')
+  const [nameError, setNameError] = useState('')
+  const [emailError, setEmailError] = useState('')
 
   useEffect(() => {
     loadData()
@@ -50,12 +52,16 @@ export default function NewParticipantPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setNameError('')
+    setEmailError('')
     if (!name.trim()) {
-      fail('이름을 입력해주세요.')
+      setNameError('이름을 입력해주세요.')
+      announce('이름을 입력해주세요.', 'assertive')
       return
     }
     if (!email.trim()) {
-      fail('이메일을 입력해주세요.')
+      setEmailError('이메일을 입력해주세요.')
+      announce('이메일을 입력해주세요.', 'assertive')
       return
     }
 
@@ -114,7 +120,7 @@ export default function NewParticipantPage() {
           <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200">
             <legend className="text-xs font-black text-zinc-400 uppercase tracking-widest px-1">당사자 정보</legend>
 
-            <FormField id="new-participant-name" label="이름" required>
+            <FormField id="new-participant-name" label="이름" required error={nameError || undefined}>
               {(field) => (
                 <input
                   {...field}
@@ -128,7 +134,7 @@ export default function NewParticipantPage() {
               )}
             </FormField>
 
-            <FormField id="new-participant-email" label="이메일" required help="당사자가 이 이메일로 구글 로그인하면 자동으로 이 등록 정보와 연결됩니다.">
+            <FormField id="new-participant-email" label="이메일" required error={emailError || undefined} help="당사자가 이 이메일로 구글 로그인하면 자동으로 이 등록 정보와 연결됩니다.">
               {(field) => (
                 <input
                   {...field}
