@@ -43,6 +43,22 @@ const TOKENIZED_FILES = [
   // P4 내비 통일(#98) — TabBar/ParticipantFab 토큰화
   'src/components/layout/TabBar.tsx',
   'src/components/layout/ParticipantFab.tsx',
+  // ── P6 a11y 리트로핏(#82) — Phase A 대비 토큰화 배치 ──
+  // 설계: Plan&Source/goala_p6_a11y_W.md §2(krds §2 매핑)·§3(raw→시맨틱 토큰표).
+  //   등재 근거: 저대비 raw(text-zinc-400/500·slate/gray-400 등, 흰 배경 ~2.4~2.85:1 <AA 4.5:1)를
+  //   보유한 전역 내비·진입 화면. 등재 즉시 RAW_SCALE/RAW_WHITE 정규식이 RED — U 가 시맨틱 토큰
+  //   (text-muted-foreground·ring-border 등, #89 에서 AA 검증)으로 치환하면 green.
+  //   focus:ring-zinc-400 은 제거 후 전역 focus-visible 위임(ring-border) 방향.
+  //   B/C 웨이브에서 잔여 ~51 파일로 확장한다(과대 RED 방지 — 이번엔 진입·내비 7개).
+  //   AdminSidebar 는 다크 반전 표면(from-slate-900+text-white)이라 라이트 토큰으론 green 불가 →
+  //   별도 '다크-표면 토큰 서브웨이브'(W 설계·AA 검증)로 이관, Phase A 에서 제외.
+  'src/components/layout/MoreMenuClient.tsx',
+  'src/app/(auth)/login/page.tsx',
+  'src/app/onboarding/OnboardingClient.tsx',
+  'src/app/(participant)/more/page.tsx',
+  'src/app/(participant)/receipt/ReceiptClient.tsx',
+  'src/app/(supporter)/admin/settings/page.tsx',
+  'src/app/(supporter)/admin/participants/page.tsx',
 ]
 
 // Tailwind 임의 팔레트(시맨틱 토큰으로 대체돼야 함).

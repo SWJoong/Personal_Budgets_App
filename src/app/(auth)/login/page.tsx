@@ -34,16 +34,16 @@ function DemoLoginSection() {
   };
 
   return (
-    <div className="flex flex-col gap-3 p-5 rounded-2xl bg-zinc-50 border border-zinc-200">
-      <p className="text-xs font-bold text-zinc-500">데모 계정으로 둘러보기</p>
-      {error && <p className="text-xs text-red-600 leading-relaxed">{error}</p>}
+    <div className="flex flex-col gap-3 p-5 rounded-2xl bg-muted border border-border">
+      <p className="text-xs font-bold text-muted-foreground">데모 계정으로 둘러보기</p>
+      {error && <p className="text-xs text-danger-fg leading-relaxed">{error}</p>}
       <div className="grid grid-cols-1 gap-2">
         {roles.map(({ role, label, emoji }) => (
           <button
             key={role}
             onClick={() => handleClick(role)}
             disabled={pending}
-            className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-400 transition-all font-bold text-sm text-zinc-700 disabled:opacity-60 min-h-[44px]"
+            className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-card ring-1 ring-border hover:ring-primary transition-all font-bold text-sm text-foreground disabled:opacity-60 min-h-[44px]"
           >
             <span>{emoji}</span>
             {pending && pendingRole === role ? "들어가는 중..." : label}
@@ -78,7 +78,7 @@ function GoogleLoginContent() {
 
   return (
     <>
-      <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50">
+      <main id="main-content" tabIndex={-1} className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
         <div className="absolute top-20 right-20 text-8xl opacity-10 rotate-12 pointer-events-none select-none hidden md:block">
           💰
         </div>
@@ -86,12 +86,12 @@ function GoogleLoginContent() {
           📊
         </div>
 
-        <div className="flex w-full max-w-md flex-col gap-8 rounded-3xl bg-white p-8 md:p-12 shadow-xl ring-1 ring-zinc-200">
+        <div className="flex w-full max-w-md flex-col gap-8 rounded-3xl bg-card p-8 md:p-12 shadow-xl ring-1 ring-border">
           {/* 로고 */}
           <div className="flex flex-col items-center gap-4 text-center">
             <button
               onClick={() => setEasterEggOpen(true)}
-              className="w-24 h-24 rounded-3xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-5xl shadow-lg hover:scale-105 transition-transform focus:outline-none"
+              className="w-24 h-24 rounded-3xl bg-primary flex items-center justify-center text-5xl shadow-lg hover:scale-105 transition-transform focus:outline-none"
               aria-label="로고"
             >
               💰
@@ -106,7 +106,7 @@ function GoogleLoginContent() {
 
           {/* 오류 메시지 */}
           {error && (
-            <div className="rounded-2xl bg-red-50 border border-red-200 p-4 text-sm text-red-800 leading-relaxed">
+            <div className="rounded-2xl bg-danger-bg border border-border p-4 text-sm text-danger-fg leading-relaxed">
               <p className="font-bold mb-1">이 앱에 들어올 수 없는 이메일이에요.</p>
               <p>선생님이라면 기관 이메일로 로그인해주세요.</p>
               <p>이용자라면 담당 선생님께 문의해주세요.</p>
@@ -117,10 +117,10 @@ function GoogleLoginContent() {
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="flex items-center justify-center gap-3 w-full py-4 px-6 rounded-2xl border-2 border-zinc-200 bg-white hover:bg-zinc-50 hover:border-zinc-300 transition-all font-bold text-zinc-800 text-base shadow-sm disabled:opacity-60 disabled:cursor-not-allowed min-h-[56px]"
+            className="flex items-center justify-center gap-3 w-full py-4 px-6 rounded-2xl border-2 border-border bg-card hover:bg-muted hover:border-border transition-all font-bold text-foreground text-base shadow-sm disabled:opacity-60 disabled:cursor-not-allowed min-h-[56px]"
           >
             {loading ? (
-              <span className="text-sm text-zinc-500">로그인 중...</span>
+              <span className="text-sm text-muted-foreground">로그인 중...</span>
             ) : (
               <>
                 <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
@@ -147,7 +147,7 @@ function GoogleLoginContent() {
           </button>
 
           {/* 안내 문구 */}
-          <div className="text-center text-sm text-zinc-500 leading-relaxed space-y-1">
+          <div className="text-center text-sm text-muted-foreground leading-relaxed space-y-1">
             <p>선생님: 기관 이메일로 로그인해주세요</p>
             <p>이용자: 담당 선생님께 문의해주세요</p>
           </div>
@@ -156,10 +156,10 @@ function GoogleLoginContent() {
           {isDemoLoginEnabled && <DemoLoginSection />}
 
           {/* 더 알아보기 */}
-          <div className="rounded-2xl border border-zinc-200 overflow-hidden">
+          <div className="rounded-2xl border border-border overflow-hidden">
             <button
               onClick={() => setInfoOpen((v) => !v)}
-              className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
+              className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
             >
               <span className="flex items-center gap-2">
                 <span>📖</span>
@@ -171,18 +171,18 @@ function GoogleLoginContent() {
             </button>
 
             {infoOpen && (
-              <div className="px-5 pb-5 pt-1 text-sm text-zinc-700 space-y-5 border-t border-zinc-100">
+              <div className="px-5 pb-5 pt-1 text-sm text-foreground space-y-5 border-t border-border">
                 <div>
-                  <h2 className="font-bold text-zinc-800 mb-1.5">📋 프로젝트 개요</h2>
-                  <p className="text-xs text-zinc-600 leading-relaxed">
+                  <h2 className="font-bold text-foreground mb-1.5">📋 프로젝트 개요</h2>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     발달장애인 당사자가 자신의 예산을 시각적으로 쉽게 이해하고 관리할 수 있도록 돕는 웹 앱입니다.
                     <strong> 쉬운 정보(Easy Read)</strong> 원칙을 적용해 당사자·지원자·관리자 세 역할을 지원합니다.
                   </p>
                 </div>
 
                 <div>
-                  <h2 className="font-bold text-zinc-800 mb-1.5">✨ 주요 기능</h2>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-zinc-600">
+                  <h2 className="font-bold text-foreground mb-1.5">✨ 주요 기능</h2>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     <span>• SVG 주머니·지폐 잔액 시각화</span>
                     <span>• 영수증 OCR (Claude)</span>
                     <span>• 월별계획 · 전월 복사</span>
@@ -197,10 +197,10 @@ function GoogleLoginContent() {
                 </div>
 
                 <div>
-                  <h2 className="font-bold text-zinc-800 mb-1.5">🏗️ 기술 스택</h2>
+                  <h2 className="font-bold text-foreground mb-1.5">🏗️ 기술 스택</h2>
                   <div className="flex flex-wrap gap-1.5 text-xs">
                     {["Next.js 15", "React 19", "TypeScript", "Tailwind CSS 4", "Supabase", "Claude", "Kakao Maps", "Vercel"].map((t) => (
-                      <span key={t} className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{t}</span>
+                      <span key={t} className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{t}</span>
                     ))}
                   </div>
                 </div>
@@ -209,7 +209,7 @@ function GoogleLoginContent() {
                   href="https://github.com/SWJoong/Personal_Budgets_App"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-zinc-300 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
@@ -220,7 +220,7 @@ function GoogleLoginContent() {
             )}
           </div>
         </div>
-      </div>
+      </main>
 
       {/* 이스터에그 — Modal 프리미티브로 포커스 트랩/복원·Esc·scroll-lock 확보 */}
       <Modal
@@ -229,23 +229,23 @@ function GoogleLoginContent() {
         label="버트런드 러셀 인용"
         containerClassName="flex items-center justify-center p-6"
         overlayClassName="bg-black/60 backdrop-blur-sm"
-        panelClassName="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl"
+        panelClassName="bg-card rounded-2xl p-8 max-w-sm w-full shadow-2xl"
       >
         <p className="text-2xl mb-4 text-center">💬</p>
-        <p className="text-sm text-slate-700 leading-relaxed mb-1">
+        <p className="text-sm text-foreground leading-relaxed mb-1">
           &quot;훌륭한 삶이란 사랑으로 힘을 얻고 지식으로 길잡이를 삼는 삶이다.&quot;
         </p>
-        <p className="text-xs text-slate-400 text-right mb-4">— 버트런드 러셀</p>
-        <p className="text-xs text-slate-500 italic leading-relaxed mb-1">
+        <p className="text-xs text-muted-foreground text-right mb-4">— 버트런드 러셀</p>
+        <p className="text-xs text-muted-foreground italic leading-relaxed mb-1">
           &quot;The good life is one inspired by love and guided by knowledge.&quot;
         </p>
-        <p className="text-xs text-slate-400 text-right mb-5">— Bertrand Russell</p>
-        <div className="h-px bg-slate-100 mb-4" />
-        <p className="text-xs text-slate-500 leading-relaxed mb-1">
+        <p className="text-xs text-muted-foreground text-right mb-5">— Bertrand Russell</p>
+        <div className="h-px bg-muted mb-4" />
+        <p className="text-xs text-muted-foreground leading-relaxed mb-1">
           &quot;행복의 비결은 이것이다: 당신의 관심사를 가능한 한 넓게 키우고,
           당신의 관심사에 반응하는 것들에 대해 가능한 한 우호적으로 반응하라.&quot;
         </p>
-        <p className="text-xs text-slate-400 text-right mb-5">— 버트런드 러셀, 《행복의 정복》</p>
+        <p className="text-xs text-muted-foreground text-right mb-5">— 버트런드 러셀, 《행복의 정복》</p>
         <div className="w-full rounded-xl overflow-hidden mb-5">
           {/* eslint-disable-next-line @next/next/no-img-element -- 정적 이스터에그 이미지, next/image 최적화 불필요 */}
           <img
@@ -256,7 +256,7 @@ function GoogleLoginContent() {
         </div>
         <button
           onClick={() => setEasterEggOpen(false)}
-          className="w-full py-2 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-700 transition-colors"
+          className="w-full py-2 rounded-xl bg-hero text-hero-foreground text-sm font-bold hover:opacity-90 transition-colors"
         >
           닫기
         </button>
@@ -273,7 +273,7 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-zinc-400">로딩 중...</div>
+        <div className="text-muted-foreground">로딩 중...</div>
       </div>
     }>
       <GoogleLoginContent />

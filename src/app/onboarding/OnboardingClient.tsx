@@ -116,56 +116,56 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50">
+    <main id="main-content" tabIndex={-1} className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
 
         {/* Progress indicator */}
         <div className="flex items-center justify-center gap-3 mb-8">
           <div className={`w-3 h-3 rounded-full transition-all ${step === 'role' ? 'bg-primary scale-125' : 'bg-primary'}`} />
-          <div className={`w-8 h-0.5 ${step === 'profile' ? 'bg-primary' : 'bg-zinc-200'}`} />
-          <div className={`w-3 h-3 rounded-full transition-all ${step === 'profile' ? 'bg-primary scale-125' : 'bg-zinc-200'}`} />
+          <div className={`w-8 h-0.5 ${step === 'profile' ? 'bg-primary' : 'bg-muted'}`} />
+          <div className={`w-3 h-3 rounded-full transition-all ${step === 'profile' ? 'bg-primary scale-125' : 'bg-muted'}`} />
         </div>
 
         {/* Step 1: Role Selection */}
         {step === 'role' && (
-          <div className="bg-white rounded-[2rem] p-8 shadow-xl ring-1 ring-zinc-200 animate-fade-in-up">
+          <div className="bg-card rounded-[2rem] p-8 shadow-xl ring-1 ring-border animate-fade-in-up">
             <div className="text-center mb-8">
               <span className="text-5xl block mb-4">👋</span>
-              <h1 className="text-2xl font-black text-zinc-900 mb-2">반가워요!</h1>
-              <p className="text-zinc-500 font-medium">당신은 어떤 사람인가요?</p>
+              <h1 className="text-2xl font-black text-foreground mb-2">반가워요!</h1>
+              <p className="text-muted-foreground font-medium">당신은 어떤 사람인가요?</p>
             </div>
 
             <div className="flex flex-col gap-4">
               <button
                 onClick={() => handleRoleSelect('participant')}
-                className="flex items-center gap-5 p-6 rounded-2xl ring-2 ring-zinc-200 hover:ring-primary hover:bg-primary/5 transition-all active:scale-[0.98] text-left group"
+                className="flex items-center gap-5 p-6 rounded-2xl ring-2 ring-border hover:ring-primary hover:bg-primary/5 transition-all active:scale-[0.98] text-left group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 rounded-2xl bg-info-bg flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
                   🙋
                 </div>
                 <div>
-                  <p className="text-lg font-black text-zinc-900">
+                  <p className="text-lg font-black text-foreground">
                     <EasyTerm formal="사용자 (당사자)" easy="나의 예산을 관리하는 사람" />
                   </p>
-                  <p className="text-sm text-zinc-500 font-medium mt-1">나의 예산을 직접 관리하고 싶어요</p>
+                  <p className="text-sm text-muted-foreground font-medium mt-1">나의 예산을 직접 관리하고 싶어요</p>
                 </div>
               </button>
 
               <button
                 onClick={() => handleRoleSelect('supporter')}
-                className="flex items-center gap-5 p-6 rounded-2xl ring-2 ring-zinc-200 hover:ring-primary hover:bg-primary/5 transition-all active:scale-[0.98] text-left group"
+                className="flex items-center gap-5 p-6 rounded-2xl ring-2 ring-border hover:ring-primary hover:bg-primary/5 transition-all active:scale-[0.98] text-left group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 rounded-2xl bg-success-bg flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
                   🤝
                 </div>
                 <div>
-                  <p className="text-lg font-black text-zinc-900">지원자</p>
-                  <p className="text-sm text-zinc-500 font-medium mt-1">당사자의 예산 관리를 지원해요</p>
+                  <p className="text-lg font-black text-foreground">지원자</p>
+                  <p className="text-sm text-muted-foreground font-medium mt-1">당사자의 예산 관리를 지원해요</p>
                 </div>
               </button>
             </div>
 
-            <p className="text-center text-xs text-zinc-400 mt-6">
+            <p className="text-center text-xs text-muted-foreground mt-6">
               나중에 더보기 → 계정 관리에서 바꾸 수 있어요.
             </p>
           </div>
@@ -173,10 +173,10 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
 
         {/* Step 2: Profile Setup */}
         {step === 'profile' && role && (
-          <div className="bg-white rounded-[2rem] p-8 shadow-xl ring-1 ring-zinc-200 animate-fade-in-up">
+          <div className="bg-card rounded-[2rem] p-8 shadow-xl ring-1 ring-border animate-fade-in-up">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 text-zinc-400 hover:text-zinc-600 transition-colors mb-6 min-h-[44px]"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 min-h-[44px]"
               aria-label="뒤로 가기"
             >
               <span className="text-xl">←</span>
@@ -185,13 +185,13 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
 
             <div className="text-center mb-8">
               <span className="text-4xl block mb-3">{role === 'participant' ? '🙋' : '🤝'}</span>
-              <h2 className="text-xl font-black text-zinc-900">
+              <h1 className="text-xl font-black text-foreground">
                 {role === 'participant' ? '사용자 프로필 설정' : '지원자 프로필 설정'}
-              </h2>
+              </h1>
             </div>
 
             {error && (
-              <div className="p-4 rounded-2xl bg-red-50 text-red-600 text-sm font-bold ring-1 ring-red-200 mb-6 animate-fade-in-up">
+              <div className="p-4 rounded-2xl bg-danger-bg text-danger-fg text-sm font-bold ring-1 ring-border mb-6 animate-fade-in-up">
                 {error}
               </div>
             )}
@@ -199,14 +199,14 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
             <div className="flex flex-col gap-6">
               {/* Profile Image */}
               <div className="flex flex-col items-center gap-3">
-                <div className="w-24 h-24 rounded-full bg-zinc-100 flex items-center justify-center text-4xl overflow-hidden ring-4 ring-zinc-200">
+                <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center text-4xl overflow-hidden ring-4 ring-border">
                   {avatarPreview ? (
                     <img src={avatarPreview} alt="프로필" className="w-full h-full object-cover" />
                   ) : (
                     <span>📷</span>
                   )}
                 </div>
-                <p className="text-xs text-zinc-400 font-bold">프로필 사진 (스킵 가능)</p>
+                <p className="text-xs text-muted-foreground font-bold">프로필 사진 (스킵 가능)</p>
               </div>
 
               {/* Name */}
@@ -221,7 +221,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                       if (nameError) setNameError('')
                     }}
                     placeholder="이름을 입력해 주세요"
-                    className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-lg font-bold transition-all"
+                    className="w-full p-4 rounded-2xl bg-muted ring-1 ring-border focus:ring-2 focus:ring-primary outline-none text-lg font-bold transition-all"
                     required
                   />
                 )}
@@ -232,7 +232,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                 <>
                   {/* Budget Type */}
                   <fieldset className="flex flex-col gap-2">
-                    <legend className="text-sm font-bold text-zinc-500 ml-1 mb-2">
+                    <legend className="text-sm font-bold text-muted-foreground ml-1 mb-2">
                       <EasyTerm formal="예산 구조" easy="돈의 종류" />
                     </legend>
                     <div className="grid grid-cols-2 gap-3">
@@ -243,7 +243,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                         className={`p-4 rounded-2xl text-center transition-all ring-2 ${
                           budgetType === 'single'
                             ? 'ring-primary bg-primary/5 text-primary font-black'
-                            : 'ring-zinc-200 text-zinc-500 hover:ring-zinc-300'
+                            : 'ring-border text-muted-foreground hover:ring-primary'
                         }`}
                       >
                         <span className="text-2xl block mb-1">💰</span>
@@ -256,7 +256,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                         className={`p-4 rounded-2xl text-center transition-all ring-2 ${
                           budgetType === 'multiple'
                             ? 'ring-primary bg-primary/5 text-primary font-black'
-                            : 'ring-zinc-200 text-zinc-500 hover:ring-zinc-300'
+                            : 'ring-border text-muted-foreground hover:ring-primary'
                         }`}
                       >
                         <span className="text-2xl block mb-1">💰💰</span>
@@ -268,7 +268,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                   {/* Supporter Selection */}
                   {supporters.length > 0 && (
                     <fieldset className="flex flex-col gap-2">
-                      <legend className="text-sm font-bold text-zinc-500 ml-1 mb-2">
+                      <legend className="text-sm font-bold text-muted-foreground ml-1 mb-2">
                         <EasyTerm formal="담당 지원자" easy="나를 도와주는 선생님" />
                       </legend>
                       <div className="flex flex-col gap-2">
@@ -281,17 +281,17 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                             className={`flex items-center gap-3 p-4 rounded-2xl transition-all ring-2 text-left ${
                               selectedSupporter === s.id
                                 ? 'ring-primary bg-primary/5'
-                                : 'ring-zinc-200 hover:ring-zinc-300'
+                                : 'ring-border hover:ring-primary'
                             }`}
                           >
-                            <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-lg overflow-hidden">
+                            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-lg overflow-hidden">
                               {s.avatar_url ? (
                                 <img src={s.avatar_url} alt="" className="w-full h-full object-cover" />
                               ) : (
                                 <span>{(s.name || '?')[0]}</span>
                               )}
                             </div>
-                            <span className="font-bold text-zinc-800">{s.name || '이름 없음'}</span>
+                            <span className="font-bold text-foreground">{s.name || '이름 없음'}</span>
                             {selectedSupporter === s.id && <span className="ml-auto text-primary text-xl">✓</span>}
                           </button>
                         ))}
@@ -304,7 +304,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
               {/* Supporter-specific: participant selection */}
               {role === 'supporter' && participants.length > 0 && (
                 <fieldset className="flex flex-col gap-2">
-                  <legend className="text-sm font-bold text-zinc-500 ml-1 mb-2">담당 당사자 (여러 명 선택 가능)</legend>
+                  <legend className="text-sm font-bold text-muted-foreground ml-1 mb-2">담당 당사자 (여러 명 선택 가능)</legend>
                   <div className="flex flex-col gap-2">
                     {participants.map((p) => (
                       <button
@@ -315,17 +315,17 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                         className={`flex items-center gap-3 p-4 rounded-2xl transition-all ring-2 text-left ${
                           selectedParticipants.includes(p.id)
                             ? 'ring-primary bg-primary/5'
-                            : 'ring-zinc-200 hover:ring-zinc-300'
+                            : 'ring-border hover:ring-primary'
                         }`}
                       >
-                        <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-lg overflow-hidden">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-lg overflow-hidden">
                           {p.avatar_url ? (
                             <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
                           ) : (
                             <span>{(p.name || '?')[0]}</span>
                           )}
                         </div>
-                        <span className="font-bold text-zinc-800">{p.name || '이름 없음'}</span>
+                        <span className="font-bold text-foreground">{p.name || '이름 없음'}</span>
                         {selectedParticipants.includes(p.id) && <span className="ml-auto text-primary text-xl">✓</span>}
                       </button>
                     ))}
@@ -342,7 +342,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     placeholder="예: 여행을 좋아해요!"
-                    className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all"
+                    className="w-full p-4 rounded-2xl bg-muted ring-1 ring-border focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all"
                   />
                 )}
               </FormField>
@@ -351,7 +351,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
               <button
                 onClick={handleComplete}
                 disabled={loading || !name.trim()}
-                className="w-full py-5 rounded-3xl bg-zinc-900 text-white text-xl font-black shadow-xl active:scale-95 disabled:bg-zinc-300 transition-all mt-2"
+                className="w-full py-5 rounded-3xl bg-primary text-primary-foreground text-xl font-black shadow-xl active:scale-95 disabled:bg-muted transition-all mt-2"
               >
                 {loading ? '설정 중...' : '시작하기 🎉'}
               </button>
@@ -361,10 +361,10 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
 
         {/* 3. Complete Step (SelfCheckFeedback) */}
         {step === 'complete' && (
-          <div className="bg-white rounded-[2.5rem] p-8 shadow-xl ring-1 ring-zinc-200 fade-in flex flex-col items-center gap-6">
-            <h2 className="text-2xl font-black text-center text-zinc-900">
+          <div className="bg-card rounded-[2.5rem] p-8 shadow-xl ring-1 ring-border fade-in flex flex-col items-center gap-6">
+            <h1 className="text-2xl font-black text-center text-foreground">
               준비가 모두 끝났어요!
-            </h2>
+            </h1>
             <SelfCheckFeedback
               question="앱 시작하기 설정이 쉬웠나요?"
               context="onboarding"
@@ -376,6 +376,6 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
           </div>
         )}
       </div>
-    </div>
+    </main>
   )
 }

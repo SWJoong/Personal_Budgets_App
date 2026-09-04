@@ -161,23 +161,23 @@ export default function ReceiptClient({
   }
 
   return (
-    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
-      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
+    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
+      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-card/80 backdrop-blur-md border-b border-border">
+        <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
           ←
         </Link>
-        <h1 className="text-sm font-black text-zinc-800">지출 기록하기</h1>
+        <h1 className="text-sm font-black text-foreground">지출 기록하기</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-6 max-w-sm mx-auto w-full">
         {!allocationId ? (
-          <section className="p-8 rounded-3xl bg-zinc-100 text-center">
-            <p className="text-zinc-500 font-medium leading-relaxed">아직 예산이 정해지지 않았어요.<br />담당 선생님에게 말씀해 주세요.</p>
+          <section className="p-8 rounded-3xl bg-muted text-center">
+            <p className="text-muted-foreground font-medium leading-relaxed">아직 예산이 정해지지 않았어요.<br />담당 선생님에게 말씀해 주세요.</p>
           </section>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {error && (
-              <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium leading-relaxed">
+              <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium leading-relaxed">
                 {error}
               </div>
             )}
@@ -186,17 +186,17 @@ export default function ReceiptClient({
                 방해하지 않고, 궁금할 때 펼쳐 보게 한다(쉬운 정보 원칙: 한 번에
                 많은 글을 보여주지 않기). */}
             {spendingRules.length > 0 && (
-              <details className="rounded-2xl bg-white ring-1 ring-zinc-200 overflow-hidden">
-                <summary className="p-4 text-sm font-bold text-zinc-700 cursor-pointer min-h-[44px] flex items-center leading-relaxed">
+              <details className="rounded-2xl bg-card ring-1 ring-border overflow-hidden">
+                <summary className="p-4 text-sm font-bold text-foreground cursor-pointer min-h-[44px] flex items-center leading-relaxed">
                   💡 지원이 어려운 것도 있어요
                 </summary>
                 <div className="px-4 pb-4 flex flex-col gap-2">
                   <ul className="flex flex-col gap-1.5">
                     {spendingRules.map((label) => (
-                      <li key={label} className="text-sm text-zinc-600 leading-relaxed">· {label}</li>
+                      <li key={label} className="text-sm text-muted-foreground leading-relaxed">· {label}</li>
                     ))}
                   </ul>
-                  <p className="text-xs text-zinc-500 leading-relaxed bg-zinc-50 rounded-xl p-3">
+                  <p className="text-xs text-muted-foreground leading-relaxed bg-muted rounded-xl p-3">
                     그래도 꼭 필요한 것이면 지원받을 수 있어요.
                     담당 선생님과 먼저 이야기해 보세요.
                   </p>
@@ -223,10 +223,10 @@ export default function ReceiptClient({
               </FormField>
               {photo && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={photo.previewUrl} alt="영수증 미리보기" className="w-full max-h-48 object-contain rounded-xl ring-1 ring-zinc-200" />
+                <img src={photo.previewUrl} alt="영수증 미리보기" className="w-full max-h-48 object-contain rounded-xl ring-1 ring-border" />
               )}
-              {ocrLoading && <p className="text-xs text-zinc-400">사진에서 읽어오는 중...</p>}
-              {!ocrLoading && ocrNotice && <p className="text-xs text-amber-600 leading-relaxed">{ocrNotice}</p>}
+              {ocrLoading && <p className="text-xs text-muted-foreground">사진에서 읽어오는 중...</p>}
+              {!ocrLoading && ocrNotice && <p className="text-xs text-warning-fg leading-relaxed">{ocrNotice}</p>}
             </div>
 
             <FormField id="usage-date" label="날짜">
@@ -236,7 +236,7 @@ export default function ReceiptClient({
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-card ring-1 ring-border text-sm focus:outline-none"
                 />
               )}
             </FormField>
@@ -258,7 +258,7 @@ export default function ReceiptClient({
                     if (amountError) setAmountError('')
                   }}
                   placeholder="0"
-                  className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-card ring-1 ring-border text-sm focus:outline-none"
                 />
               )}
             </FormField>
@@ -271,20 +271,20 @@ export default function ReceiptClient({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="예: 웹툰 학원 수강료"
-                  className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-card ring-1 ring-border text-sm focus:outline-none"
                 />
               )}
             </FormField>
 
             {selectedPlace ? (
               <div className="flex flex-col gap-1.5">
-                <span className="text-sm font-bold text-zinc-700">어디에서 썼어요? (선택)</span>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-100">
-                  <span className="text-sm font-bold text-zinc-700">📍 {selectedPlace.name}</span>
+                <span className="text-sm font-bold text-foreground">어디에서 썼어요? (선택)</span>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-muted">
+                  <span className="text-sm font-bold text-foreground">📍 {selectedPlace.name}</span>
                   <button
                     type="button"
                     onClick={() => setSelectedPlace(null)}
-                    className="text-xs text-zinc-400 min-h-[44px] px-2"
+                    className="text-xs text-muted-foreground min-h-[44px] px-2"
                   >
                     다시 찾기
                   </button>
@@ -302,13 +302,13 @@ export default function ReceiptClient({
                         onChange={(e) => setPlaceQuery(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handlePlaceSearch() } }}
                         placeholder="장소 이름으로 찾아보세요"
-                        className="flex-1 p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                        className="flex-1 p-3 rounded-xl bg-card ring-1 ring-border text-sm focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={handlePlaceSearch}
                         disabled={placeSearching}
-                        className="px-4 rounded-xl bg-zinc-200 text-zinc-700 text-sm font-bold disabled:opacity-50 min-h-[44px] min-w-[44px]"
+                        className="px-4 rounded-xl bg-muted text-foreground text-sm font-bold disabled:opacity-50 min-h-[44px] min-w-[44px]"
                       >
                         찾기
                       </button>
@@ -320,10 +320,10 @@ export default function ReceiptClient({
                             <button
                               type="button"
                               onClick={() => handlePlaceSelect(p)}
-                              className="w-full text-left p-3 rounded-xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-400 transition-all"
+                              className="w-full text-left p-3 rounded-xl bg-card ring-1 ring-border hover:ring-primary transition-all"
                             >
-                              <span className="text-sm font-bold text-zinc-700 block">{p.place_name}</span>
-                              <span className="text-xs text-zinc-400">{p.road_address_name || p.address_name}</span>
+                              <span className="text-sm font-bold text-foreground block">{p.place_name}</span>
+                              <span className="text-xs text-muted-foreground">{p.road_address_name || p.address_name}</span>
                             </button>
                           </li>
                         ))}
@@ -341,7 +341,7 @@ export default function ReceiptClient({
                     {...field}
                     value={requestedServiceId}
                     onChange={(e) => setRequestedServiceId(e.target.value)}
-                    className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+                    className="p-3 rounded-xl bg-card ring-1 ring-border text-sm focus:outline-none"
                   >
                     <option value="">고르지 않을래요</option>
                     {requestedServices.map((rs) => (
@@ -355,7 +355,7 @@ export default function ReceiptClient({
             <button
               type="submit"
               disabled={pending || ocrLoading}
-              className="p-3 rounded-xl bg-zinc-900 text-white font-bold text-sm disabled:opacity-50 min-h-[44px]"
+              className="p-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm disabled:opacity-50 min-h-[44px]"
             >
               {pending ? '저장하고 있어요...' : '기록하기'}
             </button>
@@ -363,16 +363,16 @@ export default function ReceiptClient({
         )}
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-bold text-zinc-500">최근에 쓴 돈</h2>
+          <h2 className="text-sm font-bold text-muted-foreground">최근에 쓴 돈</h2>
           {usages.length === 0 ? (
-            <p className="text-zinc-400 text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
+            <p className="text-muted-foreground text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {usages.map((u) => (
-                <li key={u.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center justify-between">
+                <li key={u.id} className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center justify-between">
                   <div className="flex flex-col">
                     <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
-                    <span className="text-xs text-zinc-400">{u.usage_date} · {SETTLEMENT_LABEL[u.settlement_status] ?? u.settlement_status}</span>
+                    <span className="text-xs text-muted-foreground">{u.usage_date} · {SETTLEMENT_LABEL[u.settlement_status] ?? u.settlement_status}</span>
                   </div>
                   <span className="font-bold">{won(u.amount)}</span>
                 </li>
