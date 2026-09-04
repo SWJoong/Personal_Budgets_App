@@ -68,7 +68,7 @@ export default function PlaceSearch({
         <button
           type="button"
           onClick={onClear}
-          className="text-xs font-bold text-blue-400 hover:text-blue-600 shrink-0 px-2 py-1 rounded-lg hover:bg-blue-100 transition-colors"
+          className="min-h-11 min-w-11 inline-flex items-center justify-center text-xs font-bold text-blue-400 hover:text-blue-600 shrink-0 px-2 py-1 rounded-lg hover:bg-blue-100 transition-colors"
         >
           변경
         </button>

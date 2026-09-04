@@ -50,9 +50,9 @@ export default async function ParticipantEvaluationsPage() {
             </p>
           </section>
         ) : (
-          <section className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-3">
             {records.map((r) => (
-              <article key={r.id} className="p-5 rounded-3xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
+              <li key={r.id} className="p-5 rounded-3xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-zinc-400">
                     {r.method ? METHOD_EASY[r.method] ?? '' : ''}
@@ -68,28 +68,30 @@ export default async function ParticipantEvaluationsPage() {
                     <p className="text-sm text-zinc-700 leading-relaxed">“{r.participant_voice}”</p>
                   </div>
                 )}
-              </article>
+              </li>
             ))}
-          </section>
+          </ul>
         )}
 
         {/* 정산 = 쓴 돈은 어떻게 됐나요 (미사용은 긍정 프레이밍 고정 문구) */}
         {settlements.length > 0 && (
           <section className="flex flex-col gap-3">
             <h2 className="text-sm font-bold text-zinc-500">쓴 돈은 어떻게 됐나요</h2>
-            {settlements.map((s) => (
-              <div key={s.id} className="p-5 rounded-3xl bg-white ring-1 ring-zinc-200 flex flex-col gap-2">
-                <span className="text-xs text-zinc-400">{s.settled_period}</span>
-                <p className="text-base text-zinc-800 leading-relaxed">
-                  받은 돈 <b>{won(Number(s.accepted_amount))}</b>
-                </p>
-                {Number(s.unused_amount) > 0 && (
-                  <p className="text-sm text-zinc-600 bg-green-50 rounded-2xl p-3 leading-relaxed">
-                    아직 다 안 쓴 돈이 있어요. 괜찮아요, 잘못한 게 아니에요.
+            <ul className="flex flex-col gap-3">
+              {settlements.map((s) => (
+                <li key={s.id} className="p-5 rounded-3xl bg-white ring-1 ring-zinc-200 flex flex-col gap-2">
+                  <span className="text-xs text-zinc-400">{s.settled_period}</span>
+                  <p className="text-base text-zinc-800 leading-relaxed">
+                    받은 돈 <b>{won(Number(s.accepted_amount))}</b>
                   </p>
-                )}
-              </div>
-            ))}
+                  {Number(s.unused_amount) > 0 && (
+                    <p className="text-sm text-zinc-600 bg-green-50 rounded-2xl p-3 leading-relaxed">
+                      아직 다 안 쓴 돈이 있어요. 괜찮아요, 잘못한 게 아니에요.
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
           </section>
         )}
       </main>

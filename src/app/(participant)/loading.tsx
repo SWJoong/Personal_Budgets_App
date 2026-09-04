@@ -1,7 +1,7 @@
 // 당사자 홈 스켈레톤
 export default function Loading() {
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-20 animate-pulse">
+    <main id="main-content" tabIndex={-1} className="flex flex-col min-h-screen bg-background pb-20 animate-pulse">
       {/* 헤더 */}
       <div className="h-16 border-b border-zinc-100 flex items-center justify-between px-4">
         <div className="w-28 h-5 bg-zinc-100 rounded-full" />
@@ -48,6 +48,6 @@ export default function Loading() {
           ))}
         </div>
       </div>
-    </div>
+    </main>
   )
 }

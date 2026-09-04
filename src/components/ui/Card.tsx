@@ -18,7 +18,7 @@ export type CardVariant =
   | 'neutral'
 
 export interface CardProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
-  as?: 'section' | 'article' | 'div'
+  as?: 'section' | 'article' | 'div' | 'li'
   variant?: CardVariant
   title?: ReactNode
   headingLevel?: 2 | 3

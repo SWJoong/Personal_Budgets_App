@@ -101,8 +101,8 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
         {onToggle && (
           <button
             onClick={onToggle}
-            title={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-sidebar-elevated hover:bg-sidebar-active text-sidebar-muted-foreground hover:text-sidebar-strong transition-all"
+            aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
+            className="shrink-0 min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-sidebar-elevated hover:bg-sidebar-active text-sidebar-muted-foreground hover:text-sidebar-strong transition-all"
           >
             <span className="text-sm">{collapsed ? '▶' : '◀'}</span>
           </button>

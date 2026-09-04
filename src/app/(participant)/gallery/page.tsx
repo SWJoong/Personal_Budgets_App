@@ -67,9 +67,9 @@ export default async function GalleryPage() {
             <p className="text-zinc-500 font-medium leading-relaxed">아직 사진이 없어요.<br />지출을 기록할 때 사진을 함께 남겨보세요.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <ul className="grid grid-cols-2 gap-3">
             {validPhotos.map((p) => (
-              <div key={p.usageId} className="flex flex-col gap-1">
+              <li key={p.usageId} className="flex flex-col gap-1">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={p.url!}
@@ -77,9 +77,9 @@ export default async function GalleryPage() {
                   className="w-full aspect-square object-cover rounded-2xl ring-1 ring-zinc-200"
                 />
                 <span className="text-xs text-zinc-500 font-medium truncate">{p.description}</span>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </main>
     </div>
