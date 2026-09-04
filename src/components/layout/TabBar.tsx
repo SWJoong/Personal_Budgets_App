@@ -46,14 +46,14 @@ export function TabBar() {
   const supporterTabs: Tab[] = [
     { name: '당사자', href: '/supporter', icon: '👥' },
     { name: '확인 필요', href: '/supporter/review', icon: '🧾' },
-    { name: '내역 관리', href: '/supporter/transactions', icon: '📊', soon: true },
+    { name: '내역 관리', href: '/supporter/transactions', icon: '📊' },
     { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
   const adminTabs: Tab[] = [
     { name: '당사자 관리', href: '/admin/participants', icon: '👥' },
     { name: '확인 필요', href: '/supporter/review', icon: '🧾' },
-    { name: '내역 관리', href: '/supporter/transactions', icon: '📊', soon: true },
+    { name: '내역 관리', href: '/supporter/transactions', icon: '📊' },
     { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
