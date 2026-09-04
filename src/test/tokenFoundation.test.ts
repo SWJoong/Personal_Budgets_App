@@ -35,6 +35,11 @@ const TOKENIZED_FILES = [
   'src/app/(supporter)/supporter/budgets/[id]/page.tsx',
   'src/app/(supporter)/supporter/plans/[id]/PlanDetailClient.tsx',
   'src/app/(supporter)/admin/participants/[id]/ParticipantDetailClient.tsx',
+  // P3 Stage B-2(#95) — 거래장부 계열 4화면 리트로핏
+  'src/app/(supporter)/supporter/transactions/OrgLedgerClient.tsx',
+  'src/app/(supporter)/supporter/transactions/[id]/page.tsx',
+  'src/app/(supporter)/supporter/[participantId]/transactions/page.tsx',
+  'src/app/(supporter)/supporter/participants/[id]/page.tsx',
 ]
 
 // Tailwind 임의 팔레트(시맨틱 토큰으로 대체돼야 함).
