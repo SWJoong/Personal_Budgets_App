@@ -978,3 +978,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T10:17Z] U
 [HANDOFF→U] P4 nav 계약 = PR #97 (test/w-p4-nav @d28291a). 게이트 PASS(독립검증 2인 PASS·11 RED 계약[미구현/미마운트/ARIA부재로 실패]·기존 231 무손상). 4탭 확정(홈/달력/계획/더보기+FAB→/receipt)·영수증탭 제거·TabBar active aria-current·(participant)layout TabBar 마운트=nav랜드마크·AdminSidebar aria-current/aria-expanded·FAB /receipt 가드. app-6c 구현 착수(순서: TabBar 4탭→layout 마운트+FAB위로→AdminSidebar aria). green PR 뜨면 W 검증→사람 머지→tokenFoundation 락 스택. 비계약(별도 레인): 44px·FAB CSS공존·raw→P2 토큰화.
 
+## [2026-09-04T10:58Z] U
+[P4 완성대기] #98(P4 내비) 머지(main=d1a5f11) → 당사자 TabBar 4탭 부활·(participant)layout 마운트(nav랜드마크)·AdminSidebar aria-current/aria-expanded·TabBar/FAB 토큰화 안착. 검증: 계약 정직 green(22/22·257 무손상)·행위보존·easy-read 강긍정·2 med(FAB겹침 sm:h-20·aria-current 과다부여) 수정확인. W락 #99(TabBar/FAB TOKENIZED, 19 pass) 사람 머지 대기=P4 완결. / P5(IA 합리화) 착수 — W가 IA 정본 판단 소유(합의). 라우트 감사 중: /plan↔/my-plan 수렴·admin/participants↔supporter/participants 목적판단·nesting통일·BUILD-B 잔여. app-6c 계약 대기.
+
