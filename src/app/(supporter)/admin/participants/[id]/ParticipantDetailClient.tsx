@@ -26,7 +26,7 @@ const APPEAL_OUTCOME_INTENT: Record<string, Intent> = {
   pending: 'warning',
   upheld: 'success',
   partially_upheld: 'info',
-  dismissed: 'danger',
+  dismissed: 'neutral',
 }
 
 export default function ParticipantDetailClient({
