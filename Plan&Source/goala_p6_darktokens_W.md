@@ -64,7 +64,7 @@ html.dark-mode * { background-image: none !important; }
 | 토큰명 | 용도(대체하는 raw 역할) | 라이트기본(=노랑 상속) | 다크(html.dark-mode) | 고대비(html.high-contrast) | 노랑(html.yellow-bg) | AA 대비율(사이드바 배경 대비) |
 |---|---|---|---|---|---|---|
 | `--color-sidebar` | 사이드바 표면(그라디언트 붕괴, 단색) | `hsl(222 47% 11%)` | `hsl(222 47% 13%)` | `#000000` | =라이트(명시 재선언) | 배경 기준값 |
-| `--color-sidebar-foreground` | 기본 본문 텍스트(`text-slate-300`) | `hsl(214 20% 82%)` | `hsl(214 20% 82%)` | `#ffffff` | =라이트 | 라 11.3 / 다 16.4 / 고 21 / 노 11.3 |
+| `--color-sidebar-foreground` | 기본 본문 텍스트(`text-slate-300`) | `hsl(214 20% 82%)` | `hsl(214 20% 82%)` | `#ffffff` | =라이트 | 라 11.3 / 다 11.0 / 고 21 / 노 11.3 |
 | `--color-sidebar-muted-foreground` | 보조 텍스트·아이콘(`text-slate-400`) | `hsl(215 20% 72%)` | `hsl(215 20% 72%)` | `#ffffff`(회색 제거) | =라이트 | 라 8.5 / 다 8.3 / 고 21 / 노 8.5 |
 | `--color-sidebar-strong` | 활성·hover·로고 강조(`text-white`) | `hsl(0 0% 100%)` | `hsl(0 0% 100%)` | `#ffffff` | =라이트 | 라 17.6 / 다 16.9 / 고 21 / 노 17.6 |
 | `--color-sidebar-elevated` | 정적 카드·토글 기본면(`bg-white/5`) | `hsl(222 35% 15%)` | `hsl(222 35% 16%)` | `#000000`(테두리로 구분) | =라이트 | 면; muted 텍스트 7.8(라)·≥7(다) |
@@ -95,7 +95,7 @@ html.dark-mode * { background-image: none !important; }
 
 기준: 텍스트 ≥4.5:1(AA), 대형/그래픽 ≥3:1(1.4.11).
 
-- **(a) foreground ↔ sidebar**: 라 11.3 · 다 16.4 · 고 21 · 노 11.3 → 전부 ≥7 ✔
+- **(a) foreground ↔ sidebar**: 라 11.3 · 다 11.0 · 고 21 · 노 11.3 → 전부 ≥7 ✔ (다크 sidebar 13%가 라이트 11%보다 밝아 라이트보다 소폭 낮음이 정상)
 - **(b) muted-foreground ↔ sidebar**: 라 8.5 · 다 8.3 · 고 21 · 노 8.5 → 전부 ≥4.5 ✔
 - **(c) 활성 텍스트(strong) ↔ active 배경**: 라 13.0 · 다 12.6 · 고 21(흑백) · 노 13.0 → ✔
 - **(d) 비텍스트(marker 점 / badge ring) ↔ sidebar**: marker 6.9~21, ring 4.7~21 → ≥3 ✔
@@ -145,12 +145,21 @@ L(strong 100%)=1.0, L(marker blue-400)=0.363, L(badge-bg)=0.072, L(badge-fg)=0.7
 
 ### 5-2. 고대비 상태 구분 노트 (필수)
 
-고대비에서 `active`/`hover` 가 `#000` 이 되어 배경만으로는 활성 상태를 구분할 수 없다. AdminSidebar
-활성 분기에 **`outline`**(2px `--color-sidebar-border`=`#fff`) 렌더를 추가해 배경 반전이 아닌 **테두리**로
-상태를 구분한다. (라이트/다크에서는 배경 명도차로 이미 구분되므로 outline 은 고대비에서만 시각적으로
-의미를 가진다 — `outline` 유틸은 상시 부착하되 색이 사이드바 배경에 묻히지 않게 두께·색을 조정하거나,
-`high-contrast:` variant 가 없다면 항상 얇은 outline 을 두고 고대비에서 border 토큰이 흰색으로 승격되게
-설계.)
+고대비에서 `active`/`hover` 가 `#000` 이 되어 배경만으로는 활성 상태를 구분할 수 없다. 배경 반전이 아닌
+**테두리(outline)** 로 상태를 구분한다.
+
+**★확정 구현 경로 (리뷰 반영 — 시각 회귀 방지):** 12토큰에 전용 outline 토큰 1개를 추가한다(=13토큰).
+
+| 토큰명 | purpose | 라이트기본 | 다크 | 고대비 | 노랑 |
+|---|---|---|---|---|---|
+| `--color-sidebar-active-outline` | 활성 항목 테두리(비텍스트 상태지시자) | `transparent` | `transparent` | `#ffffff` | `transparent` |
+
+AdminSidebar 활성 분기에 `outline outline-2 outline-sidebar-active-outline` 을 **상시 부착**한다.
+- 라이트/다크/노랑: `transparent` → 렌더되지만 **투명이라 시각 회귀 0**(상태 구분은 기존 배경 명도차로 충분).
+- 고대비: `#ffffff` → 흰 테두리가 드러나 `#000` 활성 배경 위에서 상태를 구분(WCAG 1.4.1 색만-의존 회피).
+
+`high-contrast:` Tailwind variant 를 쓰지 않고 **토큰 값 승격만**으로 처리 → 4모드 일관·기존 P2 재정의 패턴과 동형.
+비텍스트 지시자라 텍스트 AA(4.5:1) 대상 아님(고대비 `#fff`/`#000`=21:1, 그래픽 ≥3:1 자동 충족).
 
 ### 5-3. 제2 다크표면 — SupporterLayoutClient (선택, 함께 권장)
 
