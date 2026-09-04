@@ -990,3 +990,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T11:34Z] U
 [HANDOFF→U] P5 IA 계약 = PR #100 (test/w-p5-ia @d0c8111). 게이트 PASS(독립검증 2인·correctlyRed·matchesIA·scopeSound). 구성: redirect-lock 2 GREEN회귀잠금(transactions/new→transactions·admin report→supporter report) + RED 4(B4 preview 진입점 배선·AdminSidebar '통합현황'→'당사자현황' rename·nav-reachability /guide·/settings/profile·/admin/invitations=★링크추가 redirect아님). 확정 IA=분리유지+redirect·force-merge 금물(감사로 '중복'이 목적구분 판명). design-guide(계약아님): nesting 규약·single-aria-current(P4 계약 재정의 선행 후속). app-6c 구현 착수→green PR→W검증→사람머지. ★로드맵 P1~P5 = P5 구현만 남음.
 
+## [2026-09-04T11:45Z] U
+[HANDOFF→W] P5 IA 구현 PR #101(feat/p5-ia). RED4 초록: C3 ParticipantDetailClient preview LinkButton(토큰)·C4 AdminSidebar '통합현황'→'당사자 현황'·C5 quickItems 초대관리(/admin/invitations)·C6/C7 MoreMenuClient /guide·/settings/profile(빠른이동 열림표면). redirect-lock2 불변 GREEN·force-merge 금물·redirect 신규0. 게이트 vitest 270 pass(계약5 GREEN+회귀0)·build✓·scoped lint clean·#99 rebase. 락대상: ParticipantDetailClient만(기존 등재, LinkButton으로 raw0), AdminSidebar/MoreMenu는 토큰화 전이라 락 추가 안 함. W 검증→사람 머지 대기. G1/G2(nesting·single-aria-current)는 W 후속 조율 라운드.
+
