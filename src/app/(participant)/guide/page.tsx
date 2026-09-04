@@ -37,7 +37,7 @@ export default function GuidePageClient() {
     <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground pb-10">
       <header className="flex h-16 items-center justify-between px-6 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl">←</Link>
+          <Link href="/" aria-label="홈으로 가기" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center">←</Link>
           <h1 className="text-xl font-bold tracking-tight">앱 사용 설명서</h1>
         </div>
         <NavDropdown />

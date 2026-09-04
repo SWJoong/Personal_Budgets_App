@@ -14,10 +14,10 @@ export default function SupporterError({
   }, [error])
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-6 p-8 bg-zinc-50">
+    <main id="main-content" tabIndex={-1} className="flex flex-col items-center justify-center min-h-screen gap-6 p-8 bg-zinc-50">
       <div className="text-center max-w-md">
         <p className="text-4xl mb-4">⚠️</p>
-        <h2 className="text-xl font-black text-zinc-900 mb-2">페이지를 불러올 수 없습니다</h2>
+        <h1 className="text-xl font-black text-zinc-900 mb-2">페이지를 불러올 수 없습니다</h1>
         <p className="text-sm text-zinc-500 mb-6">
           데이터베이스 연결 또는 권한 문제가 발생했습니다.
           {error.digest && (
@@ -31,6 +31,6 @@ export default function SupporterError({
           다시 시도
         </button>
       </div>
-    </div>
+    </main>
   )
 }

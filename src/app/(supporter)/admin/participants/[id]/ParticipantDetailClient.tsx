@@ -183,8 +183,9 @@ export default function ParticipantDetailClient({
         {appeals.length === 0 ? (
           <EmptyState emoji="📭" title="아직 요청이 없어요." variant="inline" />
         ) : (
-          appeals.map((a) => (
-            <Card key={a.id} as="div" variant="default" className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-3">
+          {appeals.map((a) => (
+            <Card key={a.id} as="li" variant="default" className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <StatusPill
                   label={APPEAL_OUTCOME_LABEL[a.outcome] ?? a.outcome}
@@ -227,20 +228,23 @@ export default function ParticipantDetailClient({
                 </div>
               )}
             </Card>
-          ))
+          ))}
+          </ul>
         )}
       </section>
 
       {/* 모니터링 */}
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-black text-muted-foreground uppercase tracking-widest">모니터링 기록</h2>
+        <ul className="flex flex-col gap-3">
         {monitoringRecords.map((m) => (
-          <Card key={m.id} as="div" variant="default" className="flex flex-col gap-1">
+          <Card key={m.id} as="li" variant="default" className="flex flex-col gap-1">
             <span className="text-xs text-muted-foreground">{m.monitoring_date}</span>
             {m.observed_change && <p className="text-sm text-foreground leading-relaxed">관찰: {m.observed_change}</p>}
             {m.participant_voice && <p className="text-sm text-muted-foreground leading-relaxed">당사자: {m.participant_voice}</p>}
           </Card>
         ))}
+        </ul>
         <Card as="div" variant="muted" className="flex flex-col gap-2">
           <textarea
             value={observedChange}
@@ -265,8 +269,9 @@ export default function ParticipantDetailClient({
       {/* 정산 */}
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-black text-muted-foreground uppercase tracking-widest">정산</h2>
+        <ul className="flex flex-col gap-3">
         {settlements.map((s) => (
-          <Card key={s.id} as="div" variant="default" className="flex flex-col gap-1">
+          <Card key={s.id} as="li" variant="default" className="flex flex-col gap-1">
             <span className="font-bold text-sm">{s.settled_period}</span>
             <span className="text-xs text-muted-foreground">
               인정 <MoneyText value={s.accepted_amount} emphasis="muted" /> · 반려 <MoneyText value={s.rejected_amount} emphasis="muted" /> · 환수 <MoneyText value={s.recovered_amount} emphasis="muted" /> · 미사용 <MoneyText value={s.unused_amount} emphasis="muted" />
@@ -274,6 +279,7 @@ export default function ParticipantDetailClient({
             {s.note && <p className="text-xs text-muted-foreground">{s.note}</p>}
           </Card>
         ))}
+        </ul>
         {!allocationId ? (
           <p className="text-muted-foreground text-sm">예산 배정이 없어 정산을 등록할 수 없어요.</p>
         ) : (

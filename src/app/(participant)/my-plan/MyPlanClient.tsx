@@ -258,17 +258,19 @@ export default function MyPlanClient({
               {filledServices.length === 0 ? (
                 <p className="text-sm text-zinc-400 leading-relaxed">아직 정해진 서비스가 없어요.</p>
               ) : (
-                filledServices.map((s) => (
-                  <div key={s.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-white">
-                    <span className="text-sm">
-                      <span className="text-zinc-400 mr-2">{s.priority}순위</span>
-                      {s.service_name}
-                    </span>
-                    {s.estimated_cost != null && (
-                      <span className="text-sm text-zinc-500 shrink-0">{won(Number(s.estimated_cost))}</span>
-                    )}
-                  </div>
-                ))
+                <ul className="flex flex-col gap-3">
+                  {filledServices.map((s) => (
+                    <li key={s.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-white">
+                      <span className="text-sm">
+                        <span className="text-zinc-400 mr-2">{s.priority}순위</span>
+                        {s.service_name}
+                      </span>
+                      {s.estimated_cost != null && (
+                        <span className="text-sm text-zinc-500 shrink-0">{won(Number(s.estimated_cost))}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               )}
             </section>
 

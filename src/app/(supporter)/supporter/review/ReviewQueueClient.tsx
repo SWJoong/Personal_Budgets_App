@@ -54,8 +54,9 @@ export default function ReviewQueueClient({ items }: { items: ReviewItem[] }) {
       {error && (
         <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>
       )}
-      {items.map((item) => (
-        <div key={item.id} className="p-5 rounded-2xl bg-white ring-1 ring-amber-200 flex flex-col gap-3">
+      <ul className="flex flex-col gap-3 list-none">
+        {items.map((item) => (
+        <li key={item.id} className="p-5 rounded-2xl bg-white ring-1 ring-amber-200 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700">
               계획에 없던 지출
@@ -101,8 +102,9 @@ export default function ReviewQueueClient({ items }: { items: ReviewItem[] }) {
               계획에 없어 제외
             </button>
           </div>
-        </div>
-      ))}
+        </li>
+        ))}
+      </ul>
     </div>
   )
 }
