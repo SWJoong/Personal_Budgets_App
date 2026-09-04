@@ -62,6 +62,26 @@ const TOKENIZED_FILES = [
   //   전용 다크-표면 시맨틱 토큰 세트 신설(--color-sidebar-*, 4모드 AA≥4.5:1).
   //   설계: Plan&Source/goala_p6_darktokens_W.md. 현재 raw slate/white/amber → RED.
   'src/components/layout/AdminSidebar.tsx',
+
+  // ── P6 대비 완성 sweep · Batch 1: 로딩 스켈레톤 15개 (~203 raw hits) ──
+  //   순수 표현(bg-zinc/animate-pulse 스켈레톤), 행위·데이터·문구 없음 → 색만 토큰화.
+  //   매핑: Plan&Source/goala_p6_sweep_W.md (P2/Phase A §4 확립 매핑 재사용,
+  //   bg-zinc-100/200→bg-muted·text-zinc→text-muted-foreground 등). animate-pulse 유지.
+  'src/app/loading.tsx',
+  'src/app/(participant)/loading.tsx',
+  'src/app/(participant)/calendar/loading.tsx',
+  'src/app/(participant)/evaluations/loading.tsx',
+  'src/app/(participant)/gallery/loading.tsx',
+  'src/app/(participant)/map/loading.tsx',
+  'src/app/(participant)/more/loading.tsx',
+  'src/app/(participant)/plan/loading.tsx',
+  'src/app/(participant)/receipt/loading.tsx',
+  'src/app/(participant)/settings/profile/loading.tsx',
+  'src/app/(supporter)/admin/loading.tsx',
+  'src/app/(supporter)/admin/participants/loading.tsx',
+  'src/app/(supporter)/admin/participants/[id]/loading.tsx',
+  'src/app/(supporter)/supporter/review/loading.tsx',
+  'src/app/(supporter)/supporter/transactions/[id]/loading.tsx',
 ]
 
 // Tailwind 임의 팔레트(시맨틱 토큰으로 대체돼야 함).
