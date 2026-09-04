@@ -35,7 +35,7 @@ const menuItems: MenuItem[] = [
     sub: [
       { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
       { name: '📋 전체 목록',      href: '/admin/participants' },
-      { name: '📊 통합 현황',      href: '/supporter/participants', soon: true },
+      { name: '📊 통합 현황',      href: '/supporter/participants' },
     ],
   },
   {
@@ -50,10 +50,10 @@ const menuItems: MenuItem[] = [
   { name: '이용계획 · 심의', href: '/supporter/plans',        icon: '🎯' },
   { name: '영수증 검토 대기', href: '/supporter/review',       icon: '🧾' },
   { name: '회계/거래장부',    href: '/supporter/transactions', icon: '📒' },
-  { name: '증빙/서류 보관함', href: '/supporter/documents',    icon: '📁', soon: true },
+  { name: '증빙/서류 보관함', href: '/supporter/documents',    icon: '📁' },
   { name: '계획과 평가',      href: '/supporter/evaluations',  icon: '📋' },
   { name: '활동 지도',        href: '/supporter/map',          icon: '🗺️' },
-  { name: '시스템 설정',      href: '/admin/settings',         icon: '⚙️', soon: true },
+  { name: '시스템 설정',      href: '/admin/settings',         icon: '⚙️' },
 ]
 
 const quickItems: SubItem[] = [
@@ -93,8 +93,8 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
       <div className={`flex items-center h-14 shrink-0 ${collapsed ? 'justify-center px-2' : 'justify-between px-4'}`}>
         {!collapsed && (
           <Link href="/admin" className="block hover:opacity-80 transition-opacity min-w-0 flex-1 mr-2">
-            <h2 className="text-white font-bold text-base tracking-tight leading-tight truncate">아름드리꿈터</h2>
-            <span className="text-slate-400 text-xs font-normal">관리자 뷰 (회계장부)</span>
+            <h2 className="text-white font-bold text-base tracking-tight leading-tight truncate">서울형 개인예산제</h2>
+            <span className="text-slate-400 text-xs font-normal">관리자</span>
           </Link>
         )}
         {onToggle && (

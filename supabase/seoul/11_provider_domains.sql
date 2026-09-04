@@ -59,3 +59,14 @@ COMMENT ON FUNCTION public.seoul_provider_domains() IS
 -- 실행 권한: 로그인 사용자(authenticated)에게만. PUBLIC(익명 포함) 회수.
 REVOKE ALL ON FUNCTION public.seoul_provider_domains() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.seoul_provider_domains() TO authenticated;
+
+-- ★ anon(익명) 실행 차단 — Supabase 회귀잠금(설계 §3, verify_provider_domains P2). Supabase 는
+--   ALTER DEFAULT PRIVILEGES 로 새 함수마다 anon 에 EXECUTE 를 '직접' 부여하므로, 위 REVOKE FROM PUBLIC
+--   만으로는 anon 이 막히지 않는다 → authenticated 전용(설계 §2) 복원. 멱등.
+--   plain-PG(CI)엔 anon 롤이 없어(없는 롤 REVOKE 는 오류) DO 가드로 조건부 — Supabase 에서만 실효.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    REVOKE EXECUTE ON FUNCTION public.seoul_provider_domains() FROM anon;
+  END IF;
+END $$;

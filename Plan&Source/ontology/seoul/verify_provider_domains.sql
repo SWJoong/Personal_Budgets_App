@@ -96,7 +96,7 @@ SELECT '   search_path 고정: ' ||
 
 \echo ''
 \echo '════════════════════════════════════════════════════════════════'
-\echo ' P2. 실행 권한 — authenticated 에게만, PUBLIC 회수'
+\echo ' P2. 실행 권한 — authenticated 에게만, PUBLIC·anon 회수'
 \echo '════════════════════════════════════════════════════════════════'
 SELECT '   EXECUTE→authenticated: ' ||
   CASE WHEN has_function_privilege('authenticated','public.seoul_provider_domains()','EXECUTE')
@@ -108,6 +108,19 @@ SELECT '   PUBLIC 실행권한 회수: ' ||
                          WHERE p.proname='seoul_provider_domains' AND p.pronargs=0
                            AND a.grantee=0 AND a.privilege_type='EXECUTE')
        THEN '회수됨 ✅' ELSE '남음 ❌ (REVOKE ALL ON FUNCTION ... FROM PUBLIC 필요)' END;
+-- ★ anon(익명) 실행 차단 — Supabase 회귀잠금. Supabase 는 ALTER DEFAULT PRIVILEGES 로 새 함수마다
+--   anon 에게 EXECUTE 를 '직접' 부여하므로, REVOKE FROM PUBLIC 만으로는 anon 이 막히지 않는다.
+--   → 11_provider_domains.sql 은 REVOKE EXECUTE ... FROM anon 을 별도로 해야 한다(설계 §2 authenticated 전용).
+--   plain-PG(CI)에는 anon 롤이 없어 건너뛴다 — 이 판정은 Supabase(대시보드 SQL Editor)에서만 실효.
+--   CASE 는 순서대로 단락평가하므로 anon 롤이 없으면 아래 has_function_privilege('anon',...) 는 실행되지 않는다.
+SELECT '   anon 실행권한 없음: ' ||
+  CASE
+    WHEN NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon')
+      THEN '건너뜀 — anon 롤 없음(plain-PG, Supabase 전용 판정) ✅'
+    WHEN has_function_privilege('anon','public.seoul_provider_domains()','EXECUTE')
+      THEN '있음 ❌ (REVOKE EXECUTE ON FUNCTION ... FROM anon 필요 — Supabase 기본권한이 anon 에 부여)'
+    ELSE '없음 ✅'
+  END;
 
 \echo ''
 \echo '════════════════════════════════════════════════════════════════'
