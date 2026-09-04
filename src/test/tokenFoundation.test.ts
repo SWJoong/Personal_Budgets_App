@@ -40,6 +40,9 @@ const TOKENIZED_FILES = [
   'src/app/(supporter)/supporter/transactions/[id]/page.tsx',
   'src/app/(supporter)/supporter/[participantId]/transactions/page.tsx',
   'src/app/(supporter)/supporter/participants/[id]/page.tsx',
+  // P4 내비 통일(#98) — TabBar/ParticipantFab 토큰화
+  'src/components/layout/TabBar.tsx',
+  'src/components/layout/ParticipantFab.tsx',
 ]
 
 // Tailwind 임의 팔레트(시맨틱 토큰으로 대체돼야 함).
