@@ -35,6 +35,11 @@ ON CONFLICT (id) DO NOTHING;
 -- 플레인 PG 에서 SET ROLE authenticated 로 함수 호출·SELECT 가능하도록(정합: 04_rls/12 가 클라우드선 부여)
 GRANT USAGE ON SCHEMA public, auth TO authenticated;
 
+-- ★공유 DB 순서오염 방어: 앞선 verify_*.sql 의 GRANT ... ON ALL TABLES ... TO authenticated 가
+--   12_audit_log.sql 의 REVOKE 를 덮어써 P5/P6(직접 INSERT/UPDATE/DELETE 차단)를 위양성으로 만든다.
+--   프로덕션 의도(테이블 직접 DML 회수)를 여기서 재확립한다. SELECT 은 유지(P7 은 RLS 로 게이팅). 멱등.
+REVOKE INSERT, UPDATE, DELETE ON public.seoul_audit_log FROM authenticated;
+
 \echo ''
 \echo '════════════════════════════════════════════════════════════════'
 \echo ' P1. 테이블·함수 존재'
