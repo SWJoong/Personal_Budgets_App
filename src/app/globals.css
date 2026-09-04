@@ -18,11 +18,29 @@
   --color-card: hsl(220 25% 97%);
   --color-card-foreground: hsl(220 25% 15%);
   --color-muted: hsl(220 20% 93%);
-  --color-muted-foreground: hsl(220 10% 45%);
+  /* 45%→38%: bg-muted(hsl 220 20% 93%) 위에서 4.28:1(AA 미달) → ~5.5:1 로 승격.
+     bg-card·background(더 밝음) 위에서도 계속 ≥4.5:1 유지. 다크/HC 는 아래에서 재정의. */
+  --color-muted-foreground: hsl(220 10% 38%);
   --color-border: hsl(220 15% 88%);
   --color-input: hsl(220 15% 82%);
   --color-accent: hsl(207 40% 90%);
   --color-accent-foreground: hsl(207 50% 20%);
+
+  /* P2: 신규 시맨틱 토큰(가산적) — Plan&Source/goala_p2_token_foundation_W.md §3-2.
+     테마별 재정의는 html.dark-mode·html.high-contrast·html.yellow-bg 블록 참조. */
+  --color-hero: hsl(222 47% 11%);
+  --color-hero-foreground: hsl(210 40% 98%);
+
+  --color-success-bg: hsl(145 60% 94%);
+  --color-success-fg: hsl(145 63% 28%);
+  --color-info-bg: hsl(205 85% 94%);
+  --color-info-fg: hsl(205 75% 33%);
+  --color-warning-bg: hsl(40 90% 92%);
+  --color-warning-fg: hsl(32 80% 30%);
+  --color-danger-bg: hsl(0 80% 95%);
+  --color-danger-fg: hsl(0 65% 40%);
+  --color-neutral-bg: hsl(220 20% 93%);
+  --color-neutral-fg: hsl(220 10% 38%);
 
   /* Fonts — §4 가이드라인: 세리프 없는 서체, Gulim/Dotum/맑은고딕 포함 */
   --font-sans: var(--font-pretendard), "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", "Dotum", "돋움", "Gulim", "굴림", ui-sans-serif, system-ui, sans-serif;
@@ -356,6 +374,23 @@ html.high-contrast {
   --color-foreground: hsl(0 0% 0%);
   --color-background: hsl(0 0% 100%);
   --color-border: hsl(0 0% 0%);
+
+  /* P2: 신규 토큰 재정의(§3-2) — 흑백 + 텍스트 라벨로 상태 구분(비색큐, S5).
+     히어로는 흰 배경 + 검정 글자로 통일한다. 아래 `.participant-view section` 규칙이
+     배경을 #fff 로 강제(!important)하므로, hero 배경 토큰도 흰색으로 맞춰 모순을 없애고
+     글자(--color-hero-foreground)를 검정(#000, 흰 위 21:1)으로 둬야 흰-위-흰 소실을 막는다. */
+  --color-hero: #ffffff;
+  --color-hero-foreground: #000000;
+  --color-success-bg: #ffffff;
+  --color-success-fg: #000000;
+  --color-info-bg: #ffffff;
+  --color-info-fg: #000000;
+  --color-warning-bg: #ffffff;
+  --color-warning-fg: #000000;
+  --color-danger-bg: #ffffff;
+  --color-danger-fg: #000000;
+  --color-neutral-bg: #ffffff;
+  --color-neutral-fg: #000000;
 }
 
 /* 고대비: 카드/컨테이너 배경·테두리 강제 (버튼·링크·입력은 제외) */
@@ -364,6 +399,13 @@ html.high-contrast .participant-view [class*="rounded-"]:not(button):not(a):not(
   background-color: #ffffff !important;
   border: 2px solid #000000 !important;
   box-shadow: none !important;
+}
+
+/* 고대비: 히어로 표면의 글자(라벨·금액·'전체…' 문구)를 전부 순검정으로.
+   text-hero-foreground/70 처럼 투명도가 섞인 변형(≈8.5:1 회색)도 21:1 순검정으로 끌어올려,
+   흰 배경 위에서 확실히 보이게 한다. */
+html.high-contrast .participant-view [class*="text-hero-foreground"] {
+  color: #000000 !important;
 }
 
 /* 고대비: 액션 버튼은 원래 배경색 유지하되 테두리 강화 */
@@ -384,7 +426,9 @@ html.high-contrast .text-zinc-400,
 html.high-contrast .text-zinc-300,
 html.high-contrast .text-zinc-200,
 html.high-contrast .text-zinc-100,
-html.high-contrast .text-foreground {
+html.high-contrast .text-foreground,
+/* 토큰화된 보조 텍스트도 순검정으로(회색 5.06:1 저하 방지). */
+html.high-contrast .text-muted-foreground {
   color: #000000 !important;
 }
 
@@ -420,6 +464,20 @@ html.dark-mode {
   --color-border: hsl(217 32% 28%);
   --color-muted: hsl(217 32% 18%);
   --color-muted-foreground: hsl(215 20% 60%);
+
+  /* P2: 신규 토큰 재정의(§3-2) */
+  --color-hero: hsl(222 47% 16%);
+  --color-hero-foreground: hsl(210 40% 95%);
+  --color-success-bg: hsl(145 40% 18%);
+  --color-success-fg: hsl(145 55% 72%);
+  --color-info-bg: hsl(205 45% 20%);
+  --color-info-fg: hsl(205 70% 74%);
+  --color-warning-bg: hsl(38 45% 20%);
+  --color-warning-fg: hsl(40 80% 72%);
+  --color-danger-bg: hsl(0 40% 22%);
+  --color-danger-fg: hsl(0 75% 78%);
+  --color-neutral-bg: hsl(217 32% 20%);
+  --color-neutral-fg: hsl(215 20% 72%);
 }
 
 html.dark-mode body {
@@ -572,6 +630,24 @@ html:not(.easy-terms) .term-formal {
 /* ─── §4 난독증 배려: 노란 배경 모드 ─── */
 html.yellow-bg {
   background-color: #FFFF00 !important;
+}
+
+/* P2: 신규 토큰 재정의(§3-2) — 노랑 모드는 니치 모드라 상태 bg 를 light 값으로 유지(노랑 배경과의
+   대비만 확인 대상). @theme 기본값과 동일한 값을 여기 명시해 두어, 추후 light 기본값이 바뀌어도
+   "노랑 모드는 light 값 유지"라는 설계 의도가 코드에서 드러나게 한다. */
+html.yellow-bg {
+  --color-hero: hsl(222 47% 11%);
+  --color-hero-foreground: hsl(210 40% 98%);
+  --color-success-bg: hsl(145 60% 94%);
+  --color-success-fg: hsl(145 63% 28%);
+  --color-info-bg: hsl(205 85% 94%);
+  --color-info-fg: hsl(205 75% 33%);
+  --color-warning-bg: hsl(40 90% 92%);
+  --color-warning-fg: hsl(32 80% 30%);
+  --color-danger-bg: hsl(0 80% 95%);
+  --color-danger-fg: hsl(0 65% 40%);
+  --color-neutral-bg: hsl(220 20% 93%);
+  --color-neutral-fg: hsl(220 10% 38%);
 }
 
 /* ─── 인쇄 / PDF 저장 ─── */
