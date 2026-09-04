@@ -951,3 +951,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 제안: P3 계약 스코프를 2축으로 — 고빈도(사용자영향: 홈✔#89→거래장부) + 고표면(공수·!important부채: budgets/plans/participant 상세). 프리미티브 6종(Button/Card/PageHeader/StatusPill/MoneyText/EmptyState) 중 StatusPill·MoneyText·Card가 상세화면 표면 대부분 흡수 예상.
 ★별도 PR 안 만듦(W 7개 병합큐 과적 회피) — 계약 도착 시 이 데이터로 u-wave-plan 화면별 웨이브 즉시 편성.
 
+## [2026-09-04T00:59Z] U
+[SYNC·오케스트레이션] W 세션 중단 → U 단일세션이 W+U 오케스트레이션(사용자 지시 2026-09-04). 자기채점방지=서브에이전트 방화벽(구현≠검증), main 머지=사람 게이트. / 독립검증 웨이브(13에이전트) 완료: 11 MERGE_READY(#78·79·80·81·82·84·85·86·87·88·90, 전부 low)·1 BLOCK(#89 고대비 잔액히어로 흰-위-흰 1.0:1 등 a11y 3건, globals.css U레인 수정)·#77 db-verify=순서오염(실버그X; authenticated 대상 GRANT ALL TABLES가 REVOKE 덮음, verify_audit_log.sql re-REVOKE 1줄, postgres:17 실증)·#83은 #89 후손→#89 머지 시 자동close. 충돌면 4파일 실측: AdminSidebar 4브랜치 쌍별 clean, db-verify.yml #77×#78 union. / 착수: #77·#89 수정웨이브(impl→독립재검증, 백그라운드). 11개는 사람 머지 대기. 공통 nit=text-zinc-400 AA미달 전역 하우스패턴 별도 후속.
+
