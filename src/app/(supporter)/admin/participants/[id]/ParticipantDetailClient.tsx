@@ -11,6 +11,7 @@ import { StatusPill, type Intent } from '@/components/ui/StatusPill'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { LinkButton } from '@/components/ui/LinkButton'
 
 const APPEAL_OUTCOME_LABEL: Record<string, string> = {
   pending: '확인 대기',
@@ -142,6 +143,12 @@ export default function ParticipantDetailClient({
       {error && (
         <Card as="div" variant="danger" className="text-sm">{error}</Card>
       )}
+
+      {/* 당사자 화면 미리보기 진입 — 실무자가 당사자에게 보이는 화면을 확인한다(B4 진입점, P5 IA 도달성). */}
+      <LinkButton href={`/admin/participants/${participantId}/preview`} variant="secondary" size="sm">
+        <span aria-hidden="true">👁️</span>
+        당사자 화면 미리보기
+      </LinkButton>
 
       {/* 예산·본인부담금 — 정산 때 청구할 금액이라 실무자가 먼저 확인해야 한다 */}
       {allocationId && (

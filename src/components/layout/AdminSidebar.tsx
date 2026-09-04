@@ -35,7 +35,7 @@ const menuItems: MenuItem[] = [
     sub: [
       { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
       { name: '📋 전체 목록',      href: '/admin/participants' },
-      { name: '📊 통합 현황',      href: '/supporter/participants' },
+      { name: '📊 당사자 현황',    href: '/supporter/participants' },
     ],
   },
   {
@@ -63,6 +63,7 @@ const quickItems: SubItem[] = [
   { name: '👥 당사자 목록 보기', href: '/admin/participants' },
   { name: '📋 평가 작성',      href: '/supporter/evaluations' },
   { name: '😊 피드백 확인',    href: '/admin/feedback' },
+  { name: '✉️ 초대 관리',      href: '/admin/invitations' },
 ]
 
 function SoonBadge() {

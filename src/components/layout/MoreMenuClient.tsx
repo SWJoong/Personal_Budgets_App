@@ -129,6 +129,20 @@ export default function MoreMenuClient({
               <span className="text-3xl group-hover:scale-110 transition-transform">📸</span>
               <span className="text-sm font-black text-zinc-800">사진 모아보기</span>
             </Link>
+            <Link
+              href="/guide"
+              className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
+            >
+              <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">📖</span>
+              <span className="text-sm font-black text-zinc-800">앱 사용 안내</span>
+            </Link>
+            <Link
+              href="/settings/profile"
+              className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
+            >
+              <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">👤</span>
+              <span className="text-sm font-black text-zinc-800">내 정보</span>
+            </Link>
           </div>
         )}
       </section>
