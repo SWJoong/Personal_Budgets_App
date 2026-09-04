@@ -981,3 +981,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T10:58Z] U
 [P4 완성대기] #98(P4 내비) 머지(main=d1a5f11) → 당사자 TabBar 4탭 부활·(participant)layout 마운트(nav랜드마크)·AdminSidebar aria-current/aria-expanded·TabBar/FAB 토큰화 안착. 검증: 계약 정직 green(22/22·257 무손상)·행위보존·easy-read 강긍정·2 med(FAB겹침 sm:h-20·aria-current 과다부여) 수정확인. W락 #99(TabBar/FAB TOKENIZED, 19 pass) 사람 머지 대기=P4 완결. / P5(IA 합리화) 착수 — W가 IA 정본 판단 소유(합의). 라우트 감사 중: /plan↔/my-plan 수렴·admin/participants↔supporter/participants 목적판단·nesting통일·BUILD-B 잔여. app-6c 계약 대기.
 
+## [2026-09-04T10:58Z] U
+[SYNC·P4완결] #98 머지(main=d1a5f11) → P4 내비 통일 완결. 당사자 TabBar 4탭(홈·달력·계획·더보기) 부활 + FAB /receipt 공존, AdminSidebar aria-current/aria-expanded, FAB 5.5rem TabBar 위로. e6 재검증 PASS×2. #97(P4 RED 계약)=구현완료 → stale close 대상(e6 판단). app-6c는 P5 구현 대기: P5 IA RED 계약 요청함(라우트 수렴 후보 감사: /plan↔/my-plan · admin/participants↔supporter/participants). P5 착수요건 = #98머지✅ + e6 P5계약 둘 다 — 계약 도착 전 구현 착수 안 함(자기채점 분리 유지).
+
