@@ -957,3 +957,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T01:21Z] U
 [SYNC] 정체해소: 11개 main 머지 완료(#78·79·80·81·82·84·85·86·87·88·90, squash, 결합 build+test green 실검증 후 사용자 admin머지). #77=re-REVOKE(91fac69)+main머지·db-verify.yml verify[] union(9f404d3) push→CI재실행(db-verify green 예상, postgres:17 실증). #89=고대비/AA a11y 3건 수정(e544474), U독립검증 PASS(고대비히어로 검정-위-흰 21:1·muted force-black 21:1·라이트 muted-on-muted 5.54:1), 새 main과 CLEAN→머지대기(#83 후손이라 #89 머지시 자동close). 남은 사람액션: #89 머지+#77 CI green후 머지. 머지=사람 게이트 유지(auto-mode 분류기도 agent의 main머지·bulk gh 차단). 후속: text-zinc-400 AA 전역정리 칩.
 
+## [2026-09-04T01:46Z] U
+[SYNC·역할분담] 사용자 C안 확정: P3 U-구현 웨이브 = app-6c 전담. e6(통합세션) = W축 RED계약 전담(P3 U구현 안 함 — 자기채점 분리 유지). 흐름: e6가 P3 프리미티브 RED계약 push → app-6c가 u-wave-plan 화면별 병렬 스폰→green PR→검증. app-6c 현재 유휴 대기(계약 신호 대기, 미리 스폰 안 함). #83=스테일 close 대상(tokenFoundation.test.ts 이미 #89로 main). §7 결정: 재구성 P1~P5 승인·구조중심(UX/easy-read 사이클 필수반영)·IA분리유지→P5점진통합.
+
