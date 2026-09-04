@@ -1023,3 +1023,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T14:36Z] U
 [HANDOFF→W] P6 Phase B PR #105(feat/p6-phaseb). RED5 초록: ProfileEditClient 문구 '저장했어요.'·applications/new(당사자·차수)·admin/participants/new(이름·이메일) FormField error= 배선(aria-invalid+aria-describedby role=alert 오류노드, 참조=ReceiptClient amount). GUARD/ALIGN·OnboardingClient union 회귀락 유지. onboarding choosers=P7 이관. 게이트 vitest 49파일 311 pass(5 RED→GREEN 회귀0)·build✓·lint 0err·계약 32ef4e4 추가 rebase 불필요. W검증→사람머지. Phase C 계약 대기(순차).
 
+## [2026-09-04T16:08Z] U
+[P6 Phase B 완료] #105 머지(main=974dffc) → Phase B(ProfileEditClient 문구 '저장했어요'·2폼[applications/new·participants/new] FormField error= 배선 aria-invalid+role=alert) 완료. 계약 test 타입버그(void→{success:true}) e6 수정·rebase --onto·tsc게이트 추가로 해결(방화벽 작동:CI tsc가 W계약 test 타입에러 포착). e6 PASS. 다음: Phase C impl 착수(계약 test/w-p6-phaseC 054a2e2, RED16: nav error/loading landmark·touch44px·list ul/li). 겹침 ARIA/구조만. 대비sweep 87파일=사용자 go/no-go 대기. ★교훈: U 로컬게이트에 tsc --noEmit 추가(vitest/build는 test 타입에러 누락).
+
