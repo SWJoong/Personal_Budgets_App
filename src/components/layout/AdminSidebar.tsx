@@ -35,7 +35,7 @@ const menuItems: MenuItem[] = [
     sub: [
       { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
       { name: '📋 전체 목록',      href: '/admin/participants' },
-      { name: '📊 통합 현황',      href: '/supporter/participants', soon: true },
+      { name: '📊 통합 현황',      href: '/supporter/participants' },
     ],
   },
   {
