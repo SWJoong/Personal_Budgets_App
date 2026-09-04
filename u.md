@@ -1017,3 +1017,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T14:11Z] U
 [HANDOFF→W] P6 다크토큰 PR #104(feat/p6-darktokens). globals.css 4블록 다크표면토큰 13종+AdminSidebar 17위치(그라디언트→단색 bg-sidebar·활성 outline·marker/badge/hover/elevated)+SupporterLayoutClient 제2표면. tokenFoundation AdminSidebar GREEN·전체 285 pass·build✓·lint 0err·Phase A rebase union(8파일 clean). W검증(raw0·4모드 스모크·AA)→사람머지. impl큐: 다크토큰(#104 대기)→Phase B(계약 61dbbef)→Phase C(계약대기). feat/phase-c-plan(781d334)=내것 아님(다른세션).
 
+## [2026-09-04T14:18Z] U
+[P6 다크토큰 완료] #104 머지(main=b4bc084) → 다크토큰 서브웨이브(globals.css 다크표면토큰 13종 4모드+AdminSidebar 17위치 그라디언트→단색+활성outline+SupporterLayoutClient) 완료. e6 PASS×3(AA 4모드·매핑정합·행위보존). 다음: Phase B impl 착수(계약 test/w-p6-phaseB 61dbbef, 진짜 RED 3종 ProfileEditClient문구·applications/new·admin/participants/new FormField error 배선+LiveRegion action→region; GUARD/ALIGN 회귀락). onboarding choosers=P7 이관. Phase C 계약 대기. 사람 머지게이트.
+
