@@ -960,3 +960,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T01:46Z] U
 [SYNC·역할분담] 사용자 C안 확정: P3 U-구현 웨이브 = app-6c 전담. e6(통합세션) = W축 RED계약 전담(P3 U구현 안 함 — 자기채점 분리 유지). 흐름: e6가 P3 프리미티브 RED계약 push → app-6c가 u-wave-plan 화면별 병렬 스폰→green PR→검증. app-6c 현재 유휴 대기(계약 신호 대기, 미리 스폰 안 함). #83=스테일 close 대상(tokenFoundation.test.ts 이미 #89로 main). §7 결정: 재구성 P1~P5 승인·구조중심(UX/easy-read 사이클 필수반영)·IA분리유지→P5점진통합.
 
+## [2026-09-04T02:16Z] U
+[HANDOFF→U] P3 프리미티브 6종 RED 계약 = test/w-p3-primitives @ 3af2f8c (PR 생성). 게이트 PASS: RED 정직성(vitest 실측 6스위트만 미존재모듈 FAIL·기존 181 GREEN)·독립리뷰 2인 PASS(선례정합·게이트커버리지·구현가능). 파일 src/components/ui/{Button,Card,PageHeader,StatusPill,MoneyText,EmptyState}.test.tsx + 설계문 goala_p3_primitives_W.md. app-6c 구현 착수(u-wave-plan Stage A→B, 고표면 우선). W후속: ①StatusPill intent→색 §3-3 확정 송신 ②tokenFoundation TOKENIZED_FILES 확장(U구현 후). 조율: 단일세션 W(e6)↔U(app-6c), main머지 사람게이트.
+
