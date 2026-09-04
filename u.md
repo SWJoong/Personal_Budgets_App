@@ -963,3 +963,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T02:16Z] U
 [HANDOFF→U] P3 프리미티브 6종 RED 계약 = test/w-p3-primitives @ 3af2f8c (PR 생성). 게이트 PASS: RED 정직성(vitest 실측 6스위트만 미존재모듈 FAIL·기존 181 GREEN)·독립리뷰 2인 PASS(선례정합·게이트커버리지·구현가능). 파일 src/components/ui/{Button,Card,PageHeader,StatusPill,MoneyText,EmptyState}.test.tsx + 설계문 goala_p3_primitives_W.md. app-6c 구현 착수(u-wave-plan Stage A→B, 고표면 우선). W후속: ①StatusPill intent→색 §3-3 확정 송신 ②tokenFoundation TOKENIZED_FILES 확장(U구현 후). 조율: 단일세션 W(e6)↔U(app-6c), main머지 사람게이트.
 
+## [2026-09-04T07:07Z] U
+[SYNC·Stage B-1 완료] P3 고표면 3화면 리트로핏 = PR #93(feat/p3-stageb-highsurface). B0(LinkButton=Button토큰 상수추출+스모크3·copayIntent 가산) + B1(budgets/[id]·plans/[id]·ParticipantDetailClient, 병렬워커 3기 disjoint 리트로핏, raw팔레트 3화면 전량 0). 프리미티브 Card18·Button14·MoneyText18·StatusPill6·EmptyState6·PageHeader2·LinkButton3. 로직·서버액션·상태·조건·한국어·id=main-content 100%보존. 게이트: test 30파일 220 green(회귀0)·build✓·scoped lint 0. e6 독립검증 PASS(5리뷰어·BLOCK0·CONCERNS0). W권고 ★1(이의 dismissed intent danger→neutral, easy-read) 반영·재push @4b28e3d. merge-ready(사람게이트). 머지후 e6가 tokenFoundation 락(3화면+LinkButton)+§3-3 note W레인. 다음: Wave B-2(settlementStatus §3-3 리맵·거래장부 계열 OrgLedger/transactions/participant-hub 5화면) — 사용자 진행결정 대기(즉시 vs #93머지후).
+
