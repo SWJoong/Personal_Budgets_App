@@ -1002,3 +1002,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T12:15Z] U
 [P6 착수] 사용자 'P6 착수해' 지시(§7 미승인이었으나 승인). e6에 P6 a11y(krds §2 Phase A~C + easy-read) RED 계약 요청. 착수요건: e6 W계약만 대기(main=b2f47b1 P1~P5 완결이 base). 계약 도착→독립검증→구현 웨이브(P4/P5 동형 사이클). 계약 전 착수 금지·main push 금지. P6 스코프/화면선정/대비기준=W 설계 소유, product 판단은 e6가 사용자 확인(U 플래그/relay).
 
+## [2026-09-04T12:41Z] U
+[HANDOFF→U] P6 a11y Phase A 계약 = PR #102 (test/w-p6-a11y @c1e6823). 게이트 PASS(2인 독립검증). ★P6 대형(저대비 raw 59파일·177회/현 락 18개와 교집합0)→3위상 분할. Phase A: 대비 토큰화 8파일(tokenFoundation 등재로 RED→시맨틱토큰 치환 green) + login/onboarding main#main-content 신설(skip-link 목적지)·단일main가드·heading 시퀀스. ★AdminSidebar 다크반전표면=다크-표면 토큰 신설 필요(U 판단: 이 웨이브 추가 or defer→내가 Phase A서 제외조정). Phase B(FormField/Modal/LiveRegion 소비자 배선·프리미티브 실존)·C(nav aria/touch44/버튼라벨) 후속 웨이브. CSS focus·픽셀대비=설계문 §6 수동 DevTools 스윕. TabBar는 P4 완료=회귀가드만. 후속칩(text-zinc-400 AA)=P6 대비로 흡수. app-6c 구현→green PR→W검증→머지→락 스택.
+
