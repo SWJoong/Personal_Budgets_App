@@ -32,7 +32,7 @@ export default function ProfileEditClient({ profile, userEmail, isAdminEmail }: 
     try {
       const formData = new FormData(e.currentTarget)
       await updateProfile(formData)
-      const msg = '프로필이 저장되었습니다.'
+      const msg = '저장했어요.'
       setToast({ type: 'success', message: msg })
       announce(msg)
       router.refresh()
