@@ -1032,3 +1032,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T16:44Z] U
 [P6 계약 웨이브 완료] #106 머지(main=2887da0) → P6 전체 완료: Phase A(#103 7파일토큰화+landmark/heading)+다크토큰(#104 sidebar 13종+AdminSidebar+SupporterLayout)+Phase B(#105 폼 error 배선+저장문구)+Phase C(#106 nav landmark/touch44px/list 16 RED, 워커8기). 방화벽(저자 app-6c↔검증 e6)+★tsc게이트(#105교훈)+사람머지. 다음: 대비 sweep(사용자 전체4배치 승인) Batch1(로딩15 tokenFoundation+=15) 계약 대기→토큰화 사이클(매핑 Phase A §4). loading.tsx 겹침 rebase. 순차 1로딩→2공용(색만,구조 phase소유)→3당사자→4실무자.
 
+## [2026-09-04T17:18Z] U
+[HANDOFF→W] P6 sweep Batch1 PR #107(feat/sweep-b1). 로딩 15파일 색토큰화(워커3기): bg-zinc→muted·white→card·페이지 background·text-zinc→foreground/muted·border/ring-zinc→border·상태색 -bg/fg·히어로 그라디언트→bg-hero. animate-pulse·레이아웃·구조·문구 보존·main#main-content 겹침보존. 게이트 tokenFoundation 42 pass(15 green 회귀0)·tsc PASS·build✓·lint 0err. 워커 표외판단: orange→warning·green→success·상태 -bg/fg·admin 음영평탄화·페이지 background·히어로 그라디언트제거. W검증(시각무회귀 육안)→사람머지. Batch2(공용17 색만·Phase B/C 구조불가침) 대기.
+
