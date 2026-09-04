@@ -290,7 +290,7 @@ export default function PlanDetailClient({
                 onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
                 placeholder="당사자와 함께 이야기한 내용을 적어주세요"
                 rows={2}
-                className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm leading-relaxed focus:ring-input focus:outline-none resize-none"
+                className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm leading-relaxed focus:ring-muted-foreground focus:outline-none resize-none"
               />
             </div>
           ))
@@ -322,7 +322,7 @@ export default function PlanDetailClient({
                     setServices(next)
                   }}
                   placeholder="예: 웹툰 학원 수강"
-                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none"
                 />
               </div>
               <div className="w-28 flex flex-col gap-0.5">
@@ -337,7 +337,7 @@ export default function PlanDetailClient({
                     setServices(next)
                   }}
                   placeholder="0"
-                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none"
                 />
               </div>
             </div>
@@ -361,7 +361,7 @@ export default function PlanDetailClient({
                       value={reviewNotes[rs.id] ?? ''}
                       onChange={(e) => setReviewNotes((prev) => ({ ...prev, [rs.id]: e.target.value }))}
                       placeholder="검토 의견 (선택)"
-                      className="p-2 rounded-lg bg-card ring-1 ring-border text-xs focus:ring-input focus:outline-none"
+                      className="p-2 rounded-lg bg-card ring-1 ring-border text-xs focus:ring-muted-foreground focus:outline-none"
                     />
                     <div className="flex gap-2">
                       <Button
@@ -434,7 +434,7 @@ export default function PlanDetailClient({
                   id="review-committee"
                   value={committeeId}
                   onChange={(e) => setCommitteeId(e.target.value)}
-                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none"
                 >
                   <option value="">기록 안 함</option>
                   {committees.map((c) => (
@@ -457,14 +457,14 @@ export default function PlanDetailClient({
                       value={newCommitteeName}
                       onChange={(e) => setNewCommitteeName(e.target.value)}
                       placeholder="심의 주체 이름 (예: 2026년 3차 심의위원회)"
-                      className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none"
+                      className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none"
                     />
                     <textarea
                       value={newCommitteeNote}
                       onChange={(e) => setNewCommitteeNote(e.target.value)}
                       placeholder="구성 (심사처에서 전달받은 내용을 그대로 적어주세요)"
                       rows={2}
-                      className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none resize-none"
+                      className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none resize-none"
                     />
                     <Button
                       type="button"
@@ -484,7 +484,7 @@ export default function PlanDetailClient({
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="사유 (승인이 아니면 필수예요)"
                 rows={3}
-                className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-input focus:outline-none resize-none"
+                className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none resize-none"
               />
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Button variant="positive" onClick={() => handleDecide('approved')} disabled={pending} className="flex-1">
