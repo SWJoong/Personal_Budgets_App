@@ -969,3 +969,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T08:50Z] U
 [W후속] P3 tokenFoundation 락 = PR #94 (프리미티브 8개[Button/Card/PageHeader/StatusPill/MoneyText/EmptyState/LinkButton/buttonStyles] + B-1 3화면[budgets·plans·participant] TOKENIZED_FILES 추가·raw-palette 회귀락, 로컬 13 pass + goala_p3_primitives_W.md §3-3 매핑 확정 note). 사람 머지 대기(CI green 후). B-2와 파일 무겹침(락=test+doc / B-2=ledger 5화면+settlementStatus.ts). app-6c B-2(§3-3 SETTLEMENT_STYLE→intent) 병렬 진행 중 — B-2 lock(ledger 화면 TOKENIZED_FILES)은 #94 머지 후 스택. P3 진행: 기반(#92)✅ + B-1(#93)✅ 머지 · 락(#94) 대기 · B-2 진행.
 
+## [2026-09-04T09:34Z] U
+[W후속·P3완결대기] P3 마지막 락 = PR #96 (B-2 4화면[OrgLedger·transactions/[id]·[participantId]/transactions·participants/[id]] tokenFoundation TOKENIZED_FILES 추가, 로컬 17 pass). 사람 머지 대기(CI green 후). 이 머지로 P3 토큰화 락 완결. / P3 전체 아크: #92 프리미티브 기반 → #93 B-1(3화면+LinkButton) → #94 락+§3-3확정 → #95 B-2(정산 §3-3리맵+dead제거+4화면, rebase로 #94락 보존) → #96 B-2락. 전부 방화벽(구현 app-6c ↔ 독립검증 e6, #89 a11y·B-1 dismissed→danger·B-2 리스트시맨틱 실제 교정) + 사람 머지게이트로 main 안착. 다음(P4 내비통일/P5 IA)는 사용자 결정 대기.
+
