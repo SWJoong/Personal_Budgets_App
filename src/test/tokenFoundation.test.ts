@@ -20,7 +20,21 @@ const ROOT = process.cwd()
 
 // 토큰화 규율이 적용되는(이관 완료 대상) 화면 파일. P2 = 앵커 1개. 이후 Phase 에서 확장.
 const TOKENIZED_FILES = [
+  // P2 앵커
   'src/app/(participant)/page.tsx',
+  // P3 프리미티브(#92) — 토큰 어휘 단일 진실원천, raw 팔레트 금지
+  'src/components/ui/Button.tsx',
+  'src/components/ui/Card.tsx',
+  'src/components/ui/PageHeader.tsx',
+  'src/components/ui/StatusPill.tsx',
+  'src/components/ui/MoneyText.tsx',
+  'src/components/ui/EmptyState.tsx',
+  'src/components/ui/LinkButton.tsx',
+  'src/components/ui/buttonStyles.ts',
+  // P3 Stage B-1(#93) — 고표면 3화면 리트로핏
+  'src/app/(supporter)/supporter/budgets/[id]/page.tsx',
+  'src/app/(supporter)/supporter/plans/[id]/PlanDetailClient.tsx',
+  'src/app/(supporter)/admin/participants/[id]/ParticipantDetailClient.tsx',
 ]
 
 // Tailwind 임의 팔레트(시맨틱 토큰으로 대체돼야 함).

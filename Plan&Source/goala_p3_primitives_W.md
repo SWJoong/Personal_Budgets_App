@@ -141,10 +141,12 @@ intent 를 가로질러도 label 불변 · 장식 icon 은 aria-hidden, 의미�
 **토큰** — `bg-{intent}-bg text-{intent}-fg ring-1 ring-{intent}-fg/20 rounded-full px-2.5 py-1 text-xs font-bold`.
 `settlementStatus.ts` 의 bg-zinc/emerald/amber/red 딕셔너리 흡수.
 
-> **매핑 확인 필요(U 는 W 확정 전 잠그지 말 것)**: 현행 `settlementStatus.ts` 는
-> pending→zinc(neutral), recovered→amber(warning). 로드맵 §3-3 은 pending→**warning**, recovered→**info**.
-> §3-3 을 정본으로 채택하면 pending/recovered 의 색 의미가 바뀐다. **W 확정 후** intent 매핑 반영.
-> (RED 계약은 색 매핑을 잠그지 않는다 — label 텍스트만 잠금.)
+> **§3-3 매핑 확정(W, 2026-09-04)** — 로드맵 채택. 정산(settlement_status): pending→**warning**(대기=액션필요) ·
+> accepted→**success** · rejected→**danger** · recovered→**info**(완료된 정보성) · 미지→**neutral**.
+> 일반 intent 의미: success=완료·승인 / danger=반려·오류 / warning=액션필요·주의·미결 / info=정보성 진행·결과 / neutral=상태없음·기본.
+> 이의신청 결과: upheld→success · partially_upheld→info · dismissed→**neutral**(정당한 확정결과, 오류/파괴 아님).
+> 근거: warning=액션필요·info=정보성완료 로 색 의미 분리 → easy-read/a11y 이득(라벨이 비색큐로 의미 전달, 색은 보조).
+> 소비처 치환(SETTLEMENT_STYLE→intent)은 Stage B-2(거래장부 계열). RED 계약은 색을 잠그지 않고 label 만 잠근다.
 
 **Easy Read 라벨(당사자 대면 softened)** — ok '쓰는 중이에요' · unused '아직 안 썼어요' ·
 over '조금 넘게 썼어요' · unplanned '계획에 없이 썼어요' · none '아직 없어요'.
