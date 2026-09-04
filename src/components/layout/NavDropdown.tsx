@@ -18,7 +18,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/',         icon: '🏠', label: '홈' },
   { href: '/receipt',  icon: '🧾', label: '영수증' },
   { href: '/calendar', icon: '📅', label: '달력' },
-  { href: '/plan',     icon: '🤔', label: '나의 계획', soon: true },
+  { href: '/plan',     icon: '🤔', label: '해보고 싶은 것' },
   { href: '/gallery',  icon: '📸', label: '사진 모아보기' },
   { href: '/map',      icon: '🗺️', label: '사용 장소 지도' },
   {

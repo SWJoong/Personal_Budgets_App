@@ -13,14 +13,6 @@ interface FileLink {
   file_type: string
 }
 
-function SoonBadge() {
-  return (
-    <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200">
-      준비중
-    </span>
-  )
-}
-
 function SectionToggle({
   title,
   open,
@@ -113,9 +105,8 @@ export default function MoreMenuClient({
               href="/plan"
               className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-white ring-1 ring-zinc-200 shadow-sm hover:ring-zinc-900 transition-all active:scale-[0.98] group"
             >
-              <div className="absolute top-2 right-2"><SoonBadge /></div>
               <span className="text-3xl group-hover:scale-110 transition-transform">🤔</span>
-              <span className="text-sm font-black text-zinc-800">오늘 계획</span>
+              <span className="text-sm font-black text-zinc-800">해보고 싶은 것</span>
             </Link>
             <Link
               href="/calendar"

@@ -40,7 +40,7 @@ export const BLOCK_METADATA: Record<BlockId, { icon: string; label: string; desc
   domain_breakdown: { icon: '🧭', label: '어디에 썼는지', description: '영역별 남은 돈' },
   recent_usages: { icon: '🕐', label: '최근에 쓴 돈', description: '최근 쓴 목록' },
   calendar_shortcut: { icon: '📅', label: '달력', description: '이번 달 활동' },
-  plan_shortcut: { icon: '🤔', label: '나의 계획', description: '내 이용계획' },
+  plan_shortcut: { icon: '🤔', label: '해보고 싶은 것', description: '이용계획에 적은, 해보고 싶은 것' },
   map_shortcut: { icon: '🗺️', label: '지도', description: '쓸 수 있는·쓴 곳' },
   gallery: { icon: '🖼️', label: '활동 사진', description: '사진 모아보기' },
 }
