@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
 import {
@@ -8,6 +7,13 @@ import {
   type PlannedServiceRow,
 } from '@/utils/budgetByDomain'
 import type { DomainFlowRow } from '@/utils/domainAxisReport'
+import { copayIntent } from '@/utils/copay'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { LinkButton } from '@/components/ui/LinkButton'
+import { MoneyText } from '@/components/ui/MoneyText'
+import { StatusPill, type Intent } from '@/components/ui/StatusPill'
+import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 /**
  * 예산(이용계획) 화면 — GOAL축 A "돈" 뷰. 설계: Plan&Source/goala_budget_screen_ux_W.md.
@@ -18,19 +24,17 @@ import type { DomainFlowRow } from '@/utils/domainAxisReport'
  * 상호작용이 없어(링크·표시뿐) 서버 컴포넌트로 둔다(sibling report/page.tsx 와 동일).
  */
 
-const STATUS_STYLE: Record<BudgetStatus, { badge: string; emoji: string }> = {
-  ok: { badge: 'bg-emerald-50 text-emerald-700 ring-emerald-200', emoji: '✅' },
-  unused: { badge: 'bg-sky-50 text-sky-700 ring-sky-200', emoji: '💤' },
-  over: { badge: 'bg-rose-50 text-rose-700 ring-rose-200', emoji: '⚠️' },
-  unplanned: { badge: 'bg-amber-50 text-amber-700 ring-amber-200', emoji: '📌' },
-  none: { badge: 'bg-zinc-100 text-zinc-600 ring-zinc-200', emoji: '·' },
+// BudgetStatus(5종) → StatusPill intent + 이모지. 원본 색 의미 보존:
+// ok=emerald→success · unused=sky→info · over=rose→danger · unplanned=amber→warning · none=zinc→neutral.
+const STATUS_STYLE: Record<BudgetStatus, { intent: Intent; emoji: string }> = {
+  ok: { intent: 'success', emoji: '✅' },
+  unused: { intent: 'info', emoji: '💤' },
+  over: { intent: 'danger', emoji: '⚠️' },
+  unplanned: { intent: 'warning', emoji: '📌' },
+  none: { intent: 'neutral', emoji: '·' },
 }
 
 export const metadata = { title: '예산' }
-
-function won(n: number): string {
-  return Math.round(n).toLocaleString('ko-KR') + '원'
-}
 
 function fmtDate(d: string | null | undefined): string {
   if (!d) return '-'
@@ -38,15 +42,15 @@ function fmtDate(d: string | null | undefined): string {
 }
 
 /** copay_status → 쉬운 말 배지(§5). not_applicable 은 배지를 숨긴다. */
-function copayBadge(status: string): { label: string; cls: string; warn: boolean } | null {
+function copayBadge(status: string): { label: string; warn: boolean } | null {
   switch (status) {
     case 'unverified':
-      return { label: '확인 전', cls: 'bg-amber-50 text-amber-700 ring-amber-200', warn: true }
+      return { label: '확인 전', warn: true }
     case 'charged':
-      return { label: '부과', cls: 'bg-zinc-100 text-zinc-700 ring-zinc-300', warn: false }
+      return { label: '부과', warn: false }
     case 'exempt_basic_livelihood':
     case 'exempt_near_poor':
-      return { label: '면제', cls: 'bg-emerald-50 text-emerald-700 ring-emerald-200', warn: false }
+      return { label: '면제', warn: false }
     default:
       return null // not_applicable
   }
@@ -79,28 +83,19 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
   if (!allocation) {
     return (
       <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-        <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-          <Link
-            href={backHref}
-            aria-label="뒤로 가기"
-            className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
-          >
-            ←
-          </Link>
-          <h1 className="text-xl font-bold tracking-tight">{participant.name}님의 예산</h1>
-        </header>
-        <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-6 flex flex-col items-center justify-center text-center gap-4">
-          <span className="text-6xl" aria-hidden="true">
-            💰
-          </span>
-          <p className="text-lg font-bold text-zinc-700 leading-relaxed">아직 예산이 정해지지 않았어요.</p>
-          <p className="text-zinc-500 leading-relaxed">계획이 정해지면 여기에 보여요.</p>
-          <Link
-            href="/supporter/plans"
-            className="mt-2 px-6 py-3 min-h-[44px] bg-zinc-800 text-white rounded-xl font-bold hover:bg-zinc-700 transition-colors flex items-center"
-          >
-            계획 보러 가기
-          </Link>
+        <PageHeader title={`${participant.name}님의 예산`} backHref={backHref} />
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 w-full max-w-lg mx-auto p-6 flex flex-col justify-center"
+        >
+          <EmptyState
+            emoji="💰"
+            title="아직 예산이 정해지지 않았어요."
+            description="계획이 정해지면 여기에 보여요."
+            action={{ label: '계획 보러 가기', href: '/supporter/plans' }}
+            variant="full"
+          />
         </main>
       </div>
     )
@@ -132,10 +127,11 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
   const remainingTotal = allocated - usedTotal
   const overspent = usedTotal > allocated
   const pct = allocated > 0 ? Math.min(100, Math.round((usedTotal / allocated) * 100)) : 0
-  const barColor = overspent ? 'bg-rose-500' : pct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'
+  const barColor = overspent ? 'bg-danger' : pct >= 80 ? 'bg-warning' : 'bg-positive'
 
   const copay = Number(allocation.copay_amount ?? 0)
-  const copayInfo = copayBadge(String(allocation.copay_status ?? 'not_applicable'))
+  const copayStatus = String(allocation.copay_status ?? 'not_applicable')
+  const copayInfo = copayBadge(copayStatus)
 
   // 계획외 지출(§3 ③) — 영역 집계에서 합산.
   const unplannedSum = rows.reduce((s, r) => s + r.unplannedSum, 0)
@@ -145,81 +141,75 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-        <Link
-          href={backHref}
-          aria-label="뒤로 가기"
-          className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
-        >
-          ←
-        </Link>
-        <h1 className="text-xl font-bold tracking-tight">{participant.name}님의 예산</h1>
-      </header>
+      <PageHeader title={`${participant.name}님의 예산`} backHref={backHref} />
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-4">
         {/* ① 예산 봉투 카드 */}
-        <section className="p-5 rounded-3xl bg-white ring-1 ring-zinc-200 flex flex-col gap-4">
+        <Card variant="default" className="flex flex-col gap-4">
           <div>
-            <div className="text-sm text-zinc-400">남은 돈</div>
-            <div className={`text-4xl font-black tracking-tight ${overspent ? 'text-rose-600' : 'text-zinc-900'}`}>
-              {won(remainingTotal)}
+            <div className="text-sm text-muted-foreground">남은 돈</div>
+            <div className="text-4xl font-black tracking-tight">
+              <MoneyText value={remainingTotal} emphasis="hero" />
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <div className="flex items-baseline justify-between text-sm">
-              <span className="text-zinc-500">
-                쓴 돈 <b className="text-zinc-800">{won(usedTotal)}</b>
+              <span className="text-muted-foreground">
+                쓴 돈{' '}
+                <b>
+                  <MoneyText value={usedTotal} emphasis="body" />
+                </b>
               </span>
-              <span className="text-zinc-400">배정된 돈 {won(allocated)}</span>
+              <span className="text-muted-foreground">
+                배정된 돈 <MoneyText value={allocated} emphasis="muted" />
+              </span>
             </div>
             <div
-              className="h-3 w-full rounded-full bg-zinc-100 overflow-hidden"
+              className="h-3 w-full rounded-full bg-muted overflow-hidden"
               role="img"
               aria-label={`배정된 돈의 ${pct}%를 썼어요`}
             >
               <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
             </div>
-            {overspent && <p className="text-xs font-bold text-rose-600">배정된 돈보다 많이 썼어요.</p>}
+            {overspent && <p className="text-xs font-bold text-danger">배정된 돈보다 많이 썼어요.</p>}
           </div>
 
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
             <div>
-              <dt className="text-zinc-400 text-xs">쓸 수 있는 기간</dt>
-              <dd className="text-zinc-800 font-medium">
+              <dt className="text-muted-foreground text-xs">쓸 수 있는 기간</dt>
+              <dd className="text-foreground font-medium">
                 {fmtDate(allocation.starts_on)} ~ {fmtDate(allocation.ends_on)}
               </dd>
             </div>
             <div>
-              <dt className="text-zinc-400 text-xs">한 달 한도</dt>
-              <dd className="text-zinc-800 font-medium">{won(Number(allocation.monthly_ceiling ?? 0))}</dd>
-            </div>
-            <div>
-              <dt className="text-zinc-400 text-xs">내가 낼 돈</dt>
-              <dd className="text-zinc-800 font-medium flex items-center gap-2">
-                {copayInfo ? won(copay) : '없음'}
-                {copayInfo && (
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ring-1 ${copayInfo.cls}`}>
-                    {copayInfo.label}
-                  </span>
-                )}
+              <dt className="text-muted-foreground text-xs">한 달 한도</dt>
+              <dd className="text-foreground font-medium">
+                <MoneyText value={Number(allocation.monthly_ceiling ?? 0)} emphasis="body" />
               </dd>
             </div>
             <div>
-              <dt className="text-zinc-400 text-xs">남은 돈 이월</dt>
-              <dd className="text-zinc-800 font-medium">{allocation.carry_over_allowed ? '가능' : '불가'}</dd>
+              <dt className="text-muted-foreground text-xs">내가 낼 돈</dt>
+              <dd className="text-foreground font-medium flex items-center gap-2">
+                {copayInfo ? <MoneyText value={copay} emphasis="body" /> : '없음'}
+                {copayInfo && <StatusPill label={copayInfo.label} intent={copayIntent(copayStatus)} />}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground text-xs">남은 돈 이월</dt>
+              <dd className="text-foreground font-medium">{allocation.carry_over_allowed ? '가능' : '불가'}</dd>
             </div>
           </dl>
           {copayInfo?.warn && (
-            <p className="text-xs text-amber-700 bg-amber-50 rounded-xl px-3 py-2 leading-relaxed">
+            <p className="text-xs text-warning-fg bg-warning-bg rounded-xl px-3 py-2 leading-relaxed">
               내가 낼 돈은 아직 정해지지 않았어요.
             </p>
           )}
-        </section>
+        </Card>
 
         {/* ② 영역별로 보기 */}
         <section className="flex flex-col gap-2">
-          <h2 className="text-sm font-bold text-zinc-500 px-1">영역별로 보기</h2>
+          <h2 className="text-sm font-bold text-muted-foreground px-1">영역별로 보기</h2>
           <ul className="flex flex-col gap-2">
             {rows.map((r) => {
               const s = STATUS_STYLE[r.status]
@@ -227,32 +217,34 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
               return (
                 <li
                   key={r.domainId}
-                  className={`p-4 rounded-2xl ring-1 flex flex-col gap-2 ${dim ? 'bg-zinc-50 ring-zinc-100' : 'bg-white ring-zinc-200'}`}
+                  className={`p-4 rounded-2xl ring-1 flex flex-col gap-2 ${dim ? 'bg-muted ring-border' : 'bg-card ring-border'}`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className={`font-bold ${dim ? 'text-zinc-400' : 'text-zinc-800'}`}>{r.label}</span>
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ring-1 ${s.badge}`}>
-                      {s.emoji} {budgetStatusLabel(r.status)}
-                    </span>
+                    <span className={`font-bold ${dim ? 'text-muted-foreground' : 'text-foreground'}`}>{r.label}</span>
+                    <StatusPill
+                      label={budgetStatusLabel(r.status)}
+                      intent={s.intent}
+                      icon={<span aria-hidden="true">{s.emoji}</span>}
+                    />
                   </div>
                   {!dim && (
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-600">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                       <span>
-                        <span className="text-zinc-400">계획한 돈 </span>
-                        {won(r.plannedSum)}
+                        <span className="text-muted-foreground">계획한 돈 </span>
+                        <MoneyText value={r.plannedSum} emphasis="body" />
                       </span>
                       <span>
-                        <span className="text-zinc-400">쓴 돈 </span>
-                        {won(r.usageSum)}
+                        <span className="text-muted-foreground">쓴 돈 </span>
+                        <MoneyText value={r.usageSum} emphasis="body" />
                       </span>
-                      <span className={r.remaining < 0 ? 'text-rose-600 font-medium' : ''}>
-                        <span className="text-zinc-400">남은 돈 </span>
-                        {won(r.remaining)}
+                      <span>
+                        <span className="text-muted-foreground">남은 돈 </span>
+                        <MoneyText value={r.remaining} emphasis="body" />
                       </span>
                       {r.unplannedSum > 0 && (
-                        <span className="text-amber-600">
-                          <span className="text-zinc-400">계획 밖 </span>
-                          {won(r.unplannedSum)}
+                        <span>
+                          <span className="text-warning-fg">계획 밖 </span>
+                          <MoneyText value={r.unplannedSum} emphasis="body" />
                         </span>
                       )}
                     </div>
@@ -265,58 +257,57 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
 
         {/* ③ 계획에 없던 지출 콜아웃 */}
         {unplannedSum > 0 && (
-          <section className="p-4 rounded-2xl bg-amber-50 ring-1 ring-amber-200 flex flex-col gap-1">
-            <p className="text-sm font-bold text-amber-800">
-              계획에 없던 지출 {unplannedCount}건 · {won(unplannedSum)}
+          <Card variant="warning" className="flex flex-col gap-1">
+            <p className="text-sm font-bold">
+              계획에 없던 지출 {unplannedCount}건 · <MoneyText value={unplannedSum} emphasis="body" />
             </p>
-            <p className="text-xs text-amber-700 leading-relaxed">검토가 필요해요. 계획에 없이 쓴 돈이에요(거절은 아니에요).</p>
-          </section>
+            <p className="text-xs leading-relaxed">검토가 필요해요. 계획에 없이 쓴 돈이에요(거절은 아니에요).</p>
+          </Card>
         )}
 
         {/* ④ 받기로 한 서비스 (읽기전용) */}
         <section className="flex flex-col gap-2">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-sm font-bold text-zinc-500">받기로 한 서비스</h2>
-            <Link
-              href={`/supporter/plans/${planId}`}
-              className="text-xs font-bold text-blue-600 hover:text-blue-700 min-h-[44px] flex items-center"
-            >
+            <h2 className="text-sm font-bold text-muted-foreground">받기로 한 서비스</h2>
+            <LinkButton href={`/supporter/plans/${planId}`} variant="ghost" size="sm">
               계획 고치기 →
-            </Link>
+            </LinkButton>
           </div>
           {(requested ?? []).length === 0 ? (
-            <p className="text-zinc-400 text-sm py-4 text-center bg-zinc-50 rounded-2xl">
-              아직 받기로 한 서비스가 없어요.
-            </p>
+            <EmptyState title="아직 받기로 한 서비스가 없어요." variant="inline" />
           ) : (
             <ul className="flex flex-col gap-2">
               {(requested ?? []).map((r) => (
-                <li key={r.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-1.5">
+                <li key={r.id} className="p-4 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-1.5">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-zinc-100 text-zinc-600 text-xs font-black flex items-center justify-center">
+                      <span className="shrink-0 w-6 h-6 rounded-full bg-muted text-muted-foreground text-xs font-black flex items-center justify-center">
                         {r.priority}
                       </span>
-                      <span className="font-bold text-zinc-800 truncate">{r.service_name}</span>
+                      <span className="font-bold text-foreground truncate">{r.service_name}</span>
                     </div>
                     {r.approved_for_service === true ? (
-                      <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full ring-1 bg-emerald-50 text-emerald-700 ring-emerald-200">
-                        승인
+                      <span className="shrink-0">
+                        <StatusPill label="승인" intent="success" />
                       </span>
                     ) : r.approved_for_service === false ? (
-                      <span className="shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full ring-1 bg-zinc-100 text-zinc-500 ring-zinc-200">
-                        보류
+                      <span className="shrink-0">
+                        <StatusPill label="보류" intent="neutral" />
                       </span>
                     ) : null}
                   </div>
-                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-zinc-500 pl-8">
+                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-muted-foreground pl-8">
                     {r.domain_id && domainLabelById.get(r.domain_id) && (
                       <span>{domainLabelById.get(r.domain_id)}</span>
                     )}
-                    {r.estimated_cost != null && <span>계획 {won(Number(r.estimated_cost))}</span>}
+                    {r.estimated_cost != null && (
+                      <span>
+                        계획 <MoneyText value={Number(r.estimated_cost)} emphasis="muted" />
+                      </span>
+                    )}
                   </div>
                   {r.review_note && (
-                    <p className="text-xs text-zinc-500 bg-zinc-50 rounded-lg px-3 py-2 leading-relaxed ml-8">
+                    <p className="text-xs text-muted-foreground bg-muted rounded-lg px-3 py-2 leading-relaxed ml-8">
                       심의 메모: {r.review_note}
                     </p>
                   )}
@@ -328,18 +319,20 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
 
         {/* 길목 버튼 */}
         <div className="flex gap-2 pt-2">
-          <Link
+          <LinkButton
             href={`/supporter/${participantId}/transactions`}
-            className="flex-1 px-4 py-3 min-h-[44px] bg-zinc-800 text-white rounded-xl font-bold hover:bg-zinc-700 transition-colors flex items-center justify-center gap-1.5"
+            variant="primary"
+            className="flex-1"
           >
             💳 지출 적기
-          </Link>
-          <Link
+          </LinkButton>
+          <LinkButton
             href={`/supporter/evaluations/${participantId}`}
-            className="flex-1 px-4 py-3 min-h-[44px] bg-white text-zinc-700 ring-1 ring-zinc-300 rounded-xl font-bold hover:bg-zinc-50 transition-colors flex items-center justify-center gap-1.5"
+            variant="secondary"
+            className="flex-1"
           >
             📋 정산 보기
-          </Link>
+          </LinkButton>
         </div>
       </main>
     </div>
