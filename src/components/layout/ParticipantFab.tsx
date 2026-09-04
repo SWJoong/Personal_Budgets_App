@@ -31,7 +31,7 @@ export default function ParticipantFab() {
     <Link
       href="/receipt"
       aria-label="내가 쓴 돈 적기"
-      style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+      style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}
       className="fixed left-1/2 -translate-x-1/2 z-50 flex flex-col items-center justify-center gap-0.5 min-w-[72px] min-h-[72px] px-6 rounded-full bg-zinc-900 text-white shadow-2xl ring-4 ring-white active:scale-95 transition-transform"
     >
       <span className="text-2xl leading-none" aria-hidden="true">
