@@ -36,7 +36,7 @@ interface Assessment {
 const PROGRAM_LABEL: Record<Program, string> = { seoul: '서울형', mohw: '보건복지부' }
 
 const inputClass =
-  'p-3 rounded-xl bg-muted ring-1 ring-border text-foreground leading-relaxed focus:ring-foreground focus:outline-none'
+  'p-3 rounded-xl bg-muted ring-1 ring-border text-foreground leading-relaxed'
 
 export default function AssessmentClient({
   participantId,
@@ -215,7 +215,7 @@ export default function AssessmentClient({
             id="assessment-domain"
             value={domainId}
             onChange={(e) => selectDomain(e.target.value)}
-            className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+            className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium"
           >
             <option value="">골라 주세요</option>
             {domainsForProgram.map((d) => (
@@ -236,7 +236,7 @@ export default function AssessmentClient({
               id="assessment-subdomain"
               value={subdomainId}
               onChange={(e) => setSubdomainId(e.target.value)}
-              className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+              className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium"
             >
               <option value="">세부 영역 안 고름</option>
               {subdomainsForDomain.map((s) => (

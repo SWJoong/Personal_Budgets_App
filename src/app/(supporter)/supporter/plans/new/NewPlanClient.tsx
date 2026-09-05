@@ -58,7 +58,7 @@ export default function NewPlanClient({ candidates }: { candidates: Candidate[] 
                 {...field}
                 value={applicationId}
                 onChange={(e) => setApplicationId(e.target.value)}
-                className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+                className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium"
               >
                 <option value="">선택해주세요</option>
                 {candidates.map((c) => (

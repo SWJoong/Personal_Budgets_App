@@ -236,7 +236,7 @@ export default function ReceiptClient({
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="p-3 rounded-xl bg-card ring-1 ring-border text-sm focus:outline-none"
+                  className="p-3 rounded-xl bg-card ring-1 ring-border text-sm"
                 />
               )}
             </FormField>
@@ -258,7 +258,7 @@ export default function ReceiptClient({
                     if (amountError) setAmountError('')
                   }}
                   placeholder="0"
-                  className="p-3 rounded-xl bg-card ring-1 ring-border text-sm focus:outline-none"
+                  className="p-3 rounded-xl bg-card ring-1 ring-border text-sm"
                 />
               )}
             </FormField>
@@ -271,7 +271,7 @@ export default function ReceiptClient({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="예: 웹툰 학원 수강료"
-                  className="p-3 rounded-xl bg-card ring-1 ring-border text-sm focus:outline-none"
+                  className="p-3 rounded-xl bg-card ring-1 ring-border text-sm"
                 />
               )}
             </FormField>
@@ -302,7 +302,7 @@ export default function ReceiptClient({
                         onChange={(e) => setPlaceQuery(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handlePlaceSearch() } }}
                         placeholder="장소 이름으로 찾아보세요"
-                        className="flex-1 p-3 rounded-xl bg-card ring-1 ring-border text-sm focus:outline-none"
+                        className="flex-1 p-3 rounded-xl bg-card ring-1 ring-border text-sm"
                       />
                       <button
                         type="button"
@@ -341,7 +341,7 @@ export default function ReceiptClient({
                     {...field}
                     value={requestedServiceId}
                     onChange={(e) => setRequestedServiceId(e.target.value)}
-                    className="p-3 rounded-xl bg-card ring-1 ring-border text-sm focus:outline-none"
+                    className="p-3 rounded-xl bg-card ring-1 ring-border text-sm"
                   >
                     <option value="">고르지 않을래요</option>
                     {requestedServices.map((rs) => (

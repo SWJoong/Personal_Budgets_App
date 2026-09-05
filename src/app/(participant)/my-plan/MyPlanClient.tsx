@@ -214,7 +214,7 @@ export default function MyPlanClient({
                           onChange={(e) => setAppealGround(e.target.value)}
                           placeholder="어떤 점을 다시 봐주면 좋을지 적어주세요"
                           rows={3}
-                          className="p-3 rounded-xl bg-card ring-1 ring-border text-sm leading-relaxed focus:ring-foreground focus:outline-none resize-none"
+                          className="p-3 rounded-xl bg-card ring-1 ring-border text-sm leading-relaxed resize-none"
                         />
                         <button
                           onClick={handleFileAppeal}

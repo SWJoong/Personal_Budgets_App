@@ -128,7 +128,7 @@ export default function NewParticipantPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="당사자 이름"
-                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium"
                   required
                 />
               )}
@@ -142,7 +142,7 @@ export default function NewParticipantPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="participant@example.com"
-                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium"
                   required
                 />
               )}
@@ -155,7 +155,7 @@ export default function NewParticipantPage() {
                 {...field}
                 value={supporterId}
                 onChange={(e) => setSupporterId(e.target.value)}
-                className="p-4 rounded-xl bg-card ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+                className="p-4 rounded-xl bg-card ring-1 ring-border text-foreground font-medium"
               >
                 <option value="">미지정</option>
                 {supporters.map(s => (

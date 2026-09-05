@@ -205,7 +205,7 @@ export default function ParticipantDetailClient({
                   defaultValue={a.due_on ?? ''}
                   onBlur={(e) => handleRecordDueDate(a.id, e.target.value || null)}
                   disabled={pending}
-                  className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none disabled:opacity-50"
+                  className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm disabled:opacity-50"
                 />
                 {!a.due_on && (
                   <span className="text-[11px] text-warning-fg leading-relaxed">심사처 안내 확인 필요</span>
@@ -218,7 +218,7 @@ export default function ParticipantDetailClient({
                     value={appealNotes[a.id] ?? ''}
                     onChange={(e) => setAppealNotes((prev) => ({ ...prev, [a.id]: e.target.value }))}
                     placeholder="결과 사유"
-                    className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none"
+                    className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm"
                   />
                   <div className="flex gap-2">
                     <Button variant="positive" size="sm" onClick={() => handleDecideAppeal(a.id, 'upheld')} disabled={pending} className="flex-1">전부 반영</Button>
@@ -251,14 +251,14 @@ export default function ParticipantDetailClient({
             onChange={(e) => setObservedChange(e.target.value)}
             placeholder="실무자가 관찰한 변화"
             rows={2}
-            className="p-2 rounded-lg bg-card ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none resize-none"
+            className="p-2 rounded-lg bg-card ring-1 ring-border text-sm resize-none"
           />
           <textarea
             value={participantVoice}
             onChange={(e) => setParticipantVoice(e.target.value)}
             placeholder="당사자 본인이 한 말"
             rows={2}
-            className="p-2 rounded-lg bg-card ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none resize-none"
+            className="p-2 rounded-lg bg-card ring-1 ring-border text-sm resize-none"
           />
           <Button variant="primary" onClick={handleAddMonitoring} disabled={pending} className="w-full">
             기록 추가
@@ -289,7 +289,7 @@ export default function ParticipantDetailClient({
               value={settledPeriod}
               onChange={(e) => setSettledPeriod(e.target.value)}
               placeholder="정산 기간 (예: 2025-01~2025-06)"
-              className="p-2 rounded-lg bg-card ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none"
+              className="p-2 rounded-lg bg-card ring-1 ring-border text-sm"
             />
             <div className="flex gap-2">
               <input
@@ -297,14 +297,14 @@ export default function ParticipantDetailClient({
                 value={acceptedAmount}
                 onChange={(e) => setAcceptedAmount(e.target.value)}
                 placeholder="인정 금액"
-                className="flex-1 p-2 rounded-lg bg-card ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none"
+                className="flex-1 p-2 rounded-lg bg-card ring-1 ring-border text-sm"
               />
               <input
                 type="number"
                 value={unusedAmount}
                 onChange={(e) => setUnusedAmount(e.target.value)}
                 placeholder="미사용 금액"
-                className="flex-1 p-2 rounded-lg bg-card ring-1 ring-border text-sm focus:ring-muted-foreground focus:outline-none"
+                className="flex-1 p-2 rounded-lg bg-card ring-1 ring-border text-sm"
               />
             </div>
             <Button variant="primary" onClick={handleAddSettlement} disabled={pending} className="w-full">
