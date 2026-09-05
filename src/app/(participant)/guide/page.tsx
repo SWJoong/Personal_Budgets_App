@@ -34,10 +34,10 @@ const steps = [
 
 export default function GuidePageClient() {
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50 text-foreground pb-10">
-      <header className="flex h-16 items-center justify-between px-6 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
+    <div className="flex flex-col min-h-screen bg-background text-foreground pb-10">
+      <header className="flex h-16 items-center justify-between px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="flex items-center gap-3">
-          <Link href="/" aria-label="홈으로 가기" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center">←</Link>
+          <Link href="/" aria-label="홈으로 가기" className="text-muted-foreground hover:text-foreground transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center">←</Link>
           <h1 className="text-xl font-bold tracking-tight">앱 사용 설명서</h1>
         </div>
         <NavDropdown />
@@ -45,25 +45,25 @@ export default function GuidePageClient() {
 
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 max-w-lg mx-auto w-full flex flex-col gap-8">
         <div className="text-center py-4">
-          <h2 className="text-2xl font-black text-zinc-900 mb-2">반가워요! 👋</h2>
-          <p className="text-zinc-500 font-bold">이 앱을 어떻게 사용하는지<br/>쉽게 알려드릴게요.</p>
+          <h2 className="text-2xl font-black text-foreground mb-2">반가워요! 👋</h2>
+          <p className="text-muted-foreground font-bold">이 앱을 어떻게 사용하는지<br/>쉽게 알려드릴게요.</p>
         </div>
 
         <div className="flex flex-col gap-4">
           {steps.map((step, i) => (
-            <section key={i} className="bg-white rounded-[2.5rem] p-8 shadow-sm ring-1 ring-zinc-200 flex flex-col gap-4">
+            <section key={i} className="bg-card rounded-[2.5rem] p-8 shadow-sm ring-1 ring-border flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <span className="text-5xl">{step.icon}</span>
-                  <h3 className="text-xl font-black text-zinc-900">{i + 1}. {step.title}</h3>
+                  <h3 className="text-xl font-black text-foreground">{i + 1}. {step.title}</h3>
                 </div>
                 <button
                   onClick={() => speak(`${i + 1}번. ${step.title}. ${step.desc}`)}
-                  className="w-10 h-10 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-sm active:scale-95 transition-all shrink-0"
+                  className="w-10 h-10 rounded-full bg-muted hover:opacity-90 flex items-center justify-center text-sm active:scale-95 transition-all shrink-0"
                   aria-label={`${step.title} 음성으로 듣기`}
                 >🔊</button>
               </div>
-              <p className="text-lg font-bold text-zinc-600 leading-relaxed break-keep">
+              <p className="text-lg font-bold text-muted-foreground leading-relaxed break-keep">
                 {step.desc}
               </p>
             </section>
@@ -72,7 +72,7 @@ export default function GuidePageClient() {
 
         <Link 
           href="/"
-          className="mt-4 w-full py-5 rounded-3xl bg-zinc-900 text-white text-xl font-black shadow-xl text-center active:scale-95 transition-all"
+          className="mt-4 w-full py-5 rounded-3xl bg-hero text-hero-foreground text-xl font-black shadow-xl text-center active:scale-95 transition-all"
         >
           확인했어요! 홈으로 가기
         </Link>

@@ -29,43 +29,43 @@ export default async function ParticipantEvaluationsPage() {
   ])
 
   return (
-    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
-      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
+    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
+      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <Link
           href="/more"
-          className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="text-muted-foreground hover:text-foreground transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center"
           aria-label="뒤로 가기"
         >
           ←
         </Link>
-        <h1 className="text-sm font-black text-zinc-800">💌 선생님이 남긴 기록</h1>
+        <h1 className="text-sm font-black text-foreground">💌 선생님이 남긴 기록</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-6 max-w-sm mx-auto w-full">
         {/* 모니터링 = 선생님이 남긴 편지 */}
         {records.length === 0 ? (
-          <section className="p-8 rounded-3xl bg-zinc-100 text-center">
-            <p className="text-zinc-500 font-medium leading-relaxed">
+          <section className="p-8 rounded-3xl bg-muted text-center">
+            <p className="text-muted-foreground font-medium leading-relaxed">
               아직 남긴 기록이 없어요.<br />선생님을 만나면 여기에 나와요.
             </p>
           </section>
         ) : (
           <ul className="flex flex-col gap-3">
             {records.map((r) => (
-              <li key={r.id} className="p-5 rounded-3xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
+              <li key={r.id} className="p-5 rounded-3xl bg-card ring-1 ring-border flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-zinc-400">
+                  <span className="text-xs font-bold text-muted-foreground">
                     {r.method ? METHOD_EASY[r.method] ?? '' : ''}
                   </span>
-                  <span className="text-xs text-zinc-400">{r.monitoring_date}</span>
+                  <span className="text-xs text-muted-foreground">{r.monitoring_date}</span>
                 </div>
                 {r.observed_change && (
-                  <p className="text-base text-zinc-800 leading-relaxed">{r.observed_change}</p>
+                  <p className="text-base text-foreground leading-relaxed">{r.observed_change}</p>
                 )}
                 {r.participant_voice && (
-                  <div className="rounded-2xl bg-zinc-50 p-3">
-                    <p className="text-xs text-zinc-400 font-bold mb-1">내가 한 말</p>
-                    <p className="text-sm text-zinc-700 leading-relaxed">“{r.participant_voice}”</p>
+                  <div className="rounded-2xl bg-muted p-3">
+                    <p className="text-xs text-muted-foreground font-bold mb-1">내가 한 말</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">“{r.participant_voice}”</p>
                   </div>
                 )}
               </li>
@@ -76,16 +76,16 @@ export default async function ParticipantEvaluationsPage() {
         {/* 정산 = 쓴 돈은 어떻게 됐나요 (미사용은 긍정 프레이밍 고정 문구) */}
         {settlements.length > 0 && (
           <section className="flex flex-col gap-3">
-            <h2 className="text-sm font-bold text-zinc-500">쓴 돈은 어떻게 됐나요</h2>
+            <h2 className="text-sm font-bold text-muted-foreground">쓴 돈은 어떻게 됐나요</h2>
             <ul className="flex flex-col gap-3">
               {settlements.map((s) => (
-                <li key={s.id} className="p-5 rounded-3xl bg-white ring-1 ring-zinc-200 flex flex-col gap-2">
-                  <span className="text-xs text-zinc-400">{s.settled_period}</span>
-                  <p className="text-base text-zinc-800 leading-relaxed">
+                <li key={s.id} className="p-5 rounded-3xl bg-card ring-1 ring-border flex flex-col gap-2">
+                  <span className="text-xs text-muted-foreground">{s.settled_period}</span>
+                  <p className="text-base text-foreground leading-relaxed">
                     받은 돈 <b>{won(Number(s.accepted_amount))}</b>
                   </p>
                   {Number(s.unused_amount) > 0 && (
-                    <p className="text-sm text-zinc-600 bg-green-50 rounded-2xl p-3 leading-relaxed">
+                    <p className="text-sm text-muted-foreground bg-success-bg rounded-2xl p-3 leading-relaxed">
                       아직 다 안 쓴 돈이 있어요. 괜찮아요, 잘못한 게 아니에요.
                     </p>
                   )}

@@ -17,13 +17,13 @@ export default async function MapPage() {
 
   if (!participant) {
     return (
-      <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
-        <header className="flex h-14 items-center px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-          <h1 className="text-sm font-black text-zinc-800">사용 장소 지도</h1>
+      <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
+        <header className="flex h-14 items-center px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
+          <h1 className="text-sm font-black text-foreground">사용 장소 지도</h1>
         </header>
         <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-4">
           <span className="text-6xl">🗺️</span>
-          <p className="text-zinc-500 font-medium leading-relaxed">아직 예산 정보가 없어요.<br />담당 선생님에게 말씀해 주세요.</p>
+          <p className="text-muted-foreground font-medium leading-relaxed">아직 예산 정보가 없어요.<br />담당 선생님에게 말씀해 주세요.</p>
         </main>
       </div>
     )
@@ -62,12 +62,12 @@ export default async function MapPage() {
   const discovery = await getDiscoveryAssets()
 
   return (
-    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
-      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
+    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
+      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
+        <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
           ←
         </Link>
-        <h1 className="text-sm font-black text-zinc-800">사용 장소 지도</h1>
+        <h1 className="text-sm font-black text-foreground">사용 장소 지도</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 max-w-sm mx-auto w-full">

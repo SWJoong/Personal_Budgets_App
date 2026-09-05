@@ -152,60 +152,60 @@ export default function MyPlanClient({
   const isDecided = plan && ['approved', 'conditional', 'rejected'].includes(plan.status)
 
   return (
-    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
-      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/" className="text-zinc-400 hover:text-zinc-600 transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
+    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
+      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
+        <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
           ←
         </Link>
-        <h1 className="text-sm font-black text-zinc-800">내 이용계획</h1>
+        <h1 className="text-sm font-black text-foreground">내 이용계획</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-4 max-w-sm mx-auto w-full">
         {error && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium leading-relaxed">
+          <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium leading-relaxed">
             {error}
           </div>
         )}
 
         {!plan ? (
-          <section className="p-8 rounded-3xl bg-zinc-100 text-center">
-            <p className="text-zinc-500 font-medium leading-relaxed">
+          <section className="p-8 rounded-3xl bg-muted text-center">
+            <p className="text-muted-foreground font-medium leading-relaxed">
               아직 계획이 없어요.<br />담당 선생님이 함께 계획을 만들 거예요.
             </p>
           </section>
         ) : (
           <>
-            <section className="p-5 rounded-2xl bg-zinc-100">
+            <section className="p-5 rounded-2xl bg-muted">
               <p className="font-bold text-sm leading-relaxed">{STATUS_LABEL[plan.status] ?? plan.status}</p>
             </section>
 
             {isDecided && latestReview && (
-              <section className={`p-6 rounded-3xl text-center ${latestReview.decision === 'approved' ? 'bg-emerald-50' : 'bg-amber-50'}`}>
+              <section className={`p-6 rounded-3xl text-center ${latestReview.decision === 'approved' ? 'bg-success-bg' : 'bg-warning-bg'}`}>
                 <p className="font-bold leading-relaxed">{STATUS_LABEL[latestReview.decision]}</p>
-                {latestReview.reason && <p className="text-sm text-zinc-500 leading-relaxed mt-2">{latestReview.reason}</p>}
+                {latestReview.reason && <p className="text-sm text-muted-foreground leading-relaxed mt-2">{latestReview.reason}</p>}
                 {notification && !notification.is_read_by_participant && (
                   <button
                     onClick={handleConfirmNotification}
                     disabled={pending}
-                    className="mt-4 px-6 py-3 min-h-[44px] rounded-xl bg-zinc-900 text-white font-bold disabled:opacity-50"
+                    className="mt-4 px-6 py-3 min-h-[44px] rounded-xl bg-hero text-hero-foreground font-bold disabled:opacity-50"
                   >
                     확인했어요
                   </button>
                 )}
 
                 {latestReview.decision !== 'approved' && notification && (
-                  <div className="mt-4 pt-4 border-t border-zinc-200 flex flex-col gap-3">
+                  <div className="mt-4 pt-4 border-t border-border flex flex-col gap-3">
                     {appeal ? (
                       <div className="flex flex-col gap-1">
-                        <span className="text-sm font-bold text-zinc-700">다시 봐달라고 요청했어요</span>
-                        <span className="text-xs text-zinc-500 leading-relaxed">{APPEAL_OUTCOME_LABEL[appeal.outcome] ?? appeal.outcome}</span>
+                        <span className="text-sm font-bold text-muted-foreground">다시 봐달라고 요청했어요</span>
+                        <span className="text-xs text-muted-foreground leading-relaxed">{APPEAL_OUTCOME_LABEL[appeal.outcome] ?? appeal.outcome}</span>
                         {appeal.outcome_reason && (
-                          <p className="text-xs text-zinc-500 leading-relaxed mt-1">{appeal.outcome_reason}</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed mt-1">{appeal.outcome_reason}</p>
                         )}
                       </div>
                     ) : showAppealForm ? (
                       <>
-                        <p className="text-xs text-zinc-500 leading-relaxed">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           결과가 이상하다고 느끼면 편하게 다시 봐달라고 요청할 수 있어요.
                           요청한다고 불이익이 생기지 않아요.
                         </p>
@@ -214,12 +214,12 @@ export default function MyPlanClient({
                           onChange={(e) => setAppealGround(e.target.value)}
                           placeholder="어떤 점을 다시 봐주면 좋을지 적어주세요"
                           rows={3}
-                          className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-sm leading-relaxed focus:ring-zinc-400 focus:outline-none resize-none"
+                          className="p-3 rounded-xl bg-card ring-1 ring-border text-sm leading-relaxed focus:ring-foreground focus:outline-none resize-none"
                         />
                         <button
                           onClick={handleFileAppeal}
                           disabled={pending}
-                          className="px-6 py-3 min-h-[44px] rounded-xl bg-zinc-900 text-white font-bold disabled:opacity-50"
+                          className="px-6 py-3 min-h-[44px] rounded-xl bg-hero text-hero-foreground font-bold disabled:opacity-50"
                         >
                           요청 보내기
                         </button>
@@ -227,7 +227,7 @@ export default function MyPlanClient({
                     ) : (
                       <button
                         onClick={() => setShowAppealForm(true)}
-                        className="px-6 py-3 min-h-[44px] rounded-xl bg-white ring-1 ring-zinc-300 text-zinc-700 font-bold"
+                        className="px-6 py-3 min-h-[44px] rounded-xl bg-card ring-1 ring-border text-muted-foreground font-bold"
                       >
                         다시 봐달라고 요청하기
                       </button>
@@ -239,34 +239,34 @@ export default function MyPlanClient({
 
             {/* 담당 선생님이 적은 내용을 그대로 보여준다 — 당사자는 검토(열람)만 한다.
                 내용을 바꾸고 싶으면 담당 선생님에게 말하도록 안내한다. */}
-            <p className="text-xs text-zinc-400 leading-relaxed px-1">
+            <p className="text-xs text-muted-foreground leading-relaxed px-1">
               담당 선생님이 함께 적은 내용이에요. 다르게 하고 싶은 게 있으면 선생님에게 말해 주세요.
             </p>
 
             <section className="flex flex-col gap-3">
-              <h2 className="text-sm font-bold text-zinc-500">나의 상황</h2>
+              <h2 className="text-sm font-bold text-muted-foreground">나의 상황</h2>
               {NARRATIVE_FIELDS.map(({ key, label }) => (
                 <div key={key} className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500 font-medium">{label}</label>
-                  <p className="p-3 rounded-xl bg-white text-sm leading-relaxed whitespace-pre-wrap">{narrativeValue(key) || '—'}</p>
+                  <label className="text-xs text-muted-foreground font-medium">{label}</label>
+                  <p className="p-3 rounded-xl bg-card text-sm leading-relaxed whitespace-pre-wrap">{narrativeValue(key) || '—'}</p>
                 </div>
               ))}
             </section>
 
             <section className="flex flex-col gap-3">
-              <h2 className="text-sm font-bold text-zinc-500">쓰고 싶은 서비스</h2>
+              <h2 className="text-sm font-bold text-muted-foreground">쓰고 싶은 서비스</h2>
               {filledServices.length === 0 ? (
-                <p className="text-sm text-zinc-400 leading-relaxed">아직 정해진 서비스가 없어요.</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">아직 정해진 서비스가 없어요.</p>
               ) : (
                 <ul className="flex flex-col gap-3">
                   {filledServices.map((s) => (
-                    <li key={s.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-white">
+                    <li key={s.id} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-card">
                       <span className="text-sm">
-                        <span className="text-zinc-400 mr-2">{s.priority}순위</span>
+                        <span className="text-muted-foreground mr-2">{s.priority}순위</span>
                         {s.service_name}
                       </span>
                       {s.estimated_cost != null && (
-                        <span className="text-sm text-zinc-500 shrink-0">{won(Number(s.estimated_cost))}</span>
+                        <span className="text-sm text-muted-foreground shrink-0">{won(Number(s.estimated_cost))}</span>
                       )}
                     </li>
                   ))}

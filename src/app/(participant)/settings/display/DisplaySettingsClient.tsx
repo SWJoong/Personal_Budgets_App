@@ -43,7 +43,7 @@ export default function DisplaySettingsClient({
   return (
     <div className="flex flex-col gap-3">
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2 leading-relaxed">{error}</p>
+        <p className="text-sm text-danger-fg bg-danger-bg rounded-xl px-3 py-2 leading-relaxed">{error}</p>
       )}
       <ul className="flex flex-col gap-2">
         {OPTIONAL_BLOCKS.map((b) => {
@@ -58,25 +58,25 @@ export default function DisplaySettingsClient({
                 aria-label={`${meta.label} — ${on ? '보여요' : '숨겨요'}`}
                 disabled={saving}
                 onClick={() => toggle(b)}
-                className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center gap-3 text-left min-h-[44px] disabled:opacity-60 transition-opacity"
+                className="w-full p-4 rounded-2xl bg-card ring-1 ring-border flex items-center gap-3 text-left min-h-[44px] disabled:opacity-60 transition-opacity"
               >
                 <span aria-hidden="true" className="text-2xl">
                   {meta.icon}
                 </span>
                 <span className="flex-1 flex flex-col">
-                  <span className="font-bold text-zinc-800">{meta.label}</span>
-                  <span className="text-xs text-zinc-400">{meta.description}</span>
+                  <span className="font-bold text-foreground">{meta.label}</span>
+                  <span className="text-xs text-muted-foreground">{meta.description}</span>
                 </span>
                 <span className="shrink-0 flex items-center gap-2">
-                  <span className={`text-xs font-bold ${on ? 'text-emerald-600' : 'text-zinc-400'}`}>
+                  <span className={`text-xs font-bold ${on ? 'text-success-fg' : 'text-muted-foreground'}`}>
                     {on ? '보여요' : '숨겨요'}
                   </span>
                   <span
                     className={`w-14 h-8 rounded-full flex items-center px-1 transition-colors ${
-                      on ? 'bg-emerald-500 justify-end' : 'bg-zinc-300 justify-start'
+                      on ? 'bg-positive justify-end' : 'bg-input justify-start'
                     }`}
                   >
-                    <span className="w-6 h-6 rounded-full bg-white shadow" />
+                    <span className="w-6 h-6 rounded-full bg-card shadow" />
                   </span>
                 </span>
               </button>
@@ -84,7 +84,7 @@ export default function DisplaySettingsClient({
           )
         })}
       </ul>
-      <p className="text-xs text-zinc-400 text-center leading-relaxed pt-1">
+      <p className="text-xs text-muted-foreground text-center leading-relaxed pt-1">
         {saving ? '저장하고 있어요…' : '바꾸면 바로 저장해요.'}
       </p>
     </div>
