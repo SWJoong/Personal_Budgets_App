@@ -1035,3 +1035,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-04T17:18Z] U
 [HANDOFF→W] P6 sweep Batch1 PR #107(feat/sweep-b1). 로딩 15파일 색토큰화(워커3기): bg-zinc→muted·white→card·페이지 background·text-zinc→foreground/muted·border/ring-zinc→border·상태색 -bg/fg·히어로 그라디언트→bg-hero. animate-pulse·레이아웃·구조·문구 보존·main#main-content 겹침보존. 게이트 tokenFoundation 42 pass(15 green 회귀0)·tsc PASS·build✓·lint 0err. 워커 표외판단: orange→warning·green→success·상태 -bg/fg·admin 음영평탄화·페이지 background·히어로 그라디언트제거. W검증(시각무회귀 육안)→사람머지. Batch2(공용17 색만·Phase B/C 구조불가침) 대기.
 
+## [2026-09-05T05:44Z] U
+[Batch 2 완료] #108 머지(main=3e14096) → 공용 컴포넌트 17 색 토큰화 완결(PreviewBanner bold토큰 3종 신규 @theme 상수+16파일). e6 2인검증 PASS·BLOCK0. ★확립 컨벤션: 상태표면 테두리=중립 border-border 통일(*-border 토큰 신설 안 함, 색테두리 결정적일때만 플래그)·다크버튼→bg-hero·블루→primary·상태칩→ring-{state}-fg/20·영구다크표면(ImageLightbox)→sidebar 계열(hero는 HC반전 금지). 다음: Batch 3(당사자17) e6 RED계약 대기→토큰화. WaterCup JS-style hex는 sweep후 별도정리 후보. main push 금지.
+
