@@ -34,7 +34,7 @@ export default async function ParticipantEvaluationsPage() {
         <Link
           href="/more"
           className="text-muted-foreground hover:text-foreground transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center"
-          aria-label="뒤로 가기"
+          aria-label="더보기로 가기"
         >
           ←
         </Link>
