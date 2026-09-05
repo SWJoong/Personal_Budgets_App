@@ -82,6 +82,28 @@ const TOKENIZED_FILES = [
   'src/app/(supporter)/admin/participants/[id]/loading.tsx',
   'src/app/(supporter)/supporter/review/loading.tsx',
   'src/app/(supporter)/supporter/transactions/[id]/loading.tsx',
+
+  // ── P6 대비 완성 sweep · Batch 2: 공용 컴포넌트 17 (재사용 레버리지 최대) ──
+  //   색만 토큰화(매핑=goala_p6_sweep_W.md). ★Phase B/C 겹침 파일(FormField·Modal·ImageLightbox·
+  //   SelfCheckFeedback·ComingSoon=B / NavDropdown·NavigationProgress·FaqButton=C)은 ARIA/구조 불가침, 색만.
+  //   Modal·ImageLightbox 는 이미 팔레트 raw-0(green-lock 겸 회귀보호).
+  'src/components/admin/ParticipantHomePreviewClient.tsx',
+  'src/components/admin/PreviewBanner.tsx',
+  'src/components/help/AdminHelpButton.tsx',
+  'src/components/help/AdminHelpModal.tsx',
+  'src/components/help/HelpButton.tsx',
+  'src/components/help/HelpSlideshow.tsx',
+  'src/components/home/WaterCupPlanPreview.tsx',
+  'src/components/layout/NavDropdown.tsx',
+  'src/components/layout/NavigationProgress.tsx',
+  'src/components/map/KakaoMap.tsx',
+  'src/components/map/PlaceSearch.tsx',
+  'src/components/ui/ComingSoon.tsx',
+  'src/components/ui/FaqButton.tsx',
+  'src/components/ui/FormField.tsx',
+  'src/components/ui/ImageLightbox.tsx',
+  'src/components/ui/Modal.tsx',
+  'src/components/ui/SelfCheckFeedback.tsx',
 ]
 
 // Tailwind 임의 팔레트(시맨틱 토큰으로 대체돼야 함).
