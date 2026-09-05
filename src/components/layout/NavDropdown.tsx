@@ -36,7 +36,7 @@ const NAV_ITEMS: NavItem[] = [
 
 function SoonBadge() {
   return (
-    <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+    <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-warning-bg text-warning-fg ring-1 ring-warning-fg/20">
       준비중
     </span>
   )
@@ -56,12 +56,12 @@ export default function NavDropdown() {
     <>
       <button
         onClick={() => setIsOpen((v) => !v)}
-        className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-all active:scale-95"
+        className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-muted hover:opacity-90 transition-all active:scale-95"
         aria-label={isOpen ? '메뉴 닫기' : '메뉴 열기'}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
       >
-        <span className="text-zinc-600 text-base font-black leading-none select-none">
+        <span className="text-muted-foreground text-base font-black leading-none select-none">
           {isOpen ? '✕' : '☰'}
         </span>
       </button>
@@ -73,17 +73,17 @@ export default function NavDropdown() {
         label="페이지 이동 메뉴"
         containerClassName="flex justify-end"
         overlayClassName="bg-black/40"
-        panelClassName="h-full w-64 bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+        panelClassName="h-full w-64 bg-card shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
       >
         {/* 드로어 헤더 */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
-          <span className="text-sm font-black text-zinc-500 uppercase tracking-widest">메뉴</span>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">메뉴</span>
           <button
             onClick={() => setIsOpen(false)}
-            className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 transition-colors"
+            className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-muted hover:opacity-90 transition-colors"
             aria-label="메뉴 닫기"
           >
-            <span className="text-zinc-600 text-sm font-black leading-none">✕</span>
+            <span className="text-muted-foreground text-sm font-black leading-none">✕</span>
           </button>
         </div>
 
@@ -99,21 +99,21 @@ export default function NavDropdown() {
                   href={item.href}
                   onClick={() => setIsOpen(false)}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`flex items-center gap-3 px-5 py-4 hover:bg-zinc-50 transition-colors ${
-                    isActive ? 'bg-zinc-50' : ''
+                  className={`flex items-center gap-3 px-5 py-4 hover:bg-muted transition-colors ${
+                    isActive ? 'bg-muted' : ''
                   }`}
                 >
                   <span className="text-2xl w-8 text-center" aria-hidden="true">{item.icon}</span>
                   <span
                     className={`text-sm font-bold flex-1 ${
-                      isActive ? 'text-zinc-900' : 'text-zinc-600'
+                      isActive ? 'text-foreground' : 'text-muted-foreground'
                     }`}
                   >
                     {item.label}
                   </span>
                   {item.soon && <SoonBadge />}
                   {isActive && (
-                    <div className="w-2 h-2 rounded-full bg-zinc-900 shrink-0" />
+                    <div className="w-2 h-2 rounded-full bg-foreground shrink-0" />
                   )}
                 </Link>
 
@@ -129,21 +129,21 @@ export default function NavDropdown() {
                           href={sub.href}
                           onClick={() => setIsOpen(false)}
                           aria-current={isSubActive ? 'page' : undefined}
-                          className={`flex items-center gap-2.5 pl-14 pr-5 py-2.5 hover:bg-zinc-50 transition-colors ${
-                            isSubActive ? 'bg-zinc-50' : ''
+                          className={`flex items-center gap-2.5 pl-14 pr-5 py-2.5 hover:bg-muted transition-colors ${
+                            isSubActive ? 'bg-muted' : ''
                           }`}
                         >
                           <span className="text-base w-5 text-center shrink-0" aria-hidden="true">{sub.icon}</span>
                           <span
                             className={`text-xs font-bold flex-1 ${
-                              isSubActive ? 'text-zinc-900' : 'text-zinc-500'
+                              isSubActive ? 'text-foreground' : 'text-muted-foreground'
                             }`}
                           >
                             {sub.label}
                           </span>
                           {sub.soon && <SoonBadge />}
                           {isSubActive && (
-                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 shrink-0" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground shrink-0" />
                           )}
                         </Link>
                       )

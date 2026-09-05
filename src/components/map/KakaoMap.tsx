@@ -385,17 +385,17 @@ export default function KakaoMap({ apiKey, transactions, plans = [], places = []
       onLoad={() => setSdkReady(true)}
       onReady={() => setSdkReady(true)}
     />
-    <div className="relative w-full rounded-2xl overflow-hidden ring-1 ring-zinc-200">
+    <div className="relative w-full rounded-2xl overflow-hidden ring-1 ring-border">
       <div ref={mapContainerRef} style={{ width: '100%', height }} />
       {validTx.length === 0 && validPlans.length === 0 && validPlaces.length === 0 && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-50/90 gap-2">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/90 gap-2">
           <span className="text-3xl">📍</span>
-          <p className="text-sm font-bold text-zinc-500">장소 정보가 있는 내역이 없습니다.</p>
-          <p className="text-xs text-zinc-400">지출을 기록할 때 장소를 검색해 등록하면 지도에 표시됩니다.</p>
+          <p className="text-sm font-bold text-muted-foreground">장소 정보가 있는 내역이 없습니다.</p>
+          <p className="text-xs text-muted-foreground">지출을 기록할 때 장소를 검색해 등록하면 지도에 표시됩니다.</p>
         </div>
       )}
       {(validTx.length > 0 || validPlans.length > 0 || validPlaces.length > 0) && (
-        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl text-xs font-bold text-zinc-600 shadow-sm ring-1 ring-zinc-200">
+        <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-xl text-xs font-bold text-muted-foreground shadow-sm ring-1 ring-border">
           📍 {validTx.length + validPlans.length + validPlaces.length}개 장소
         </div>
       )}

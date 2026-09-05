@@ -25,7 +25,7 @@ export default function ImageLightbox({ src, alt, onClose }: Props) {
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-xl font-bold transition-colors"
+        className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full bg-sidebar-strong/10 hover:bg-sidebar-strong/20 flex items-center justify-center text-sidebar-strong text-xl font-bold transition-colors"
         aria-label="닫기"
       >
         ✕

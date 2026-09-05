@@ -58,6 +58,12 @@
   --color-neutral-bg: hsl(220 20% 93%);
   --color-neutral-fg: hsl(220 10% 38%);
 
+  /* P6 sweep Batch 2: PreviewBanner bold 상태-표면 토큰(W 설계·독립 AA검증). 4모드 상수(색코드 고정)
+     — HC/dark/yellow 재정의 없이 전모드 동일 대비 유지. 배너 배경은 기존 딥앰버 상수 bg-warning 재사용. */
+  --color-warning-foreground: hsl(28 90% 13%);
+  --color-info-solid: hsl(212 85% 38%);
+  --color-info-solid-foreground: hsl(0 0% 100%);
+
   /* Fonts — §4 가이드라인: 세리프 없는 서체, Gulim/Dotum/맑은고딕 포함 */
   --font-sans: var(--font-pretendard), "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", "Dotum", "돋움", "Gulim", "굴림", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Nunito", "Noto Sans KR", "Malgun Gothic", sans-serif;

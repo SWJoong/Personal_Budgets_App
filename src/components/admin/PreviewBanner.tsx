@@ -32,7 +32,9 @@ export default function PreviewBanner({ currentParticipant, allParticipants, onE
       role="region"
       aria-label="미리보기 모드 안내"
       className={`sticky top-0 z-50 shadow-md transition-colors ${
-        isEditMode ? 'bg-blue-500 text-white' : 'bg-amber-400 text-amber-900'
+        isEditMode
+          ? 'bg-info-solid text-info-solid-foreground border-b-2 border-info-solid-foreground/60'
+          : 'bg-warning text-warning-foreground border-b-2 border-warning-foreground'
       }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 max-w-5xl mx-auto">
@@ -41,15 +43,15 @@ export default function PreviewBanner({ currentParticipant, allParticipants, onE
           <span aria-live="polite" className="text-sm font-black">
             {isEditMode ? '편집 모드' : '미리보기 모드'}
           </span>
-          <span aria-hidden="true" className={`${isEditMode ? 'text-blue-200' : 'text-amber-700'} text-sm`}>·</span>
+          <span aria-hidden="true" className={`${isEditMode ? 'text-info-solid-foreground/70' : 'text-warning-foreground/70'} text-sm`}>·</span>
           <select
             value={currentParticipant.id}
             onChange={(e) => router.push(`/admin/participants/${e.target.value}/preview`)}
             aria-label="미리보기할 당사자 선택"
             className={`text-sm font-bold border rounded-lg px-2 min-h-[44px] cursor-pointer focus:outline-none focus:ring-2 ${
               isEditMode
-                ? 'bg-blue-400 text-white border-blue-600 focus:ring-blue-700'
-                : 'bg-amber-300 text-amber-900 border-amber-500 focus:ring-amber-600'
+                ? 'bg-transparent text-info-solid-foreground border-info-solid-foreground/70 focus:ring-info-solid-foreground'
+                : 'bg-transparent text-warning-foreground border-warning-foreground/60 focus:ring-warning-foreground'
             }`}
           >
             {allParticipants.map((p) => (
@@ -66,8 +68,8 @@ export default function PreviewBanner({ currentParticipant, allParticipants, onE
             onClick={handleEditToggle}
             className={`flex items-center justify-center gap-1 text-xs font-bold px-3 min-h-[44px] rounded-lg transition-colors ${
               isEditMode
-                ? 'bg-white text-blue-600 hover:bg-blue-50'
-                : 'bg-amber-300 text-amber-900 hover:bg-amber-200 border border-amber-500'
+                ? 'bg-info-solid-foreground text-info-solid hover:bg-info-solid-foreground/90'
+                : 'bg-warning-foreground text-warning hover:bg-warning-foreground/90 border border-warning-foreground'
             }`}
           >
             <span aria-hidden="true">{isEditMode ? '👁' : '✏️'}</span>
@@ -78,8 +80,8 @@ export default function PreviewBanner({ currentParticipant, allParticipants, onE
             aria-label="미리보기 닫기"
             className={`flex items-center justify-center gap-1 text-sm font-bold px-3 min-h-[44px] min-w-[44px] rounded-lg transition-colors border ${
               isEditMode
-                ? 'text-white bg-blue-600 hover:bg-blue-700 border-blue-700'
-                : 'text-amber-900 bg-amber-300 hover:bg-amber-200 border-amber-500'
+                ? 'text-info-solid-foreground bg-transparent border-info-solid-foreground/70 hover:brightness-95'
+                : 'text-warning-foreground bg-transparent border-warning-foreground/60 hover:bg-warning-foreground/10'
             }`}
           >
             <span aria-hidden="true">✕</span>
