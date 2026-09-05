@@ -48,7 +48,7 @@ emoji 는 `aria-hidden` 장식 span. 계약: `src/components/ui/EmptyState.test.
 | `(participant)/page.tsx` L155 | 배정 예산 없음(`!balance`) | 대기 | `아직 정해진 예산이 없어요.` | `선생님들이 확인하면 여기에 나와요.` | 없음(대기) |
 | `(participant)/page.tsx` L81 | no-budget 게이트 | 3 | → **NoBudgetGate**(§5) | | |
 | `calendar/CalendarClient.tsx` L120 | 선택 날짜 지출 0 | 필터0 | `이 날은 쓴 돈이 없어요.` | (선택) `다른 날짜를 눌러보세요.` | 없음 |
-| `plan/page.tsx` L67 | 해보고 싶은 것 0 | 1 | `아직 없어요.` → `아직 적은 것이 없어요.` | — | `{이용계획에서 적어요, /my-plan}`(기존 유지) |
+| `plan/page.tsx` L67 | 해보고 싶은 것 0 | 1 | `아직 없어요.` → `아직 아무것도 안 적었어요.` | — | `{이용계획에서 적어요, /my-plan}`(기존 유지) |
 | `gallery/page.tsx` 본문 빈 | 사진 0 | 1 | `아직 사진이 없어요.` | `지출을 기록할 때 사진을 함께 남겨보세요.` | 없음 |
 | `my-plan/MyPlanClient.tsx` L173 | 계획 없음 | 대기 | `아직 계획이 없어요.` | `담당 선생님이 함께 계획을 만들 거예요.` | 없음(선생님 몫) |
 | `my-plan/MyPlanClient.tsx` L259 | 서비스 0 | 1 | `아직 정해진 서비스가 없어요.` | — | 없음 |
@@ -67,13 +67,14 @@ emoji 는 `aria-hidden` 장식 span. 계약: `src/components/ui/EmptyState.test.
 
 계약: `emptystate.adopt.supporter-lists`(fsscan) = import + 사용 + 인라인 잔여0 +
 **NEEDS_ACTION 5종은 `action=` 배선 필수**(데드엔드 제거). documents 는 action 선택.
+★easy-read 문구표준은 **당사자-우선** 범위다 — 실무자 화면의 회계 도메인 용어(`지출` 등)는 표준 엄격범위 밖으로 수용(당사자 대면 문구만 SEN/VOC 무경고 강제). easy-read 리뷰 반영: `plan/page` STATE1 은 SEN-07(명사화) 회피 위해 `아직 아무것도 안 적었어요.`, `applications` 는 VOC-01(접수) 회피 위해 `신청서 받기` 로 확정.
 
 | 파일 | STATE | title | description | action `{label, href}` |
 |---|---|---|---|---|
 | `transactions/page.tsx`(서버, rows 0) | 1(진짜0) | `아직 지출 기록이 없어요.` | — | `{당사자 보러 가기, /supporter/participants}` |
 | `participants/page.tsx` | 1 | `아직 등록된 당사자가 없어요.` | — | `{당사자 추가하기, /admin/participants/new}` |
 | `plans/page.tsx` | 1 | `아직 작성된 이용계획이 없어요.` | — | `{새 계획 만들기, /supporter/plans/new}` |
-| `applications/page.tsx` | 1 | `아직 접수된 신청서가 없어요.` | — | `{새 신청서 접수, /supporter/applications/new}` |
+| `applications/page.tsx` | 1 | `아직 신청서를 받지 않았어요.` | — | `{새 신청서 받기, /supporter/applications/new}` |
 | `evaluations/page.tsx` | 1 | `아직 등록된 당사자가 없어요.` | — | `{당사자 보러 가기, /supporter/participants}` |
 | `documents/DocumentShelfClient.tsx`(client) | 1 | `아직 등록된 서류가 없어요.` | (선택) | 없음/선택(서류 업로드 전용 라우트 부재 — 소프트 CTA `/supporter/participants` 허용) |
 
