@@ -90,14 +90,14 @@ export default function ReviewQueueClient({ items }: { items: ReviewItem[] }) {
             <button
               onClick={() => handleDecide(item.id, 'accepted')}
               disabled={pending}
-              className="flex-1 p-3 rounded-xl bg-positive text-positive-foreground font-bold text-sm hover:opacity-90 disabled:opacity-50 min-h-[44px]"
+              className="flex-1 p-3 rounded-xl bg-positive text-positive-foreground font-bold text-sm hover:bg-positive-hover disabled:opacity-50 min-h-[44px]"
             >
               그대로 인정
             </button>
             <button
               onClick={() => handleDecide(item.id, 'rejected')}
               disabled={pending}
-              className="flex-1 p-3 rounded-xl bg-muted text-muted-foreground font-bold text-sm hover:opacity-90 disabled:opacity-50 min-h-[44px]"
+              className="flex-1 p-3 rounded-xl bg-muted text-muted-foreground font-bold text-sm hover:bg-muted-hover hover:text-foreground disabled:bg-disabled-bg disabled:text-disabled-fg min-h-[44px]"
             >
               계획에 없어 제외
             </button>

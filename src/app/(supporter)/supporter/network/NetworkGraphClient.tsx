@@ -198,7 +198,7 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
 
   const toggleBtn = (active: boolean) =>
     `min-h-[44px] px-4 rounded-xl text-sm font-bold transition-colors ring-1 ${
-      active ? 'bg-hero text-hero-foreground ring-hero' : 'bg-card text-muted-foreground ring-border hover:bg-muted'
+      active ? 'bg-hero text-hero-foreground ring-hero' : 'bg-card text-muted-foreground ring-border hover:bg-muted-hover hover:text-foreground'
     }`
 
   return (
@@ -214,7 +214,7 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
         <button
           type="button"
           onClick={() => cyRef.current?.fit(undefined, 30)}
-          className="min-h-[44px] px-4 rounded-xl text-sm font-bold bg-card text-muted-foreground ring-1 ring-border hover:bg-muted transition-colors ml-auto"
+          className="min-h-[44px] px-4 rounded-xl text-sm font-bold bg-card text-muted-foreground ring-1 ring-border hover:bg-muted-hover hover:text-foreground transition-colors ml-auto"
         >
           가운데 맞추기
         </button>

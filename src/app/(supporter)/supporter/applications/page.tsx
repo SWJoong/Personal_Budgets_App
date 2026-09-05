@@ -39,7 +39,7 @@ export default async function ApplicationsPage() {
         <h1 className="text-xl font-bold tracking-tight">신청서</h1>
         <Link
           href="/supporter/applications/new"
-          className="min-h-[44px] px-4 flex items-center rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:opacity-90 transition-colors"
+          className="min-h-[44px] px-4 flex items-center rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:bg-hero-hover transition-colors"
         >
           + 신청서 접수
         </Link>

@@ -48,14 +48,14 @@ export default async function AdminDashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Link
               href="/admin/participants/new"
-              className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-card ring-1 ring-border hover:ring-foreground hover:bg-muted transition-all shadow-sm active:scale-95"
+              className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-card ring-1 ring-border hover:ring-foreground hover:bg-muted-hover transition-all shadow-sm active:scale-95"
             >
               <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">➕</span>
               <span className="text-base font-black text-foreground">당사자 등록</span>
             </Link>
             <Link
               href="/admin/participants"
-              className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-card ring-1 ring-border hover:ring-foreground hover:bg-muted transition-all shadow-sm active:scale-95"
+              className="group flex flex-col items-center justify-center p-6 rounded-2xl bg-card ring-1 ring-border hover:ring-foreground hover:bg-muted-hover transition-all shadow-sm active:scale-95"
             >
               <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">👥</span>
               <span className="text-base font-black text-foreground">당사자 관리</span>

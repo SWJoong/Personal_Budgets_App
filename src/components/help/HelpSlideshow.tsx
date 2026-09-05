@@ -70,14 +70,14 @@ export default function HelpSlideshow({ section, onClose }: Props) {
         {current > 0 ? (
           <button
             onClick={() => setCurrent(c => c - 1)}
-            className="flex-1 py-3 rounded-2xl bg-muted text-muted-foreground font-bold text-sm hover:opacity-90 transition-colors"
+            className="flex-1 py-3 rounded-2xl bg-muted text-muted-foreground font-bold text-sm hover:bg-muted-hover hover:text-foreground transition-colors"
           >
             ← 이전
           </button>
         ) : (
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-2xl bg-muted text-muted-foreground font-bold text-sm hover:opacity-90 transition-colors"
+            className="flex-1 py-3 rounded-2xl bg-muted text-muted-foreground font-bold text-sm hover:bg-muted-hover hover:text-foreground transition-colors"
           >
             건너뛰기
           </button>

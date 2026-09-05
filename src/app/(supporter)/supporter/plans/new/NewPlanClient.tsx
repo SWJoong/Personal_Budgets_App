@@ -71,7 +71,7 @@ export default function NewPlanClient({ candidates }: { candidates: Candidate[] 
           <button
             onClick={handleCreate}
             disabled={pending || !applicationId}
-            className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:opacity-90 transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
+            className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:bg-hero-hover transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
           >
             {pending ? '만들고 있어요...' : '계획 만들기'}
           </button>

@@ -23,21 +23,21 @@ export default async function SupporterPage() {
         </section>
         <Link
           href="/admin/participants"
-          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:opacity-90 transition-colors active:scale-[0.98] shadow-lg"
+          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:bg-hero-hover transition-all active:scale-[0.98] shadow-lg"
         >
           <span className="text-xl">👥</span>
           당사자 목록 보기
         </Link>
         <Link
           href="/supporter/map"
-          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-card text-foreground ring-1 ring-border font-bold text-base hover:bg-muted transition-colors active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-card text-foreground ring-1 ring-border font-bold text-base hover:bg-muted-hover transition-all active:scale-[0.98]"
         >
           <span className="text-xl">🗺️</span>
           지도 · 쓸 수 있는 곳
         </Link>
         <Link
           href="/supporter/network"
-          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-card text-foreground ring-1 ring-border font-bold text-base hover:bg-muted transition-colors active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-card text-foreground ring-1 ring-border font-bold text-base hover:bg-muted-hover transition-all active:scale-[0.98]"
         >
           <span className="text-xl">🕸️</span>
           관계망 보기

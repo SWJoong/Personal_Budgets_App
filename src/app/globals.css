@@ -80,6 +80,17 @@
   --color-relation-for: hsl(347 77% 40%);
   --color-danger-foreground: hsl(0 0% 100%);
 
+  /* P7 웨이브4: hover/press/disabled 토큰(W 설계·독립 AA검증). danger/positive/warning-hover 는 base 가
+     4모드 상수라 @theme 단일값이 전모드 유효. hero/muted-hover·disabled 는 HC/dark 재정의(아래), 노랑=@theme 상속. */
+  --color-danger-hover: hsl(0 72% 42%);
+  --color-positive-hover: hsl(130 55% 26%);
+  --color-warning-hover: hsl(32 90% 44%);
+  --color-hero-hover: hsl(222 47% 16%);
+  --color-muted-hover: hsl(220 20% 88%);
+  --color-danger-bg-hover: hsl(0 80% 90%);
+  --color-disabled-bg: hsl(220 16% 90%);
+  --color-disabled-fg: hsl(220 14% 38%);
+
   /* Fonts — §4 가이드라인: 세리프 없는 서체, Gulim/Dotum/맑은고딕 포함 */
   --font-sans: var(--font-pretendard), "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", "Dotum", "돋움", "Gulim", "굴림", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Nunito", "Noto Sans KR", "Malgun Gothic", sans-serif;
@@ -457,6 +468,12 @@ html.high-contrast {
   /* P6 Batch 4b: 방향색 — 고대비 순검정(카드 위 최대 대비). */
   --color-relation-by: #000000;
   --color-relation-for: #000000;
+  /* P7 웨이브4: hover/disabled — 고대비(회색 표면=상태신호, 검정 글자 최대 대비). */
+  --color-hero-hover: hsl(0 0% 92%);
+  --color-muted-hover: hsl(220 20% 85%);
+  --color-danger-bg-hover: hsl(0 0% 92%);
+  --color-disabled-bg: hsl(0 0% 90%);
+  --color-disabled-fg: #000000;
 }
 
 /* 고대비: 카드/컨테이너 배경·테두리 강제 (버튼·링크·입력은 제외) */
@@ -565,6 +582,12 @@ html.dark-mode {
   /* P6 Batch 4b: 방향색 — 다크 명도 상향. */
   --color-relation-by: hsl(142 50% 62%);
   --color-relation-for: hsl(347 80% 72%);
+  /* P7 웨이브4: hover/disabled — 다크(어두운 표면은 밝혀서 대비 상승). */
+  --color-hero-hover: hsl(222 47% 22%);
+  --color-muted-hover: hsl(217 32% 22%);
+  --color-danger-bg-hover: hsl(0 40% 26%);
+  --color-disabled-bg: hsl(217 32% 22%);
+  --color-disabled-fg: hsl(215 15% 68%);
 }
 
 html.dark-mode body {
