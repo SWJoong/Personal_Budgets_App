@@ -67,8 +67,8 @@ export default function InvitationsClient({ invitations }: { invitations: Invita
   return (
     <div className="flex flex-col gap-6">
       {/* 발급 폼 */}
-      <form onSubmit={handleCreate} className="p-5 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-3">
-        <h2 className="text-sm font-bold text-zinc-700">새 초대 만들기</h2>
+      <form onSubmit={handleCreate} className="p-5 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-3">
+        <h2 className="text-sm font-bold text-muted-foreground">새 초대 만들기</h2>
 
         <FormField
           id="invite-email"
@@ -84,18 +84,18 @@ export default function InvitationsClient({ invitations }: { invitations: Invita
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@example.com"
-              className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none"
+              className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-foreground focus:outline-none"
             />
           )}
         </FormField>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="invite-role" className="text-sm font-bold text-zinc-700">역할</label>
+          <label htmlFor="invite-role" className="text-sm font-bold text-muted-foreground">역할</label>
           <select
             id="invite-role"
             value={role}
             onChange={(e) => setRole(e.target.value as InvitationRole)}
-            className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-sm focus:ring-zinc-400 focus:outline-none min-h-[44px]"
+            className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-foreground focus:outline-none min-h-[44px]"
           >
             {ROLE_OPTIONS.map((r) => (
               <option key={r} value={r}>{ROLE_LABEL[r]}</option>
@@ -106,7 +106,7 @@ export default function InvitationsClient({ invitations }: { invitations: Invita
         <button
           type="submit"
           disabled={pending}
-          className="p-3 rounded-xl bg-zinc-900 text-white font-bold text-sm disabled:opacity-50 min-h-[44px]"
+          className="p-3 rounded-xl bg-hero text-hero-foreground font-bold text-sm disabled:opacity-50 min-h-[44px]"
         >
           {pending ? '처리 중…' : '초대 만들기'}
         </button>
@@ -114,18 +114,18 @@ export default function InvitationsClient({ invitations }: { invitations: Invita
 
       {/* 목록 */}
       <section className="flex flex-col gap-2">
-        <h2 className="text-sm font-bold text-zinc-500">초대 목록 ({invitations.length})</h2>
+        <h2 className="text-sm font-bold text-muted-foreground">초대 목록 ({invitations.length})</h2>
         {invitations.length === 0 ? (
-          <p className="text-sm text-zinc-500 leading-relaxed py-6 text-center">아직 초대가 없어요.</p>
+          <p className="text-sm text-muted-foreground leading-relaxed py-6 text-center">아직 초대가 없어요.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {invitations.map((inv) => {
               const used = inv.used_at != null
               return (
-                <li key={inv.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center justify-between gap-3">
+                <li key={inv.id} className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center justify-between gap-3">
                   <div className="flex flex-col min-w-0 gap-0.5">
-                    <span className="font-bold text-zinc-800 truncate">{inv.email}</span>
-                    <span className="text-xs text-zinc-500">
+                    <span className="font-bold text-foreground truncate">{inv.email}</span>
+                    <span className="text-xs text-muted-foreground">
                       {ROLE_LABEL[inv.role]} · {used ? '가입 완료' : '대기 중'} · {inv.created_at.slice(0, 10)}
                     </span>
                   </div>
@@ -133,7 +133,7 @@ export default function InvitationsClient({ invitations }: { invitations: Invita
                     <button
                       onClick={() => setToDelete(inv)}
                       disabled={pending}
-                      className="shrink-0 px-3 min-h-[44px] rounded-xl bg-zinc-100 text-zinc-700 text-sm font-bold hover:bg-zinc-200 disabled:opacity-50"
+                      className="shrink-0 px-3 min-h-[44px] rounded-xl bg-muted text-muted-foreground text-sm font-bold hover:opacity-90 disabled:opacity-50"
                     >
                       취소
                     </button>
@@ -149,20 +149,20 @@ export default function InvitationsClient({ invitations }: { invitations: Invita
       <Modal open={toDelete != null} onClose={() => setToDelete(null)} label="초대 취소 확인">
         <div className="flex flex-col gap-4">
           <h2 className="text-lg font-bold">초대를 취소할까요?</h2>
-          <p className="text-sm text-zinc-600 leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             {toDelete?.email} 님의 초대를 취소해요. 되돌릴 수 없어요.
           </p>
           <div className="flex gap-2">
             <button
               onClick={() => setToDelete(null)}
-              className="flex-1 p-3 rounded-xl bg-white ring-1 ring-zinc-300 text-zinc-700 font-bold text-sm min-h-[44px]"
+              className="flex-1 p-3 rounded-xl bg-card ring-1 ring-border text-muted-foreground font-bold text-sm min-h-[44px]"
             >
               그대로 두기
             </button>
             <button
               onClick={handleDelete}
               disabled={pending}
-              className="flex-1 p-3 rounded-xl bg-red-600 text-white font-bold text-sm disabled:opacity-50 min-h-[44px]"
+              className="flex-1 p-3 rounded-xl bg-danger text-danger-foreground font-bold text-sm disabled:opacity-50 min-h-[44px]"
             >
               초대 취소
             </button>

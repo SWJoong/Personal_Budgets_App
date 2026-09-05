@@ -36,7 +36,7 @@ interface Assessment {
 const PROGRAM_LABEL: Record<Program, string> = { seoul: '서울형', mohw: '보건복지부' }
 
 const inputClass =
-  'p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 leading-relaxed focus:ring-zinc-400 focus:outline-none'
+  'p-3 rounded-xl bg-muted ring-1 ring-border text-foreground leading-relaxed focus:ring-foreground focus:outline-none'
 
 export default function AssessmentClient({
   participantId,
@@ -121,27 +121,27 @@ export default function AssessmentClient({
   return (
     <div className="flex flex-col gap-6">
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">{error}</div>
+        <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium">{error}</div>
       )}
 
       {/* 지금까지 적은 욕구 */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-bold text-zinc-500">지금까지 적은 욕구</h2>
+        <h2 className="text-sm font-bold text-muted-foreground">지금까지 적은 욕구</h2>
         {assessments.length === 0 ? (
-          <p className="text-zinc-600 text-sm py-6 text-center leading-relaxed">
+          <p className="text-muted-foreground text-sm py-6 text-center leading-relaxed">
             아직 적은 욕구가 없어요.
             <br />
             아래에서 도움이 필요한 영역을 골라 적어 주세요.
           </p>
         ) : (
           assessments.map((a) => (
-            <div key={a.id} className="p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 flex flex-col gap-1.5">
+            <div key={a.id} className="p-4 rounded-2xl bg-muted ring-1 ring-border flex flex-col gap-1.5">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-600 shrink-0">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-border text-muted-foreground shrink-0">
                     {PROGRAM_LABEL[a.program as Program] ?? a.program}
                   </span>
-                  <span className="text-sm font-bold text-zinc-800 truncate">
+                  <span className="text-sm font-bold text-foreground truncate">
                     {domainLabelById.get(a.domain_id) ?? '지원 영역'}
                     {a.subdomain_id && subdomainLabelById.get(a.subdomain_id)
                       ? ` · ${subdomainLabelById.get(a.subdomain_id)}`
@@ -152,26 +152,26 @@ export default function AssessmentClient({
                   onClick={() => handleDelete(a.id)}
                   disabled={pending}
                   aria-label={`${domainLabelById.get(a.domain_id) ?? '이 항목'} 욕구 지우기`}
-                  className="text-zinc-400 hover:text-red-500 transition-colors text-sm font-medium min-w-[44px] min-h-[44px] flex items-center justify-end disabled:opacity-50"
+                  className="text-muted-foreground hover:text-danger-fg transition-colors text-sm font-medium min-w-[44px] min-h-[44px] flex items-center justify-end disabled:opacity-50"
                 >
                   지우기
                 </button>
               </div>
               {a.limitation && (
-                <p className="text-sm text-zinc-600 leading-relaxed">
-                  <span className="text-zinc-400">어려운 점: </span>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  <span className="text-muted-foreground">어려운 점: </span>
                   {a.limitation}
                 </p>
               )}
               {a.need_hope && (
-                <p className="text-sm text-zinc-600 leading-relaxed">
-                  <span className="text-zinc-400">바라는 것: </span>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  <span className="text-muted-foreground">바라는 것: </span>
                   {a.need_hope}
                 </p>
               )}
               {a.support_example && (
-                <p className="text-sm text-zinc-600 leading-relaxed">
-                  <span className="text-zinc-400">도움이 될 것: </span>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  <span className="text-muted-foreground">도움이 될 것: </span>
                   {a.support_example}
                 </p>
               )}
@@ -181,12 +181,12 @@ export default function AssessmentClient({
       </section>
 
       {/* 새 욕구 적기 */}
-      <section className="flex flex-col gap-4 border-t border-zinc-200 pt-6">
-        <h2 className="text-sm font-bold text-zinc-500">새 욕구 적기</h2>
+      <section className="flex flex-col gap-4 border-t border-border pt-6">
+        <h2 className="text-sm font-bold text-muted-foreground">새 욕구 적기</h2>
 
         {/* 제도 토글 */}
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-zinc-500 font-medium">제도</span>
+          <span className="text-xs text-muted-foreground font-medium">제도</span>
           <div className="flex gap-2" role="group" aria-label="제도 선택">
             {(['seoul', 'mohw'] as Program[]).map((p) => (
               <button
@@ -196,8 +196,8 @@ export default function AssessmentClient({
                 aria-pressed={program === p}
                 className={`flex-1 p-3 rounded-xl font-bold text-sm transition-colors min-h-[44px] ${
                   program === p
-                    ? 'bg-zinc-900 text-white'
-                    : 'bg-zinc-50 ring-1 ring-zinc-200 text-zinc-600 hover:ring-zinc-400'
+                    ? 'bg-hero text-hero-foreground'
+                    : 'bg-muted ring-1 ring-border text-muted-foreground hover:ring-foreground'
                 }`}
               >
                 {PROGRAM_LABEL[p]}
@@ -208,14 +208,14 @@ export default function AssessmentClient({
 
         {/* 대분류 */}
         <div className="flex flex-col gap-1">
-          <label htmlFor="assessment-domain" className="text-xs text-zinc-500 font-medium">
+          <label htmlFor="assessment-domain" className="text-xs text-muted-foreground font-medium">
             도움이 필요한 영역 *
           </label>
           <select
             id="assessment-domain"
             value={domainId}
             onChange={(e) => selectDomain(e.target.value)}
-            className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+            className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
           >
             <option value="">골라 주세요</option>
             {domainsForProgram.map((d) => (
@@ -229,14 +229,14 @@ export default function AssessmentClient({
         {/* 중분류 — 복지부 + 해당 대분류에 중분류가 있을 때만 */}
         {hasSubdomains && (
           <div className="flex flex-col gap-1">
-            <label htmlFor="assessment-subdomain" className="text-xs text-zinc-500 font-medium">
+            <label htmlFor="assessment-subdomain" className="text-xs text-muted-foreground font-medium">
               세부 영역 (중분류)
             </label>
             <select
               id="assessment-subdomain"
               value={subdomainId}
               onChange={(e) => setSubdomainId(e.target.value)}
-              className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+              className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
             >
               <option value="">세부 영역 안 고름</option>
               {subdomainsForDomain.map((s) => (
@@ -249,7 +249,7 @@ export default function AssessmentClient({
         )}
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="assessment-limitation" className="text-xs text-zinc-500 font-medium">
+          <label htmlFor="assessment-limitation" className="text-xs text-muted-foreground font-medium">
             어떤 점이 어려운가요?
           </label>
           <textarea
@@ -263,7 +263,7 @@ export default function AssessmentClient({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="assessment-need" className="text-xs text-zinc-500 font-medium">
+          <label htmlFor="assessment-need" className="text-xs text-muted-foreground font-medium">
             무엇을 바라나요?
           </label>
           <textarea
@@ -277,7 +277,7 @@ export default function AssessmentClient({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="assessment-example" className="text-xs text-zinc-500 font-medium">
+          <label htmlFor="assessment-example" className="text-xs text-muted-foreground font-medium">
             도움이 될 만한 것 (안 적어도 돼요)
           </label>
           <input
@@ -292,7 +292,7 @@ export default function AssessmentClient({
         <button
           onClick={handleCreate}
           disabled={pending || !domainId}
-          className="p-4 rounded-2xl bg-zinc-900 text-white font-bold text-base hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
+          className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:opacity-90 transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
         >
           {pending ? '저장하고 있어요...' : '욕구 추가하기'}
         </button>

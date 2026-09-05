@@ -17,29 +17,29 @@ export default async function EvaluationsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <h1 className="text-xl font-bold tracking-tight">정산·평가</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6 flex flex-col gap-3">
         {error && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
+          <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm">
             목록을 불러오지 못했어요: {error.message}
           </div>
         )}
 
         {(participants ?? []).length === 0 ? (
-          <p className="text-zinc-400 text-sm py-8 text-center">아직 등록된 당사자가 없어요.</p>
+          <p className="text-muted-foreground text-sm py-8 text-center">아직 등록된 당사자가 없어요.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {(participants ?? []).map((p) => (
               <li key={p.id}>
                 <Link
                   href={`/supporter/evaluations/${p.id}`}
-                  className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-400 transition-all"
+                  className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-card ring-1 ring-border hover:ring-foreground transition-all"
                 >
                   <span className="font-bold truncate">{p.name ?? '이름 없음'}</span>
-                  <span className="text-xs font-bold text-zinc-400 shrink-0">정산·평가 보기 →</span>
+                  <span className="text-xs font-bold text-muted-foreground shrink-0">정산·평가 보기 →</span>
                 </Link>
               </li>
             ))}

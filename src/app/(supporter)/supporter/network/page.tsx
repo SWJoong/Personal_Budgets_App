@@ -28,11 +28,11 @@ export default async function NetworkPage({
     .order('name', { ascending: true })
 
   const backHeader = (title: string, backHref: string, backLabel: string) => (
-    <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+    <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
       <Link
         href={backHref}
         aria-label={backLabel}
-        className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
+        className="text-muted-foreground hover:text-foreground transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
       >
         ←
       </Link>
@@ -46,21 +46,21 @@ export default async function NetworkPage({
       <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
         {backHeader('관계망 · 당사자 선택', '/supporter', '대시보드로 가기')}
         <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6 flex flex-col gap-3">
-          <p className="text-sm text-zinc-500 leading-relaxed px-1">
+          <p className="text-sm text-muted-foreground leading-relaxed px-1">
             관계망을 볼 당사자를 골라 주세요. 한 사람의 신청·계획·예산·지출·평가가 어떻게 이어지는지 그림으로 보여줘요.
           </p>
           {(participants ?? []).length === 0 ? (
-            <p className="text-zinc-400 text-sm py-8 text-center">아직 등록된 당사자가 없어요.</p>
+            <p className="text-muted-foreground text-sm py-8 text-center">아직 등록된 당사자가 없어요.</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {(participants ?? []).map((p) => (
                 <li key={p.id}>
                   <Link
                     href={`/supporter/network?participant=${p.id}`}
-                    className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white ring-1 ring-zinc-200 hover:bg-zinc-50 transition-colors min-h-[56px]"
+                    className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-card ring-1 ring-border hover:bg-muted transition-colors min-h-[56px]"
                   >
                     <span className="font-bold truncate">{p.name ?? '이름 없음'}</span>
-                    <span className="text-xs font-bold text-zinc-400 shrink-0">관계망 보기 →</span>
+                    <span className="text-xs font-bold text-muted-foreground shrink-0">관계망 보기 →</span>
                   </Link>
                 </li>
               ))}
@@ -101,11 +101,11 @@ export default async function NetworkPage({
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center gap-3 px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+      <header className="flex h-16 items-center gap-3 px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <Link
           href="/supporter/network"
           aria-label="다른 당사자 고르기"
-          className="text-zinc-400 hover:text-zinc-600 transition-colors min-w-[44px] min-h-[44px] flex items-center"
+          className="text-muted-foreground hover:text-foreground transition-colors min-w-[44px] min-h-[44px] flex items-center"
         >
           ←
         </Link>
@@ -116,9 +116,9 @@ export default async function NetworkPage({
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6">
         {graph.nodes.length === 0 ? (
-          <div className="p-6 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 text-center flex flex-col items-center gap-3">
+          <div className="p-6 rounded-2xl bg-muted ring-1 ring-border text-center flex flex-col items-center gap-3">
             <span className="text-4xl">🕸️</span>
-            <p className="text-zinc-500 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               아직 그릴 관계가 없어요.<br />신청·계획·지출이 쌓이면 여기에 이어져요.
             </p>
           </div>

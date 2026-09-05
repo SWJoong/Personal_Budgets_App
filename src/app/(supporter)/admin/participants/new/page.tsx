@@ -91,12 +91,12 @@ export default function NewParticipantPage() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-        <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-          <Link href="/admin/participants" className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3">←</Link>
+        <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
+          <Link href="/admin/participants" className="text-muted-foreground hover:text-foreground transition-colors mr-3">←</Link>
           <h1 className="text-xl font-bold tracking-tight">새 당사자 등록</h1>
         </header>
         <main id="main-content" tabIndex={-1} className="flex-1 flex items-center justify-center">
-          <p className="text-zinc-400 font-medium">불러오는 중...</p>
+          <p className="text-muted-foreground font-medium">불러오는 중...</p>
         </main>
       </div>
     )
@@ -104,21 +104,21 @@ export default function NewParticipantPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/admin/participants" className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3">←</Link>
+      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
+        <Link href="/admin/participants" className="text-muted-foreground hover:text-foreground transition-colors mr-3">←</Link>
         <h1 className="text-xl font-bold tracking-tight">새 당사자 등록</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           {error && (
-            <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">
+            <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium">
               {error}
             </div>
           )}
 
-          <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200">
-            <legend className="text-xs font-black text-zinc-400 uppercase tracking-widest px-1">당사자 정보</legend>
+          <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-card ring-1 ring-border">
+            <legend className="text-xs font-black text-muted-foreground uppercase tracking-widest px-1">당사자 정보</legend>
 
             <FormField id="new-participant-name" label="이름" required error={nameError || undefined}>
               {(field) => (
@@ -128,7 +128,7 @@ export default function NewParticipantPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="당사자 이름"
-                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
                   required
                 />
               )}
@@ -142,7 +142,7 @@ export default function NewParticipantPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="participant@example.com"
-                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
                   required
                 />
               )}
@@ -155,7 +155,7 @@ export default function NewParticipantPage() {
                 {...field}
                 value={supporterId}
                 onChange={(e) => setSupporterId(e.target.value)}
-                className="p-4 rounded-xl bg-white ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                className="p-4 rounded-xl bg-card ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
               >
                 <option value="">미지정</option>
                 {supporters.map(s => (
@@ -168,7 +168,7 @@ export default function NewParticipantPage() {
           <button
             type="submit"
             disabled={saving || !name.trim() || !email.trim()}
-            className="p-4 rounded-2xl bg-zinc-900 text-white font-bold text-base hover:bg-zinc-800 transition-colors active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-lg"
+            className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:opacity-90 transition-colors active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-lg"
           >
             {saving ? '저장하고 있습니다...' : '당사자 등록하기'}
           </button>
