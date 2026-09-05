@@ -198,7 +198,7 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
 
   const toggleBtn = (active: boolean) =>
     `min-h-[44px] px-4 rounded-xl text-sm font-bold transition-colors ring-1 ${
-      active ? 'bg-zinc-900 text-white ring-zinc-900' : 'bg-white text-zinc-600 ring-zinc-200 hover:bg-zinc-50'
+      active ? 'bg-hero text-hero-foreground ring-hero' : 'bg-card text-muted-foreground ring-border hover:bg-muted'
     }`
 
   return (
@@ -214,7 +214,7 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
         <button
           type="button"
           onClick={() => cyRef.current?.fit(undefined, 30)}
-          className="min-h-[44px] px-4 rounded-xl text-sm font-bold bg-white text-zinc-600 ring-1 ring-zinc-200 hover:bg-zinc-50 transition-colors ml-auto"
+          className="min-h-[44px] px-4 rounded-xl text-sm font-bold bg-card text-muted-foreground ring-1 ring-border hover:bg-muted transition-colors ml-auto"
         >
           가운데 맞추기
         </button>
@@ -225,12 +225,12 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
         ref={containerRef}
         role="img"
         aria-label={`${participantName}의 관계망 그림. 노드 ${graph.nodes.length}개, 관계 ${graph.edges.length}개.`}
-        className="w-full rounded-2xl ring-1 ring-zinc-200 bg-white"
+        className="w-full rounded-2xl ring-1 ring-border bg-card"
         style={{ height: '60dvh', minHeight: 380 }}
       />
 
       {/* 범례 */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-zinc-600 px-1">
+      <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground px-1">
         {(Object.keys(GROUP_LABEL) as NodeGroup[]).map((g) => (
           <span key={g} className="inline-flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full" style={{ backgroundColor: GROUP_COLOR[g] }} />
@@ -251,23 +251,23 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
 
       {/* 선택 노드 정보 */}
       {selected && (
-        <div className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-2">
+        <div className="p-4 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: GROUP_COLOR[selected.group] }} />
-            <span className="font-bold text-zinc-800">{selected.label}</span>
-            <span className="text-xs text-zinc-400 ml-auto">{GROUP_LABEL[selected.group]}</span>
+            <span className="font-bold text-foreground">{selected.label}</span>
+            <span className="text-xs text-muted-foreground ml-auto">{GROUP_LABEL[selected.group]}</span>
           </div>
           {selectedRelations.length > 0 && (
-            <ul className="flex flex-col gap-1 text-sm text-zinc-600">
+            <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
               {selectedRelations.map((r) => (
                 <li key={r.key} className="leading-relaxed">
-                  <span className="text-zinc-400">{r.from}</span>
+                  <span className="text-muted-foreground">{r.from}</span>
                   {' — '}
-                  <span className={r.direction === 'for' ? 'text-rose-600 font-medium' : r.direction === 'by' ? 'text-green-700 font-medium' : 'text-zinc-700'}>
+                  <span className={r.direction === 'for' ? 'text-relation-for font-medium' : r.direction === 'by' ? 'text-relation-by font-medium' : 'text-foreground'}>
                     {r.label}
                   </span>
                   {' → '}
-                  <span className="text-zinc-400">{r.to}</span>
+                  <span className="text-muted-foreground">{r.to}</span>
                 </li>
               ))}
             </ul>
@@ -276,18 +276,18 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
       )}
 
       {/* 관계 목록(텍스트 대안 — 그림을 읽기 어려울 때) */}
-      <details className="rounded-2xl bg-zinc-50 ring-1 ring-zinc-200">
-        <summary className="p-4 font-bold text-sm text-zinc-700 cursor-pointer select-none min-h-[44px] flex items-center">
+      <details className="rounded-2xl bg-muted ring-1 ring-border">
+        <summary className="p-4 font-bold text-sm text-muted-foreground cursor-pointer select-none min-h-[44px] flex items-center">
           관계 목록 보기 ({graph.edges.length})
         </summary>
-        <ul className="flex flex-col gap-1 text-sm text-zinc-600 px-4 pb-4">
+        <ul className="flex flex-col gap-1 text-sm text-muted-foreground px-4 pb-4">
           {graph.edges.map((e) => (
             <li key={`${e.from_id}>${e.to_id}:${e.edge_type}`} className="leading-relaxed">
-              <span className="text-zinc-400">{nodeLabelById[e.from_id] ?? e.from_id}</span>
+              <span className="text-muted-foreground">{nodeLabelById[e.from_id] ?? e.from_id}</span>
               {' — '}
-              <span className="text-zinc-700">{e.edge_label}</span>
+              <span className="text-muted-foreground">{e.edge_label}</span>
               {' → '}
-              <span className="text-zinc-400">{nodeLabelById[e.to_id] ?? e.to_id}</span>
+              <span className="text-muted-foreground">{nodeLabelById[e.to_id] ?? e.to_id}</span>
             </li>
           ))}
         </ul>

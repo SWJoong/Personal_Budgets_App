@@ -17,11 +17,11 @@ export default async function FeedbackPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <Link
           href="/admin"
           aria-label="대시보드로 가기"
-          className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
+          className="text-muted-foreground hover:text-foreground transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center"
         >
           ←
         </Link>
@@ -30,24 +30,24 @@ export default async function FeedbackPage() {
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
         {error ? (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm leading-relaxed">
+          <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm leading-relaxed">
             {error}
           </div>
         ) : feedback.length === 0 ? (
-          <p className="text-sm text-zinc-500 leading-relaxed py-12 text-center">아직 받은 피드백이 없어요.</p>
+          <p className="text-sm text-muted-foreground leading-relaxed py-12 text-center">아직 받은 피드백이 없어요.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {feedback.map((f) => (
-              <li key={f.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-start justify-between gap-3">
+              <li key={f.id} className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-start justify-between gap-3">
                 <div className="flex flex-col min-w-0 gap-0.5">
-                  <span className="font-bold text-zinc-800 truncate">{f.participantName}</span>
-                  {f.context && <span className="text-sm text-zinc-600 leading-relaxed">{f.context}</span>}
-                  <span className="text-xs text-zinc-400">{f.created_at?.slice(0, 10)}</span>
+                  <span className="font-bold text-foreground truncate">{f.participantName}</span>
+                  {f.context && <span className="text-sm text-muted-foreground leading-relaxed">{f.context}</span>}
+                  <span className="text-xs text-muted-foreground">{f.created_at?.slice(0, 10)}</span>
                 </div>
                 {f.response && (
                   <span className="shrink-0 flex flex-col items-center gap-0.5">
                     <span className="text-2xl" aria-hidden="true">{f.response}</span>
-                    <span className="text-[11px] text-zinc-500">{RESPONSE_LABEL[f.response] ?? ''}</span>
+                    <span className="text-[11px] text-muted-foreground">{RESPONSE_LABEL[f.response] ?? ''}</span>
                   </span>
                 )}
               </li>

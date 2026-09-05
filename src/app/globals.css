@@ -73,6 +73,13 @@
   --color-asset-foreground: hsl(0 0% 100%);
   --color-positive-foreground: hsl(0 0% 100%);
 
+  /* P6 sweep Batch 4b: NetworkGraph 방향(by/for) 관계색 + 솔리드 danger 버튼 foreground(W 설계·독립 AA검증).
+     relation-* 은 카드 위 텍스트라 hue 고정·명도만 모드적응(HC #000·dark 상향, 노랑=@theme 상속).
+     danger-foreground 는 흰 상수(danger hsl0 72%50% 위 4.89:1 AA — danger 자체는 조정 불요). */
+  --color-relation-by: hsl(142 72% 27%);
+  --color-relation-for: hsl(347 77% 40%);
+  --color-danger-foreground: hsl(0 0% 100%);
+
   /* Fonts — §4 가이드라인: 세리프 없는 서체, Gulim/Dotum/맑은고딕 포함 */
   --font-sans: var(--font-pretendard), "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", "Dotum", "돋움", "Gulim", "굴림", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Nunito", "Noto Sans KR", "Malgun Gothic", sans-serif;
@@ -440,6 +447,9 @@ html.high-contrast {
   /* P6 Batch 3: asset — 고대비 순흑백. */
   --color-asset-bg: #ffffff;
   --color-asset-fg: #000000;
+  /* P6 Batch 4b: 방향색 — 고대비 순검정(카드 위 최대 대비). */
+  --color-relation-by: #000000;
+  --color-relation-for: #000000;
 }
 
 /* 고대비: 카드/컨테이너 배경·테두리 강제 (버튼·링크·입력은 제외) */
@@ -545,6 +555,9 @@ html.dark-mode {
   /* P6 Batch 3: asset — 다크 청록. */
   --color-asset-bg: hsl(174 40% 18%);
   --color-asset-fg: hsl(174 55% 72%);
+  /* P6 Batch 4b: 방향색 — 다크 명도 상향. */
+  --color-relation-by: hsl(142 50% 62%);
+  --color-relation-for: hsl(347 80% 72%);
 }
 
 html.dark-mode body {

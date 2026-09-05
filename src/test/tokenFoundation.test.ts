@@ -149,6 +149,29 @@ const TOKENIZED_FILES = [
   'src/app/(supporter)/supporter/participants/page.tsx',
   'src/app/(supporter)/supporter/map/MapClient.tsx',
   'src/app/(supporter)/supporter/map/page.tsx',
+
+  // ── P6 대비 완성 sweep · Batch 4b: 관리자·평가·사정·네트워크·리포트·대시보드·layout 18 (sweep 마지막) ──
+  //   색만 토큰화(매핑=goala_p6_sweep_W.md). 상태 테두리=중립·accent/asset/positive 재사용.
+  //   ★차트/도메인색(NetworkGraph 노드·report·GOAL 도메인)은 신규 accent 필요시 W 설계.
+  //   이 배치 후 앱 전역 raw-0 = P6 대비 완성.
+  'src/app/(supporter)/supporter/evaluations/[participantId]/EvaluationClient.tsx',
+  'src/app/(supporter)/supporter/evaluations/[participantId]/page.tsx',
+  'src/app/(supporter)/supporter/evaluations/page.tsx',
+  'src/app/(supporter)/supporter/[participantId]/assessment/AssessmentClient.tsx',
+  'src/app/(supporter)/supporter/[participantId]/assessment/page.tsx',
+  'src/app/(supporter)/supporter/[participantId]/report/page.tsx',
+  'src/app/(supporter)/supporter/network/NetworkGraphClient.tsx',
+  'src/app/(supporter)/supporter/network/page.tsx',
+  'src/app/(supporter)/supporter/page.tsx',
+  'src/app/(supporter)/admin/page.tsx',
+  'src/app/(supporter)/admin/participants/new/page.tsx',
+  'src/app/(supporter)/admin/participants/[id]/page.tsx',
+  'src/app/(supporter)/admin/invitations/InvitationsClient.tsx',
+  'src/app/(supporter)/admin/invitations/page.tsx',
+  'src/app/(supporter)/admin/feedback/page.tsx',
+  'src/app/(supporter)/error.tsx',
+  'src/app/layout.tsx',
+  'src/app/(auth)/layout.tsx',
 ]
 
 // Tailwind 임의 팔레트(시맨틱 토큰으로 대체돼야 함).
