@@ -104,6 +104,28 @@ const TOKENIZED_FILES = [
   'src/components/ui/ImageLightbox.tsx',
   'src/components/ui/Modal.tsx',
   'src/components/ui/SelfCheckFeedback.tsx',
+
+  // ── P6 대비 완성 sweep · Batch 3: 당사자 화면 17 (easy-read 우선) ──
+  //   색만 토큰화(매핑=goala_p6_sweep_W.md). 상태 테두리=중립 border-border 통일.
+  //   일부(evaluations/page·my-plan/MyPlanClient·gallery/page=Phase C list · ProfileEditClient=Phase B)는
+  //   구조/ARIA 이미 완료 → 색만 추가.
+  'src/app/(participant)/my-plan/MyPlanClient.tsx',
+  'src/app/(participant)/my-plan/ActivitySuggestions.tsx',
+  'src/app/(participant)/my-plan/page.tsx',
+  'src/app/(participant)/map/MapTabsClient.tsx',
+  'src/app/(participant)/map/page.tsx',
+  'src/app/(participant)/settings/profile/ProfileEditClient.tsx',
+  'src/app/(participant)/settings/profile/page.tsx',
+  'src/app/(participant)/settings/display/DisplaySettingsClient.tsx',
+  'src/app/(participant)/settings/display/page.tsx',
+  'src/app/(participant)/evaluations/page.tsx',
+  'src/app/(participant)/calendar/CalendarClient.tsx',
+  'src/app/(participant)/calendar/page.tsx',
+  'src/app/(participant)/guide/page.tsx',
+  'src/app/(participant)/plan/page.tsx',
+  'src/app/(participant)/gallery/page.tsx',
+  'src/app/(participant)/receipt/page.tsx',
+  'src/app/(participant)/layout.tsx',
 ]
 
 // Tailwind 임의 팔레트(시맨틱 토큰으로 대체돼야 함).
