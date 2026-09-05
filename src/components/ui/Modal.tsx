@@ -46,7 +46,21 @@ export function Modal({
     const dialog = dialogRef.current
     const first = dialog?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
     ;(first ?? dialog)?.focus()
+
+    // D11: 배경(포털 루트 밖 body 형제)을 inert 처리 — SR/키보드가 배경에 도달하지 못하게 한다.
+    // 포털 루트는 data-modal-portal 로 자기제외(스택 모달 오검 방지). Element 형제만, 이미 inert 인 건 그대로 둔다.
+    const hidden: Element[] = []
+    for (const el of Array.from(document.body.children)) {
+      if (el.hasAttribute('data-modal-portal')) continue
+      if (!el.hasAttribute('inert')) {
+        el.setAttribute('inert', '')
+        hidden.push(el)
+      }
+    }
+
     return () => {
+      // ★정리 순서: inert 해제를 트리거 재포커스보다 먼저(트리거가 inert 안이면 재포커스 불가).
+      for (const el of hidden) el.removeAttribute('inert')
       restoreRef.current?.focus?.()
     }
   }, [open, mounted])
@@ -99,7 +113,7 @@ export function Modal({
   if (!mounted || !open) return null
 
   return createPortal(
-    <div className={`fixed inset-0 z-[99999] ${containerClassName}`}>
+    <div data-modal-portal className={`fixed inset-0 z-[99999] ${containerClassName}`}>
       <div className={`absolute inset-0 ${overlayClassName}`} onClick={onClose} aria-hidden="true" />
       <div
         ref={dialogRef}

@@ -75,7 +75,7 @@ export default function ProfileEditClient({ profile, userEmail, isAdminEmail }: 
             name="name"
             type="text"
             defaultValue={profile.name || ''}
-            className="w-full p-4 rounded-2xl bg-card ring-1 ring-border focus:ring-2 focus:ring-primary outline-none text-lg font-bold transition-all"
+            className="w-full p-4 rounded-2xl bg-card ring-1 ring-border focus-visible:ring-2 focus-visible:ring-primary outline-none text-lg font-bold transition-all"
             required
           />
         )}
@@ -121,7 +121,7 @@ export default function ProfileEditClient({ profile, userEmail, isAdminEmail }: 
             type="text"
             defaultValue={profile.bio || ''}
             placeholder="예: 여행을 좋아해요!"
-            className="w-full p-4 rounded-2xl bg-card ring-1 ring-border focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all"
+            className="w-full p-4 rounded-2xl bg-card ring-1 ring-border focus-visible:ring-2 focus-visible:ring-primary outline-none text-base font-medium transition-all"
           />
         )}
       </FormField>

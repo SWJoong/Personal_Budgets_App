@@ -84,7 +84,7 @@ export default function ReviewQueueClient({ items }: { items: ReviewItem[] }) {
             value={notes[item.id] ?? ''}
             onChange={(e) => setNotes((prev) => ({ ...prev, [item.id]: e.target.value }))}
             placeholder="확인 메모 (선택)"
-            className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm focus:ring-foreground focus:outline-none"
+            className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm"
           />
           <div className="flex gap-2">
             <button

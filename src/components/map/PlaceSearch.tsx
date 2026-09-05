@@ -85,7 +85,7 @@ export default function PlaceSearch({
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="장소명 검색 (예: 교보문고 광화문점)"
-          className="flex-1 p-3 rounded-xl bg-muted ring-1 ring-border text-foreground text-sm focus:ring-foreground focus:outline-none"
+          className="flex-1 p-3 rounded-xl bg-muted ring-1 ring-border text-foreground text-sm"
         />
         <button
           type="button"

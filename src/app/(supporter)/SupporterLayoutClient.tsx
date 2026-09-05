@@ -85,7 +85,7 @@ export function SupporterLayoutClient({
             data-print-hide
           />
           <div
-            className="md:hidden fixed left-0 top-0 bottom-0 w-72 z-[70] animate-in slide-in-from-left duration-200 print:hidden"
+            className="md:hidden fixed left-0 top-0 bottom-0 w-72 z-[70] animate-slide-in-left print:hidden"
             data-print-hide
           >
             <div className="absolute top-3 right-3 z-10">

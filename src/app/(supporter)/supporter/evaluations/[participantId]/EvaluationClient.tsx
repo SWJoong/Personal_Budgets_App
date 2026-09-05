@@ -115,7 +115,7 @@ export default function EvaluationClient({
               onChange={(e) => setObservedChange(e.target.value)}
               placeholder="예: 표정이 밝아지고 먼저 인사를 건넸다"
               rows={3}
-              className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-foreground focus:outline-none resize-y"
+              className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm resize-y"
             />
           )}
         </FormField>
@@ -128,7 +128,7 @@ export default function EvaluationClient({
               onChange={(e) => setParticipantVoice(e.target.value)}
               placeholder="당사자가 한 말을 그대로 적어요"
               rows={3}
-              className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-foreground focus:outline-none resize-y"
+              className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm resize-y"
             />
           )}
         </FormField>

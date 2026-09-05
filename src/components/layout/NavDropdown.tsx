@@ -73,7 +73,7 @@ export default function NavDropdown() {
         label="페이지 이동 메뉴"
         containerClassName="flex justify-end"
         overlayClassName="bg-black/40"
-        panelClassName="h-full w-64 bg-card shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+        panelClassName="h-full w-64 bg-card shadow-2xl flex flex-col animate-slide-in-right"
       >
         {/* 드로어 헤더 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">

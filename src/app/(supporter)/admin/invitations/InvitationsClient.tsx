@@ -84,7 +84,7 @@ export default function InvitationsClient({ invitations }: { invitations: Invita
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@example.com"
-              className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-foreground focus:outline-none"
+              className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm"
             />
           )}
         </FormField>
@@ -95,7 +95,7 @@ export default function InvitationsClient({ invitations }: { invitations: Invita
             id="invite-role"
             value={role}
             onChange={(e) => setRole(e.target.value as InvitationRole)}
-            className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-foreground focus:outline-none min-h-[44px]"
+            className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm min-h-[44px]"
           >
             {ROLE_OPTIONS.map((r) => (
               <option key={r} value={r}>{ROLE_LABEL[r]}</option>

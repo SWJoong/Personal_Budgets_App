@@ -33,7 +33,7 @@ interface Subdomain {
 const PROGRAM_LABEL: Record<Program, string> = { seoul: '서울형', mohw: '보건복지부' }
 
 const inputClass =
-  'p-3 rounded-xl bg-muted ring-1 ring-border text-foreground leading-relaxed focus:ring-foreground focus:outline-none'
+  'p-3 rounded-xl bg-muted ring-1 ring-border text-foreground leading-relaxed'
 
 function won(n: number): string {
   return Number(n).toLocaleString('ko-KR') + '원'
@@ -161,7 +161,7 @@ export default function NewTransactionClient({
             id="tx-allocation"
             value={allocationId}
             onChange={(e) => setAllocationId(e.target.value)}
-            className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+            className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium"
           >
             <option value="">골라 주세요</option>
             {allocations.map((a) => (
@@ -243,7 +243,7 @@ export default function NewTransactionClient({
           aria-label="지원 영역"
           value={domainId}
           onChange={(e) => selectDomain(e.target.value)}
-          className="p-3 rounded-xl bg-card ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+          className="p-3 rounded-xl bg-card ring-1 ring-border text-foreground font-medium"
         >
           <option value="">영역 안 고름</option>
           {domainsForProgram.map((d) => (
@@ -259,7 +259,7 @@ export default function NewTransactionClient({
             aria-label="세부 영역(중분류)"
             value={subdomainId}
             onChange={(e) => setSubdomainId(e.target.value)}
-            className="p-3 rounded-xl bg-card ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+            className="p-3 rounded-xl bg-card ring-1 ring-border text-foreground font-medium"
           >
             <option value="">세부 영역 안 고름</option>
             {subdomainsForDomain.map((s) => (

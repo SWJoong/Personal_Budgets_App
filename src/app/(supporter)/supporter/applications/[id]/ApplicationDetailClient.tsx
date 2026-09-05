@@ -240,7 +240,7 @@ export default function ApplicationDetailClient({
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="사유 (선정하지 않을 때는 필수예요)"
                 rows={3}
-                className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm focus:ring-foreground focus:outline-none resize-none"
+                className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm resize-none"
               />
               <div className="flex gap-2">
                 <button
@@ -296,7 +296,7 @@ export default function ApplicationDetailClient({
           <select
             value={docType}
             onChange={(e) => setDocType(e.target.value as ApplicationDocType)}
-            className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm focus:ring-foreground focus:outline-none"
+            className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm"
           >
             <option value="application_form">신청서 원본</option>
             <option value="consent_form">동의서 원본</option>

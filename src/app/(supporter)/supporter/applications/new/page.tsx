@@ -164,7 +164,7 @@ export default function NewApplicationPage() {
                   {...field}
                   value={participantId}
                   onChange={(e) => setParticipantId(e.target.value)}
-                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium"
                   required
                 >
                   <option value="">선택해주세요</option>
@@ -181,7 +181,7 @@ export default function NewApplicationPage() {
                   {...field}
                   value={cohortId}
                   onChange={(e) => setCohortId(e.target.value)}
-                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium"
                   required
                 >
                   <option value="">선택해주세요</option>
@@ -200,7 +200,7 @@ export default function NewApplicationPage() {
                   value={receiptNumber}
                   onChange={(e) => setReceiptNumber(e.target.value)}
                   placeholder="선택 입력"
-                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium"
                 />
               )}
             </FormField>
@@ -219,7 +219,7 @@ export default function NewApplicationPage() {
                   {...field}
                   value={publicAssistance}
                   onChange={(e) => setPublicAssistance(e.target.value as PublicAssistance | '')}
-                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium"
                 >
                   <option value="">아직 확인 못함</option>
                   <option value="basic_livelihood">기초생활수급</option>

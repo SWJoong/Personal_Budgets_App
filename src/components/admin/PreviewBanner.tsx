@@ -48,10 +48,10 @@ export default function PreviewBanner({ currentParticipant, allParticipants, onE
             value={currentParticipant.id}
             onChange={(e) => router.push(`/admin/participants/${e.target.value}/preview`)}
             aria-label="미리보기할 당사자 선택"
-            className={`text-sm font-bold border rounded-lg px-2 min-h-[44px] cursor-pointer focus:outline-none focus:ring-2 ${
+            className={`text-sm font-bold border rounded-lg px-2 min-h-[44px] cursor-pointer focus-visible:ring-2 ${
               isEditMode
-                ? 'bg-transparent text-info-solid-foreground border-info-solid-foreground/70 focus:ring-info-solid-foreground'
-                : 'bg-transparent text-warning-foreground border-warning-foreground/60 focus:ring-warning-foreground'
+                ? 'bg-transparent text-info-solid-foreground border-info-solid-foreground/70 focus-visible:ring-info-solid-foreground'
+                : 'bg-transparent text-warning-foreground border-warning-foreground/60 focus-visible:ring-warning-foreground'
             }`}
           >
             {allParticipants.map((p) => (
