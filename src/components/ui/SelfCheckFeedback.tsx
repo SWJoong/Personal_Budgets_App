@@ -34,7 +34,7 @@ export default function SelfCheckFeedback({
     return (
       <div className={`flex items-center justify-center gap-3 ${compact ? 'py-3' : 'py-6'} animate-fade-in-up`}>
         <span className="text-3xl">{response === 'positive' ? '😊' : '😔'}</span>
-        <p className="text-sm font-bold text-zinc-500">
+        <p className="text-sm font-bold text-muted-foreground">
           {response === 'positive' ? '좋아요! 의견을 고마워요.' : '알려줘서 고마워요. 더 쉽게 만들게요.'}
         </p>
       </div>
@@ -43,7 +43,7 @@ export default function SelfCheckFeedback({
 
   return (
     <div className={`flex flex-col items-center gap-4 ${compact ? 'py-4' : 'py-6'} animate-fade-in-up`}>
-      <p className={`font-black text-zinc-700 text-center ${compact ? 'text-sm' : 'text-base'}`}>
+      <p className={`font-black text-muted-foreground text-center ${compact ? 'text-sm' : 'text-base'}`}>
         {question}
       </p>
       <div className="flex gap-8">
@@ -53,7 +53,7 @@ export default function SelfCheckFeedback({
           aria-label="쉬웠어요"
         >
           <span className={compact ? 'text-4xl' : 'text-5xl'}>😊</span>
-          <span className="text-sm font-bold text-zinc-600">쉬웠어요</span>
+          <span className="text-sm font-bold text-muted-foreground">쉬웠어요</span>
         </button>
         <button
           onClick={() => handleSelect('negative')}
@@ -61,7 +61,7 @@ export default function SelfCheckFeedback({
           aria-label="어려웠어요"
         >
           <span className={compact ? 'text-4xl' : 'text-5xl'}>😔</span>
-          <span className="text-sm font-bold text-zinc-600">어려웠어요</span>
+          <span className="text-sm font-bold text-muted-foreground">어려웠어요</span>
         </button>
       </div>
     </div>

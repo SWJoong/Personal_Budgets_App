@@ -19,7 +19,7 @@ export default function HelpButton({ sectionKey, className, text }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className={className ?? 'w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-700 font-black text-sm flex items-center justify-center transition-colors'}
+        className={className ?? 'w-8 h-8 rounded-full bg-muted hover:opacity-90 text-muted-foreground hover:text-foreground font-black text-sm flex items-center justify-center transition-colors'}
         aria-label="도움말"
         title="이 화면 도움말 보기"
       >

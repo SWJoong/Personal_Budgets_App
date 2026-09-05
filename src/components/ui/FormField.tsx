@@ -47,22 +47,22 @@ export function FormField({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-bold text-zinc-700">
+      <label htmlFor={id} className="text-sm font-bold text-muted-foreground">
         {label}
         {required && (
-          <span className="text-red-600" aria-hidden="true">
+          <span className="text-danger-fg" aria-hidden="true">
             {' '}*
           </span>
         )}
       </label>
       {children(field)}
       {help && (
-        <p id={helpId} className="text-xs text-zinc-600 leading-relaxed">
+        <p id={helpId} className="text-xs text-muted-foreground leading-relaxed">
           {help}
         </p>
       )}
       {error && (
-        <p id={errorId} role="alert" className="text-xs font-bold text-red-600 leading-relaxed">
+        <p id={errorId} role="alert" className="text-xs font-bold text-danger-fg leading-relaxed">
           {error}
         </p>
       )}

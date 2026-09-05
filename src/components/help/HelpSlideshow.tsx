@@ -23,16 +23,16 @@ export default function HelpSlideshow({ section, onClose }: Props) {
       onClose={onClose}
       label={`${section.title} 도움말`}
       overlayClassName="bg-black/60 backdrop-blur-sm"
-      panelClassName="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-y-auto max-h-[90vh]"
+      panelClassName="bg-card rounded-3xl w-full max-w-sm shadow-2xl overflow-y-auto max-h-[90vh]"
     >
       {/* 상단 헤더 */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2">
-        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
+        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">
           {section.title}
         </span>
         <button
           onClick={onClose}
-          className="text-zinc-400 hover:text-zinc-600 text-lg font-bold transition-colors"
+          className="text-muted-foreground hover:text-foreground text-lg font-bold transition-colors"
           aria-label="닫기"
         >
           ✕
@@ -46,7 +46,7 @@ export default function HelpSlideshow({ section, onClose }: Props) {
             key={i}
             onClick={() => setCurrent(i)}
             className={`rounded-full transition-all ${
-              i === current ? 'w-5 h-2 bg-blue-500' : 'w-2 h-2 bg-zinc-200'
+              i === current ? 'w-5 h-2 bg-primary' : 'w-2 h-2 bg-muted'
             }`}
             aria-label={`슬라이드 ${i + 1}`}
           />
@@ -56,12 +56,12 @@ export default function HelpSlideshow({ section, onClose }: Props) {
       {/* 슬라이드 콘텐츠 */}
       <div className="px-6 pb-2 flex flex-col items-center gap-4 min-h-[200px] justify-center text-center">
         <span className="text-6xl">{slide.icon}</span>
-        <h3 className="text-xl font-black text-zinc-900">{slide.title}</h3>
-        <p className="text-sm text-zinc-600 leading-relaxed">{slide.body}</p>
+        <h3 className="text-xl font-black text-foreground">{slide.title}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">{slide.body}</p>
       </div>
 
       {/* 슬라이드 번호 */}
-      <p className="text-center text-xs text-zinc-300 font-bold pb-1">
+      <p className="text-center text-xs text-muted-foreground font-bold pb-1">
         {current + 1} / {total}
       </p>
 
@@ -70,14 +70,14 @@ export default function HelpSlideshow({ section, onClose }: Props) {
         {current > 0 ? (
           <button
             onClick={() => setCurrent(c => c - 1)}
-            className="flex-1 py-3 rounded-2xl bg-zinc-100 text-zinc-600 font-bold text-sm hover:bg-zinc-200 transition-colors"
+            className="flex-1 py-3 rounded-2xl bg-muted text-muted-foreground font-bold text-sm hover:opacity-90 transition-colors"
           >
             ← 이전
           </button>
         ) : (
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-2xl bg-zinc-100 text-zinc-400 font-bold text-sm hover:bg-zinc-200 transition-colors"
+            className="flex-1 py-3 rounded-2xl bg-muted text-muted-foreground font-bold text-sm hover:opacity-90 transition-colors"
           >
             건너뛰기
           </button>
@@ -85,14 +85,14 @@ export default function HelpSlideshow({ section, onClose }: Props) {
         {isLast ? (
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors"
+            className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary-hover transition-colors"
           >
             시작하기 ✓
           </button>
         ) : (
           <button
             onClick={() => setCurrent(c => c + 1)}
-            className="flex-1 py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors"
+            className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary-hover transition-colors"
           >
             다음 →
           </button>

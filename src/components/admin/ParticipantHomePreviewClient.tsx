@@ -37,11 +37,11 @@ const SHORTCUT_HREF: Partial<Record<BlockId, string>> = {
 
 /** 당사자용 영역 상태 라벨 — (participant)/page.tsx 와 동일(담당자용과 별도). */
 const PARTICIPANT_STATUS: Record<BudgetStatus, { label: string; cls: string }> = {
-  ok: { label: '쓰는 중이에요', cls: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
-  unused: { label: '아직 안 썼어요', cls: 'bg-sky-50 text-sky-700 ring-sky-200' },
-  over: { label: '조금 넘게 썼어요', cls: 'bg-amber-50 text-amber-700 ring-amber-200' },
-  unplanned: { label: '계획에 없이 썼어요', cls: 'bg-amber-50 text-amber-700 ring-amber-200' },
-  none: { label: '아직 없어요', cls: 'bg-zinc-100 text-zinc-500 ring-zinc-200' },
+  ok: { label: '쓰는 중이에요', cls: 'bg-success-bg text-success-fg ring-success-fg/20' },
+  unused: { label: '아직 안 썼어요', cls: 'bg-info-bg text-info-fg ring-info-fg/20' },
+  over: { label: '조금 넘게 썼어요', cls: 'bg-warning-bg text-warning-fg ring-warning-fg/20' },
+  unplanned: { label: '계획에 없이 썼어요', cls: 'bg-warning-bg text-warning-fg ring-warning-fg/20' },
+  none: { label: '아직 없어요', cls: 'bg-neutral-bg text-neutral-fg ring-neutral-fg/20' },
 }
 
 /** 서울형 6영역 아이콘 — (participant)/page.tsx 와 동일. */
@@ -103,7 +103,7 @@ export default function ParticipantHomePreviewClient({
   const shortcuts = (Object.keys(SHORTCUT_HREF) as BlockId[]).filter((b) => enabled.has(b))
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-200/60">
+    <div className="flex flex-col min-h-screen bg-muted/60">
       <PreviewBanner
         currentParticipant={currentParticipant}
         allParticipants={allParticipants}
@@ -111,7 +111,7 @@ export default function ParticipantHomePreviewClient({
       />
 
       <div className="flex-1 w-full lg:max-w-[600px] mx-auto bg-background flex flex-col">
-        <header className="flex h-16 items-center px-4 border-b border-zinc-200">
+        <header className="flex h-16 items-center px-4 border-b border-border">
           <h1 className="text-xl font-bold tracking-tight">{currentParticipant.name}님의 예산</h1>
         </header>
 
@@ -119,8 +119,8 @@ export default function ParticipantHomePreviewClient({
           {isEditMode ? (
             <section className="flex flex-col gap-4">
               <div>
-                <h2 className="text-lg font-black text-zinc-900">무엇을 볼지 골라요.</h2>
-                <p className="text-sm text-zinc-500 mt-1 leading-relaxed">
+                <h2 className="text-lg font-black text-foreground">무엇을 볼지 골라요.</h2>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                   {currentParticipant.name}님의 화면 설정을 대신 바꿔요. 바꾸면 바로 저장돼요.
                 </p>
               </div>
@@ -130,17 +130,17 @@ export default function ParticipantHomePreviewClient({
           ) : (
             <>
               {!balance ? (
-                <section className="p-8 rounded-3xl bg-zinc-100 text-center">
-                  <p className="text-zinc-500 font-medium leading-relaxed">
+                <section className="p-8 rounded-3xl bg-muted text-center">
+                  <p className="text-muted-foreground font-medium leading-relaxed">
                     아직 정해진 예산이 없어요.<br />선생님들이 확인하면 여기에 나와요.
                   </p>
                 </section>
               ) : (
                 <>
-                  <section className="p-8 rounded-3xl bg-zinc-900 text-white flex flex-col gap-2">
-                    <span className="text-sm font-bold text-zinc-400">지금 쓸 수 있는 돈</span>
+                  <section className="p-8 rounded-3xl bg-hero text-hero-foreground flex flex-col gap-2">
+                    <span className="text-sm font-bold text-hero-foreground/70">지금 쓸 수 있는 돈</span>
                     <span className="text-4xl font-black tracking-tight">{won(balance.remaining)}</span>
-                    <span className="text-xs font-medium text-zinc-400 leading-relaxed">
+                    <span className="text-xs font-medium text-hero-foreground/70 leading-relaxed">
                       전체 {won(balance.allocatedAmount)} 중 {won(balance.spent)} 사용했어요
                     </span>
                   </section>
@@ -148,22 +148,22 @@ export default function ParticipantHomePreviewClient({
                   {copay?.show && (
                     <section
                       className={`p-6 rounded-3xl flex flex-col gap-1.5 ring-1 ${
-                        copay.pending ? 'bg-amber-50 ring-amber-200' : 'bg-white ring-zinc-200'
+                        copay.pending ? 'bg-warning-bg ring-warning-fg/20' : 'bg-card ring-border'
                       }`}
                     >
-                      <span className="text-sm font-bold text-zinc-500">{copay.title}</span>
+                      <span className="text-sm font-bold text-muted-foreground">{copay.title}</span>
                       {copay.amount > 0 && (
                         <span className="text-2xl font-black tracking-tight">{won(copay.amount)}</span>
                       )}
-                      <span className="text-xs font-medium text-zinc-500 leading-relaxed">{copay.note}</span>
+                      <span className="text-xs font-medium text-muted-foreground leading-relaxed">{copay.note}</span>
                     </section>
                   )}
 
                   {showDomains && enabled.has('domain_breakdown') && (
                     <section className="flex flex-col gap-3">
                       <div>
-                        <h2 className="text-sm font-bold text-zinc-500">영역별로 보기</h2>
-                        <p className="text-xs text-zinc-600 mt-0.5">어디에 썼는지 봐요.</p>
+                        <h2 className="text-sm font-bold text-muted-foreground">영역별로 보기</h2>
+                        <p className="text-xs text-muted-foreground mt-0.5">어디에 썼는지 봐요.</p>
                       </div>
                       <ul className="flex flex-col gap-3">
                         {budgetRows.map((r) => {
@@ -174,10 +174,10 @@ export default function ParticipantHomePreviewClient({
                           return (
                             <li
                               key={r.domainId}
-                              className={`p-5 rounded-3xl ring-1 flex flex-col gap-2 ${dim ? 'bg-zinc-50 ring-zinc-100' : 'bg-white ring-zinc-200'}`}
+                              className={`p-5 rounded-3xl ring-1 flex flex-col gap-2 ${dim ? 'bg-muted ring-border' : 'bg-card ring-border'}`}
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <span className={`font-bold flex items-center gap-2 ${dim ? 'text-zinc-500' : 'text-zinc-800'}`}>
+                                <span className={`font-bold flex items-center gap-2 ${dim ? 'text-muted-foreground' : 'text-foreground'}`}>
                                   <span aria-hidden="true" className="text-lg">{icon}</span>
                                   {r.label}
                                 </span>
@@ -186,10 +186,10 @@ export default function ParticipantHomePreviewClient({
                               {canSpendMore ? (
                                 <div>
                                   <span className="text-2xl font-black tracking-tight">{won(Math.max(0, r.remaining))}</span>
-                                  <p className="text-xs text-zinc-600 mt-0.5">이만큼 더 쓸 수 있어요.</p>
+                                  <p className="text-xs text-muted-foreground mt-0.5">이만큼 더 쓸 수 있어요.</p>
                                 </div>
                               ) : dim ? null : (
-                                <p className="text-sm text-zinc-500">{won(r.usageSum)} 썼어요.</p>
+                                <p className="text-sm text-muted-foreground">{won(r.usageSum)} 썼어요.</p>
                               )}
                             </li>
                           )
@@ -202,16 +202,16 @@ export default function ParticipantHomePreviewClient({
 
               {shortcuts.length > 0 && (
                 <section className="flex flex-col gap-3">
-                  <h2 className="text-sm font-bold text-zinc-500">바로 가기</h2>
+                  <h2 className="text-sm font-bold text-muted-foreground">바로 가기</h2>
                   <div className="grid grid-cols-2 gap-2">
                     {shortcuts.map((b) => (
                       <Link
                         key={b}
                         href={SHORTCUT_HREF[b]!}
-                        className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center gap-3 hover:bg-zinc-50 transition-colors min-h-[44px]"
+                        className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center gap-3 hover:bg-muted transition-colors min-h-[44px]"
                       >
                         <span aria-hidden="true" className="text-2xl">{BLOCK_METADATA[b].icon}</span>
-                        <span className="font-bold text-zinc-800">{BLOCK_METADATA[b].label}</span>
+                        <span className="font-bold text-foreground">{BLOCK_METADATA[b].label}</span>
                       </Link>
                     ))}
                   </div>
@@ -220,21 +220,21 @@ export default function ParticipantHomePreviewClient({
 
               {enabled.has('recent_usages') && (
                 <section className="flex flex-col gap-3">
-                  <h2 className="text-sm font-bold text-zinc-500">최근에 쓴 돈</h2>
+                  <h2 className="text-sm font-bold text-muted-foreground">최근에 쓴 돈</h2>
                   {recentUsages.length > 0 ? (
                     <ul className="flex flex-col gap-2">
                       {recentUsages.map((u) => (
-                        <li key={u.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center justify-between">
+                        <li key={u.id} className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center justify-between">
                           <div className="flex flex-col">
                             <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
-                            <span className="text-xs text-zinc-500">{u.usageDate}</span>
+                            <span className="text-xs text-muted-foreground">{u.usageDate}</span>
                           </div>
                           <span className="font-bold">{won(u.amount)}</span>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-zinc-600 text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
+                    <p className="text-muted-foreground text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
                   )}
                 </section>
               )}
@@ -249,7 +249,7 @@ export default function ParticipantHomePreviewClient({
             className="fixed left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-2"
           >
             {fabNotice && (
-              <p role="status" className="text-xs font-bold text-white bg-zinc-800 px-3 py-1.5 rounded-full shadow-lg leading-relaxed">
+              <p role="status" className="text-xs font-bold text-hero-foreground bg-hero px-3 py-1.5 rounded-full shadow-lg leading-relaxed">
                 미리보기에서는 기록할 수 없어요
               </p>
             )}
@@ -258,7 +258,7 @@ export default function ParticipantHomePreviewClient({
               aria-disabled="true"
               aria-label="내가 쓴 돈 적기 — 미리보기에서는 기록할 수 없어요"
               onClick={() => setFabNotice(true)}
-              className="flex flex-col items-center justify-center gap-0.5 min-w-[72px] min-h-[72px] px-6 rounded-full bg-zinc-400 text-white shadow-2xl ring-4 ring-white cursor-not-allowed"
+              className="flex flex-col items-center justify-center gap-0.5 min-w-[72px] min-h-[72px] px-6 rounded-full bg-muted-foreground text-background shadow-2xl ring-4 ring-background cursor-not-allowed"
             >
               <span className="text-2xl leading-none" aria-hidden="true">📷</span>
               <span className="text-xs font-bold whitespace-nowrap">내가 쓴 돈 적기</span>

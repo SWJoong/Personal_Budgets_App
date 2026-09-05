@@ -55,7 +55,7 @@ export default function NavigationProgress() {
 
   return (
     <div
-      className="fixed top-0 left-0 z-[9999] h-[3px] bg-blue-500 transition-all duration-200 ease-out"
+      className="fixed top-0 left-0 z-[9999] h-[3px] bg-primary transition-all duration-200 ease-out"
       style={{ width: `${width}%`, opacity: visible ? 1 : 0 }}
     />
   )

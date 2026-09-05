@@ -21,7 +21,7 @@ export function Modal({
   children,
   containerClassName = 'flex items-center justify-center p-4',
   overlayClassName = 'bg-black/40',
-  panelClassName = 'max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl',
+  panelClassName = 'max-h-[85vh] w-full max-w-md overflow-y-auto rounded-3xl bg-card p-6 shadow-2xl',
 }: {
   open: boolean
   onClose: () => void

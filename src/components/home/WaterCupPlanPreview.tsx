@@ -48,10 +48,10 @@ export default function WaterCupPlanPreview({
     : '#3b82f6'
 
   return (
-    <div className="bg-white rounded-[2rem] p-6 ring-1 ring-zinc-200 shadow-sm">
+    <div className="bg-card rounded-[2rem] p-6 ring-1 ring-border shadow-sm">
       <div className="flex justify-between items-center mb-4">
-        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">쓰면 얼마가 남을까요?</span>
-        <span className="text-sm font-black text-zinc-700">
+        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">쓰면 얼마가 남을까요?</span>
+        <span className="text-sm font-black text-muted-foreground">
           남는 돈: {formatCurrency(Math.max(0, displayBalance))}원
         </span>
       </div>
@@ -62,11 +62,11 @@ export default function WaterCupPlanPreview({
         <div className="flex flex-col items-center gap-2 shrink-0">
           <div className="relative w-24 h-40">
             {/* 컵 테두리 */}
-            <div className="absolute inset-0 border-4 border-zinc-300 rounded-b-3xl rounded-t-lg bg-zinc-50 overflow-hidden">
+            <div className="absolute inset-0 border-4 border-border rounded-b-3xl rounded-t-lg bg-muted overflow-hidden">
               {/* 현재 잔액 물 (선택 전 기준선) */}
               {selectedIndex !== null && (
                 <div
-                  className="absolute bottom-0 w-full bg-zinc-200 transition-none"
+                  className="absolute bottom-0 w-full bg-muted transition-none"
                   style={{ height: `${currentRatio}%`, opacity: 0.4 }}
                 />
               )}
@@ -109,17 +109,17 @@ export default function WaterCupPlanPreview({
             </div>
 
             {/* 컵 손잡이 */}
-            <div className="absolute -right-3 top-6 h-10 w-3.5 border-4 border-zinc-300 rounded-r-full" />
+            <div className="absolute -right-3 top-6 h-10 w-3.5 border-4 border-border rounded-r-full" />
 
             {/* 퍼센트 표시 */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className={`text-sm font-black drop-shadow-sm ${isOver ? 'text-red-600' : 'text-zinc-700'}`}>
+              <span className={`text-sm font-black drop-shadow-sm ${isOver ? 'text-danger-fg' : 'text-muted-foreground'}`}>
                 {Math.round(displayRatio)}%
               </span>
             </div>
           </div>
 
-          <span className="text-[10px] font-bold text-zinc-400">남은 돈</span>
+          <span className="text-[10px] font-bold text-muted-foreground">남은 돈</span>
         </div>
 
         {/* 옵션별 범례 */}
@@ -150,11 +150,11 @@ export default function WaterCupPlanPreview({
                   }}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black text-zinc-700 truncate">{option.name}</p>
-                  <p className="text-[10px] font-bold text-zinc-400">쓸 돈 {formatCurrency(option.cost)}원</p>
+                  <p className="text-xs font-black text-muted-foreground truncate">{option.name}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground">쓸 돈 {formatCurrency(option.cost)}원</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className={`text-xs font-black ${isOptionOver ? 'text-red-600' : isSelected ? 'text-zinc-800' : 'text-zinc-500'}`}>
+                  <p className={`text-xs font-black ${isOptionOver ? 'text-danger-fg' : isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
                     {isOptionOver ? '돈이 모자라요' : formatCurrency(remaining) + '원'}
                   </p>
                 </div>
@@ -165,10 +165,10 @@ export default function WaterCupPlanPreview({
       </div>
 
       {/* 현재 잔액 기준 표시 */}
-      <div className="mt-4 pt-3 border-t border-zinc-100 flex justify-between text-[10px] font-bold text-zinc-400">
+      <div className="mt-4 pt-3 border-t border-border flex justify-between text-[10px] font-bold text-muted-foreground">
         <span>지금 있는 돈: {formatCurrency(currentBalance)}원</span>
         {selectedIndex !== null && (
-          <span className={displayBalance < 0 ? 'text-red-500' : 'text-zinc-600'}>
+          <span className={displayBalance < 0 ? 'text-danger-fg' : 'text-muted-foreground'}>
             고른 후: {formatCurrency(Math.max(0, displayBalance))}원
           </span>
         )}
