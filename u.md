@@ -1056,3 +1056,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-05T09:40Z] U
 [P7 웨이브1 완료] #112 머지(main=990b19a) → 당사자 대면 문구 신뢰·쉬운말 교정 15문자열(B1 MoreMenu·B2 SETTLEMENT_LABEL·B7 aria·B8/B9 MyPlan·B4 guide AI→컴퓨터·B11 홈 제목). 골든 37/37·소스 문자열만·미러(ParticipantHomePreviewClient) 동기화 e6 승인. P7 착수 확인(사용자 머지). 다음: 웨이브2(포커스/인터랙션 복구 — D1 focus:outline-none→focus-visible 16파일·D2 링토큰·C1 드로어 slide-in keyframe·D9 login로고·D11 Modal inert) e6 계약 대기. main push 금지.
 
+## [2026-09-05T10:57Z] U
+[P7 웨이브2 완료] #113 머지(main=fda7f57) → 포커스·인터랙션 복구: D1/D9 focus:outline-none 46곳(16파일) 제거→:focus-visible 3px primary 상속(WCAG 2.4.7)·D2 링색 primary 수렴(muted-fg/foreground 0)·C1 globals @keyframes slide-in-*+.animate 교체(NavDropdown/SupporterLayout 죽은클래스 복구)·D11 Modal 배경 inert(정리순서 inert해제 before focus-restore·data-modal-portal 자기제외). 병렬워커2기+직접. e6 2인검증+수동QA PASS·BLOCK0. 게이트 골든28/28·Modal9/9·전체486·tsc·build·lint. ★Low(P7-3 후속): 이중 포커스링(커스텀 focus-visible:ring + 전역 :focus-visible outline 겹침, a11y OK) → 전역 규칙 @layer화로 단일링(globals 구조변경, 지금 안 함). 다음: 웨이브3(빈상태·갤러리, ★갤러리 사용자결정=활동사진 우선+영수증 후·이름 '활동 사진' 통일) e6 계약 대기. main push 금지.
+
