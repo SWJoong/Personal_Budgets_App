@@ -355,7 +355,8 @@ describe('P7-w4 D: 전역 fs-scan', () => {
     const offenders: string[] = []
     for (const f of files) {
       const src = stripComments(readFileSync(f, 'utf8'))
-      const re = /active:scale-(\[[^\]]+\]|\d+)/g
+      // motion-reduce:active:scale-100 은 reduce 리셋 가드(C4-reduce 필수)라 press 값 난립이 아님 → 제외.
+      const re = /(?<!motion-reduce:)active:scale-(\[[^\]]+\]|\d+)/g
       let m: RegExpExecArray | null
       while ((m = re.exec(src))) {
         if (!allowed.has(m[1])) offenders.push(`${f.replace(ROOT + '/', '')}: active:scale-${m[1]}`)
