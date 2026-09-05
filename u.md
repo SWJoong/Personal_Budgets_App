@@ -1044,3 +1044,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-05T07:04Z] U
 [Batch 4a 완료] #110 머지(main=5374818) → 실무자 운영 19 색 토큰화. 신규토큰 0(Batch1~3 재사용: positive-fg·asset·hero·info/success/neutral). accent-zinc-900 체크박스→accent-foreground(스캐너 accent 프리픽스 포함). 병렬워커3기+중앙 hover 일관화. e6 검증서 hover no-op 3건(ring-border↔hover:ring-border base==hover 무효) 발견→정정 재push→재확인 PASS. ★교훈: 워커 색매핑서 base==hover 붕괴(ring-zinc-200 hover:ring-zinc-400 둘다 →ring-border) 자주 발생 → hover no-op 사전스캔 필수(hover:ring-foreground 로). 다음: ★Batch 4b(관리자/평가/차트 18, sweep 마지막) e6 계약 대기 — NetworkGraph/report/GOAL 도메인 차트색 신규 accent 나오면 플래그. main push 금지.
 
+## [2026-09-05T07:58Z] U
+[★P6 대비 sweep 완주] #111 머지(main=163d8b5) → Batch 4b(관리자/평가/차트 18) 완결. tokenFoundation 113/113 = ★앱 전역 raw-0. 신규토큰: relation-by/for(NetworkGraph 방향색, for≠danger·엣지 hex 미러·HC #000·dark 상향) + danger-foreground(솔리드 삭제버튼, danger 무변경 4.89:1). e6 2인검증 PASS·BLOCK0·CONCERNS0. sweep 전체: 5 PR #107~#111, 87파일/1327 raw hits, 병렬워커+홀드-플래그 오케스트레이션. ★P6 접근성 완결(행위 A/B/C+다크토큰+대비 sweep). Low(비차단): 회색 2레벨 수렴→중간강조 필요시 'subtle' 토큰=P7 후보. 다음 U 큐 비어있음 — W 신규 RED 계약 대기. main push 금지.
+
