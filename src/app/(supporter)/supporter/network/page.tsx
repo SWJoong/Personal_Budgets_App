@@ -57,7 +57,7 @@ export default async function NetworkPage({
                 <li key={p.id}>
                   <Link
                     href={`/supporter/network?participant=${p.id}`}
-                    className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-card ring-1 ring-border hover:bg-muted transition-colors min-h-[56px]"
+                    className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-card ring-1 ring-border hover:bg-muted-hover transition-colors min-h-[56px]"
                   >
                     <span className="font-bold truncate">{p.name ?? '이름 없음'}</span>
                     <span className="text-xs font-bold text-muted-foreground shrink-0">관계망 보기 →</span>

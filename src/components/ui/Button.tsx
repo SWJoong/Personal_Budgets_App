@@ -38,7 +38,7 @@ export function Button({
       type={type ?? 'button'}
       disabled={isDisabled}
       aria-busy={loading || undefined}
-      className={`${buttonClasses(variant, size, iconOnly)} disabled:opacity-50 ${className}`.trim()}
+      className={`${buttonClasses(variant, size, iconOnly)} disabled:bg-disabled-bg disabled:text-disabled-fg ${className}`.trim()}
       {...rest}
     >
       {loading && (

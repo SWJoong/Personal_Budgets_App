@@ -43,7 +43,7 @@ export default function ComingSoon({
         </div>
         <Link
           href={homeHref}
-          className="mt-2 px-8 py-3 min-h-[44px] bg-hero text-hero-foreground rounded-xl font-bold hover:opacity-90 transition-colors"
+          className="mt-2 px-8 py-3 min-h-[44px] bg-hero text-hero-foreground rounded-xl font-bold hover:bg-hero-hover transition-colors"
         >
           {homeLabel}
         </Link>

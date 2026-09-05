@@ -91,7 +91,7 @@ export default function PlaceSearch({
           type="button"
           onClick={handleSearch}
           disabled={loading || !query.trim()}
-          className="px-4 py-3 rounded-xl bg-hero text-hero-foreground text-xs font-bold hover:opacity-90 transition-all disabled:opacity-50"
+          className="px-4 py-3 rounded-xl bg-hero text-hero-foreground text-xs font-bold hover:bg-hero-hover transition-all disabled:opacity-50"
         >
           {loading ? '...' : '검색'}
         </button>
@@ -113,7 +113,7 @@ export default function PlaceSearch({
                   setOpen(false)
                   setQuery(place.place_name)
                 }}
-                className="w-full flex flex-col px-4 py-3 text-left hover:bg-muted border-b border-border last:border-0 transition-colors"
+                className="w-full flex flex-col px-4 py-3 text-left hover:bg-muted-hover border-b border-border last:border-0 transition-colors"
               >
                 <span className="text-sm font-bold text-foreground">{place.place_name}</span>
                 <span className="text-xs text-muted-foreground mt-0.5">

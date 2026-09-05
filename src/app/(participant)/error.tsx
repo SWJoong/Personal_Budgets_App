@@ -30,7 +30,7 @@ export default function ParticipantError({
         </p>
         <button
           onClick={reset}
-          className="mt-2 px-6 py-3 min-h-[44px] bg-hero text-hero-foreground font-bold rounded-xl hover:opacity-90 transition-colors"
+          className="mt-2 px-6 py-3 min-h-[44px] bg-hero text-hero-foreground font-bold rounded-xl hover:bg-hero-hover transition-colors"
         >
           다시 시도
         </button>

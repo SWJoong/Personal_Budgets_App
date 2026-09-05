@@ -54,7 +54,7 @@ export default function DocumentShelfClient({ shelf }: { shelf: DocumentShelf })
               <button
                 onClick={() => setExpanded(isOpen ? null : p.participantId)}
                 aria-expanded={isOpen}
-                className="w-full flex items-center justify-between gap-2 p-4 min-h-[44px] text-left hover:bg-muted transition-colors"
+                className="w-full flex items-center justify-between gap-2 p-4 min-h-[44px] text-left hover:bg-muted-hover transition-colors"
               >
                 <span className="font-bold text-foreground truncate">{p.participantName}</span>
                 <span className="text-xs text-muted-foreground shrink-0">
@@ -84,7 +84,7 @@ export default function DocumentShelfClient({ shelf }: { shelf: DocumentShelf })
                       <button
                         onClick={() => handleOpen(d.id)}
                         disabled={pending}
-                        className="shrink-0 px-3 min-h-[44px] rounded-xl bg-hero text-hero-foreground text-sm font-bold hover:opacity-90 disabled:opacity-50"
+                        className="shrink-0 px-3 min-h-[44px] rounded-xl bg-hero text-hero-foreground text-sm font-bold hover:bg-hero-hover disabled:opacity-50"
                       >
                         열기
                       </button>

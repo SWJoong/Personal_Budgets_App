@@ -137,7 +137,7 @@ export default function EvaluationClient({
           type="button"
           onClick={handleRecord}
           disabled={pending}
-          className="p-3 rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:opacity-90 transition-colors disabled:opacity-50 min-h-[44px]"
+          className="p-3 rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:bg-hero-hover transition-colors disabled:opacity-50 min-h-[44px]"
         >
           {pending ? '저장하고 있어요...' : '기록하기'}
         </button>

@@ -130,7 +130,7 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
                       <li key={r.id} className="border-t border-border first:border-t-0">
                         <Link
                           href={`/supporter/transactions/${r.id}`}
-                          className="flex items-center justify-between gap-3 px-4 py-3 min-h-[44px] hover:bg-muted transition-colors"
+                          className="flex items-center justify-between gap-3 px-4 py-3 min-h-[44px] hover:bg-muted-hover transition-colors"
                         >
                           <div className="flex flex-col min-w-0">
                             <span className="text-sm truncate">{r.description || '(내용 없음)'}</span>
