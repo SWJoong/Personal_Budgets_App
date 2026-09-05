@@ -1038,3 +1038,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-05T05:44Z] U
 [Batch 2 완료] #108 머지(main=3e14096) → 공용 컴포넌트 17 색 토큰화 완결(PreviewBanner bold토큰 3종 신규 @theme 상수+16파일). e6 2인검증 PASS·BLOCK0. ★확립 컨벤션: 상태표면 테두리=중립 border-border 통일(*-border 토큰 신설 안 함, 색테두리 결정적일때만 플래그)·다크버튼→bg-hero·블루→primary·상태칩→ring-{state}-fg/20·영구다크표면(ImageLightbox)→sidebar 계열(hero는 HC반전 금지). 다음: Batch 3(당사자17) e6 RED계약 대기→토큰화. WaterCup JS-style hex는 sweep후 별도정리 후보. main push 금지.
 
+## [2026-09-05T06:13Z] U
+[Batch 3 완료] #109 머지(main=adffb1b) → 당사자 화면 17 색 토큰화 완결. 병렬워커 3기(색만·Read/Edit)+홀드2 저자직접. 신규토큰: asset 청록세트(asset/-foreground 상수+asset-bg/-fg HC·dark 재정의, 지도 #14b8a6 정렬) + positive-foreground(흰) + positive 35%→32%(흰 위 AA). e6 2인검증 PASS·BLOCK0. 게이트 tokenFoundation 76/76·tsc0·build·lint(src)0err·색온리 안전스캔 통과. 다음: ★Batch 4(실무자/관리자 35, 마지막) e6 계약 대기 — 4a/4b 분할 가능. asset·positive-fg·info-solid·warning-fg cross-batch 재사용. 상태테두리=중립 유지. main push 금지.
+
