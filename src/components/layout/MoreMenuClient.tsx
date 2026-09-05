@@ -72,7 +72,7 @@ export default function MoreMenuClient({
                 <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">🎯</span>
                 <div className="flex flex-col">
                   <span className="text-lg font-black">내 이용계획</span>
-                  <span className="text-xs font-bold text-primary-foreground">이용계획 작성하고 심의 결과 보기</span>
+                  <span className="text-xs font-bold text-primary-foreground">계획과 결과를 봐요</span>
                 </div>
               </div>
               <span aria-hidden="true" className="text-2xl">▸</span>

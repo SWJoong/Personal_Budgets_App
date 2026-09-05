@@ -13,10 +13,10 @@ import { useToast } from '@/components/ui/LiveRegion'
 const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 
 const SETTLEMENT_LABEL: Record<string, string> = {
-  pending: '확인 중',
-  accepted: '인정됨',
-  rejected: '반려됨',
-  recovered: '환수됨',
+  pending: '선생님이 살펴봐요',
+  accepted: '괜찮아요',
+  rejected: '다시 봐야 해요',
+  recovered: '선생님과 이야기해요',
 }
 
 function fileToBase64(file: File): Promise<{ base64: string; mimeType: string }> {

@@ -55,11 +55,11 @@ const APPEAL_OUTCOME_LABEL: Record<string, string> = {
 
 const STATUS_LABEL: Record<string, string> = {
   draft: '선생님이 계획을 만들고 있어요',
-  submitted: '제출 완료 — 선생님들이 확인할 거예요',
+  submitted: '선생님들이 계획을 냈어요. 곧 살펴볼 거예요.',
   under_review: '선생님들이 확인하고 있어요',
-  approved: '승인됐어요',
-  conditional: '조건부로 승인됐어요',
-  rejected: '반려됐어요',
+  approved: '계획대로 해도 좋대요',
+  conditional: '조금 바꾸면 계획대로 할 수 있어요',
+  rejected: '이번에는 어렵대요',
   under_appeal: '다시 봐달라고 요청했어요',
 }
 
@@ -125,7 +125,7 @@ export default function MyPlanClient({
   /**
    * 이의신청 — 당사자 본인이 직접 낼 수 있어야 한다는 원칙(RLS 로 이미 보장됨).
    * 톤 원칙: "이의신청"이라는 법률 용어 대신 "다시 봐달라고 요청하기"로 풀어
-   * 쓴다. 불이익 걱정 없이 편하게 요청할 수 있다는 안내 문구를 함께 둔다.
+   * 쓴다. 나쁜 일 걱정 없이 편하게 요청할 수 있다는 안내 문구를 함께 둔다.
    */
   function handleFileAppeal() {
     if (!notification || !appealGround.trim()) {
@@ -207,7 +207,7 @@ export default function MyPlanClient({
                       <>
                         <p className="text-xs text-muted-foreground leading-relaxed">
                           결과가 이상하다고 느끼면 편하게 다시 봐달라고 요청할 수 있어요.
-                          요청한다고 불이익이 생기지 않아요.
+                          요청해도 나쁜 일은 생기지 않아요.
                         </p>
                         <textarea
                           value={appealGround}

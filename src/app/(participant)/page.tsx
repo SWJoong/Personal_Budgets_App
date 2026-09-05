@@ -109,7 +109,7 @@ export default async function Home() {
         .limit(5)
     : { data: [] as { id: string; usage_date: string; amount: number; description: string | null }[] }
 
-  // 영역별로 보기(§6) — 히어로와 같은 배정 기준. 계획합계는 requested_services 그레인(§8-5),
+  // 어디에 썼는지(§6) — 히어로와 같은 배정 기준. 계획합계는 requested_services 그레인(§8-5),
   // 집행은 v_seoul_domain_flow, 둘 다 domain_id 로 스파인에 귀속(라벨 조인 금지 §8-4).
   let budgetRows: ReturnType<typeof buildBudgetByDomain> = []
   if (balance) {
@@ -188,8 +188,8 @@ export default async function Home() {
             {showDomains && enabled.has('domain_breakdown') && (
               <section className="flex flex-col gap-3">
                 <div>
-                  <h2 className="text-sm font-bold text-muted-foreground">영역별로 보기</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">어디에 썼는지 봐요.</p>
+                  <h2 className="text-sm font-bold text-muted-foreground">어디에 썼는지</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">무엇에 얼마나 썼는지 봐요.</p>
                 </div>
                 <ul className="flex flex-col gap-3">
                   {budgetRows.map((r) => {

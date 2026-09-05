@@ -162,8 +162,8 @@ export default function ParticipantHomePreviewClient({
                   {showDomains && enabled.has('domain_breakdown') && (
                     <section className="flex flex-col gap-3">
                       <div>
-                        <h2 className="text-sm font-bold text-muted-foreground">영역별로 보기</h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">어디에 썼는지 봐요.</p>
+                        <h2 className="text-sm font-bold text-muted-foreground">어디에 썼는지</h2>
+                        <p className="text-xs text-muted-foreground mt-0.5">무엇에 얼마나 썼는지 봐요.</p>
                       </div>
                       <ul className="flex flex-col gap-3">
                         {budgetRows.map((r) => {
