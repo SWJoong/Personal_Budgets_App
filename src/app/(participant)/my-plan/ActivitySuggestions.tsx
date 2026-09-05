@@ -42,27 +42,27 @@ export default function ActivitySuggestions() {
   return (
     <section className="flex flex-col gap-3">
       <div>
-        <h2 className="text-sm font-bold text-zinc-500">이런 활동 어때요?</h2>
-        <p className="text-xs text-zinc-600 mt-0.5">남은 돈으로 해볼 만한 활동을 찾아 줘요.</p>
+        <h2 className="text-sm font-bold text-muted-foreground">이런 활동 어때요?</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">남은 돈으로 해볼 만한 활동을 찾아 줘요.</p>
       </div>
 
       <button
         onClick={handleGet}
         disabled={pending}
-        className="px-6 py-3 min-h-[44px] rounded-xl bg-zinc-900 text-white font-bold disabled:opacity-60"
+        className="px-6 py-3 min-h-[44px] rounded-xl bg-hero text-hero-foreground font-bold disabled:opacity-60"
       >
         {pending ? '찾고 있어요…' : !done ? '활동 추천받기' : '다시 추천받기'}
       </button>
 
       {error && (
-        <p className="p-3 rounded-xl bg-red-50 ring-1 ring-red-200 text-red-700 text-sm font-medium leading-relaxed">
+        <p className="p-3 rounded-xl bg-danger-bg ring-1 ring-danger-fg/20 text-danger-fg text-sm font-medium leading-relaxed">
           {error}
         </p>
       )}
 
       {done && !error && (
         suggestions.length === 0 ? (
-          <p className="text-sm text-zinc-600 leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             지금은 추천할 활동을 찾지 못했어요. 나중에 다시 해 봐요.
           </p>
         ) : (
@@ -70,12 +70,12 @@ export default function ActivitySuggestions() {
             {suggestions.map((s, i) => (
               <li
                 key={`${s.domainId}-${i}`}
-                className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-1"
+                className="p-4 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-1"
               >
                 <span className="font-bold leading-relaxed">{s.title}</span>
-                <span className="text-sm text-zinc-600 leading-relaxed">{s.why}</span>
+                <span className="text-sm text-muted-foreground leading-relaxed">{s.why}</span>
                 {typeof s.estCost === 'number' && (
-                  <span className="text-xs text-zinc-500">약 {Math.round(s.estCost).toLocaleString('ko-KR')}원</span>
+                  <span className="text-xs text-muted-foreground">약 {Math.round(s.estCost).toLocaleString('ko-KR')}원</span>
                 )}
               </li>
             ))}
@@ -83,7 +83,7 @@ export default function ActivitySuggestions() {
         )
       )}
 
-      <p className="text-xs text-zinc-500 leading-relaxed px-1">
+      <p className="text-xs text-muted-foreground leading-relaxed px-1">
         추천은 컴퓨터가 만든 참고예요. 하고 싶은 게 있으면 선생님에게 말해 주세요.
       </p>
     </section>

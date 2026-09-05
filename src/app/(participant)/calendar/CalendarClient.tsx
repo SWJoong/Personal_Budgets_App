@@ -56,12 +56,12 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
     .reduce((sum, d) => sum + (byDate.get(toDateKey(year, month, d)) ?? []).reduce((s, u) => s + u.amount, 0), 0)
 
   return (
-    <div className="flex flex-col min-h-dvh bg-zinc-50 text-foreground pb-10">
-      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/" className="text-zinc-500 hover:text-zinc-700 transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
+    <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
+      <header className="flex h-14 items-center gap-3 px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
+        <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
           ←
         </Link>
-        <h1 className="text-sm font-black text-zinc-800">달력</h1>
+        <h1 className="text-sm font-black text-foreground">달력</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-4 max-w-sm mx-auto w-full">
@@ -69,7 +69,7 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
           <button
             onClick={() => goMonth(-1)}
             aria-label="이전 달"
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-xl text-zinc-500"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-xl text-muted-foreground"
           >
             ‹
           </button>
@@ -77,17 +77,17 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
           <button
             onClick={() => goMonth(1)}
             aria-label="다음 달"
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-xl text-zinc-500"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-xl text-muted-foreground"
           >
             ›
           </button>
         </div>
 
-        <p className="text-xs text-zinc-500 text-center">이번 달에 쓴 돈: {won(monthTotal)}</p>
+        <p className="text-xs text-muted-foreground text-center">이번 달에 쓴 돈: {won(monthTotal)}</p>
 
         <div className="grid grid-cols-7 gap-1 text-center">
           {WEEKDAYS.map((w) => (
-            <span key={w} className="text-xs font-bold text-zinc-600 py-1">{w}</span>
+            <span key={w} className="text-xs font-bold text-muted-foreground py-1">{w}</span>
           ))}
           {cells.map((day, i) => {
             if (day === null) return <span key={`blank-${i}`} />
@@ -100,12 +100,12 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
                 key={key}
                 onClick={() => setSelectedDate(isSelected ? null : key)}
                 className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 min-h-[44px] transition-colors ${
-                  isSelected ? 'bg-zinc-900 text-white' : hasSpending ? 'bg-zinc-100 text-zinc-800' : 'text-zinc-500'
+                  isSelected ? 'bg-hero text-hero-foreground' : hasSpending ? 'bg-muted text-foreground' : 'text-muted-foreground'
                 }`}
               >
                 <span className="text-xs font-bold">{day}</span>
                 {hasSpending && (
-                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-zinc-900'}`} aria-hidden="true" />
+                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-hero-foreground' : 'bg-foreground'}`} aria-hidden="true" />
                 )}
               </button>
             )
@@ -113,14 +113,14 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
         </div>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-sm font-bold text-zinc-500">
+          <h2 className="text-sm font-bold text-muted-foreground">
             {selectedDate ? `${selectedDate} 에 쓴 돈` : '날짜를 눌러보세요'}
           </h2>
           {selectedDate && selectedUsages.length === 0 && (
-            <p className="text-zinc-600 text-sm leading-relaxed">이 날은 쓴 돈이 없어요.</p>
+            <p className="text-muted-foreground text-sm leading-relaxed">이 날은 쓴 돈이 없어요.</p>
           )}
           {selectedUsages.map((u) => (
-            <div key={u.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex items-center justify-between">
+            <div key={u.id} className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center justify-between">
               <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
               <span className="font-bold">{won(u.amount)}</span>
             </div>
