@@ -135,4 +135,54 @@ describe('Modal — 접근성 프리미티브 계약', () => {
     await user.keyboard('{Escape}')
     expect(document.body.style.overflow).not.toBe('hidden')
   })
+
+  /**
+   * D11 [low] — 배경 형제 inert/aria-hidden (P7 웨이브2, W 저작·U 초록화).
+   * Modal 은 createPortal(document.body) 로 그려지므로 "배경" = 포털 루트를 뺀 body 형제들이다.
+   * 감사: 현재 세 effect 는 dialog 내부·document.body.style 만 만지고 배경 형제에는 아무 속성도
+   * 걸지 않아 SR/키보드가 배경에 도달할 수 있다.
+   *
+   * 계약(느슨: inert OR aria-hidden 둘 다 허용 — U 최소diff 경로 과잉제약 방지):
+   *   - 열림: 포털 루트를 제외한 body 형제 각각이 inert 또는 aria-hidden="true".
+   *   - 포털 루트(대화상자 subtree)는 제외 — 스스로를 숨기지 않는다.
+   *   - 닫힘: 배경 형제의 inert/aria-hidden 이 모두 해제되고, 포커스가 트리거로 복원된다
+   *     (정리순서 회귀 가드: inert 를 쓰면 focus-restore 전에 형제 inert 를 제거해야 트리거 재포커스 가능).
+   *
+   * 주: jsdom 은 inert 의 실제 포커스 차단을 에뮬레이트하지 않으므로 이 계약은 속성 "존재"만 단언한다.
+   *     실제 AT/SR 배경 억제는 설계문(Plan&Source/goala_p7_focus_W.md)의 수동 QA 층이 덮는다.
+   */
+  it('backdrop-inert: 열림 시 배경 형제에 inert/aria-hidden, 닫힘 시 해제 + 트리거 복원', async () => {
+    const user = userEvent.setup()
+    render(<Harness />)
+    const trigger = screen.getByRole('button', { name: '열기' })
+
+    await user.click(trigger)
+    const dialog = screen.getByRole('dialog')
+
+    // 포털 루트 = dialog 를 subtree 에 담은 body 직계 자식.
+    const bodyChildren = Array.from(document.body.children)
+    const portalRoot = bodyChildren.find((el) => el.contains(dialog))
+    expect(portalRoot).toBeTruthy()
+
+    // 포털 루트를 뺀 나머지 body 형제(= 배경, 트리거를 담은 컨테이너 포함)는 각각 숨겨져야 한다.
+    const siblings = bodyChildren.filter((el) => el !== portalRoot)
+    expect(siblings.length).toBeGreaterThan(0)
+    for (const s of siblings) {
+      const hidden = s.hasAttribute('inert') || s.getAttribute('aria-hidden') === 'true'
+      expect(hidden).toBe(true)
+    }
+
+    // 포털 루트 자신은 제외(숨김 금지).
+    expect(portalRoot!.hasAttribute('inert')).toBe(false)
+    expect(portalRoot!.getAttribute('aria-hidden')).not.toBe('true')
+
+    // 닫힘: 배경 복원 + 트리거 재포커스(정리순서가 맞아야 통과).
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    for (const s of Array.from(document.body.children)) {
+      expect(s.hasAttribute('inert')).toBe(false)
+      expect(s.getAttribute('aria-hidden')).not.toBe('true')
+    }
+    expect(trigger).toHaveFocus()
+  })
 })
