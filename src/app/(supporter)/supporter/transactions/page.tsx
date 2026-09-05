@@ -1,6 +1,7 @@
 import { requireStaff } from '@/utils/supabase/staff'
 import { getServiceUsages } from '@/app/actions/serviceUsage'
 import OrgLedgerClient, { type LedgerRow } from './OrgLedgerClient'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export const metadata = { title: '거래장부' }
 
@@ -44,7 +45,7 @@ export default async function TransactionsPage() {
             {error}
           </div>
         ) : rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground leading-relaxed py-12 text-center">아직 지출 기록이 없어요.</p>
+          <EmptyState title="아직 지출 기록이 없어요." action={{ label: '당사자 보러 가기', href: '/supporter/participants' }} />
         ) : (
           <OrgLedgerClient rows={rows} />
         )}

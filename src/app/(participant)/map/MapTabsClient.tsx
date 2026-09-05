@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import KakaoMap, { type MapTransaction, type MapPlace } from '@/components/map/KakaoMap'
 import { providersForDomain, type DiscoveryMarker } from '@/utils/assetMap'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 type Tab = 'mine' | 'discover'
 
@@ -93,9 +94,7 @@ export default function MapTabsClient({
               쓸 수 있는 곳 정보는<br />곧 준비될 예정이에요.
             </p>
           ) : filtered.length === 0 ? (
-            <p className="text-muted-foreground text-sm py-6 text-center bg-muted rounded-2xl leading-relaxed">
-              {domainId ? '이 영역에서 쓸 수 있는 곳이\n아직 없어요.' : '쓸 수 있는 곳이 아직 없어요.'}
-            </p>
+            <EmptyState title={domainId ? '이 영역에서 쓸 수 있는 곳이 아직 없어요.' : '쓸 수 있는 곳이 아직 없어요.'} />
           ) : (
             <ul className="flex flex-col gap-2">
               {filtered.map((m) => (

@@ -8,6 +8,7 @@ import { analyzeReceipt } from '@/app/actions/ocr'
 import { searchPlaces, type PlaceResult } from '@/app/actions/geocode'
 import { findOrCreateProvider } from '@/app/actions/serviceProvider'
 import { FormField } from '@/components/ui/FormField'
+import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 import { useToast } from '@/components/ui/LiveRegion'
 
 const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
@@ -171,9 +172,7 @@ export default function ReceiptClient({
 
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-6 max-w-sm mx-auto w-full">
         {!allocationId ? (
-          <section className="p-8 rounded-3xl bg-muted text-center">
-            <p className="text-muted-foreground font-medium leading-relaxed">아직 예산이 정해지지 않았어요.<br />담당 선생님에게 말씀해 주세요.</p>
-          </section>
+          <NoBudgetGate title="아직 예산이 정해지지 않았어요." variant="inline" />
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {error && (

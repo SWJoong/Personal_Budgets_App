@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getApplications, type ApplicationStatus } from '@/app/actions/application'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const STATUS_LABEL: Record<ApplicationStatus, string> = {
   draft: '작성 중',
@@ -50,7 +51,7 @@ export default async function ApplicationsPage() {
         )}
 
         {(applications ?? []).length === 0 ? (
-          <p className="text-muted-foreground text-sm py-8 text-center">아직 접수된 신청서가 없어요.</p>
+          <EmptyState title="아직 신청서를 받지 않았어요." action={{ label: '새 신청서 받기', href: '/supporter/applications/new' }} />
         ) : (
           <ul className="flex flex-col gap-2">
             {(applications ?? []).map((app) => (

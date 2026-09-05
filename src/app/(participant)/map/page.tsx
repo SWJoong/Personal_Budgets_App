@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
+import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 import { type MapTransaction } from '@/components/map/KakaoMap'
 import { getDiscoveryAssets } from '@/app/actions/serviceProvider'
 import MapTabsClient from './MapTabsClient'
@@ -21,10 +22,7 @@ export default async function MapPage() {
         <header className="flex h-14 items-center px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
           <h1 className="text-sm font-black text-foreground">사용 장소 지도</h1>
         </header>
-        <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-4">
-          <span className="text-6xl">🗺️</span>
-          <p className="text-muted-foreground font-medium leading-relaxed">아직 예산 정보가 없어요.<br />담당 선생님에게 말씀해 주세요.</p>
-        </main>
+        <NoBudgetGate title="아직 예산 정보가 없어요." emoji="🗺️" variant="page" />
       </div>
     )
   }

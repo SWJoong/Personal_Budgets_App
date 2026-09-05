@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export const metadata = { title: '해보고 싶은 것' }
 
@@ -63,16 +64,7 @@ export default async function PlanPage() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center text-center gap-5 py-16">
-            <span className="text-6xl" aria-hidden="true">📝</span>
-            <p className="text-lg font-bold text-muted-foreground leading-relaxed">아직 없어요.</p>
-            <Link
-              href="/my-plan"
-              className="inline-flex items-center justify-center min-h-[44px] px-6 rounded-2xl bg-hero text-hero-foreground text-base font-bold hover:opacity-90 transition-colors"
-            >
-              이용계획에서 적어요
-            </Link>
-          </div>
+          <EmptyState emoji="📝" title="아직 아무것도 안 적었어요." action={{ label: '이용계획에서 적어요', href: '/my-plan' }} />
         )}
       </main>
     </div>

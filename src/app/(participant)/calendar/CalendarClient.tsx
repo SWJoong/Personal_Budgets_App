@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface Usage {
   id: string
@@ -117,7 +118,7 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
             {selectedDate ? `${selectedDate} 에 쓴 돈` : '날짜를 눌러보세요'}
           </h2>
           {selectedDate && selectedUsages.length === 0 && (
-            <p className="text-muted-foreground text-sm leading-relaxed">이 날은 쓴 돈이 없어요.</p>
+            <EmptyState title="이 날은 쓴 돈이 없어요." description="다른 날짜를 눌러보세요." />
           )}
           {selectedUsages.map((u) => (
             <div key={u.id} className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center justify-between">

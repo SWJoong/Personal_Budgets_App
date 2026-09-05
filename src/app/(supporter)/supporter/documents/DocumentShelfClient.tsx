@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useToast } from '@/components/ui/LiveRegion'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { getDocumentSignedUrl } from '@/app/actions/document'
 import type { DocumentShelf } from '@/utils/documentShelf'
 
@@ -34,7 +35,7 @@ export default function DocumentShelfClient({ shelf }: { shelf: DocumentShelf })
   }
 
   if (shelf.participants.length === 0) {
-    return <p className="text-sm text-muted-foreground leading-relaxed py-12 text-center">아직 등록된 서류가 없어요.</p>
+    return <EmptyState title="아직 등록된 서류가 없어요." />
   }
 
   return (

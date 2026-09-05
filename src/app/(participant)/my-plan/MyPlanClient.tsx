@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { markNotificationRead } from '@/app/actions/planReview'
 import { fileAppeal } from '@/app/actions/appeal'
 import ActivitySuggestions from './ActivitySuggestions'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface Plan {
   id: string
@@ -168,11 +169,7 @@ export default function MyPlanClient({
         )}
 
         {!plan ? (
-          <section className="p-8 rounded-3xl bg-muted text-center">
-            <p className="text-muted-foreground font-medium leading-relaxed">
-              아직 계획이 없어요.<br />담당 선생님이 함께 계획을 만들 거예요.
-            </p>
-          </section>
+          <EmptyState title="아직 계획이 없어요." description="담당 선생님이 함께 계획을 만들 거예요." />
         ) : (
           <>
             <section className="p-5 rounded-2xl bg-muted">
@@ -256,7 +253,7 @@ export default function MyPlanClient({
             <section className="flex flex-col gap-3">
               <h2 className="text-sm font-bold text-muted-foreground">쓰고 싶은 서비스</h2>
               {filledServices.length === 0 ? (
-                <p className="text-sm text-muted-foreground leading-relaxed">아직 정해진 서비스가 없어요.</p>
+                <EmptyState title="아직 정해진 서비스가 없어요." />
               ) : (
                 <ul className="flex flex-col gap-3">
                   {filledServices.map((s) => (

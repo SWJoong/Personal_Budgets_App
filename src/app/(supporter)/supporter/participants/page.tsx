@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { requireStaff } from '@/utils/supabase/staff'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 /**
  * 당사자 목록 — 담당자가 당사자를 골라 욕구사정 등으로 들어가는 진입점.
@@ -29,7 +30,7 @@ export default async function ParticipantsOverviewPage() {
         )}
 
         {(participants ?? []).length === 0 ? (
-          <p className="text-muted-foreground text-sm py-8 text-center">아직 등록된 당사자가 없어요.</p>
+          <EmptyState title="아직 등록된 당사자가 없어요." action={{ label: '당사자 추가하기', href: '/admin/participants/new' }} />
         ) : (
           <ul className="flex flex-col gap-2">
             {(participants ?? []).map((p) => (
