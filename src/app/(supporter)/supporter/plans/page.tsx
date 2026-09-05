@@ -26,11 +26,11 @@ export default async function PlansPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+      <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <h1 className="text-xl font-bold tracking-tight">이용계획 · 심의</h1>
         <Link
           href="/supporter/plans/new"
-          className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-sm font-bold hover:bg-zinc-800 transition-colors min-h-[44px] flex items-center"
+          className="px-4 py-2 rounded-xl bg-hero text-hero-foreground text-sm font-bold hover:opacity-90 transition-colors min-h-[44px] flex items-center"
         >
           새 계획 만들기
         </Link>
@@ -38,26 +38,26 @@ export default async function PlansPage() {
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6 flex flex-col gap-3">
         {error && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>
+          <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm">{error}</div>
         )}
 
         {(plans ?? []).length === 0 ? (
-          <p className="text-zinc-400 text-sm py-8 text-center">아직 작성된 이용계획이 없어요.</p>
+          <p className="text-muted-foreground text-sm py-8 text-center">아직 작성된 이용계획이 없어요.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {(plans ?? []).map((plan) => (
               <li key={plan.id}>
                 <Link
                   href={`/supporter/plans/${plan.id}`}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-white ring-1 ring-zinc-200 hover:ring-zinc-400 transition-all"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-card ring-1 ring-border hover:ring-foreground transition-all"
                 >
                   <div className="flex flex-col gap-1">
                     <span className="font-bold">{participantName.get(plan.participant_id) ?? '이름 없음'}</span>
-                    <span className="text-xs text-zinc-400">
+                    <span className="text-xs text-muted-foreground">
                       {plan.plan_period_start ?? '—'} ~ {plan.plan_period_end ?? '—'}
                     </span>
                   </div>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600">
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
                     {STATUS_LABEL[plan.status] ?? plan.status}
                   </span>
                 </Link>

@@ -41,7 +41,7 @@ export default function SupporterMapClient({
 
   const chip = (active: boolean) =>
     `text-xs font-bold px-3 min-h-[44px] rounded-full whitespace-nowrap flex items-center transition-colors ring-1 ${
-      active ? 'bg-zinc-900 text-white ring-zinc-900' : 'bg-white text-zinc-600 ring-zinc-200 hover:bg-zinc-50'
+      active ? 'bg-hero text-hero-foreground ring-hero' : 'bg-card text-muted-foreground ring-border hover:bg-muted'
     }`
 
   return (
@@ -62,33 +62,33 @@ export default function SupporterMapClient({
 
       {/* 목록 — 지도와 같은 필터 결과 */}
       <div className="flex flex-col gap-2">
-        <h2 className="text-sm font-bold text-zinc-500 px-1">
-          쓸 수 있는 곳 {filtered.length > 0 && <span className="text-zinc-400">({filtered.length})</span>}
+        <h2 className="text-sm font-bold text-muted-foreground px-1">
+          쓸 수 있는 곳 {filtered.length > 0 && <span className="text-muted-foreground">({filtered.length})</span>}
         </h2>
         {filtered.length === 0 ? (
-          <p className="text-zinc-400 text-sm py-6 text-center bg-zinc-50 rounded-2xl">
+          <p className="text-muted-foreground text-sm py-6 text-center bg-muted rounded-2xl">
             {domainId ? '이 영역에서 쓴 곳이 아직 없어요.' : '등록된 장소가 아직 없어요.'}
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
             {filtered.map((m) => (
-              <li key={m.id} className="p-4 rounded-2xl bg-white ring-1 ring-zinc-200 flex flex-col gap-1.5">
+              <li key={m.id} className="p-4 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-zinc-800 truncate">{m.name}</span>
-                  {m.category && <span className="shrink-0 text-xs text-zinc-400">{m.category}</span>}
+                  <span className="font-bold text-foreground truncate">{m.name}</span>
+                  {m.category && <span className="shrink-0 text-xs text-muted-foreground">{m.category}</span>}
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {m.domainIds.map((id) => (
-                    <span key={id} className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 ring-1 ring-teal-200">
+                    <span key={id} className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-asset-bg text-asset-fg ring-1 ring-asset-fg/20">
                       {domainLabelById[id] ?? '기타'}
                     </span>
                   ))}
                   {m.usageCount > 0 ? (
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-muted-foreground">
                       이용 {m.usageCount}회 · {Math.round(m.totalAmount).toLocaleString('ko-KR')}원
                     </span>
                   ) : (
-                    <span className="text-xs text-zinc-400">아직 쓴 기록 없음</span>
+                    <span className="text-xs text-muted-foreground">아직 쓴 기록 없음</span>
                   )}
                 </div>
               </li>

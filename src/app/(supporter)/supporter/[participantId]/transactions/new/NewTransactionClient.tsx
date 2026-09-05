@@ -33,7 +33,7 @@ interface Subdomain {
 const PROGRAM_LABEL: Record<Program, string> = { seoul: '서울형', mohw: '보건복지부' }
 
 const inputClass =
-  'p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 leading-relaxed focus:ring-zinc-400 focus:outline-none'
+  'p-3 rounded-xl bg-muted ring-1 ring-border text-foreground leading-relaxed focus:ring-foreground focus:outline-none'
 
 function won(n: number): string {
   return Number(n).toLocaleString('ko-KR') + '원'
@@ -138,7 +138,7 @@ export default function NewTransactionClient({
 
   if (allocations.length === 0) {
     return (
-      <p className="text-zinc-400 text-sm py-8 text-center leading-relaxed">
+      <p className="text-muted-foreground text-sm py-8 text-center leading-relaxed">
         아직 배정된 예산이 없어요.
         <br />
         이용계획이 승인되고 예산이 배정된 뒤에 지출을 기록할 수 있어요.
@@ -149,19 +149,19 @@ export default function NewTransactionClient({
   return (
     <div className="flex flex-col gap-4">
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">{error}</div>
+        <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium">{error}</div>
       )}
 
       {allocations.length > 1 && (
         <div className="flex flex-col gap-1">
-          <label htmlFor="tx-allocation" className="text-xs text-zinc-500 font-medium">
+          <label htmlFor="tx-allocation" className="text-xs text-muted-foreground font-medium">
             어떤 예산인가요? *
           </label>
           <select
             id="tx-allocation"
             value={allocationId}
             onChange={(e) => setAllocationId(e.target.value)}
-            className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+            className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
           >
             <option value="">골라 주세요</option>
             {allocations.map((a) => (
@@ -174,7 +174,7 @@ export default function NewTransactionClient({
       )}
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="tx-amount" className="text-xs text-zinc-500 font-medium">
+        <label htmlFor="tx-amount" className="text-xs text-muted-foreground font-medium">
           얼마를 썼나요? *
         </label>
         <input
@@ -190,7 +190,7 @@ export default function NewTransactionClient({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="tx-date" className="text-xs text-zinc-500 font-medium">
+        <label htmlFor="tx-date" className="text-xs text-muted-foreground font-medium">
           언제 썼나요? *
         </label>
         <input
@@ -203,7 +203,7 @@ export default function NewTransactionClient({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="tx-desc" className="text-xs text-zinc-500 font-medium">
+        <label htmlFor="tx-desc" className="text-xs text-muted-foreground font-medium">
           무엇에 썼나요?
         </label>
         <input
@@ -217,8 +217,8 @@ export default function NewTransactionClient({
 
       {/* 분류축(GOAL축B) — 이 지출이 어느 지원영역에 속하는지. 안 골라도 됨(nullable).
           service_usages.domain_id 그레인만 채운다(예산·정산 domain 은 손대지 않음 — 스펙 §8-5). */}
-      <div className="flex flex-col gap-2 rounded-xl bg-zinc-50/60 ring-1 ring-zinc-200 p-3">
-        <span className="text-xs text-zinc-500 font-medium">어느 영역에 썼나요? (안 골라도 돼요)</span>
+      <div className="flex flex-col gap-2 rounded-xl bg-muted ring-1 ring-border p-3">
+        <span className="text-xs text-muted-foreground font-medium">어느 영역에 썼나요? (안 골라도 돼요)</span>
 
         <div className="flex gap-2" role="group" aria-label="제도 선택">
           {(['seoul', 'mohw'] as Program[]).map((p) => (
@@ -229,8 +229,8 @@ export default function NewTransactionClient({
               aria-pressed={program === p}
               className={`flex-1 p-2.5 rounded-lg font-bold text-sm transition-colors min-h-[44px] ${
                 program === p
-                  ? 'bg-zinc-900 text-white'
-                  : 'bg-white ring-1 ring-zinc-200 text-zinc-600 hover:ring-zinc-400'
+                  ? 'bg-hero text-hero-foreground'
+                  : 'bg-card ring-1 ring-border text-muted-foreground hover:ring-foreground'
               }`}
             >
               {PROGRAM_LABEL[p]}
@@ -243,7 +243,7 @@ export default function NewTransactionClient({
           aria-label="지원 영역"
           value={domainId}
           onChange={(e) => selectDomain(e.target.value)}
-          className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+          className="p-3 rounded-xl bg-card ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
         >
           <option value="">영역 안 고름</option>
           {domainsForProgram.map((d) => (
@@ -259,7 +259,7 @@ export default function NewTransactionClient({
             aria-label="세부 영역(중분류)"
             value={subdomainId}
             onChange={(e) => setSubdomainId(e.target.value)}
-            className="p-3 rounded-xl bg-white ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+            className="p-3 rounded-xl bg-card ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
           >
             <option value="">세부 영역 안 고름</option>
             {subdomainsForDomain.map((s) => (
@@ -272,7 +272,7 @@ export default function NewTransactionClient({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="tx-receipt" className="text-xs text-zinc-500 font-medium">
+        <label htmlFor="tx-receipt" className="text-xs text-muted-foreground font-medium">
           영수증 사진 (안 올려도 돼요)
         </label>
         <input
@@ -280,15 +280,15 @@ export default function NewTransactionClient({
           type="file"
           accept="image/*"
           onChange={handleFile}
-          className="text-sm text-zinc-600 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-bold file:text-zinc-700"
+          className="text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-muted file:px-3 file:py-2 file:text-sm file:font-bold file:text-muted-foreground"
         />
-        {receipt && <span className="text-xs text-zinc-500">📎 {receipt.name}</span>}
+        {receipt && <span className="text-xs text-muted-foreground">📎 {receipt.name}</span>}
       </div>
 
       <button
         onClick={handleSubmit}
         disabled={pending}
-        className="p-4 rounded-2xl bg-zinc-900 text-white font-bold text-base hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
+        className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:opacity-90 transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
       >
         {pending ? '기록하고 있어요...' : '지출 기록하기'}
       </button>
