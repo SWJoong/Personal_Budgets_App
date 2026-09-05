@@ -34,17 +34,17 @@ export default async function TransactionsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
+      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <h1 className="text-xl font-bold tracking-tight">거래장부</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
         {error ? (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm leading-relaxed">
+          <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm leading-relaxed">
             {error}
           </div>
         ) : rows.length === 0 ? (
-          <p className="text-sm text-zinc-600 leading-relaxed py-12 text-center">아직 지출 기록이 없어요.</p>
+          <p className="text-sm text-muted-foreground leading-relaxed py-12 text-center">아직 지출 기록이 없어요.</p>
         ) : (
           <OrgLedgerClient rows={rows} />
         )}

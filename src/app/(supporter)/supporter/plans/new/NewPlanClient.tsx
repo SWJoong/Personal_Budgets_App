@@ -42,11 +42,11 @@ export default function NewPlanClient({ candidates }: { candidates: Candidate[] 
   return (
     <div className="flex flex-col gap-6">
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">{error}</div>
+        <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium">{error}</div>
       )}
 
       {candidates.length === 0 ? (
-        <p className="text-zinc-400 text-sm py-8 text-center leading-relaxed">
+        <p className="text-muted-foreground text-sm py-8 text-center leading-relaxed">
           계획을 만들 수 있는 당사자가 없어요.<br />
           선정된 신청자에게만 계획을 만들 수 있고, 이미 계획이 있는 경우는 제외됩니다.
         </p>
@@ -58,7 +58,7 @@ export default function NewPlanClient({ candidates }: { candidates: Candidate[] 
                 {...field}
                 value={applicationId}
                 onChange={(e) => setApplicationId(e.target.value)}
-                className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
               >
                 <option value="">선택해주세요</option>
                 {candidates.map((c) => (
@@ -71,7 +71,7 @@ export default function NewPlanClient({ candidates }: { candidates: Candidate[] 
           <button
             onClick={handleCreate}
             disabled={pending || !applicationId}
-            className="p-4 rounded-2xl bg-zinc-900 text-white font-bold text-base hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
+            className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:opacity-90 transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
           >
             {pending ? '만들고 있어요...' : '계획 만들기'}
           </button>

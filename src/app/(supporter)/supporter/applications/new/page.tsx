@@ -123,12 +123,12 @@ export default function NewApplicationPage() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-        <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-          <Link href="/supporter/applications" aria-label="뒤로 가기" className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center">←</Link>
+        <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
+          <Link href="/supporter/applications" aria-label="뒤로 가기" className="text-muted-foreground hover:text-foreground transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center">←</Link>
           <h1 className="text-xl font-bold tracking-tight">신청서 접수</h1>
         </header>
         <main id="main-content" tabIndex={-1} className="flex-1 flex items-center justify-center">
-          <p className="text-zinc-400 font-medium">불러오는 중...</p>
+          <p className="text-muted-foreground font-medium">불러오는 중...</p>
         </main>
       </div>
     )
@@ -136,21 +136,21 @@ export default function NewApplicationPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
-      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-        <Link href="/supporter/applications" aria-label="뒤로 가기" className="text-zinc-400 hover:text-zinc-600 transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center">←</Link>
+      <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
+        <Link href="/supporter/applications" aria-label="뒤로 가기" className="text-muted-foreground hover:text-foreground transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center">←</Link>
         <h1 className="text-xl font-bold tracking-tight">신청서 접수</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           {error && (
-            <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium">
+            <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium">
               {error}
             </div>
           )}
 
-          <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200">
-            <legend className="text-xs font-black text-zinc-400 uppercase tracking-widest px-1">신청 정보</legend>
+          <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-card ring-1 ring-border">
+            <legend className="text-xs font-black text-muted-foreground uppercase tracking-widest px-1">신청 정보</legend>
 
             <FormField
               id="app-participant"
@@ -164,7 +164,7 @@ export default function NewApplicationPage() {
                   {...field}
                   value={participantId}
                   onChange={(e) => setParticipantId(e.target.value)}
-                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
                   required
                 >
                   <option value="">선택해주세요</option>
@@ -181,7 +181,7 @@ export default function NewApplicationPage() {
                   {...field}
                   value={cohortId}
                   onChange={(e) => setCohortId(e.target.value)}
-                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
                   required
                 >
                   <option value="">선택해주세요</option>
@@ -200,14 +200,14 @@ export default function NewApplicationPage() {
                   value={receiptNumber}
                   onChange={(e) => setReceiptNumber(e.target.value)}
                   placeholder="선택 입력"
-                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
                 />
               )}
             </FormField>
           </fieldset>
 
-          <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-white ring-1 ring-zinc-200">
-            <legend className="text-xs font-black text-zinc-400 uppercase tracking-widest px-1">수급 현황</legend>
+          <fieldset className="flex flex-col gap-4 p-5 rounded-2xl bg-card ring-1 ring-border">
+            <legend className="text-xs font-black text-muted-foreground uppercase tracking-widest px-1">수급 현황</legend>
 
             <FormField
               id="app-public-assistance"
@@ -219,7 +219,7 @@ export default function NewApplicationPage() {
                   {...field}
                   value={publicAssistance}
                   onChange={(e) => setPublicAssistance(e.target.value as PublicAssistance | '')}
-                  className="p-3 rounded-xl bg-zinc-50 ring-1 ring-zinc-200 text-zinc-800 font-medium focus:ring-zinc-400 focus:outline-none"
+                  className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium focus:ring-foreground focus:outline-none"
                 >
                   <option value="">아직 확인 못함</option>
                   <option value="basic_livelihood">기초생활수급</option>
@@ -234,9 +234,9 @@ export default function NewApplicationPage() {
                 type="checkbox"
                 checked={usesActivitySupport}
                 onChange={(e) => setUsesActivitySupport(e.target.checked)}
-                className="w-5 h-5 rounded accent-zinc-900"
+                className="w-5 h-5 rounded accent-foreground"
               />
-              <span className="text-sm text-zinc-700 font-medium">장애인 활동지원서비스 이용 중</span>
+              <span className="text-sm text-muted-foreground font-medium">장애인 활동지원서비스 이용 중</span>
             </label>
 
             <label className="flex items-center gap-3 min-h-[44px] cursor-pointer">
@@ -244,12 +244,12 @@ export default function NewApplicationPage() {
                 type="checkbox"
                 checked={participatesInMohwPilot}
                 onChange={(e) => setParticipatesInMohwPilot(e.target.checked)}
-                className="w-5 h-5 rounded accent-zinc-900"
+                className="w-5 h-5 rounded accent-foreground"
               />
-              <span className="text-sm text-zinc-700 font-medium">보건복지부 개인예산제 시범사업 참여 중</span>
+              <span className="text-sm text-muted-foreground font-medium">보건복지부 개인예산제 시범사업 참여 중</span>
             </label>
             {participatesInMohwPilot && (
-              <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg p-3 leading-relaxed">
+              <p className="text-[11px] text-warning-fg bg-warning-bg rounded-lg p-3 leading-relaxed">
                 복지부 시범사업 참여자는 서울형에 참여할 수 없습니다. 이대로 저장하면
                 선정 단계에서 막힙니다.
               </p>
@@ -259,7 +259,7 @@ export default function NewApplicationPage() {
           <button
             type="submit"
             disabled={saving || !participantId || !cohortId}
-            className="p-4 rounded-2xl bg-zinc-900 text-white font-bold text-base hover:bg-zinc-800 transition-colors active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-lg min-h-[44px]"
+            className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:opacity-90 transition-colors active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-lg min-h-[44px]"
           >
             {saving ? '저장하고 있습니다...' : '신청서 접수하기'}
           </button>
