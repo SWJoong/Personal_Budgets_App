@@ -1053,3 +1053,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-05T09:01Z] U
 [P7 착수·사용자 결정 2건] P6 완결(#111 앱전역 raw-0) 후 사용자 'P7 폴리시' 지시. 감사(4카테고리 39항목)→5웨이브 계획. ★사용자 결정: (1)P7 깊이=★P7-1+P7-2(웨1 문구신뢰·웨2 포커스복구·웨3 빈상태·웨4 hover/press 토큰. P7-3 시각마감/시각회귀 보류). (2)갤러리 정체성=활동사진 우선+영수증 후순위(영수증만이면 영수증만)→이름 '활동 사진' 통일+정렬/폴백 동작(단순문구 초과, 현동작 확인 후 웨3서 보정). / 웨이브1(문구 신뢰·쉬운말 RED 골든: B1 MoreMenu 이용계획 라벨 열람전용 모순+심의 제거·B2 정산상태 인정됨/반려됨/환수됨 한자어→쉬운말·B4 AI→컴퓨터가만든·B7 뒤로가기 통일·B8 불이익·B9 조건부/제출·B11 영역별로보기) 계약 진행중(easyread MCP 검증). 근본원인: focus:outline-none 16파일 focus-visible 무력화(웨2)·EmptyState 8곳만(웨3)·hover:opacity-90 42곳(웨4). e6 계약→app-6c 구현 사이클 유지. main push 금지.
 
+## [2026-09-05T09:40Z] U
+[P7 웨이브1 완료] #112 머지(main=990b19a) → 당사자 대면 문구 신뢰·쉬운말 교정 15문자열(B1 MoreMenu·B2 SETTLEMENT_LABEL·B7 aria·B8/B9 MyPlan·B4 guide AI→컴퓨터·B11 홈 제목). 골든 37/37·소스 문자열만·미러(ParticipantHomePreviewClient) 동기화 e6 승인. P7 착수 확인(사용자 머지). 다음: 웨이브2(포커스/인터랙션 복구 — D1 focus:outline-none→focus-visible 16파일·D2 링토큰·C1 드로어 slide-in keyframe·D9 login로고·D11 Modal inert) e6 계약 대기. main push 금지.
+
