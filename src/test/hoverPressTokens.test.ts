@@ -52,7 +52,14 @@ function topLevelBlocks(css: string): { selector: string; body: string }[] {
     const ch = css[i]
     if (ch === '{') {
       if (depth === 0) {
-        sel = css.slice(selStart, i).trim().replace(/\s+/g, ' ')
+        // ★셀렉터에서 preamble(주석·@import/@charset/@plugin …; 문) 제거 — globals.css 는 @theme 앞에
+        // top-level `}` 없이 @import + 주석이 와서 @theme 셀렉터가 preamble 로 오염되던 버그 수정.
+        sel = css
+          .slice(selStart, i)
+          .replace(/\/\*[\s\S]*?\*\//g, ' ') // 블록 주석 제거
+          .replace(/@[a-z-]+[^;{}]*;/gi, ' ') // at-statement(@import/@charset/@plugin …;) 제거(블록 @-rule 은 ; 없어 보존)
+          .trim()
+          .replace(/\s+/g, ' ')
         bodyStart = i + 1
       }
       depth++
