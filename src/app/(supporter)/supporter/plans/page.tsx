@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getUtilizationPlans } from '@/app/actions/utilizationPlan'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 const STATUS_LABEL: Record<string, string> = {
   draft: '작성 중',
@@ -42,7 +43,7 @@ export default async function PlansPage() {
         )}
 
         {(plans ?? []).length === 0 ? (
-          <p className="text-muted-foreground text-sm py-8 text-center">아직 작성된 이용계획이 없어요.</p>
+          <EmptyState title="아직 작성된 이용계획이 없어요." action={{ label: '새 계획 만들기', href: '/supporter/plans/new' }} />
         ) : (
           <ul className="flex flex-col gap-2">
             {(plans ?? []).map((plan) => (

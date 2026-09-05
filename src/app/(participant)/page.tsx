@@ -11,6 +11,8 @@ import {
 import type { DomainSpine, DomainFlowRow } from '@/utils/domainAxisReport'
 import { getUIPreferences } from '@/app/actions/preferences'
 import { BLOCK_METADATA, type BlockId } from '@/utils/uiPreferences'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 
 export const metadata = { title: '홈' }
 
@@ -73,15 +75,7 @@ export default async function Home() {
         <header className="flex h-16 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
           <h1 className="text-xl font-bold tracking-tight">서울형 개인예산</h1>
         </header>
-        <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-6 max-w-sm mx-auto">
-          <span aria-hidden="true" className="text-8xl">👋</span>
-          <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-bold tracking-tight">반가워요!</h2>
-            <p className="text-muted-foreground font-medium leading-relaxed">
-              아직 예산 정보가 없어요.<br />담당 선생님에게 말씀해 주세요.
-            </p>
-          </div>
-        </main>
+        <NoBudgetGate title="아직 예산 정보가 없어요." emoji="👋" variant="page" />
       </div>
     )
   }
@@ -150,11 +144,7 @@ export default async function Home() {
       </header>
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-6 max-w-sm mx-auto w-full">
         {!balance ? (
-          <section className="p-8 rounded-3xl bg-muted text-center">
-            <p className="text-muted-foreground font-medium leading-relaxed">
-              아직 정해진 예산이 없어요.<br />선생님들이 확인하면 여기에 나와요.
-            </p>
-          </section>
+          <EmptyState title="아직 정해진 예산이 없어요." description="선생님들이 확인하면 여기에 나와요." />
         ) : (
           <>
             <section className="p-8 rounded-3xl bg-hero text-hero-foreground flex flex-col gap-2">
@@ -269,7 +259,7 @@ export default async function Home() {
                 ))}
               </ul>
             ) : (
-              <p className="text-muted-foreground text-sm leading-relaxed">아직 쓴 돈이 없어요.</p>
+              <EmptyState title="아직 쓴 돈이 없어요." action={{ label: '처음으로 돈을 써 보세요', href: '/receipt' }} />
             )}
           </section>
         )}

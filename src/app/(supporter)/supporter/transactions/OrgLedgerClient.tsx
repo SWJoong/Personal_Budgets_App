@@ -95,7 +95,7 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
 
       {/* ③ 당사자별 그룹 */}
       {ledger.participants.length === 0 ? (
-        <EmptyState emoji="📭" title="해당하는 지출이 없어요." variant="inline" />
+        <EmptyState emoji="📭" title="해당하는 지출이 없어요." description="조건을 바꿔서 다시 찾아보세요." variant="inline" />
       ) : (
         <ul className="flex flex-col gap-2">
           {ledger.participants.map((p) => {

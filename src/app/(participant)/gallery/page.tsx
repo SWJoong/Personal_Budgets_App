@@ -2,6 +2,8 @@ import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 
 export const metadata = { title: '활동 사진' }
 
@@ -16,12 +18,9 @@ export default async function GalleryPage() {
     return (
       <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
         <header className="flex h-14 items-center px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
-          <h1 className="text-sm font-black text-foreground">영수증 모아보기</h1>
+          <h1 className="text-sm font-black text-foreground">활동 사진</h1>
         </header>
-        <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-4">
-          <span className="text-6xl">🖼️</span>
-          <p className="text-muted-foreground font-medium leading-relaxed">아직 예산 정보가 없어요.<br />담당 선생님에게 말씀해 주세요.</p>
-        </main>
+        <NoBudgetGate title="아직 예산 정보가 없어요." emoji="🖼️" variant="page" />
       </div>
     )
   }
@@ -49,7 +48,8 @@ export default async function GalleryPage() {
       }
     })
   )
-  const validPhotos = photos.filter((p) => p.url)
+  // 결정적 정렬: usage_date 최신순(newest first). receipts 자체 날짜가 없어 조인된 usage_date 로 정렬.
+  const validPhotos = photos.filter((p) => p.url).sort((a, b) => b.date.localeCompare(a.date))
 
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
@@ -57,15 +57,12 @@ export default async function GalleryPage() {
         <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
           ←
         </Link>
-        <h1 className="text-sm font-black text-foreground">영수증 모아보기</h1>
+        <h1 className="text-sm font-black text-foreground">활동 사진</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 max-w-sm mx-auto w-full">
         {validPhotos.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center gap-4 pt-16">
-            <span className="text-6xl">🖼️</span>
-            <p className="text-muted-foreground font-medium leading-relaxed">아직 사진이 없어요.<br />지출을 기록할 때 사진을 함께 남겨보세요.</p>
-          </div>
+          <EmptyState emoji="🖼️" title="아직 사진이 없어요." description="지출을 기록할 때 사진을 함께 남겨보세요." />
         ) : (
           <ul className="grid grid-cols-2 gap-3">
             {validPhotos.map((p) => (
@@ -73,7 +70,7 @@ export default async function GalleryPage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={p.url!}
-                  alt={`${p.description} 영수증`}
+                  alt={p.description}
                   className="w-full aspect-square object-cover rounded-2xl ring-1 ring-border"
                 />
                 <span className="text-xs text-muted-foreground font-medium truncate">{p.description}</span>
