@@ -126,6 +126,29 @@ const TOKENIZED_FILES = [
   'src/app/(participant)/gallery/page.tsx',
   'src/app/(participant)/receipt/page.tsx',
   'src/app/(participant)/layout.tsx',
+
+  // ── P6 대비 완성 sweep · Batch 4a: 실무자 운영 화면 19 (거래·신청·계획·검토·서류·당사자·지도) ──
+  //   색만 토큰화(매핑=goala_p6_sweep_W.md). 상태 테두리=중립 border-border.
+  //   MapClient=asset 토큰(Batch3 신규) 재사용 · ReviewQueueClient=Phase C list 구조 완료(색만).
+  'src/app/(supporter)/supporter/[participantId]/transactions/new/NewTransactionClient.tsx',
+  'src/app/(supporter)/supporter/[participantId]/transactions/new/page.tsx',
+  'src/app/(supporter)/supporter/transactions/page.tsx',
+  'src/app/(supporter)/supporter/applications/[id]/ApplicationDetailClient.tsx',
+  'src/app/(supporter)/supporter/applications/[id]/page.tsx',
+  'src/app/(supporter)/supporter/applications/new/page.tsx',
+  'src/app/(supporter)/supporter/applications/page.tsx',
+  'src/app/(supporter)/supporter/plans/[id]/EasyReadSummary.tsx',
+  'src/app/(supporter)/supporter/plans/[id]/page.tsx',
+  'src/app/(supporter)/supporter/plans/new/NewPlanClient.tsx',
+  'src/app/(supporter)/supporter/plans/new/page.tsx',
+  'src/app/(supporter)/supporter/plans/page.tsx',
+  'src/app/(supporter)/supporter/review/ReviewQueueClient.tsx',
+  'src/app/(supporter)/supporter/review/page.tsx',
+  'src/app/(supporter)/supporter/documents/DocumentShelfClient.tsx',
+  'src/app/(supporter)/supporter/documents/page.tsx',
+  'src/app/(supporter)/supporter/participants/page.tsx',
+  'src/app/(supporter)/supporter/map/MapClient.tsx',
+  'src/app/(supporter)/supporter/map/page.tsx',
 ]
 
 // Tailwind 임의 팔레트(시맨틱 토큰으로 대체돼야 함).
