@@ -1059,3 +1059,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-05T10:57Z] U
 [P7 웨이브2 완료] #113 머지(main=fda7f57) → 포커스·인터랙션 복구: D1/D9 focus:outline-none 46곳(16파일) 제거→:focus-visible 3px primary 상속(WCAG 2.4.7)·D2 링색 primary 수렴(muted-fg/foreground 0)·C1 globals @keyframes slide-in-*+.animate 교체(NavDropdown/SupporterLayout 죽은클래스 복구)·D11 Modal 배경 inert(정리순서 inert해제 before focus-restore·data-modal-portal 자기제외). 병렬워커2기+직접. e6 2인검증+수동QA PASS·BLOCK0. 게이트 골든28/28·Modal9/9·전체486·tsc·build·lint. ★Low(P7-3 후속): 이중 포커스링(커스텀 focus-visible:ring + 전역 :focus-visible outline 겹침, a11y OK) → 전역 규칙 @layer화로 단일링(globals 구조변경, 지금 안 함). 다음: 웨이브3(빈상태·갤러리, ★갤러리 사용자결정=활동사진 우선+영수증 후·이름 '활동 사진' 통일) e6 계약 대기. main push 금지.
 
+## [2026-09-05T12:44Z] U
+[P7 웨이브3 완료] #114 머지(main=2fea551) → 빈상태·로딩·에러 일관화+갤러리. A1/A2 EmptyState 13채택(실무자 5 CTA·OrgLedger 필터0 desc)·A7 NoBudgetGate 신규컴포넌트 7수렴('말씀'→'말해', src원문0)·A3 loading 7신설·A4 (participant)/error.tsx 신설·갤러리 '활동 사진' 통일+usage_date 최신순. 골든 86 RED→green·전체 575·병렬워커4기+직접5. e6 2인검증 PASS·BLOCK0(greeting 흡수 승인). 다음: ★웨이브4(hover/press 토큰=P7-2 마지막) e6 계약 대기 — hero/danger/positive/warning/muted hover 토큰 신설(4모드AA)·hover:opacity-90 42곳 교정·press 스케일·disabled 토큰. Low후속: FaqButton:74 '말씀해 주세요'·이중포커스링 @layer·budget-visuals JS색. main push 금지.
+
