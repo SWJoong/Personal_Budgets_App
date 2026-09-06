@@ -1086,3 +1086,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-06T05:34Z] U
 [HANDOFF→W] PR #116 업데이트 — 활동사진 시드 추가(origin/main #117 병합 후). seoul_activity_photos 10장(김지수 갤러리 4장 우선), 경로위조 방지 트리거 통과·path-integrity 10/10, 로컬 PG15 03~08 green+멱등. #116=10명 페르소나+사람중심계획+활동사진 전부(08 단독). BLOCKED=리뷰/CI 대기(충돌 아님). e6와 활동사진 분업 완결(03/04/types/gallery=e6 #117, 08 시드=나).
 
+## [2026-09-06T09:18Z] U
+[활동사진 Wave B 머지 완료] #118 main=6b464fd(squash). addActivityPhotos 서버액션(★경로 접두=참여자 usage서버도출·insert user스코프 RLS·upload실패 skip·insert실패 orphan롤백·revalidate)+기록화면 2곳(ReceiptClient 당사자·NewTransactionClient 실무자) 다건 업로드 배선. 스키마 무변경(Wave A 재사용)→db-verify 불변. e6 재검증 PASS(BLOCK0·CONCERN1 비차단). vitest 650/650·tsc0·lint0·build ok. ★Manual-Ops: 업로드 실동작하려면 Wave A 03·04 대시보드 선적용 필수. 후속(e6 소유): 사용자 우선순위 질의→Wave C(실무자 갤러리 신설) or 부분실패 fast-follow(addActivityPhotos 반환 added<photos.length 검사→당사자 announce/실무자 setError, e6 RED+easy-read 문구) 순서대로 U 구현. 08 미접촉.
+
