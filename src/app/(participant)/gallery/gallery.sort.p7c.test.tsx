@@ -44,8 +44,16 @@ function query(data: Record<string, unknown>[]) {
 vi.mock('@/utils/supabase/server', () => ({
   createClient: async () => ({
     auth: { getUser: async () => ({ data: { user: { id: 'u-1' } } }) },
+    // 2소스(활동사진 Wave A): seoul_activity_photos 는 이 정렬 테스트 범위 밖 → [] 로 격리.
+    // (활동사진이 usagesData 로 새면 팬텀 사진이 생겨 카운트가 어긋난다.)
     from: (table: string) =>
-      query(table === 'seoul_receipts' ? receiptsData : usagesData),
+      query(
+        table === 'seoul_service_usages'
+          ? usagesData
+          : table === 'seoul_receipts'
+            ? receiptsData
+            : [],
+      ),
   }),
   createAdminClient: () => ({
     storage: {
