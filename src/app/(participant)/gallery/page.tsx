@@ -2,7 +2,7 @@ import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { PhotoGallery } from '@/components/ui/PhotoGallery'
 import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 import { mergeGalleryPhotos, type GalleryPhoto } from '@/utils/gallery'
 
@@ -95,23 +95,7 @@ export default async function GalleryPage() {
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 max-w-sm mx-auto w-full">
-        {photos.length === 0 ? (
-          <EmptyState emoji="🖼️" title="아직 사진이 없어요." description="지출을 기록할 때 사진을 함께 남겨보세요." />
-        ) : (
-          <ul className="grid grid-cols-2 gap-3">
-            {photos.map((p, i) => (
-              <li key={`${p.kind}-${p.usageId}-${i}`} className="flex flex-col gap-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.url}
-                  alt={p.label}
-                  className="w-full aspect-square object-cover rounded-2xl ring-1 ring-border"
-                />
-                <span className="text-xs text-muted-foreground font-medium truncate">{p.label}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <PhotoGallery photos={photos} />
       </main>
     </div>
   )
