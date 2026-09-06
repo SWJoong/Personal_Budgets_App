@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { recordServiceUsage } from '@/app/actions/serviceUsage'
+import { addActivityPhotos } from '@/app/actions/activityPhoto'
 
 interface Allocation {
   id: string
@@ -43,6 +44,18 @@ function today(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
+function fileToBase64(file: File): Promise<{ base64: string; mimeType: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = String(reader.result)
+      resolve({ base64: result.split(',')[1] ?? '', mimeType: file.type || 'image/jpeg' })
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function NewTransactionClient({
   participantId,
   allocations,
@@ -65,6 +78,7 @@ export default function NewTransactionClient({
   const [domainId, setDomainId] = useState('')
   const [subdomainId, setSubdomainId] = useState('')
   const [receipt, setReceipt] = useState<{ base64: string; mime: string; name: string } | null>(null)
+  const [activityPhotos, setActivityPhotos] = useState<{ base64: string; mimeType: string }[]>([])
 
   const domainsForProgram = domains.filter((d) => d.program === program)
   const subdomainsForDomain = subdomains.filter((s) => s.domain_id === domainId)
@@ -101,6 +115,13 @@ export default function NewTransactionClient({
     reader.readAsDataURL(file)
   }
 
+  async function handleActivityFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files || !files.length) return
+    const converted = await Promise.all(Array.from(files).map((f) => fileToBase64(f)))
+    setActivityPhotos((prev) => [...prev, ...converted])
+  }
+
   function handleSubmit() {
     if (!allocationId) {
       setError('예산을 골라 주세요.')
@@ -129,6 +150,10 @@ export default function NewTransactionClient({
         receiptMimeType: receipt?.mime,
       })
       if ('success' in result && result.success) {
+        // usage 생성 후 활동사진(다건) 업로드. 경로 접두는 addActivityPhotos 가 서버측에서 강제.
+        if (activityPhotos.length && result.usageId) {
+          await addActivityPhotos(result.usageId, activityPhotos)
+        }
         router.push(`/supporter/${participantId}/transactions`)
         return
       }
@@ -283,6 +308,23 @@ export default function NewTransactionClient({
           className="text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-muted file:px-3 file:py-2 file:text-sm file:font-bold file:text-muted-foreground"
         />
         {receipt && <span className="text-xs text-muted-foreground">📎 {receipt.name}</span>}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="tx-activity-photos" className="text-xs text-muted-foreground font-medium">
+          활동 사진 (여러 장 올릴 수 있어요)
+        </label>
+        <input
+          id="tx-activity-photos"
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleActivityFiles}
+          className="text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-muted file:px-3 file:py-2 file:text-sm file:font-bold file:text-muted-foreground"
+        />
+        {activityPhotos.length > 0 && (
+          <span className="text-xs text-muted-foreground">활동 사진 {activityPhotos.length}장</span>
+        )}
       </div>
 
       <button
