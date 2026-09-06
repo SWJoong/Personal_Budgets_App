@@ -11,6 +11,7 @@
 --   T1. FK usage_id → seoul_service_usages, ON DELETE CASCADE
 --   S1. 본인은 자기 활동사진을 읽는다
 --   S2. 본인은 자기(정산 전) 지출에 활동사진을 붙인다
+--   S2b. ★경로 위조 차단: 본인이라도 남의 접두 경로는 트리거가 막는다(seoul_check_activity_photo_path)
 --   S3. 남(다른 참여자)은 내 활동사진을 못 읽는다 (RLS)
 --   S4. 남은 내 지출에 활동사진을 못 붙인다 (RLS)
 --   S5. 담당 실무자는 내 활동사진을 읽고 붙인다
@@ -119,7 +120,8 @@ VALUES ('acf10000-0000-0000-0000-0000000000c9','ac111111-1111-1111-1111-11111111
         'ace10000-0000-0000-0000-0000000000a1','2025-03-09',10000,'삭제용 지출')
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.seoul_activity_photos (id, usage_id, storage_path)
-VALUES ('ac700000-0000-0000-0000-0000000000c9','acf10000-0000-0000-0000-0000000000c9','x/y/z.jpg')
+VALUES ('ac700000-0000-0000-0000-0000000000c9','acf10000-0000-0000-0000-0000000000c9',
+        'ac111111-1111-1111-1111-111111111111/acf10000-0000-0000-0000-0000000000c9/z.jpg')
 ON CONFLICT (id) DO NOTHING;
 DELETE FROM public.seoul_service_usages WHERE id='acf10000-0000-0000-0000-0000000000c9';
 SELECT '   T1. 지운 usage 의 사진 잔여: ' || count(*) ||
@@ -142,6 +144,15 @@ VALUES ('ac700000-0000-0000-0000-0000000000b1','acf10000-0000-0000-0000-00000000
 SELECT '   본인 추가 성공: ' || count(*) ||
        CASE WHEN count(*)=1 THEN '  ✅' ELSE '  ❌ 본인이 막힘' END
   FROM public.seoul_activity_photos WHERE id='ac700000-0000-0000-0000-0000000000b1';
+\echo '── S2b. ★경로 위조 차단: 본인이 자기 pending 지출에 남의 접두 경로 삽입 시도 → 트리거 RAISE'
+-- RLS 는 본인의 pending 지출이라 허용하지만, storage_path 접두(ac2222…=B)가 지출 소유자(A)와 달라
+-- seoul_check_activity_photo_path 트리거가 막아야 한다. 이게 admin 서명 우회 경로위조의 원천 차단.
+INSERT INTO public.seoul_activity_photos (id, usage_id, storage_path, caption)
+VALUES ('ac700000-0000-0000-0000-0000000000b2','acf10000-0000-0000-0000-0000000000a1',
+        'ac222222-2222-2222-2222-222222222222/acf10000-0000-0000-0000-0000000000a1/forged.jpg','위조시도');
+SELECT '   위조 경로 삽입 성공 건수: ' || count(*) ||
+       CASE WHEN count(*)=0 THEN '  ✅ 방어됨(트리거)' ELSE '  ❌ 뚫림(경로위조)' END
+  FROM public.seoul_activity_photos WHERE id='ac700000-0000-0000-0000-0000000000b2';
 RESET ROLE;
 
 \echo ''
