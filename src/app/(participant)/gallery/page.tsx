@@ -50,35 +50,37 @@ export default async function GalleryPage() {
 
   const admin = createAdminClient()
 
-  // 활동사진 — activity-photos 버킷. 라벨=caption 우선, 정렬키=taken_at 우선(없으면 usage_date).
-  const activity: GalleryPhoto[] = await Promise.all(
-    (activityRows ?? []).map(async (a) => {
-      const usage = usageById.get(a.usage_id)
-      const { data } = await admin.storage.from('activity-photos').createSignedUrl(a.storage_path, 3600)
-      return {
-        usageId: a.usage_id,
-        url: data?.signedUrl ?? '',
-        label: a.caption ?? usage?.description ?? '활동',
-        date: a.taken_at ?? usage?.usage_date ?? '',
-        kind: 'activity' as const,
-      }
-    })
-  )
-
-  // 영수증 — receipts 버킷(활동사진이 없던 usage 의 폴백). 라벨=description, 정렬키=usage_date.
-  const receipt: GalleryPhoto[] = await Promise.all(
-    (receipts ?? []).map(async (r) => {
-      const usage = usageById.get(r.usage_id)
-      const { data } = await admin.storage.from('receipts').createSignedUrl(r.storage_path, 3600)
-      return {
-        usageId: r.usage_id,
-        url: data?.signedUrl ?? '',
-        label: usage?.description ?? '활동',
-        date: usage?.usage_date ?? '',
-        kind: 'receipt' as const,
-      }
-    })
-  )
+  // 활동사진(activity-photos)·영수증(receipts) signed URL 을 한 번의 Promise.all 로 동시 생성.
+  const [activity, receipt] = await Promise.all([
+    // 활동사진 — 라벨=caption 우선, 정렬키=taken_at 우선(없으면 usage_date).
+    Promise.all(
+      (activityRows ?? []).map(async (a): Promise<GalleryPhoto> => {
+        const usage = usageById.get(a.usage_id)
+        const { data } = await admin.storage.from('activity-photos').createSignedUrl(a.storage_path, 3600)
+        return {
+          usageId: a.usage_id,
+          url: data?.signedUrl ?? '',
+          label: a.caption ?? usage?.description ?? '활동',
+          date: a.taken_at ?? usage?.usage_date ?? '',
+          kind: 'activity',
+        }
+      })
+    ),
+    // 영수증 — 활동사진이 없던 usage 의 폴백. 라벨=description, 정렬키=usage_date.
+    Promise.all(
+      (receipts ?? []).map(async (r): Promise<GalleryPhoto> => {
+        const usage = usageById.get(r.usage_id)
+        const { data } = await admin.storage.from('receipts').createSignedUrl(r.storage_path, 3600)
+        return {
+          usageId: r.usage_id,
+          url: data?.signedUrl ?? '',
+          label: usage?.description ?? '활동',
+          date: usage?.usage_date ?? '',
+          kind: 'receipt',
+        }
+      })
+    ),
+  ])
 
   // 활동사진 우선 → 영수증 후순위. url falsy(파일 미업로드) 는 mergeGalleryPhotos 가 조용히 필터.
   const photos = mergeGalleryPhotos(activity, receipt)
