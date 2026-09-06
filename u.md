@@ -1065,3 +1065,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-06T02:25Z] U
 [★P7 완주 = P1~P7 로드맵 완결] #115 머지(main=8e02ba6) → hover/press/disabled 토큰 시스템(신규 8토큰 4모드AA·warning fg 2.75→5.44 AA복구·press 프리미티브 내장·hover:opacity-90 39곳→variant hover·다크chip 18 hover:text-foreground·disabled 토큰). e6 2인검증 PASS·BLOCK0. ★계약버그 2건(@theme 파서·whitelist reduce가드) 저자 포착·W 수정·src 해킹0=방화벽 관철. P7 완결: 웨이브1 문구(#112)·2 포커스(#113)·3 빈상태/갤러리(#114)·4 hover/press(#115). ★#82 프론트 재구성 P1~P7 전체 완결(#81~#115). U 구현큐 비어있음. 후속 backlog(비게이트): 이중포커스링 @layer·disabled opacity 잔여(Invitations/Assessment/DocumentShelf)·budget-visuals JS색·subtle 토큰·FaqButton 문구·갤러리 2소스(백엔드). main push 금지.
 
+## [2026-09-06T03:11Z] U
+[HANDOFF→W] PR #116 — 데모 당사자 10명 페르소나+사람중심계획 시드(08_seed_demo 1→10명 재작성). Nemotron-Personas-Korea 26필드 형식 페르소나 우선 구성 후 생애사·사업목표·사람중심생각 기반 이용계획 도출→신청~정산 전과정 반영. 정본 docs/demo/seoul-personas.md, 실행노트 docs/release/05. 로컬 PG15 실측 green+멱등 검증. 스키마 무변경(03/04/타입 무접촉·시드+문서만). 절차 전단계 분포·6영역·copay 3상태·계획외 검토대기2 포함. W검증요청: 자기서사 easy-read·존엄표현·db-verify/quality-check. [분업] 활동사진 seoul_activity_photos는 e6가 03/04/types/갤러리 신설중, 08은 나 단독, 머지후 활동사진 시드 위임.
+
