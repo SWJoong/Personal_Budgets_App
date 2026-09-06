@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { recordServiceUsage } from '@/app/actions/serviceUsage'
+import { addActivityPhotos } from '@/app/actions/activityPhoto'
 import { analyzeReceipt } from '@/app/actions/ocr'
 import { searchPlaces, type PlaceResult } from '@/app/actions/geocode'
 import { findOrCreateProvider } from '@/app/actions/serviceProvider'
@@ -56,12 +57,14 @@ export default function ReceiptClient({
   const [error, setError] = useState('')
   const [amountError, setAmountError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const activityInputRef = useRef<HTMLInputElement>(null)
 
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [requestedServiceId, setRequestedServiceId] = useState('')
   const [photo, setPhoto] = useState<{ base64: string; mimeType: string; previewUrl: string } | null>(null)
+  const [activityPhotos, setActivityPhotos] = useState<{ base64: string; mimeType: string }[]>([])
 
   const [placeQuery, setPlaceQuery] = useState('')
   const [placeResults, setPlaceResults] = useState<PlaceResult[]>([])
@@ -122,6 +125,16 @@ export default function ReceiptClient({
     }
   }
 
+  async function handleActivityPhotosSelected(files: FileList) {
+    const converted = await Promise.all(
+      Array.from(files).map(async (file) => {
+        const { base64, mimeType } = await fileToBase64(file)
+        return { base64, mimeType }
+      }),
+    )
+    setActivityPhotos((prev) => [...prev, ...converted])
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!allocationId) return
@@ -151,12 +164,18 @@ export default function ReceiptClient({
         announce(result.error, 'assertive')
         return
       }
+      // usage 생성 후 활동사진(다건)을 그 usageId 로 올린다. 경로 접두는 addActivityPhotos 가 서버측에서 강제.
+      if (activityPhotos.length && 'usageId' in result && result.usageId) {
+        await addActivityPhotos(result.usageId, activityPhotos)
+      }
       setAmount('')
       setDescription('')
       setRequestedServiceId('')
       setPhoto(null)
+      setActivityPhotos([])
       setSelectedPlace(null)
       if (fileInputRef.current) fileInputRef.current.value = ''
+      if (activityInputRef.current) activityInputRef.current.value = ''
       router.refresh()
     })
   }
@@ -226,6 +245,28 @@ export default function ReceiptClient({
               )}
               {ocrLoading && <p className="text-xs text-muted-foreground">사진에서 읽어오는 중...</p>}
               {!ocrLoading && ocrNotice && <p className="text-xs text-warning-fg leading-relaxed">{ocrNotice}</p>}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <FormField id="activity-photos" label="활동 사진" help="활동한 모습을 사진으로 남겨요. 여러 장 올릴 수 있어요.">
+                {(field) => (
+                  <input
+                    {...field}
+                    ref={activityInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      const files = e.target.files
+                      if (files && files.length) handleActivityPhotosSelected(files)
+                    }}
+                    className="text-sm"
+                  />
+                )}
+              </FormField>
+              {activityPhotos.length > 0 && (
+                <p className="text-xs text-muted-foreground leading-relaxed">활동 사진 {activityPhotos.length}장을 담았어요.</p>
+              )}
             </div>
 
             <FormField id="usage-date" label="날짜">
