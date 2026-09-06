@@ -59,7 +59,7 @@ export default function GuidePageClient() {
                 </div>
                 <button
                   onClick={() => speak(`${i + 1}번. ${step.title}. ${step.desc}`)}
-                  className="w-10 h-10 rounded-full bg-muted hover:opacity-90 flex items-center justify-center text-sm active:scale-95 transition-all shrink-0"
+                  className="w-10 h-10 rounded-full bg-muted hover:bg-muted-hover flex items-center justify-center text-sm active:scale-95 transition-all shrink-0"
                   aria-label={`${step.title} 음성으로 듣기`}
                 >🔊</button>
               </div>

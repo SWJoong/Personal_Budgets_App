@@ -79,7 +79,7 @@ export default function MoreMenuClient({
             </Link>
             <Link
               href="/evaluations"
-              className="flex items-center justify-between p-5 rounded-[2rem] bg-hero text-hero-foreground shadow-xl hover:opacity-90 transition-all active:scale-[0.98] group"
+              className="flex items-center justify-between p-5 rounded-[2rem] bg-hero text-hero-foreground shadow-xl hover:bg-hero-hover transition-all active:scale-[0.98] group"
             >
               <div className="flex items-center gap-4">
                 <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">💌</span>
@@ -167,7 +167,7 @@ export default function MoreMenuClient({
                     className={`flex-1 flex flex-col items-center justify-center py-4 rounded-2xl transition-all border-2
                       ${fontSize === s.id
                         ? 'bg-primary border-primary text-primary-foreground shadow-lg scale-105'
-                        : 'bg-muted border-transparent text-muted-foreground hover:opacity-90'}
+                        : 'bg-muted border-transparent text-muted-foreground hover:bg-muted-hover hover:text-foreground'}
                     `}
                   >
                     <span className={`font-black ${s.id === 'normal' ? 'text-sm' : s.id === 'large' ? 'text-xl' : 'text-3xl'}`}>
@@ -270,7 +270,7 @@ export default function MoreMenuClient({
                     href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-4 rounded-2xl bg-muted hover:opacity-90 transition-colors group"
+                    className="flex items-center justify-between p-4 rounded-2xl bg-muted hover:bg-muted-hover transition-colors group"
                   >
                     <div className="flex items-center gap-3">
                       <span aria-hidden="true" className="text-2xl">📄</span>
@@ -292,7 +292,7 @@ export default function MoreMenuClient({
       <section className="flex flex-col gap-4">
         <button
           onClick={handleLogout}
-          className="w-full p-5 rounded-[2rem] bg-danger-bg text-danger-fg font-black text-center ring-1 ring-border hover:opacity-90 transition-all active:scale-95"
+          className="w-full p-5 rounded-[2rem] bg-danger-bg text-danger-fg font-black text-center ring-1 ring-border hover:bg-danger-bg-hover transition-all active:scale-95"
         >
           안전하게 나가기
         </button>

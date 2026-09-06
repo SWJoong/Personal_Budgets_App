@@ -26,7 +26,7 @@ export default function SupporterError({
         </p>
         <button
           onClick={reset}
-          className="px-6 py-3 bg-hero text-hero-foreground font-bold rounded-xl hover:opacity-90 transition-colors"
+          className="px-6 py-3 bg-hero text-hero-foreground font-bold rounded-xl hover:bg-hero-hover transition-colors"
         >
           다시 시도
         </button>

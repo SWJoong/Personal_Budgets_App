@@ -288,7 +288,7 @@ export default function NewTransactionClient({
       <button
         onClick={handleSubmit}
         disabled={pending}
-        className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:opacity-90 transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
+        className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:bg-hero-hover transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
       >
         {pending ? '기록하고 있어요...' : '지출 기록하기'}
       </button>

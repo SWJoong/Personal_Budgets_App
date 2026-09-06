@@ -21,7 +21,7 @@ export function PageHeader({ title, backHref, action }: PageHeaderProps) {
         <Link
           href={backHref}
           aria-label="뒤로 가기"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-foreground hover:bg-muted"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-foreground hover:bg-muted-hover"
         >
           <span aria-hidden="true" className="text-xl">
             ←

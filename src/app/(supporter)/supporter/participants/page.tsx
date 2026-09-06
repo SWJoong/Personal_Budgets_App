@@ -47,25 +47,25 @@ export default async function ParticipantsOverviewPage() {
                 <div className="flex gap-2 shrink-0">
                   <Link
                     href={`/supporter/${p.id}/assessment`}
-                    className="text-xs font-bold px-3 rounded-full bg-muted text-muted-foreground hover:opacity-90 transition-colors min-h-[44px] flex items-center"
+                    className="text-xs font-bold px-3 rounded-full bg-muted text-muted-foreground hover:bg-muted-hover hover:text-foreground transition-colors min-h-[44px] flex items-center"
                   >
                     욕구사정
                   </Link>
                   <Link
                     href={`/supporter/${p.id}/transactions`}
-                    className="text-xs font-bold px-3 rounded-full bg-muted text-muted-foreground hover:opacity-90 transition-colors min-h-[44px] flex items-center"
+                    className="text-xs font-bold px-3 rounded-full bg-muted text-muted-foreground hover:bg-muted-hover hover:text-foreground transition-colors min-h-[44px] flex items-center"
                   >
                     거래장부
                   </Link>
                   <Link
                     href={`/supporter/budgets/${p.id}`}
-                    className="text-xs font-bold px-3 rounded-full bg-muted text-muted-foreground hover:opacity-90 transition-colors min-h-[44px] flex items-center"
+                    className="text-xs font-bold px-3 rounded-full bg-muted text-muted-foreground hover:bg-muted-hover hover:text-foreground transition-colors min-h-[44px] flex items-center"
                   >
                     예산
                   </Link>
                   <Link
                     href={`/supporter/network?participant=${p.id}`}
-                    className="text-xs font-bold px-3 rounded-full bg-muted text-muted-foreground hover:opacity-90 transition-colors min-h-[44px] flex items-center"
+                    className="text-xs font-bold px-3 rounded-full bg-muted text-muted-foreground hover:bg-muted-hover hover:text-foreground transition-colors min-h-[44px] flex items-center"
                   >
                     관계망
                   </Link>

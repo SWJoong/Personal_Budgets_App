@@ -45,11 +45,11 @@ export default function MapTabsClient({
 
   const tabBtn = (active: boolean) =>
     `flex-1 min-h-[48px] rounded-xl text-sm font-black transition-colors ${
-      active ? 'bg-hero text-hero-foreground' : 'bg-card text-muted-foreground ring-1 ring-border hover:bg-muted'
+      active ? 'bg-hero text-hero-foreground' : 'bg-card text-muted-foreground ring-1 ring-border hover:bg-muted-hover hover:text-foreground'
     }`
   const chip = (active: boolean) =>
     `text-xs font-bold px-3 min-h-[44px] rounded-full whitespace-nowrap flex items-center transition-colors ring-1 ${
-      active ? 'bg-asset text-asset-foreground ring-asset' : 'bg-card text-muted-foreground ring-border hover:bg-muted'
+      active ? 'bg-asset text-asset-foreground ring-asset' : 'bg-card text-muted-foreground ring-border hover:bg-muted-hover hover:text-foreground'
     }`
 
   return (

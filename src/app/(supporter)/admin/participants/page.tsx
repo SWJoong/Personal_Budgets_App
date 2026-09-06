@@ -70,7 +70,7 @@ export default async function AdminParticipantsPage() {
 
         <Link
           href="/admin/participants/new"
-          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:bg-primary-hover transition-colors active:scale-[0.98] shadow-lg"
+          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:bg-primary-hover transition-all active:scale-[0.98] shadow-lg"
         >
           <span className="text-xl">➕</span>
           새 당사자 등록

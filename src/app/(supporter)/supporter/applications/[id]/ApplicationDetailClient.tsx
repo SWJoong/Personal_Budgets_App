@@ -207,7 +207,7 @@ export default function ApplicationDetailClient({
         <button
           onClick={handleSaveConsents}
           disabled={pending}
-          className="p-3 rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:opacity-90 transition-colors disabled:opacity-50 min-h-[44px]"
+          className="p-3 rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:bg-hero-hover transition-colors disabled:opacity-50 min-h-[44px]"
         >
           동의 내용 저장
         </button>
@@ -246,14 +246,14 @@ export default function ApplicationDetailClient({
                 <button
                   onClick={() => handleDecide(true)}
                   disabled={pending}
-                  className="flex-1 p-3 rounded-xl bg-positive text-positive-foreground font-bold text-sm hover:opacity-90 transition-colors disabled:opacity-50 min-h-[44px]"
+                  className="flex-1 p-3 rounded-xl bg-positive text-positive-foreground font-bold text-sm hover:bg-positive-hover transition-colors disabled:opacity-50 min-h-[44px]"
                 >
                   선정
                 </button>
                 <button
                   onClick={() => handleDecide(false)}
                   disabled={pending}
-                  className="flex-1 p-3 rounded-xl bg-muted text-muted-foreground font-bold text-sm hover:opacity-90 transition-colors disabled:opacity-50 min-h-[44px]"
+                  className="flex-1 p-3 rounded-xl bg-muted text-muted-foreground font-bold text-sm hover:bg-muted-hover hover:text-foreground transition-colors disabled:bg-disabled-bg disabled:text-disabled-fg min-h-[44px]"
                 >
                   선정 안 함
                 </button>
@@ -323,7 +323,7 @@ export default function ApplicationDetailClient({
         <button
           onClick={handleWithdraw}
           disabled={pending}
-          className="p-3 rounded-xl bg-danger-bg text-danger-fg font-bold text-sm hover:opacity-90 transition-colors disabled:opacity-50 min-h-[44px]"
+          className="p-3 rounded-xl bg-danger-bg text-danger-fg font-bold text-sm hover:bg-danger-bg-hover transition-colors disabled:opacity-50 min-h-[44px]"
         >
           신청 철회 처리
         </button>

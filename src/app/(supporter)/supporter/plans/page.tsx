@@ -31,7 +31,7 @@ export default async function PlansPage() {
         <h1 className="text-xl font-bold tracking-tight">이용계획 · 심의</h1>
         <Link
           href="/supporter/plans/new"
-          className="px-4 py-2 rounded-xl bg-hero text-hero-foreground text-sm font-bold hover:opacity-90 transition-colors min-h-[44px] flex items-center"
+          className="px-4 py-2 rounded-xl bg-hero text-hero-foreground text-sm font-bold hover:bg-hero-hover transition-colors min-h-[44px] flex items-center"
         >
           새 계획 만들기
         </Link>

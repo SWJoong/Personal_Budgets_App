@@ -133,7 +133,7 @@ export default function InvitationsClient({ invitations }: { invitations: Invita
                     <button
                       onClick={() => setToDelete(inv)}
                       disabled={pending}
-                      className="shrink-0 px-3 min-h-[44px] rounded-xl bg-muted text-muted-foreground text-sm font-bold hover:opacity-90 disabled:opacity-50"
+                      className="shrink-0 px-3 min-h-[44px] rounded-xl bg-muted text-muted-foreground text-sm font-bold hover:bg-muted-hover hover:text-foreground disabled:opacity-50"
                     >
                       취소
                     </button>

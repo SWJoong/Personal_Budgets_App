@@ -9,11 +9,11 @@ export type ButtonSize = 'sm' | 'md'
 
 export const BUTTON_VARIANT_CLASS: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-primary-foreground hover:bg-primary-hover',
-  secondary: 'bg-card text-foreground ring-1 ring-border hover:bg-muted',
-  ghost: 'bg-transparent text-foreground hover:bg-muted',
-  danger: 'bg-danger text-primary-foreground hover:opacity-90',
-  positive: 'bg-positive text-primary-foreground hover:opacity-90',
-  warning: 'bg-warning text-primary-foreground hover:opacity-90',
+  secondary: 'bg-card text-foreground ring-1 ring-border hover:bg-muted-hover',
+  ghost: 'bg-transparent text-foreground hover:bg-muted-hover',
+  danger: 'bg-danger text-danger-foreground hover:bg-danger-hover',
+  positive: 'bg-positive text-positive-foreground hover:bg-positive-hover',
+  warning: 'bg-warning text-warning-foreground hover:bg-warning-hover',
 }
 
 export const BUTTON_SIZE_CLASS: Record<ButtonSize, string> = {
@@ -22,7 +22,7 @@ export const BUTTON_SIZE_CLASS: Record<ButtonSize, string> = {
 }
 
 const BUTTON_BASE_CLASS =
-  'inline-flex items-center justify-center gap-2 rounded-xl font-bold transition-colors'
+  'inline-flex items-center justify-center gap-2 rounded-xl font-bold transition-[color,background-color,border-color,box-shadow,transform] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100'
 
 /** variant/size(+iconOnly) → 공통 className. Button 과 LinkButton 이 동일 토큰 공유. */
 export function buttonClasses(

@@ -292,7 +292,7 @@ export default function AssessmentClient({
         <button
           onClick={handleCreate}
           disabled={pending || !domainId}
-          className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:opacity-90 transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
+          className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:bg-hero-hover transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
         >
           {pending ? '저장하고 있어요...' : '욕구 추가하기'}
         </button>

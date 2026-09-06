@@ -61,7 +61,7 @@ export default async function MorePage({
         {/* 화면 설정 — 홈에 무엇을 볼지 고르기(화면 개인화) */}
         <Link
           href="/settings/display"
-          className="flex items-center gap-3 p-5 rounded-3xl bg-card ring-1 ring-border shadow-sm hover:bg-muted transition-colors min-h-[44px]"
+          className="flex items-center gap-3 p-5 rounded-3xl bg-card ring-1 ring-border shadow-sm hover:bg-muted-hover transition-colors min-h-[44px]"
         >
           <span aria-hidden="true" className="text-2xl">🎛️</span>
           <span className="flex flex-col">

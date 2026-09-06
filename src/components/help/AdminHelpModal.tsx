@@ -58,7 +58,7 @@ export default function AdminHelpModal({ page, onClose }: Props) {
       <div className="px-6 py-4 border-t border-border">
         <button
           onClick={onClose}
-          className="w-full py-2.5 rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:opacity-90 transition-colors"
+          className="w-full py-2.5 rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:bg-hero-hover transition-colors"
         >
           확인
         </button>

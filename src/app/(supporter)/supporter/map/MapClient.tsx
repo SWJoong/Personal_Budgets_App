@@ -41,7 +41,7 @@ export default function SupporterMapClient({
 
   const chip = (active: boolean) =>
     `text-xs font-bold px-3 min-h-[44px] rounded-full whitespace-nowrap flex items-center transition-colors ring-1 ${
-      active ? 'bg-hero text-hero-foreground ring-hero' : 'bg-card text-muted-foreground ring-border hover:bg-muted'
+      active ? 'bg-hero text-hero-foreground ring-hero' : 'bg-card text-muted-foreground ring-border hover:bg-muted-hover hover:text-foreground'
     }`
 
   return (

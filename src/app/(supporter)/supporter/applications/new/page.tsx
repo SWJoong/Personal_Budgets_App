@@ -259,7 +259,7 @@ export default function NewApplicationPage() {
           <button
             type="submit"
             disabled={saving || !participantId || !cohortId}
-            className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:opacity-90 transition-colors active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-lg min-h-[44px]"
+            className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:bg-hero-hover transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-lg min-h-[44px]"
           >
             {saving ? '저장하고 있습니다...' : '신청서 접수하기'}
           </button>

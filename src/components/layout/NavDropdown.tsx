@@ -56,7 +56,7 @@ export default function NavDropdown() {
     <>
       <button
         onClick={() => setIsOpen((v) => !v)}
-        className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-muted hover:opacity-90 transition-all active:scale-95"
+        className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-muted hover:bg-muted-hover transition-all active:scale-95"
         aria-label={isOpen ? '메뉴 닫기' : '메뉴 열기'}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
@@ -80,7 +80,7 @@ export default function NavDropdown() {
           <span className="text-sm font-black text-muted-foreground uppercase tracking-widest">메뉴</span>
           <button
             onClick={() => setIsOpen(false)}
-            className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-muted hover:opacity-90 transition-colors"
+            className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-muted hover:bg-muted-hover transition-colors"
             aria-label="메뉴 닫기"
           >
             <span className="text-muted-foreground text-sm font-black leading-none">✕</span>
@@ -99,7 +99,7 @@ export default function NavDropdown() {
                   href={item.href}
                   onClick={() => setIsOpen(false)}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`flex items-center gap-3 px-5 py-4 hover:bg-muted transition-colors ${
+                  className={`flex items-center gap-3 px-5 py-4 hover:bg-muted-hover transition-colors ${
                     isActive ? 'bg-muted' : ''
                   }`}
                 >
@@ -129,7 +129,7 @@ export default function NavDropdown() {
                           href={sub.href}
                           onClick={() => setIsOpen(false)}
                           aria-current={isSubActive ? 'page' : undefined}
-                          className={`flex items-center gap-2.5 pl-14 pr-5 py-2.5 hover:bg-muted transition-colors ${
+                          className={`flex items-center gap-2.5 pl-14 pr-5 py-2.5 hover:bg-muted-hover transition-colors ${
                             isSubActive ? 'bg-muted' : ''
                           }`}
                         >

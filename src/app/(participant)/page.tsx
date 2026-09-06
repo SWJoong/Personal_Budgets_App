@@ -230,7 +230,7 @@ export default async function Home() {
                   <Link
                     key={b}
                     href={SHORTCUT_HREF[b]!}
-                    className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center gap-3 hover:bg-muted transition-colors min-h-[44px]"
+                    className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center gap-3 hover:bg-muted-hover transition-colors min-h-[44px]"
                   >
                     <span aria-hidden="true" className="text-2xl">
                       {BLOCK_METADATA[b].icon}
