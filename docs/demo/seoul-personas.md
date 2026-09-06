@@ -692,10 +692,15 @@
 - 담당자(`demo.supporter`)가 10명 전원의 `assigned_supporter_id`. 관리자(`demo.admin`)는
   전체 조회.
 
-## E. 사진·서류 (수동 업로드 필요)
+## E. 사진·서류 (경로는 시드됨, 파일 바이트는 수동 업로드)
 
-- SQL은 이미지·파일 **바이트를 넣을 수 없습니다**. 갤러리 활동사진·영수증·신청서 원본은
-  `seoul_receipts`/`seoul_application_documents`에 **경로만** 시드되고, 실제 파일은
-  Supabase Storage에 수동 업로드해야 화면에 나타납니다(경로 규칙 `{participant_id}/...`).
-  파일이 없으면 signed URL이 falsy라 갤러리가 조용히 걸러냅니다(에러 아님).
+- **활동사진**: 활동성 이용건(강좌·수영·자조모임·레슨·시공 등)에 `seoul_activity_photos`
+  행을 시드합니다(#117 테이블). 특히 **김지수 갤러리 4장**으로 풍부하게. 경로 규칙
+  `{participant_id}/{usage_id}/{photo_id}.jpg` — 경로 위조 방지 트리거
+  (`seoul_check_activity_photo_path`)가 첫 세그먼트=지출 소유 참여자 id 를 강제합니다.
+  갤러리는 **활동사진 우선 → 영수증 폴백**으로 읽습니다.
+- **영수증·신청서 원본**: `seoul_receipts`/`seoul_application_documents`에 경로만 시드.
+- SQL은 이미지 **바이트를 넣을 수 없으므로**, 실제 사진을 화면에 띄우려면 위 경로 규칙에
+  맞춰 Supabase Storage(`activity-photos`/`receipts` 버킷)에 샘플 파일을 수동 업로드해야
+  합니다. 파일이 없으면 signed URL이 falsy라 갤러리가 조용히 걸러냅니다(에러 아님).
 

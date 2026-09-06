@@ -76,6 +76,8 @@ DECLARE
   v_service_id      UUID;
   v_provider_id     UUID;
   v_usage_id        UUID;
+  v_photo_id        UUID;
+  v_ph              JSONB;   -- 활동사진 원소
 BEGIN
   -- ── 1. 역할 배정(계정이 이미 로그인해 profiles 행이 있는 경우에만 반영) ──
   UPDATE public.profiles SET role = 'admin'
@@ -111,11 +113,11 @@ BEGIN
     "review":{"decision":"approved","review_date":"2026-03-20","notified_on":"2026-03-22","is_read":true},
     "allocation":{"allocated_amount":2000000,"starts_on":"2026-04-01","ends_on":"2026-12-31"},
     "usages":[
-      {"days_ago":120,"amount":900000,"description":"그림용 태블릿 구입","domain_code":"self_development","service_priority":1,"decided_by":"self_with_support","settlement_status":"accepted","receipt":true},
-      {"days_ago":90,"amount":300000,"description":"온라인 드로잉 정기 강좌 수강","domain_code":"self_development","service_priority":2,"decided_by":"self","settlement_status":"accepted","provider":"강서 이룸 미술스튜디오","receipt":true},
+      {"days_ago":120,"amount":900000,"description":"그림용 태블릿 구입","domain_code":"self_development","service_priority":1,"decided_by":"self_with_support","settlement_status":"accepted","receipt":true,"photos":[{"caption":"새 태블릿으로 그린 첫 캐릭터"}]},
+      {"days_ago":90,"amount":300000,"description":"온라인 드로잉 정기 강좌 수강","domain_code":"self_development","service_priority":2,"decided_by":"self","settlement_status":"accepted","provider":"강서 이룸 미술스튜디오","receipt":true,"photos":[{"caption":"온라인 드로잉 강좌를 듣는 중"},{"caption":"강좌 과제로 완성한 그림"}]},
       {"days_ago":60,"amount":150000,"description":"디지털 드로잉 재료·펜촉","domain_code":"self_development","service_priority":3,"decided_by":"self","settlement_status":"accepted"},
       {"days_ago":30,"amount":80000,"description":"액정 보호필름·드로잉 장갑 소모품","domain_code":"self_development","service_priority":3,"decided_by":"self","settlement_status":"pending"},
-      {"days_ago":12,"amount":40000,"description":"온라인 창작자 소모임 참가·교통비","domain_code":"social_life","decided_by":"self","settlement_status":"pending"}],
+      {"days_ago":12,"amount":40000,"description":"온라인 창작자 소모임 참가·교통비","domain_code":"social_life","decided_by":"self","settlement_status":"pending","photos":[{"caption":"온라인 창작자 소모임에서"}]}],
     "settlement":{"period":"2026-04~2026-08","accepted":1350000,"rejected":0,"recovered":0,"unused":0,"note":"1차 정산 — 계획 내 지출 승인, 소모품·계획외 건 검토 중","days_ago":20},
     "monitoring":[{"days_ago":25,"method":"app","observed_change":"온라인 강좌 3주차까지 이수, 캐릭터 5종 완성","participant_voice":"그림 그리는 시간이 제일 좋아요."}]
   },
@@ -133,7 +135,7 @@ BEGIN
     "review":{"decision":"approved","review_date":"2026-03-01","notified_on":"2026-03-03","is_read":true},
     "allocation":{"allocated_amount":2200000,"starts_on":"2026-03-15","ends_on":"2026-12-31"},
     "usages":[
-      {"days_ago":150,"amount":780000,"description":"바리스타 학원 3개월 과정","domain_code":"employment","service_priority":1,"decided_by":"self_with_support","settlement_status":"accepted","provider":"노원 카페 오늘(사회적협동조합)","receipt":true},
+      {"days_ago":150,"amount":780000,"description":"바리스타 학원 3개월 과정","domain_code":"employment","service_priority":1,"decided_by":"self_with_support","settlement_status":"accepted","provider":"노원 카페 오늘(사회적협동조합)","receipt":true,"photos":[{"caption":"바리스타 학원 실습 중"},{"caption":"직접 내린 커피"}]},
       {"days_ago":100,"amount":60000,"description":"바리스타 2급 자격 응시료·교재","domain_code":"employment","service_priority":2,"decided_by":"self","settlement_status":"accepted"},
       {"days_ago":70,"amount":250000,"description":"홈카페 실습 장비(그라인더·드립세트)","domain_code":"employment","service_priority":3,"decided_by":"self","settlement_status":"accepted"},
       {"days_ago":40,"amount":90000,"description":"원두·실습 재료 구입","domain_code":"employment","service_priority":3,"decided_by":"self","settlement_status":"accepted"}],
@@ -154,7 +156,7 @@ BEGIN
     "review":{"decision":"approved","review_date":"2026-04-15","notified_on":"2026-04-17","is_read":true},
     "allocation":{"allocated_amount":1500000,"starts_on":"2026-05-01","ends_on":"2026-12-31"},
     "usages":[
-      {"days_ago":100,"amount":540000,"description":"장애인 수영 강습(3개월)","domain_code":"health_safety","service_priority":1,"decided_by":"self_with_support","settlement_status":"accepted","provider":"은평 어울림 수영장","receipt":true},
+      {"days_ago":100,"amount":540000,"description":"장애인 수영 강습(3개월)","domain_code":"health_safety","service_priority":1,"decided_by":"self_with_support","settlement_status":"accepted","provider":"은평 어울림 수영장","receipt":true,"photos":[{"caption":"수영 강습 날"}]},
       {"days_ago":95,"amount":90000,"description":"수영용품(수경·수영복·방수백)","domain_code":"health_safety","service_priority":2,"decided_by":"self","settlement_status":"pending"}],
     "monitoring":[{"days_ago":20,"method":"phone","observed_change":"주 2회 수영 결석 없이 참여, 수면 개선 보고","participant_voice":"물에 들어가면 편해요."}]
   },
@@ -174,7 +176,7 @@ BEGIN
     "appeal":{"filed_on":"2026-06-10","ground":"주방은 별도 제도 대상이 아님을 소명. 안전한 조리를 위한 최소 개선 필요.","filed_by_self":true,"outcome":"partially_upheld","outcome_reason":"주방 전면 개조는 여전히 제외하되, 안전 관련 최소 개선(가스 자동차단·조리대 높이)은 인정.","decided_on":"2026-06-25"},
     "allocation":{"allocated_amount":800000,"starts_on":"2026-07-01","ends_on":"2026-12-31"},
     "usages":[
-      {"days_ago":40,"amount":380000,"description":"욕실 안전손잡이·미끄럼방지 시공","domain_code":"housing","service_priority":1,"decided_by":"self_with_support","settlement_status":"accepted","provider":"관악 안심주거지원센터","receipt":true},
+      {"days_ago":40,"amount":380000,"description":"욕실 안전손잡이·미끄럼방지 시공","domain_code":"housing","service_priority":1,"decided_by":"self_with_support","settlement_status":"accepted","provider":"관악 안심주거지원센터","receipt":true,"photos":[{"caption":"새로 설치한 욕실 안전손잡이"}]},
       {"days_ago":25,"amount":220000,"description":"현관 문턱 제거·센서등 설치","domain_code":"housing","service_priority":2,"decided_by":"self_with_support","settlement_status":"accepted"}],
     "monitoring":[{"days_ago":10,"method":"visit","observed_change":"욕실 시공 후 낙상 없음, 혼자 씻기 시도 시작","participant_voice":"이제 안 미끄러워요."}]
   },
@@ -204,7 +206,7 @@ BEGIN
     "review":{"decision":"approved","review_date":"2026-04-05","notified_on":"2026-04-07","is_read":true},
     "allocation":{"allocated_amount":1200000,"starts_on":"2026-04-15","ends_on":"2026-12-31"},
     "usages":[
-      {"days_ago":120,"amount":360000,"description":"자폐 성인 자조모임 정기 참가(6개월)","domain_code":"social_life","service_priority":1,"decided_by":"self","settlement_status":"accepted","provider":"마포 함께자조모임터","receipt":true},
+      {"days_ago":120,"amount":360000,"description":"자폐 성인 자조모임 정기 참가(6개월)","domain_code":"social_life","service_priority":1,"decided_by":"self","settlement_status":"accepted","provider":"마포 함께자조모임터","receipt":true,"photos":[{"caption":"자조모임 첫 참석"}]},
       {"days_ago":80,"amount":300000,"description":"사회성 그룹 프로그램(관계 기술)","domain_code":"social_life","service_priority":2,"decided_by":"self_with_support","settlement_status":"accepted"},
       {"days_ago":45,"amount":120000,"description":"교통 동호회 활동비(관심사 기반 관계)","domain_code":"social_life","service_priority":3,"decided_by":"self","settlement_status":"pending"}],
     "monitoring":[{"days_ago":18,"method":"app","observed_change":"자조모임 5회 참석, 회원에게 먼저 인사","participant_voice":"모임 가는 날이 기다려져요."}]
@@ -244,7 +246,7 @@ BEGIN
     "allocation":{"allocated_amount":1800000,"starts_on":"2026-05-01","ends_on":"2026-12-31"},
     "usages":[
       {"days_ago":110,"amount":850000,"description":"디지털 피아노 구입","domain_code":"self_development","service_priority":1,"decided_by":"self_with_support","settlement_status":"accepted","receipt":true},
-      {"days_ago":70,"amount":450000,"description":"장애 이해 강사 개인 피아노 레슨(3개월)","domain_code":"self_development","service_priority":2,"decided_by":"self","settlement_status":"accepted","provider":"도봉 열린음악교실"},
+      {"days_ago":70,"amount":450000,"description":"장애 이해 강사 개인 피아노 레슨(3개월)","domain_code":"self_development","service_priority":2,"decided_by":"self","settlement_status":"accepted","provider":"도봉 열린음악교실","photos":[{"caption":"피아노 레슨 중"}]},
       {"days_ago":15,"amount":60000,"description":"소규모 발표회 참가비·악보 구입","domain_code":"self_development","decided_by":"self","settlement_status":"pending"}],
     "monitoring":[{"days_ago":12,"method":"visit","observed_change":"레슨 2곡 완성, 발표회 참가 희망. 계획외 지출(발표회) 담당자와 상의","participant_voice":"피아노 칠 때 행복해요."}]
   },
@@ -465,6 +467,20 @@ $json$::jsonb;
                     v_participant_id::text || '/' || v_usage_id::text || '.jpg',
                     CURRENT_DATE - (v_x->>'days_ago')::int, (v_x->>'amount')::numeric);
           END IF;
+
+          -- 활동사진(경로만 — 실제 파일은 Storage 수동 업로드). #117 seoul_activity_photos.
+          -- ★ 경로 위조 방지 트리거(seoul_check_activity_photo_path)가 storage_path 첫 세그먼트=
+          --   이 지출의 소유 참여자 id 를 강제 → 반드시 v_participant_id 로 시작해야 INSERT 통과.
+          --   규약: {participant_id}/{usage_id}/{photo_id}.jpg. 파일 없으면 signed URL falsy →
+          --   갤러리가 조용히 필터(정상). 갤러리 읽기순서=활동사진 우선→영수증 폴백.
+          FOR v_ph IN SELECT value FROM jsonb_array_elements(COALESCE(v_x->'photos','[]'::jsonb))
+          LOOP
+            v_photo_id := gen_random_uuid();
+            INSERT INTO public.seoul_activity_photos (id, usage_id, storage_path, caption, taken_at)
+            VALUES (v_photo_id, v_usage_id,
+                    v_participant_id::text || '/' || v_usage_id::text || '/' || v_photo_id::text || '.jpg',
+                    v_ph->>'caption', (CURRENT_DATE - (v_x->>'days_ago')::int)::timestamptz);
+          END LOOP;
         END LOOP;
       END IF;
 
