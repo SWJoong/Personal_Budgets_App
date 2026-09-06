@@ -17,6 +17,11 @@ import { join } from 'node:path'
  *   emptystate.render.p7c.test.tsx 가 잠근다.
  *
  * RED 이유: 오늘 이 6파일은 EmptyState import 0건 + '없어요' 인라인 <p> >0건. U 채택 시 초록.
+ *
+ * ★Wave C(활동사진 실무자 갤러리) 갱신: 갤러리 빈상태를 공용 PhotoGallery 컴포넌트로 DRY 이관
+ *   (당사자·실무자 갤러리 공용). 그래서 gallery/page.tsx 는 EmptyState 를 직접 참조하지 않고
+ *   PhotoGallery 에 위임한다 → 이 채택 보증을 이관처(PhotoGallery.tsx)에서 유지한다.
+ *   PhotoGallery 는 두 갤러리 모두의 빈상태 단일 소스라 여기서 잠그면 양쪽이 함께 보증된다.
  */
 
 const ROOT = process.cwd()
@@ -24,7 +29,7 @@ const FILES = [
   'src/app/(participant)/page.tsx',
   'src/app/(participant)/calendar/CalendarClient.tsx',
   'src/app/(participant)/plan/page.tsx',
-  'src/app/(participant)/gallery/page.tsx',
+  'src/components/ui/PhotoGallery.tsx', // Wave C: 갤러리 빈상태 이관처(당사자·실무자 공용)
   'src/app/(participant)/my-plan/MyPlanClient.tsx',
   'src/app/(participant)/map/MapTabsClient.tsx',
 ]
