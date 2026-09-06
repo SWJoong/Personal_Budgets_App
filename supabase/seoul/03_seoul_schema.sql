@@ -535,6 +535,21 @@ CREATE TABLE IF NOT EXISTS public.seoul_receipts (
 COMMENT ON COLUMN public.seoul_receipts.storage_path IS
   'receipts 버킷의 경로. 공개 URL 을 저장하지 않는다 — 버킷이 private 이므로 항상 signed URL 로 변환해 노출한다.';
 
+-- 활동 사진 — 지출/활동에 붙는 기록 사진. 영수증(seoul_receipts)과 의미가 다르다:
+--   영수증 = 정산 증빙(receipts 버킷) / 활동사진 = 활동 기록·회상(activity-photos 버킷).
+-- usage 당 여러 장 가능(갤러리는 활동당 N장이 자연스럽다). provider_id 없음(활동사진은 업체 발행이 아님).
+CREATE TABLE IF NOT EXISTS public.seoul_activity_photos (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  usage_id       UUID NOT NULL REFERENCES public.seoul_service_usages(id) ON DELETE CASCADE,
+  storage_path   TEXT NOT NULL,
+  caption        TEXT,
+  taken_at       TIMESTAMPTZ,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMENT ON COLUMN public.seoul_activity_photos.storage_path IS
+  'activity-photos 버킷의 경로. 공개 URL 저장 금지 — private 버킷이므로 signed URL 로 변환해 노출한다.';
+CREATE INDEX IF NOT EXISTS idx_seoul_activity_photo_usage ON public.seoul_activity_photos (usage_id);
+
 
 -- =====================================================================
 -- §10. 규칙 검증 결과 (감사 흔적)

@@ -999,6 +999,48 @@ export type Database = {
           },
         ]
       }
+      seoul_activity_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          storage_path: string
+          taken_at: string | null
+          usage_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          storage_path: string
+          taken_at?: string | null
+          usage_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          storage_path?: string
+          taken_at?: string | null
+          usage_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seoul_activity_photos_usage_id_fkey"
+            columns: ["usage_id"]
+            isOneToOne: false
+            referencedRelation: "seoul_service_usages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seoul_activity_photos_usage_id_fkey"
+            columns: ["usage_id"]
+            isOneToOne: false
+            referencedRelation: "v_seoul_unplanned_usages"
+            referencedColumns: ["usage_id"]
+          },
+        ]
+      }
       seoul_receipts: {
         Row: {
           amount: number | null
