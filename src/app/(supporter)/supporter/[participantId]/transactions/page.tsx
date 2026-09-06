@@ -38,7 +38,10 @@ export default async function TransactionsPage({ params }: { params: Promise<{ p
         title={`${participant.name ?? ''}님의 거래장부`}
         backHref="/supporter/participants"
         action={
-          <LinkButton href={`/supporter/${participantId}/transactions/new`}>+ 지출 기록</LinkButton>
+          <div className="flex items-center gap-2">
+            <LinkButton href={`/supporter/${participantId}/gallery`} variant="secondary">활동 사진</LinkButton>
+            <LinkButton href={`/supporter/${participantId}/transactions/new`}>+ 지출 기록</LinkButton>
+          </div>
         }
       />
 
