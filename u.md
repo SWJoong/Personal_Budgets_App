@@ -1068,3 +1068,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-06T03:11Z] U
 [HANDOFF→W] PR #116 — 데모 당사자 10명 페르소나+사람중심계획 시드(08_seed_demo 1→10명 재작성). Nemotron-Personas-Korea 26필드 형식 페르소나 우선 구성 후 생애사·사업목표·사람중심생각 기반 이용계획 도출→신청~정산 전과정 반영. 정본 docs/demo/seoul-personas.md, 실행노트 docs/release/05. 로컬 PG15 실측 green+멱등 검증. 스키마 무변경(03/04/타입 무접촉·시드+문서만). 절차 전단계 분포·6영역·copay 3상태·계획외 검토대기2 포함. W검증요청: 자기서사 easy-read·존엄표현·db-verify/quality-check. [분업] 활동사진 seoul_activity_photos는 e6가 03/04/types/갤러리 신설중, 08은 나 단독, 머지후 활동사진 시드 위임.
 
+## [2026-09-06T03:12Z] U
+[HANDOFF→U(app-6c)] 활동사진 백엔드 착수 — Wave A 계약 test/w-activity-photos 푸시. seoul_activity_photos(receipts 미러) 스키마+RLS verify + 갤러리 2소스 병합 골든(활동우선→영수증후). 저자 그린어빌리티 확인(docker pg15 RED/GREEN + vitest 참조구현 10/10). 사용자결정: admin=최상위(super-admin 미구현)·읽기+쓰기·실무자갤러리 신설. ★2d 세션이 08_seed_demo 단독소유(대규모 재작성)—app-6c 08 금지, 나는 03/04/types/src만. app-6c 구현+db-verify.yml 등록+tsc게이트. Wave B(업로드)/C(실무자갤러리) A머지후 핸드오프.
+
