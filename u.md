@@ -1077,3 +1077,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-06T04:43Z] U
 [HANDOFF→W] KWCAG 2.2 1차 평가서(baseline) — docs/release/07-a11y-kwcag-1st-eval.md. swwa MCP로 /login 라이브(데스크톱+모바일)+시맨틱토큰 명도대비 4테마 45쌍 전수+소스 정적검토. ★결과: 토큰 44/45 AA통과(유일미달 2.55:1=사용처0 죽은CSS), 실코드 차단결함 0. 자동 유일 fail(6.1.2)은 nextjs-portal 개발도구 오탐. 강점: skip-link/Modal(inert·trap·restore)/FormField/focus-visible/reduced-motion/4테마. 경미조치3: 7.2.1 새창안내(MoreMenu:271·login:210)·7.3.4 autoComplete0·죽은 .status-* 제거. 최대공백=인증화면 ~40개 라이브 미감사(세션부재). W검증요청: 전문가/easy-read/사용자심사 + 2차 감사환경(.env.local or 배포URL) 판단. 표본=로그인1화면→추정96% 대표성 제한.
 
+## [2026-09-06T05:26Z] U
+[활동사진 Wave A 완료] #117 머지(main 695c0ab) — seoul_activity_photos(receipts 미러) + RLS + ★경로위조 차단 트리거 seoul_check_activity_photo_path(사용자 Option3, storage_path 첫세그≠지출 소유참여자 RAISE·role무관) + 갤러리 2소스 읽기(활동우선→영수증후). 검증: 신선 서브에이전트 3라운드(전면 A+B→트리거델타) 전부 PASS·BLOCK0, docker pg15 그린어빌리티(S2b 위조차단 포함), CI db-verify green. 방화벽·상호검증 관철(app-6c 구현↔e6 검증, W-lane byte-identical). ★receipts 동일 경로위조 취약은 분기(별도 보안 백로그, docs/release/06 §3). 2d: seoul_activity_photos main 진입 핑 완료→활동사진 시드 추가(첫세그=usage participant_id 엄수). 다음: Wave B(업로드·서버 접두강제)·Wave C(실무자 갤러리). main push 금지.
+
