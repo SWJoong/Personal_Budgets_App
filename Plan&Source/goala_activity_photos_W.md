@@ -122,6 +122,48 @@ seoul_activity_photos: {
 ```
 > `generate-types` 를 실측 DB 로 돌릴 수 있으면 그 산출물이 정본. 위는 손 미러(오프라인)용.
 
+### 5-4. ★경로 위조 방지 트리거 — `03_seoul_schema.sql` (테이블·인덱스 바로 뒤) — 사용자 결정(Option 3)
+
+**보안 배경**: `seoul_activity_photos_write` RLS 는 본인이 자기 pending 지출에 사진행을 넣는 것을 허용하되
+**storage_path 의 소유 접두를 강제하지 않는다**. 갤러리는 signed URL 을 admin 클라이언트(RLS 우회)로
+발급하므로, 참여자가 직접 API 로 자기 지출에 *남의 경로*(`{남의_participant_id}/…`)를 넣으면 남의
+비공개 사진 URL 을 얻을 수 있다(단, 남의 participant/usage/photo UUID 3개를 알아야 함·열거 불가).
+이는 기존 `seoul_receipts` 와 동일 패턴이나, **활동사진은 DB 레벨에서 원천 차단**한다(사용자 결정, receipts 와 분기).
+
+**설계**: BEFORE INSERT OR UPDATE 트리거로, storage_path 의 첫 폴더 세그먼트가 이 사진이 물린 지출의
+소유 참여자 id 와 일치하는지 검사(불일치·NULL 이면 RAISE). 스토리지 RLS `seoul_storage_owner =
+foldername[1]::uuid` 와 정합. 트리거는 role 무관하게 돌아 user·admin·직접 SQL 모두 차단(=가장 철저).
+읽기시점 접두검증은 이 트리거로 위조행 자체가 존재 불가 → **불필요**(생략).
+
+```sql
+CREATE OR REPLACE FUNCTION public.seoul_check_activity_photo_path()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_participant UUID;
+BEGIN
+  SELECT u.participant_id INTO v_participant
+    FROM public.seoul_service_usages u WHERE u.id = NEW.usage_id;
+  -- storage_path 의 첫 폴더 세그먼트 = 이 지출의 소유 참여자 id 여야 한다(경로 위조 방지).
+  IF v_participant IS NULL
+     OR NEW.storage_path IS NULL
+     OR split_part(NEW.storage_path, '/', 1) <> v_participant::text THEN
+    RAISE EXCEPTION 'activity photo storage_path 첫 세그먼트(%) 가 지출 소유 참여자(%) 와 불일치',
+      split_part(COALESCE(NEW.storage_path, ''), '/', 1), v_participant;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS trg_seoul_check_activity_photo_path ON public.seoul_activity_photos;
+CREATE TRIGGER trg_seoul_check_activity_photo_path
+  BEFORE INSERT OR UPDATE ON public.seoul_activity_photos
+  FOR EACH ROW EXECUTE FUNCTION public.seoul_check_activity_photo_path();
+```
+
+**파급**: 시드(2d)·Wave B 업로드는 반드시 `{participantId}/{usageId}/{photoId}.{ext}` 규약을 지켜야
+트리거를 통과한다(규약과 동일하므로 정상). receipts 는 이번에 손대지 않음 — **동일 취약 리트로핏은 별도 보안 백로그**.
+
 ## 6. Wave A — 읽기(갤러리 2소스 우선순위) · 계약 2건
 
 ### 6-1. 순수 병합 함수 — `src/utils/gallery.ts` (app-6c 신설)
@@ -160,7 +202,7 @@ export function mergeGalleryPhotos(activity: GalleryPhoto[], receipt: GalleryPho
 
 ## 8. 게이트 · 그린어빌리티 (저자 자기점검 — [[contract-greenability]])
 
-- verify SQL: 로컬 docker postgres:15 로 00~08 빌드 후 (1) 테이블 **없이** 실행 → T0 ❌(RED 확인) (2) 5-1/5-2 적용 후 실행 → 전 항목 ✅(그린어빌리티 확인). 실행노트는 아래.
+- verify SQL: 로컬 docker postgres:15 로 00~08 빌드 후 (1) 테이블 **없이** 실행 → T0 ❌(RED 확인) (2) §5-1/5-2/5-4(트리거) 적용 후 실행 → 전 항목 ✅(그린어빌리티 확인). ★위조 차단 음성테스트(S2b: 본인이 자기 pending 지출에 남의 접두 경로 INSERT → 트리거 RAISE → 0건)는 트리거 **없으면 실패**(=트리거가 load-bearing 임을 증명).
 - 골든: 참조 구현으로 `src/utils/gallery.test.ts` green, 현재(util 부재) RED 확인.
 - app-6c: `.github/workflows/db-verify.yml` 의 `verify=(...)` 배열에 **`verify_activity_photos` 추가**(안 하면 CI 가 계약을 안 돌림). `npm test`(골든 포함)·`tsc --noEmit`([[contract-tsc-gate]])·`build`·`lint` green.
 
