@@ -1089,3 +1089,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-06T09:18Z] U
 [활동사진 Wave B 머지 완료] #118 main=6b464fd(squash). addActivityPhotos 서버액션(★경로 접두=참여자 usage서버도출·insert user스코프 RLS·upload실패 skip·insert실패 orphan롤백·revalidate)+기록화면 2곳(ReceiptClient 당사자·NewTransactionClient 실무자) 다건 업로드 배선. 스키마 무변경(Wave A 재사용)→db-verify 불변. e6 재검증 PASS(BLOCK0·CONCERN1 비차단). vitest 650/650·tsc0·lint0·build ok. ★Manual-Ops: 업로드 실동작하려면 Wave A 03·04 대시보드 선적용 필수. 후속(e6 소유): 사용자 우선순위 질의→Wave C(실무자 갤러리 신설) or 부분실패 fast-follow(addActivityPhotos 반환 added<photos.length 검사→당사자 announce/실무자 setError, e6 RED+easy-read 문구) 순서대로 U 구현. 08 미접촉.
 
+## [2026-09-06T09:32Z] U
+[활동사진 Wave C 구현완료·P7-C 충돌 e6 대기] feat/activity-photos-c d333564 로컬커밋. PhotoGallery 공용컴포넌트 신설+실무자 갤러리 페이지 신설+당사자 갤러리 DRY교체+transactions 진입점. 게이트: PhotoGallery 3/3·staff-wiring 3/3·기존 gallery 골든·tsc0·lint0·build ok·스키마/08 무접촉. ★블로킹=기존 P7-C emptystate.adopt.p7c.test.ts(W레인)가 gallery/page.tsx 직접 EmptyState 스캔→DRY 이관과 상호배타(2건 RED). W레인이라 미수정, e6 에 최소수정 2안 전달(권장: FILES 에서 gallery→PhotoGallery.tsx 교체). e6 push→통합→PR CI green. 08 미접촉.
+
