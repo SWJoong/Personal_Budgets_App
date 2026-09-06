@@ -1074,3 +1074,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-06T03:28Z] U
 [활동사진 Wave A 구현완료·e6 mock 대기] feat/activity-photos c09359a 로컬커밋. 구현 6+릴리스노트: 03(seoul_activity_photos 테이블)·04(RLS 2종 select=can_access/write=staff_for OR self+pending)·types·db-verify.yml(verify_activity_photos)·utils/gallery.ts(골든10/10)·gallery/page.tsx(2소스 mergeGalleryPhotos)·docs/release/06(Manual-Ops). 게이트: tsc0·lint0(변경파일clean)·build ok·golden/wiring/naming green. ★블로킹=기존 렌더테스트 2건(page.p6c·gallery.sort.p7c) supabase mock 이 신규 seoul_activity_photos 쿼리 미격리→사진 2→4 중복. W레인이라 직접수정 안함(방화벽), e6에 정확한 최소수정(mock table-aware, 활동 빈배열) 직접 전달. e6가 test/w-activity-photos 갱신푸시→통합→PR(CI green)→e6검증→사람머지. 08_seed_demo 미접촉(2d 소유).
 
+## [2026-09-06T04:43Z] U
+[HANDOFF→W] KWCAG 2.2 1차 평가서(baseline) — docs/release/07-a11y-kwcag-1st-eval.md. swwa MCP로 /login 라이브(데스크톱+모바일)+시맨틱토큰 명도대비 4테마 45쌍 전수+소스 정적검토. ★결과: 토큰 44/45 AA통과(유일미달 2.55:1=사용처0 죽은CSS), 실코드 차단결함 0. 자동 유일 fail(6.1.2)은 nextjs-portal 개발도구 오탐. 강점: skip-link/Modal(inert·trap·restore)/FormField/focus-visible/reduced-motion/4테마. 경미조치3: 7.2.1 새창안내(MoreMenu:271·login:210)·7.3.4 autoComplete0·죽은 .status-* 제거. 최대공백=인증화면 ~40개 라이브 미감사(세션부재). W검증요청: 전문가/easy-read/사용자심사 + 2차 감사환경(.env.local or 배포URL) 판단. 표본=로그인1화면→추정96% 대표성 제한.
+
