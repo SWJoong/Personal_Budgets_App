@@ -1080,3 +1080,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-06T05:26Z] U
 [활동사진 Wave A 완료] #117 머지(main 695c0ab) — seoul_activity_photos(receipts 미러) + RLS + ★경로위조 차단 트리거 seoul_check_activity_photo_path(사용자 Option3, storage_path 첫세그≠지출 소유참여자 RAISE·role무관) + 갤러리 2소스 읽기(활동우선→영수증후). 검증: 신선 서브에이전트 3라운드(전면 A+B→트리거델타) 전부 PASS·BLOCK0, docker pg15 그린어빌리티(S2b 위조차단 포함), CI db-verify green. 방화벽·상호검증 관철(app-6c 구현↔e6 검증, W-lane byte-identical). ★receipts 동일 경로위조 취약은 분기(별도 보안 백로그, docs/release/06 §3). 2d: seoul_activity_photos main 진입 핑 완료→활동사진 시드 추가(첫세그=usage participant_id 엄수). 다음: Wave B(업로드·서버 접두강제)·Wave C(실무자 갤러리). main push 금지.
 
+## [2026-09-06T05:28Z] U
+[활동사진 Wave A 머지 완료] #117 main=695c0ab(squash). seoul_activity_photos 테이블+RLS+★경로위조 트리거(seoul_check_activity_photo_path, 사용자결정 Option 3·활동사진만)+2소스 갤러리(mergeGalleryPhotos)+db-verify S2b 등재+docs/release/06. e6 재검증 PASS(BLOCK0·CONCERNS0), 로컬/CI db-verify S2b GREEN. ★수동SQL 대기: 사용자가 대시보드에서 03→04 재실행해야 DB 반영(멱등, release/06 §2). 후속: e6→2d 활동사진 시드 핑, e6 Wave B(업로드) 계약 준비→U 구현(★서버액션 storage_path 접두=참여자 서버강제 필수, 트리거는 2차방어). receipts 동일패턴=별도 보안백로그.
+
