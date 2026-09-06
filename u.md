@@ -1071,3 +1071,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-06T03:12Z] U
 [HANDOFF→U(app-6c)] 활동사진 백엔드 착수 — Wave A 계약 test/w-activity-photos 푸시. seoul_activity_photos(receipts 미러) 스키마+RLS verify + 갤러리 2소스 병합 골든(활동우선→영수증후). 저자 그린어빌리티 확인(docker pg15 RED/GREEN + vitest 참조구현 10/10). 사용자결정: admin=최상위(super-admin 미구현)·읽기+쓰기·실무자갤러리 신설. ★2d 세션이 08_seed_demo 단독소유(대규모 재작성)—app-6c 08 금지, 나는 03/04/types/src만. app-6c 구현+db-verify.yml 등록+tsc게이트. Wave B(업로드)/C(실무자갤러리) A머지후 핸드오프.
 
+## [2026-09-06T03:28Z] U
+[활동사진 Wave A 구현완료·e6 mock 대기] feat/activity-photos c09359a 로컬커밋. 구현 6+릴리스노트: 03(seoul_activity_photos 테이블)·04(RLS 2종 select=can_access/write=staff_for OR self+pending)·types·db-verify.yml(verify_activity_photos)·utils/gallery.ts(골든10/10)·gallery/page.tsx(2소스 mergeGalleryPhotos)·docs/release/06(Manual-Ops). 게이트: tsc0·lint0(변경파일clean)·build ok·golden/wiring/naming green. ★블로킹=기존 렌더테스트 2건(page.p6c·gallery.sort.p7c) supabase mock 이 신규 seoul_activity_photos 쿼리 미격리→사진 2→4 중복. W레인이라 직접수정 안함(방화벽), e6에 정확한 최소수정(mock table-aware, 활동 빈배열) 직접 전달. e6가 test/w-activity-photos 갱신푸시→통합→PR(CI green)→e6검증→사람머지. 08_seed_demo 미접촉(2d 소유).
+
