@@ -26,10 +26,12 @@ const receiptsData = [
 vi.mock('@/utils/supabase/server', () => ({
   createClient: async () => ({
     auth: { getUser: async () => ({ data: { user: { id: 'u-1' } } }) },
-    from: () => ({
+    // 2소스(활동사진 Wave A): page.tsx 가 seoul_activity_photos·seoul_receipts 를 각각 .in() 으로
+    // 조회한다. 이 테스트는 list 시맨틱만 보므로 활동사진 fixture 는 비우고(=[]) 영수증 2건만 렌더.
+    from: (table: string) => ({
       select: () => ({
         eq: async () => ({ data: usagesData }),
-        in: async () => ({ data: receiptsData }),
+        in: async () => ({ data: table === 'seoul_receipts' ? receiptsData : [] }),
       }),
     }),
   }),

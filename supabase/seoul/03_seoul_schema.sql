@@ -535,6 +535,51 @@ CREATE TABLE IF NOT EXISTS public.seoul_receipts (
 COMMENT ON COLUMN public.seoul_receipts.storage_path IS
   'receipts 버킷의 경로. 공개 URL 을 저장하지 않는다 — 버킷이 private 이므로 항상 signed URL 로 변환해 노출한다.';
 
+-- 활동 사진 — 지출/활동에 붙는 기록 사진. 영수증(seoul_receipts)과 의미가 다르다:
+--   영수증 = 정산 증빙(receipts 버킷) / 활동사진 = 활동 기록·회상(activity-photos 버킷).
+-- usage 당 여러 장 가능(갤러리는 활동당 N장이 자연스럽다). provider_id 없음(활동사진은 업체 발행이 아님).
+CREATE TABLE IF NOT EXISTS public.seoul_activity_photos (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  usage_id       UUID NOT NULL REFERENCES public.seoul_service_usages(id) ON DELETE CASCADE,
+  storage_path   TEXT NOT NULL,
+  caption        TEXT,
+  taken_at       TIMESTAMPTZ,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMENT ON COLUMN public.seoul_activity_photos.storage_path IS
+  'activity-photos 버킷의 경로. 공개 URL 저장 금지 — private 버킷이므로 signed URL 로 변환해 노출한다.';
+CREATE INDEX IF NOT EXISTS idx_seoul_activity_photo_usage ON public.seoul_activity_photos (usage_id);
+
+-- ★ 경로 위조 방지 트리거 (사용자 결정 Option 3 — 활동사진만, receipts 와 분기).
+-- seoul_activity_photos_write RLS 는 본인이 자기 pending 지출에 사진행을 넣는 것을 허용하되
+-- storage_path 의 소유 접두를 강제하지 않는다. 갤러리는 signed URL 을 admin 클라이언트(RLS 우회)로
+-- 발급하므로, 남의 경로({남의_participant_id}/…)를 넣으면 남의 비공개 사진을 얻을 수 있다.
+-- BEFORE INSERT/UPDATE 트리거로 storage_path 첫 폴더 세그먼트 = 지출 소유 참여자 id 를 강제한다.
+-- role 무관(user·admin·직접 SQL 전부) 차단 = 가장 철저. 스토리지 RLS(foldername[1]=owner)와 정합.
+CREATE OR REPLACE FUNCTION public.seoul_check_activity_photo_path()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_participant UUID;
+BEGIN
+  SELECT u.participant_id INTO v_participant
+    FROM public.seoul_service_usages u WHERE u.id = NEW.usage_id;
+  -- storage_path 의 첫 폴더 세그먼트 = 이 지출의 소유 참여자 id 여야 한다(경로 위조 방지).
+  IF v_participant IS NULL
+     OR NEW.storage_path IS NULL
+     OR split_part(NEW.storage_path, '/', 1) <> v_participant::text THEN
+    RAISE EXCEPTION 'activity photo storage_path 첫 세그먼트(%) 가 지출 소유 참여자(%) 와 불일치',
+      split_part(COALESCE(NEW.storage_path, ''), '/', 1), v_participant;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS trg_seoul_check_activity_photo_path ON public.seoul_activity_photos;
+CREATE TRIGGER trg_seoul_check_activity_photo_path
+  BEFORE INSERT OR UPDATE ON public.seoul_activity_photos
+  FOR EACH ROW EXECUTE FUNCTION public.seoul_check_activity_photo_path();
+
 
 -- =====================================================================
 -- §10. 규칙 검증 결과 (감사 흔적)

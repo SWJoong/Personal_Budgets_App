@@ -84,6 +84,7 @@ jobs:
             verify_ui_preferences_rls verify_provider_domains verify_assignment_rls
             verify_graph_mask verify_lifecycle
             verify_audit_log
+            verify_activity_photos
           )
           out="$(mktemp)"
           for v in "${verify[@]}"; do

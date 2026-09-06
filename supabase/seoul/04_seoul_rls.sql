@@ -288,6 +288,25 @@ CREATE POLICY seoul_receipts_write ON public.seoul_receipts
                     AND (public.seoul_is_staff_for(u.participant_id)
                          OR (public.seoul_is_self(u.participant_id) AND u.settlement_status = 'pending'))));
 
+-- 활동 사진 — 영수증과 동일: 본인·담당 staff 열람 / 쓰기는 staff 항상, 본인은 정산 전(pending)까지.
+ALTER TABLE public.seoul_activity_photos ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS seoul_activity_photos_select ON public.seoul_activity_photos;
+CREATE POLICY seoul_activity_photos_select ON public.seoul_activity_photos
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_service_usages u
+                  WHERE u.id = usage_id AND public.seoul_can_access(u.participant_id)));
+DROP POLICY IF EXISTS seoul_activity_photos_write ON public.seoul_activity_photos;
+CREATE POLICY seoul_activity_photos_write ON public.seoul_activity_photos
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_service_usages u
+                  WHERE u.id = usage_id
+                    AND (public.seoul_is_staff_for(u.participant_id)
+                         OR (public.seoul_is_self(u.participant_id) AND u.settlement_status = 'pending'))))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.seoul_service_usages u
+                  WHERE u.id = usage_id
+                    AND (public.seoul_is_staff_for(u.participant_id)
+                         OR (public.seoul_is_self(u.participant_id) AND u.settlement_status = 'pending'))));
+
 -- 모니터링–이용 연결 — 실무자 기록물
 ALTER TABLE public.seoul_monitoring_usages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS seoul_monitoring_usages_select ON public.seoul_monitoring_usages;
