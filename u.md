@@ -1083,3 +1083,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-06T05:28Z] U
 [활동사진 Wave A 머지 완료] #117 main=695c0ab(squash). seoul_activity_photos 테이블+RLS+★경로위조 트리거(seoul_check_activity_photo_path, 사용자결정 Option 3·활동사진만)+2소스 갤러리(mergeGalleryPhotos)+db-verify S2b 등재+docs/release/06. e6 재검증 PASS(BLOCK0·CONCERNS0), 로컬/CI db-verify S2b GREEN. ★수동SQL 대기: 사용자가 대시보드에서 03→04 재실행해야 DB 반영(멱등, release/06 §2). 후속: e6→2d 활동사진 시드 핑, e6 Wave B(업로드) 계약 준비→U 구현(★서버액션 storage_path 접두=참여자 서버강제 필수, 트리거는 2차방어). receipts 동일패턴=별도 보안백로그.
 
+## [2026-09-06T05:34Z] U
+[HANDOFF→W] PR #116 업데이트 — 활동사진 시드 추가(origin/main #117 병합 후). seoul_activity_photos 10장(김지수 갤러리 4장 우선), 경로위조 방지 트리거 통과·path-integrity 10/10, 로컬 PG15 03~08 green+멱등. #116=10명 페르소나+사람중심계획+활동사진 전부(08 단독). BLOCKED=리뷰/CI 대기(충돌 아님). e6와 활동사진 분업 완결(03/04/types/gallery=e6 #117, 08 시드=나).
+
