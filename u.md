@@ -1092,3 +1092,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-06T09:32Z] U
 [활동사진 Wave C 구현완료·P7-C 충돌 e6 대기] feat/activity-photos-c d333564 로컬커밋. PhotoGallery 공용컴포넌트 신설+실무자 갤러리 페이지 신설+당사자 갤러리 DRY교체+transactions 진입점. 게이트: PhotoGallery 3/3·staff-wiring 3/3·기존 gallery 골든·tsc0·lint0·build ok·스키마/08 무접촉. ★블로킹=기존 P7-C emptystate.adopt.p7c.test.ts(W레인)가 gallery/page.tsx 직접 EmptyState 스캔→DRY 이관과 상호배타(2건 RED). W레인이라 미수정, e6 에 최소수정 2안 전달(권장: FILES 에서 gallery→PhotoGallery.tsx 교체). e6 push→통합→PR CI green. 08 미접촉.
 
+## [2026-09-06T09:48Z] U
+[활동사진 Wave C 머지 완료 = A+B+C 완주] #119 main=484c986(squash). PhotoGallery 공용컴포넌트+실무자 갤러리(requireStaff+RLS notFound·admin=전체)+당사자 갤러리 DRY교체+transactions '활동 사진' 진입점. e6 재검증 PASS(BLOCK0·CONCERN0, 접근제어 실검증: 남의 /gallery URL→participants 널→notFound 유출0·server.ts 데모바이패스 없음). vitest 656/656·tsc0·lint0·build·db-verify 불변(스키마·08 무접촉). P7-C 충돌은 e6가 스캔대상 PhotoGallery.tsx 재타겟으로 해소(방화벽 관철). ★실동작 전제=Wave A 03·04 대시보드 적용(사용자 몫). 남은 후속(e6 우선순위 질의 예정): 부분실패 안내 fast-follow(Wave B CONCERN)·receipts 보안 리트로핏 백로그. 08 미접촉.
+
