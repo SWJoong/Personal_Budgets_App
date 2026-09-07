@@ -47,13 +47,13 @@ export default async function AssessmentPage({ params }: { params: Promise<{ par
           >
             ←
           </Link>
-          <h1 className="text-xl font-bold tracking-tight truncate">{participant.name}님의 욕구사정</h1>
+          <h1 className="text-xl font-bold tracking-tight truncate">{participant.name ?? '이름 없음'}님의 욕구사정</h1>
         </div>
         <Link
           href={`/supporter/${participantId}/report`}
           className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors px-3 min-h-[44px] flex items-center whitespace-nowrap"
         >
-          흐름 보기 →
+          지원영역 흐름 보기 →
         </Link>
       </header>
 

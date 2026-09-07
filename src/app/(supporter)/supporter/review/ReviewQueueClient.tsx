@@ -52,7 +52,7 @@ export default function ReviewQueueClient({ items }: { items: ReviewItem[] }) {
   return (
     <div className="flex flex-col gap-3">
       {error && (
-        <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm">{error}</div>
+        <div role="alert" className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm">{error}</div>
       )}
       <ul className="flex flex-col gap-3 list-none">
         {items.map((item) => (
@@ -83,8 +83,9 @@ export default function ReviewQueueClient({ items }: { items: ReviewItem[] }) {
             type="text"
             value={notes[item.id] ?? ''}
             onChange={(e) => setNotes((prev) => ({ ...prev, [item.id]: e.target.value }))}
+            aria-label={`${item.participantName} 확인 메모 (선택)`}
             placeholder="확인 메모 (선택)"
-            className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm"
+            className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm min-h-[44px]"
           />
           <div className="flex gap-2">
             <button

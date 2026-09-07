@@ -174,7 +174,7 @@ export default function NewTransactionClient({
   return (
     <div className="flex flex-col gap-4">
       {error && (
-        <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium">{error}</div>
+        <div role="alert" className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium">{error}</div>
       )}
 
       {allocations.length > 1 && (

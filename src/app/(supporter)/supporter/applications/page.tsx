@@ -51,7 +51,7 @@ export default async function ApplicationsPage() {
         )}
 
         {(applications ?? []).length === 0 ? (
-          <EmptyState title="아직 신청서를 받지 않았어요." action={{ label: '새 신청서 받기', href: '/supporter/applications/new' }} />
+          <EmptyState title="아직 신청서를 받지 않았어요." action={{ label: '신청서 접수하기', href: '/supporter/applications/new' }} />
         ) : (
           <ul className="flex flex-col gap-2">
             {(applications ?? []).map((app) => (

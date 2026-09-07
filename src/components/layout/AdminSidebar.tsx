@@ -123,7 +123,9 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
       {/* 헤더 */}
       <div className={`flex items-center h-14 shrink-0 ${collapsed ? 'justify-center px-2' : 'justify-between px-4'}`}>
         {!collapsed && (
-          <Link href="/admin" className="block hover:opacity-80 transition-opacity min-w-0 flex-1 mr-2">
+          // 브랜드(로고) 링크도 role 기반 — 실무자에게 /admin(requireAdmin)을 주면 로고 클릭 시
+          // '/' 로 튕기는 死링크가 된다(08 QA CRITICAL). 메뉴·퀵항목 필터가 놓쳤던 지점.
+          <Link href={isSupporter ? '/supporter' : '/admin'} className="block hover:opacity-80 transition-opacity min-w-0 flex-1 mr-2">
             <h2 className="text-sidebar-strong font-bold text-base tracking-tight leading-tight truncate">서울형 개인예산제</h2>
             <span className="text-sidebar-muted-foreground text-xs font-normal">{roleLabel}</span>
           </Link>

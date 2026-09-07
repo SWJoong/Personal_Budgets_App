@@ -250,8 +250,8 @@ export default function NewApplicationPage() {
             </label>
             {participatesInMohwPilot && (
               <p className="text-[11px] text-warning-fg bg-warning-bg rounded-lg p-3 leading-relaxed">
-                복지부 시범사업 참여자는 서울형에 참여할 수 없습니다. 이대로 저장하면
-                선정 단계에서 막힙니다.
+                복지부 시범사업 참여자는 서울형에 참여할 수 없어요. 다만 앱이 자동으로 막지는
+                않으니, 선정 전에 수행기관에서 꼭 확인해 주세요.
               </p>
             )}
           </fieldset>

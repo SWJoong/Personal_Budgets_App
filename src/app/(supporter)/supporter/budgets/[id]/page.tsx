@@ -324,14 +324,14 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
             variant="primary"
             className="flex-1"
           >
-            💳 지출 적기
+            <span aria-hidden="true">💳</span> 지출 적기
           </LinkButton>
           <LinkButton
             href={`/supporter/evaluations/${participantId}`}
             variant="secondary"
             className="flex-1"
           >
-            📋 정산 보기
+            <span aria-hidden="true">📋</span> 정산 보기
           </LinkButton>
         </div>
       </main>

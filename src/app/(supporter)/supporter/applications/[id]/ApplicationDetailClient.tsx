@@ -283,7 +283,7 @@ export default function ApplicationDetailClient({
                   type="button"
                   onClick={() => handleOpenDocument(d.id)}
                   disabled={pending}
-                  className="shrink-0 px-3 py-2 rounded-lg bg-hero text-hero-foreground text-xs font-bold disabled:opacity-50 min-h-[36px]"
+                  className="shrink-0 px-3 py-2 rounded-lg bg-hero text-hero-foreground text-xs font-bold disabled:opacity-50 min-h-[44px]"
                 >
                   열기
                 </button>
@@ -296,6 +296,7 @@ export default function ApplicationDetailClient({
           <select
             value={docType}
             onChange={(e) => setDocType(e.target.value as ApplicationDocType)}
+            aria-label="서류 종류"
             className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm"
           >
             <option value="application_form">신청서 원본</option>
@@ -305,6 +306,7 @@ export default function ApplicationDetailClient({
           <input
             type="file"
             accept=".pdf,.hwp,.docx,image/*"
+            aria-label="서류 파일 선택"
             disabled={pending}
             onChange={(e) => {
               const file = e.target.files?.[0]

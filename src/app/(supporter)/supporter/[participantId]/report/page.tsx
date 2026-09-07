@@ -53,7 +53,7 @@ export default async function DomainAxisReportPage({ params }: { params: Promise
         >
           ←
         </Link>
-        <h1 className="text-xl font-bold tracking-tight">{participant.name}님의 지원영역 흐름</h1>
+        <h1 className="text-xl font-bold tracking-tight">{participant.name ?? '이름 없음'}님의 지원영역 흐름</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-4">

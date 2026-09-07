@@ -79,7 +79,9 @@ export default async function StaffGalleryPage({ params }: { params: Promise<{ p
     ),
   ])
 
-  const photos = mergeGalleryPhotos(activity, receipt)
+  // signed URL 생성 실패(파일 삭제·서명 오류)로 url 이 빈 항목은 렌더에서 제외 —
+  // PhotoGallery 가 <img src=""> 로 깨진 이미지를 그리지 않도록(08 QA MINOR).
+  const photos = mergeGalleryPhotos(activity, receipt).filter((p) => p.url)
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">

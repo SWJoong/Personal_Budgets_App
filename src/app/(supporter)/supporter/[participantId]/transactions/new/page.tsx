@@ -48,7 +48,7 @@ export default async function NewTransactionPage({ params }: { params: Promise<{
         >
           ←
         </Link>
-        <h1 className="text-xl font-bold tracking-tight truncate">지출 기록 · {participant.name}님</h1>
+        <h1 className="text-xl font-bold tracking-tight truncate">지출 기록 · {participant.name ?? '이름 없음'}님</h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">

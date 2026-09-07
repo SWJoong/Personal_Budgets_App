@@ -284,8 +284,9 @@ export default function PlanDetailClient({
         {isDraft ? (
           NARRATIVE_FIELDS.map(({ key, label }) => (
             <div key={key} className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground font-medium">{label}</label>
+              <label htmlFor={`narrative-${key}`} className="text-xs text-muted-foreground font-medium">{label}</label>
               <textarea
+                id={`narrative-${key}`}
                 value={form[key] ?? ''}
                 onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
                 placeholder="당사자와 함께 이야기한 내용을 적어주세요"
@@ -312,8 +313,9 @@ export default function PlanDetailClient({
           services.map((s, i) => (
             <div key={i} className="flex gap-2 items-end">
               <div className="flex-1 flex flex-col gap-0.5">
-                <label className="text-[10px] text-muted-foreground font-medium">{i + 1}순위 — 무엇에 쓰나요?</label>
+                <label htmlFor={`service-name-${i}`} className="text-[10px] text-muted-foreground font-medium">{i + 1}순위 — 무엇에 쓰나요?</label>
                 <input
+                  id={`service-name-${i}`}
                   type="text"
                   value={s.serviceName}
                   onChange={(e) => {
@@ -360,6 +362,7 @@ export default function PlanDetailClient({
                       type="text"
                       value={reviewNotes[rs.id] ?? ''}
                       onChange={(e) => setReviewNotes((prev) => ({ ...prev, [rs.id]: e.target.value }))}
+                      aria-label={`${rs.service_name} 검토 의견 (선택)`}
                       placeholder="검토 의견 (선택)"
                       className="p-2 rounded-lg bg-card ring-1 ring-border text-xs"
                     />

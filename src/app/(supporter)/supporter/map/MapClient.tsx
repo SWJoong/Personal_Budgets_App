@@ -47,12 +47,12 @@ export default function SupporterMapClient({
   return (
     <div className="flex flex-col gap-4">
       {/* 영역 필터바 */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-        <button type="button" onClick={() => setDomainId(null)} className={chip(!domainId)}>
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" role="group" aria-label="영역 필터">
+        <button type="button" aria-pressed={!domainId} onClick={() => setDomainId(null)} className={chip(!domainId)}>
           전체
         </button>
         {domains.map((d) => (
-          <button key={d.id} type="button" onClick={() => setDomainId(d.id)} className={chip(domainId === d.id)}>
+          <button key={d.id} type="button" aria-pressed={domainId === d.id} onClick={() => setDomainId(d.id)} className={chip(domainId === d.id)}>
             {d.label}
           </button>
         ))}
