@@ -247,8 +247,15 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
                       </span>
                       <span>
                         <span className="text-muted-foreground">남은 돈 </span>
-                        <MoneyText value={r.remaining} emphasis="body" />
+                        {/* 봉투(§8 ②)와 동일 — 도메인 초과 시 음수 대신 0원, 초과분은 "초과"로 분리(⑨). */}
+                        <MoneyText value={Math.max(0, r.remaining)} emphasis="body" />
                       </span>
+                      {r.remaining < 0 && (
+                        <span>
+                          <span className="text-danger">초과 </span>
+                          <MoneyText value={-r.remaining} emphasis="body" />
+                        </span>
+                      )}
                       {r.unplannedSum > 0 && (
                         <span>
                           <span className="text-warning-fg">계획 밖 </span>
