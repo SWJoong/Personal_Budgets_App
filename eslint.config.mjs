@@ -32,6 +32,10 @@ const eslintConfig = defineConfig([
     // 앱 소스가 아닌 디렉터리 — 계획·설계·목업(자체 프로젝트/툴링). 앱 린트 대상 아님.
     "Plan&Source/**",
     "mockup_personal_budgets/**",
+    // 로컬 툴링 산출물 — 병렬 오케스트레이션 worktree(.claude/worktrees/**)·설정. 앱 소스 아님.
+    // 없으면 로컬 `eslint`(no-arg)가 stale worktree 사본까지 스캔해 수백 건 오탐이 뜬다
+    // (CI 는 worktree/빌드 산출물이 없는 클린 체크아웃이라 무관).
+    ".claude/**",
   ]),
 ]);
 
