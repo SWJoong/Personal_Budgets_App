@@ -95,3 +95,21 @@
 라이브 QA 중 로컬 dev 서버(포트 3000)가 **모든 라우트에서 로딩스켈레톤("불러오는 중…")만 무한 표시**. 원인=편집 중간 상태의 HMR 모듈 캐시가 `viewAs.ts`(과거 인라인 `export const` 정의) 를 물고 wedge — 콘솔에 "defined multiple times" + "next/headers in Client Component" 오류. **온디스크 코드는 정상**(커밋 클린·build green·`viewAsCookies.ts`↔`viewAs.ts` re-export 정합·클라→서버 import 0건). **dev 서버 재기동으로 해소**(Ready 906ms, 컴파일 clean). 교훈: 세션 장기화 시 dev 서버 HMR 이 wedge 될 수 있음 → 재기동이 정답, 온디스크/게이트가 정본.
 
 > ★한계: 이번 판정은 **소스+게이트** 기반. 브라우저 pane 이 숨김 상태라 백그라운드 탭의 클라이언트 렌더가 스로틀돼 라이브 시각 확인이 막혔고(빈상태 CTA 는 담당0 실무자 필요라 라이브 재현도 곤란), pane 재노출 시 시각 재확인 권장. §3 계열 死링크는 게이트(요청→타겟 게이트)로 결정적 판정됨.
+
+---
+
+## 8. W 결정 대기 큐 (실무자 QA 보류분 핸드오프)
+§7-4 의 보류 항목을 **W(설계·검증 축) 결정 대기 큐**로 정리한다. U 는 확정 결함(CRITICAL/MAJOR/안전 MINOR)만 이미 반영했고(§7-1~7-3), 아래는 **디자인·easy-read·IA·권한 판단이 갈려 U 단독 변경을 보류**한 것들이다. W 가 방향을 정하면(필요 시 RED 계약/verify 또는 easy-read·a11y 스펙) U 가 초록화한다.
+
+| # | 항목 | W 모자 | W 가 정할 것 | 승인 시 U 작업 | 규모/리스크 |
+|---|------|--------|--------------|----------------|-------------|
+| 1 | **금액/날짜 표기 통일** — 거래 상세·원장이 `usage_date` ISO 원문(`transactions/[id]/page.tsx:67`, `OrgLedgerClient.tsx:114,137`) vs 예산은 `fmtDate`("2026.08.15"); 검토 화면은 지역 `won()`(`ReviewQueueClient.tsx:18`) vs `MoneyText` | /ux-ui (P3 프리미티브) | 공용 날짜 포맷 확정 + `MoneyText` 전면 적용 여부 | 공용 포맷터/`MoneyText` 로 치환(tabular-nums·부호 비색큐 흡수) | 소~중 (다수 파일, 골든 영향 확인) |
+| 2 | **초과지출 시 "남은 돈" 음수 표기** — `budgets/[id]/page.tsx:127` `remainingTotal=allocated-usedTotal` 이 음수면 "-12,345원"(경고문·danger 는 병기됨) | /ux-ui + /easy-read-review | 음수 그대로 vs "0원 + 초과 X원 별도 표기" | budgets 표시 로직 분기 | 소 |
+| 3 | **회계 용어 easy-read 풀이** — 환수/부과/심의 메모/미사용 등(`OrgLedgerClient.tsx:24,31`, `budgets/[id]/page.tsx:52,311`, `EvaluationClient.tsx:192`) | /easy-read-review | 실무자 화면 용어를 풀이/툴팁/유지 중 택 | 괄호풀이 또는 툴팁 병기 | 소 |
+| 4 | **당사자 허브의 전역 카드** — `participants/[id]/page.tsx:79,85` '이용계획·심의'·'활동 지도' 카드가 participant 스코프 없이 전역 목록으로 이동(다른 카드는 pid 포함) | /ux-ui + /pl | 대상화면이 `?participant=` 수용할지 vs 카드에 '전체' 명시 | 링크 파라미터화 + 대상화면 필터 수용 | 중 (다수 화면) |
+| 5 | **관계망 그래프 키보드 상호작용** — `NetworkGraphClient.tsx:154-165` 노드 선택이 cy `tap` 마우스/터치 전용(`<details>` 텍스트대안은 있어 완화) | /ux-ui + /qa(a11y) | 노드 상세를 키보드 포커스 리스트로 보강할 범위 | 선택노드 패널/리스트를 포커스 가능화 | 중~대 |
+| 6 | **모바일 h1 중복** — `SupporterLayoutClient.tsx:74` 앱명 `<h1>` + 각 페이지 `<h1>` → 모바일 h1 2개(main 중첩은 이미 회피됨) | /ux-ui + /qa(a11y) | 앱명을 `<p>/<span>` 강등 vs 페이지 h1 조정 | 헤딩 계층 조정 | 소~중 (P4/P6 계약 확인 필요) |
+| 7 | **활동사진 부분실패 안내·용량상한** — `NewTransactionClient.tsx:154` `addActivityPhotos` 반환 미검사, `:118` 활동사진 크기검증 없음(영수증은 5MB) | (이미 **사용자 파킹**) /pl 우선순위 | fast-follow 재개 여부 | 반환 오류 토스트 + 장당/합계 용량 가드 | 소~중 |
+| 8 | **AdminSidebar 서브항목 adminOnly 필터**(잠재) — top-level 만 필터, 서브는 미필터(현재 admin 서브가 adminOnly 부모 아래라 **누수 0**) | /qa | 방어적 `filter(s=>!s.adminOnly)` 추가 여부 | 서브 렌더에 필터 1줄 | 소(무해) |
+
+**진행 규약**: 각 항목은 착수 시 W 가 계약/스펙(또는 easy-read·a11y 판정)을 못 박고 `[HANDOFF→U]` → U 구현 → W 검증 → merge (프로젝트 test-first 사이클). 死링크·접근성 확정분(§7-1~7-3)은 이미 PR #120 반영(커밋 134eb24·9d364ba).
