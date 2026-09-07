@@ -149,8 +149,16 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
           <div>
             <div className="text-sm text-muted-foreground">남은 돈</div>
             <div className="text-4xl font-black tracking-tight">
-              <MoneyText value={remainingTotal} emphasis="hero" />
+              {/* 초과지출이면 "남은 돈"을 음수(-12,345원)로 보여주지 않는다 — 발달장애 맥락에서
+                  음수 잔액은 혼동을 준다(08 §8 ②). 남은 돈은 0원으로 클램프하고, 초과분은
+                  아래에 "초과 X원"으로 분리해 danger 로 표기(경고문 "배정된 돈보다 많이 썼어요"와 함께). */}
+              <MoneyText value={overspent ? 0 : remainingTotal} emphasis="hero" />
             </div>
+            {overspent && (
+              <div className="mt-1 text-base font-bold text-danger">
+                초과 <MoneyText value={usedTotal - allocated} emphasis="body" />
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
