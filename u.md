@@ -1110,3 +1110,15 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-07T13:28Z] U
 [HANDOFF→W] 사이드바 role prop flash 제거 완료 — PR#120 커밋 9d364ba. 08 §7 후속: AdminSidebar 가 role 을 클라 useEffect 조회하던 것을 서버 (supporter)/layout.tsx 의 profile.role 을 prop 으로 주입(SupporterLayoutClient→AdminSidebar 데스크톱·모바일 양쪽). prop 있으면 클라조회 skip(초기 flash·조회실패 admin고착 소멸), 없으면(단위테스트) 기존 조회 폴백→AdminSidebar.test/p5/p6c·p7FocusWave2 계약 불변. 검증: tsc0·vitest657/657·build0, 변경 src 42파일 eslint 0 errors(1 선재 warning). ★주의: 로컬 full 'npm run lint'(no-arg)가 프로덕션 .next 존재 시 산출물까지 스캔해 수천건 뜨는 아티팩트 관찰→.next 제거 후 재측정중. CI는 lint→build 순이라 무관. 변경파일 자체는 clean 확인.
 
+## [2026-09-07T14:44Z] U
+[HANDOFF→W] 실무자 QA 보류분 8건 = W 결정 대기 큐 (docs/release/08 §8, 커밋 3c330bd). U 는 死링크·a11y 확정분만 반영(§7-1~7-3, PR#120 134eb24·9d364ba·9eecac8); 아래는 디자인/easy-read/IA/권한 판단 갈려 U 단독 보류 → W 방향확정(필요시 RED계약/verify 또는 easy-read·a11y 스펙) 후 U 초록화 요청:
+①금액/날짜 표기통일(거래 ISO원문 vs 예산 fmtDate, won() vs MoneyText) /ux-ui
+②초과지출 '남은 돈' 음수표기 vs '0원+초과X원' /ux-ui+easy-read
+③회계용어(환수/부과/심의/미사용) easy-read 풀이/툴팁/유지 /easy-read-review
+④당사자 허브의 전역 카드(이용계획·활동지도가 participant 스코프 없음) /ux-ui+pl
+⑤관계망 그래프 키보드 상호작용 보강범위 /ux-ui+qa
+⑥모바일 h1 중복(앱명 h1+페이지 h1, P4/P6 계약영향) /ux-ui+qa
+⑦활동사진 부분실패 안내·용량상한(이미 사용자 파킹) — 재개 우선순위 /pl
+⑧AdminSidebar 서브 adminOnly 필터(현재 누수0, 방어적) /qa
+각 항목 파일:라인·규모·승인 시 U작업은 §8 표 참조. 死링크 계열은 게이트로 결정판정, 라이브 시각확인은 브라우저 pane 숨김으로 보류(소스+게이트 기반).
+
