@@ -5,13 +5,16 @@ import { usePathname } from 'next/navigation'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import NavigationProgress from '@/components/layout/NavigationProgress'
 import FaqButton from '@/components/ui/FaqButton'
+import type { UserRole } from '@/types/database'
 
 const STORAGE_KEY = 'admin_sidebar_collapsed'
 
 export function SupporterLayoutClient({
   children,
+  role,
 }: {
   children: React.ReactNode
+  role: UserRole
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -55,7 +58,7 @@ export function SupporterLayoutClient({
         className={`hidden md:flex fixed left-0 top-0 bottom-0 z-40 transition-all duration-300 print:hidden ${desktopW}`}
         data-print-hide
       >
-        <AdminSidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
+        <AdminSidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} role={role} />
       </div>
 
       {/* 모바일 상단 헤더 + 햄버거 */}
@@ -98,7 +101,7 @@ export function SupporterLayoutClient({
               </button>
             </div>
             {/* 모바일 드로어는 항상 펼쳐진 상태 */}
-            <AdminSidebar />
+            <AdminSidebar role={role} />
           </div>
         </>
       )}

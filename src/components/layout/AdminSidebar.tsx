@@ -9,6 +9,9 @@ import type { UserRole } from '@/types/database'
 interface AdminSidebarProps {
   collapsed?: boolean
   onToggle?: () => void
+  // 서버 레이아웃이 확정한 role. 주면 첫 렌더부터 정확한 메뉴/라벨(초기 flash·조회실패 고착 제거).
+  // 없으면(단위 테스트 등) 아래 useEffect 의 클라 조회로 폴백.
+  role?: UserRole
 }
 
 interface SubItem {
@@ -84,21 +87,23 @@ function SoonBadge() {
   )
 }
 
-export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps) {
+export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: AdminSidebarProps) {
   const pathname = usePathname()
   const { user, supabase } = useAuth()
   const [openSubs, setOpenSubs] = useState<Record<string, boolean>>({})
   const [quickOpen, setQuickOpen] = useState(false)
-  const [role, setRole] = useState<UserRole | null>(null)
+  const [role, setRole] = useState<UserRole | null>(roleProp ?? null)
 
   useEffect(() => {
+    // 서버가 role 을 prop 으로 내려줬으면 그것이 정본 — 클라 조회를 건너뛴다(flash·조회실패 고착 방지).
+    if (roleProp !== undefined) return
     if (!user) return
     async function fetchRole() {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user!.id).single()
       if (profile?.role) setRole(profile.role as UserRole)
     }
     fetchRole()
-  }, [user, supabase])
+  }, [user, supabase, roleProp])
 
   // 실무자(supporter)면 admin 전용 항목을 숨기고, 접근 가능한 당사자 현황으로 대체한다(권한 확장 없이
   // 死링크만 제거 — 08 QA finding, 사용자 결정 A). role 불명(로딩/미인증)·관리자면 전체 메뉴 유지

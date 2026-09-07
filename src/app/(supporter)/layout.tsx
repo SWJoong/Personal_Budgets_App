@@ -27,5 +27,7 @@ export default async function SupporterLayout({
     redirect('/')
   }
 
-  return <SupporterLayoutClient>{children}</SupporterLayoutClient>
+  // role 을 클라이언트 사이드바까지 내려준다 — AdminSidebar 가 자체 조회 대신 이 값으로 첫
+  // 렌더부터 정확한 메뉴/라벨을 그린다(실무자 초기 flash·조회실패 admin 고착 제거, 08 QA 후속).
+  return <SupporterLayoutClient role={profile.role}>{children}</SupporterLayoutClient>
 }
