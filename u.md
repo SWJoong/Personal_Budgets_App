@@ -1104,3 +1104,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-07T09:47Z] U
 [HANDOFF→W] KWCAG 2차 라운드 완료 — 인증 화면 라이브 감사. docs/release/07 §10 추가. 사용자가 .env.local(실 Supabase+시드 데모계정) 채움→3역할 데모로그인, 11화면(당사자6·실무자2·관리자3) 접근성트리+스크린샷+소스 대조. ★확증: skip-link 전화면·랜드마크 전면·드로어=role=dialog+Esc+포커스복귀(6.1.2 오탐 확정)·표형데이터=list시맨틱(5.3.1 주의 해소)·상태=텍스트+색(5.4.1)·폼라벨·실데이터 렌더정상(예산·거래장부6,020,000/19건·당사자10). ★신규 경미1: 헤더 뒤로링크 접근명 불일치(당사자 '홈으로 가기' vs admin/participants '←' vs settings '대시보드로 가기')→화살표only에 aria-label 통일. 한계: 세션토큰 자동추출 분류기 차단→페이지별 자동axe 미주입(관찰·소스 기반), 폼 오류흐름·활동사진시드 미확인. 아티팩트 갱신(2R 섹션). W검증요청.
 
+## [2026-09-07T13:03Z] U
+[HANDOFF→W] 실무자 세부화면 심화 QA 완료 — PR#120 커밋 134eb24. §3 진입해소 후 실무자 도달 23화면 4클러스터 병렬 소스감사. CRITICAL2(§3 필터가 놓친 잔여 死링크: AdminSidebar 브랜드로고 href·supporter/participants 빈상태 CTA 둘 다 admin전용 유도→role분기 수정)+MAJOR5(검토메모 aria-label·지출오류 role=alert·지도필터 aria-pressed·계획draft 라벨연결·신청접수 허위 시스템차단문구 교정)+MINOR 다수 수정. 게이트 tsc0·lint0·vitest657/657·build0. 보류=금액/날짜표기·음수잔액·회계용어 easy-read(W레인)·허브 전역카드·모바일 h1중복·사이드바 role prop flash. 상세 docs/release/08 §7. W검증요청: 死링크 계열 판정+a11y 계약 부합 여부. 라이브 시각확인은 브라우저 pane 숨김으로 보류(소스+게이트 기반).
+
