@@ -4,6 +4,7 @@ import { requireAdmin } from '@/utils/supabase/staff'
 import { getMonitoringRecords } from '@/app/actions/monitoring'
 import { getSettlements } from '@/app/actions/settlement'
 import { getAppeals } from '@/app/actions/appeal'
+import { enterParticipantView } from '@/app/actions/viewAs'
 import ParticipantDetailClient from './ParticipantDetailClient'
 
 export const metadata = { title: '당사자 상세' }
@@ -39,6 +40,15 @@ export default async function ParticipantDetailPage({ params }: { params: Promis
       <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <Link href="/admin/participants" aria-label="뒤로 가기" className="text-muted-foreground hover:text-foreground transition-colors mr-3 min-w-[44px] min-h-[44px] flex items-center">←</Link>
         <h1 className="text-xl font-bold tracking-tight">{participant.name}님 상세</h1>
+        {/* 관리자 둘러보기(view-as) 진입 — 이 당사자의 당사자 화면 전체를 읽기전용으로 순회 */}
+        <form action={enterParticipantView.bind(null, participant.id)} className="ml-auto">
+          <button
+            type="submit"
+            className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:bg-hero-hover transition-colors"
+          >
+            🔎 당사자 화면 둘러보기
+          </button>
+        </form>
       </header>
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6">
         <ParticipantDetailClient

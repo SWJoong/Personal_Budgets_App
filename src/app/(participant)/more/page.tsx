@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { getCurrentParticipant } from '@/utils/supabase/participant'
 import MoreMenuClient from '@/components/layout/MoreMenuClient'
 import NavDropdown from '@/components/layout/NavDropdown'
 import HelpButton from '@/components/help/HelpButton'
@@ -28,6 +29,19 @@ export default async function MorePage({
     .eq('id', user.id)
     .single()
 
+  // 프로필 요약에 보여줄 이름·역할. 관리자 둘러보기(view-as)면 getCurrentParticipant 가 대상
+  // 당사자를 돌려주므로 그 이름을 쓴다(안 그러면 관리자 본인 이름이 새어 나온다). 일반 당사자는
+  // self, 실무자·관리자(비-view-as)는 null → 자기 profile 로 폴백.
+  const viewedParticipant = await getCurrentParticipant()
+  const displayName = viewedParticipant?.name ?? profile?.name
+  const displayRole = viewedParticipant || profile?.role === 'participant'
+    ? '당사자'
+    : profile?.role === 'supporter'
+      ? '지원자'
+      : profile?.role === 'admin'
+        ? '관리자'
+        : profile?.role
+
   return (
     <div className="flex flex-col min-h-dvh bg-muted text-foreground pb-10">
       <HelpAutoTrigger sectionKey="more" />
@@ -50,11 +64,11 @@ export default async function MorePage({
         {/* 프로필 요약 */}
         <section className="flex items-center gap-4 p-6 rounded-[2rem] bg-card ring-1 ring-border shadow-sm">
           <div className="w-16 h-16 rounded-3xl bg-muted flex items-center justify-center text-3xl font-black text-muted-foreground">
-            {profile?.name?.[0] || '👤'}
+            {displayName?.[0] || '👤'}
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-black text-foreground">{profile?.name} 님</span>
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{profile?.role === 'participant' ? '당사자' : profile?.role === 'supporter' ? '지원자' : profile?.role}</span>
+            <span className="text-xl font-black text-foreground">{displayName} 님</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{displayRole}</span>
           </div>
         </section>
 

@@ -73,7 +73,10 @@ export default async function AdminSettingsPage() {
 
   // ★env: 표시 전용. 서버컴포넌트에서만 읽어 마스킹/정제한 결과만 클라이언트로 내려간다.
   const allowedDomains = (process.env.ALLOWED_EMAIL_DOMAINS ?? '').split(',').map((d) => d.trim()).filter(Boolean)
-  const superAdmin = maskEmail(process.env.SUPER_ADMIN_EMAIL)
+  // SUPER_ADMIN_EMAIL 은 콤마로 여러 개일 수 있으므로 각 항목을 따로 마스킹한다(그러지 않으면
+  // maskEmail 이 첫 '@' 까지만 가려 두 번째 이후 이메일이 평문으로 노출된다).
+  const superAdmin = (process.env.SUPER_ADMIN_EMAIL ?? '')
+    .split(',').map((e) => maskEmail(e.trim())).filter(Boolean).join(', ') || null
   const blockCount = rules.filter((r) => r.enforcement === 'block').length
 
   return (

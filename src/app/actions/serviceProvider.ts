@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { viewAsWriteBlock } from '@/utils/supabase/viewAs'
 import { friendlyDbError } from '@/utils/supabase/errors'
 import { buildDiscoveryAssets, type ProviderRow, type ProviderDomainRow, type DiscoveryMarker } from '@/utils/assetMap'
 
@@ -76,6 +77,11 @@ export async function findOrCreateProvider(input: ProviderInput) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.' }
+
+  // 관리자 둘러보기(view-as) 중에는 전역 장소 디렉터리에 새 장소를 만들지 못하게 막는다
+  // (장소 선택 시 지출 저장과 별개로 즉시 INSERT 되므로 별도 가드 필요).
+  const viewAsBlock = await viewAsWriteBlock()
+  if (viewAsBlock) return { error: viewAsBlock }
 
   if (input.address) {
     const { data: existing } = await supabase

@@ -5,11 +5,21 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useEffect, useState } from 'react'
 import type { UserRole } from '@/types/database'
+import { VIEW_AS_ID_COOKIE } from '@/utils/viewAsCookies'
 
 export function TabBar() {
   const pathname = usePathname()
   const { user, supabase } = useAuth()
   const [role, setRole] = useState<UserRole>('participant')
+
+  // 관리자 둘러보기(view-as) 중이면 실제 역할(admin)과 무관하게 당사자 탭을 보여준다 —
+  // 지금 보고 있는 화면이 당사자 화면이므로 하단 내비도 그에 맞춰야 일관적이다.
+  const [viewAs, setViewAs] = useState(false)
+  useEffect(() => {
+    const cookie = typeof document !== 'undefined' ? document.cookie : ''
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 클라 전용 쿠키를 마운트 후 읽어 동기화(SSR-safe)
+    setViewAs(new RegExp('(?:^|; )' + VIEW_AS_ID_COOKIE + '=').test(cookie))
+  }, [])
 
   useEffect(() => {
     if (!user) return
@@ -59,8 +69,9 @@ export function TabBar() {
     { name: '더보기', href: '/more', icon: '⚙' },
   ]
 
-  const tabs = role === 'admin' ? adminTabs 
-    : role === 'supporter' ? supporterTabs 
+  const tabs = viewAs ? participantTabs
+    : role === 'admin' ? adminTabs
+    : role === 'supporter' ? supporterTabs
     : participantTabs
 
   return (

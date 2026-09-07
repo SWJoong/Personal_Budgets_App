@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { getMonitoringRecords } from '@/app/actions/monitoring'
 import { getSettlements } from '@/app/actions/settlement'
+import { resolveViewAs } from '@/utils/supabase/viewAs'
 
 export const metadata = { title: '선생님이 남긴 기록' }
 
@@ -22,10 +23,29 @@ export default async function ParticipantEvaluationsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // 인자 없이 호출 → RLS 가 본인 것만 반환(기존 시그니처 재사용).
+  // 관리자 둘러보기(view-as)면 대상 당사자 id 로 조회한다(인자 없는 RLS 조회는 로그인 사용자=
+  // 관리자 기준이라 view-as 에서 빈 화면이 된다). 일반 당사자는 view-as 아님 → 인자 없이 RLS self.
+  // resolveViewAs 는 쿠키 없으면 .from 호출 전에 조기반환하므로 서버컴포넌트 단위테스트 안전.
+  const viewAs = await resolveViewAs()
+  // view-as 면 대상 당사자의 정산도 '그 사람 것만' 보이도록 최신 allocation 을 찾아 넘긴다.
+  // (인자 없이 부르면 관리자 세션의 RLS 상 전체 당사자 정산이 섞여 나온다.) 일반 당사자는
+  // view-as 아님 → 이 supabase.from 블록을 건너뛰므로 서버컴포넌트 단위테스트에서도 안전하다.
+  let allocationId: string | undefined
+  if (viewAs.active && viewAs.participantId) {
+    const { data: alloc } = await supabase
+      .from('seoul_budget_allocations')
+      .select('id')
+      .eq('participant_id', viewAs.participantId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    // 대상에게 allocation 이 아직 없으면(신규 당사자) 존재할 수 없는 id 로 스코프한다 —
+    // undefined 로 두면 getSettlements 가 관리자 RLS 로 전체 정산을 반환해 유출된다.
+    allocationId = alloc?.id ?? '00000000-0000-0000-0000-000000000000'
+  }
   const [{ records }, { settlements }] = await Promise.all([
-    getMonitoringRecords(),
-    getSettlements(),
+    getMonitoringRecords(viewAs.participantId ?? undefined),
+    getSettlements(allocationId),
   ])
 
   return (

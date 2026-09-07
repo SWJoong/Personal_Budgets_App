@@ -2,6 +2,7 @@
 
 import { withTiming } from '@/utils/api-logger'
 import { callAI, AI_MODELS, type AIImage } from '@/utils/ai'
+import { viewAsWriteBlock } from '@/utils/supabase/viewAs'
 
 /**
  * 영수증 OCR — Claude(Anthropic) 비전. 설계: goala_ai_client_W.md §2.
@@ -21,6 +22,10 @@ const MEDIA_BY_PREFIX: Record<string, AIImage['mediaType']> = {
 }
 
 export async function analyzeReceipt(base64Image: string) {
+  // 관리자 둘러보기(view-as) 중에는 OCR(유료 AI 호출)도 막는다 — 미리보기는 읽기전용.
+  const viewAsBlock = await viewAsWriteBlock()
+  if (viewAsBlock) return { success: false, error: viewAsBlock }
+
   if (!process.env.ANTHROPIC_API_KEY) {
     console.error('ANTHROPIC_API_KEY가 설정되지 않았습니다.')
     return { success: false, error: 'API 키 설정이 필요합니다.' }

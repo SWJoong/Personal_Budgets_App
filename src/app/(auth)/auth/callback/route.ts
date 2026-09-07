@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
+import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { assignRoleForFirstUser } from '@/app/actions/admin'
 
 export async function GET(request: Request) {
@@ -20,14 +20,22 @@ export async function GET(request: Request) {
 
     if (!error && user) {
       const email = user.email ?? ''
-      const superAdminEmail = (process.env.SUPER_ADMIN_EMAIL ?? '').trim()
+      // 소유 운영자 계정 — 사용자 명시 요구(2026-09-07): 이 계정은 배포 환경변수 설정 여부와
+      // 무관하게 '항상' 슈퍼관리자로 인식한다(Vercel SUPER_ADMIN_EMAIL 을 깜빡해도 로그인만 하면
+      // 관리자 접근 보장). 환경변수만으로 관리하고 싶으면 이 배열을 비우면 된다.
+      const BUILTIN_SUPER_ADMINS = ['cheese0318@gmail.com']
+      // SUPER_ADMIN_EMAIL 은 콤마로 여러 개 지정 가능(예: 부트스트랩 데모관리자 등). 대소문자 무관.
+      const superAdminEmails = [
+        ...BUILTIN_SUPER_ADMINS,
+        ...(process.env.SUPER_ADMIN_EMAIL ?? '').split(','),
+      ].map((e) => e.trim().toLowerCase()).filter(Boolean)
       // 미설정 시 빈 목록 — 예전에는 'nowondaycare.org' 로 폴백해서, 이 변수를
       // 깜빡하면 그 기관 소속이 아닌 모든 신규 배포에서 아무도 로그인할 수 없었다.
       const allowedDomains = (process.env.ALLOWED_EMAIL_DOMAINS ?? process.env.ALLOWED_EMAIL_DOMAIN ?? '')
         .split(',').map(d => d.trim()).filter(Boolean)
 
       // 1. 슈퍼 관리자 이메일
-      const isSuperAdmin = superAdminEmail && email === superAdminEmail
+      const isSuperAdmin = superAdminEmails.includes(email.toLowerCase())
 
       // 2. 허용 도메인 (실무자 소속 기관 이메일)
       const isAllowedDomain = allowedDomains.some(d => email.endsWith('@' + d))
@@ -64,7 +72,20 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${baseUrl}/login?error=InvalidDomain`)
       }
 
-      // 최초 로그인 시 admin 자동 할당 (관리자가 하나도 없을 때의 안전망)
+      // SUPER_ADMIN_EMAIL 로 지정된 계정은 '무조건 관리자'로 승격한다. assign_first_admin 은
+      // 관리자가 0명일 때만 동작하므로(이미 다른 관리자가 있으면 no-op) 그것만으론 부족하다.
+      // protect_profile_role 트리거는 로그인 세션(auth.uid())이 자기 role 을 바꾸면 되돌리므로,
+      // 서비스롤(auth.uid()=null → 트리거 신뢰경로)로 승격한다. 멱등: 이미 admin 이면 변화 없음.
+      if (isSuperAdmin) {
+        try {
+          const admin = createAdminClient()
+          await admin.from('profiles').update({ role: 'admin' }).eq('id', user.id).neq('role', 'admin')
+        } catch (e) {
+          console.error('Failed to promote super admin:', e)
+        }
+      }
+
+      // SUPER_ADMIN_EMAIL 미설정 배포용 안전망 — 관리자가 하나도 없을 때 첫 로그인 사용자를 admin 으로.
       try {
         await assignRoleForFirstUser()
       } catch (e) {

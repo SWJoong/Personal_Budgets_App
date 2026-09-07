@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ProfileEditClient from './ProfileEditClient'
 import NavDropdown from '@/components/layout/NavDropdown'
+import { resolveViewAs } from '@/utils/supabase/viewAs'
 
 export const metadata = { title: '내 정보' }
 
@@ -11,6 +12,12 @@ export default async function ProfileSettingsPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
+
+  // 관리자 둘러보기(view-as)에서는 '내 프로필 수정'이 관리자 자신의 계정 편집이 되어 버린다
+  // (대상 당사자의 profiles 를 대리 편집하는 것도 부적절). 저장은 어차피 차단되므로, 미리보기
+  // 중에는 이 화면을 렌더하지 않고 홈으로 돌려보내 정합성을 지킨다.
+  const viewAs = await resolveViewAs()
+  if (viewAs.active) redirect('/')
 
   const { data: profile } = await supabase
     .from('profiles')
