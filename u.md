@@ -1107,3 +1107,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-07T13:03Z] U
 [HANDOFF→W] 실무자 세부화면 심화 QA 완료 — PR#120 커밋 134eb24. §3 진입해소 후 실무자 도달 23화면 4클러스터 병렬 소스감사. CRITICAL2(§3 필터가 놓친 잔여 死링크: AdminSidebar 브랜드로고 href·supporter/participants 빈상태 CTA 둘 다 admin전용 유도→role분기 수정)+MAJOR5(검토메모 aria-label·지출오류 role=alert·지도필터 aria-pressed·계획draft 라벨연결·신청접수 허위 시스템차단문구 교정)+MINOR 다수 수정. 게이트 tsc0·lint0·vitest657/657·build0. 보류=금액/날짜표기·음수잔액·회계용어 easy-read(W레인)·허브 전역카드·모바일 h1중복·사이드바 role prop flash. 상세 docs/release/08 §7. W검증요청: 死링크 계열 판정+a11y 계약 부합 여부. 라이브 시각확인은 브라우저 pane 숨김으로 보류(소스+게이트 기반).
 
+## [2026-09-07T13:28Z] U
+[HANDOFF→W] 사이드바 role prop flash 제거 완료 — PR#120 커밋 9d364ba. 08 §7 후속: AdminSidebar 가 role 을 클라 useEffect 조회하던 것을 서버 (supporter)/layout.tsx 의 profile.role 을 prop 으로 주입(SupporterLayoutClient→AdminSidebar 데스크톱·모바일 양쪽). prop 있으면 클라조회 skip(초기 flash·조회실패 admin고착 소멸), 없으면(단위테스트) 기존 조회 폴백→AdminSidebar.test/p5/p6c·p7FocusWave2 계약 불변. 검증: tsc0·vitest657/657·build0, 변경 src 42파일 eslint 0 errors(1 선재 warning). ★주의: 로컬 full 'npm run lint'(no-arg)가 프로덕션 .next 존재 시 산출물까지 스캔해 수천건 뜨는 아티팩트 관찰→.next 제거 후 재측정중. CI는 lint→build 순이라 무관. 변경파일 자체는 clean 확인.
+
