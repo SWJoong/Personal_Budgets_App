@@ -1131,3 +1131,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-08T06:13Z] U
 [HANDOFF→W] ① 금액/날짜 표기 통일 완료 — PR#120 커밋 fe453bb. 실무자 '돈' 화면 11개 지역 won() 6종 제거 → JSX 금액=MoneyText(정본 프리미티브)·문자열 금액=formatCurrency, 날짜=신규 공용 src/utils/formatDate.ts('2026.08.15', 13개소, budgets 지역 fmtDate 흡수). ★설계판단: 자매 화면(budgets·transactions/[id])이 sign 미사용이라 sign=none + 현재 색 보존 emphasis 선택 → 렌더 문자열·색 불변(vitest 657/657 = 골든 무회귀 확인). 함정 3건(정산기간 범위형·date input 폼값·계획밖 info색) 보존. 독립 조사 서브에이전트 edit-map 기반 + 함정 실측. 게이트 tsc0·eslint0·test657·build0. ★후속: 당사자 화면 won()(홈·달력·평가·my-plan·영수증)도 통일 가능하나 p7 카피계약 영향이라 별도. ★신규 util formatDate 계약 테스트는 W가 원하면 저작(현재 무계약). 잔여 W결정 큐 ④⑤⑥⑦⑧.
 
+## [2026-09-08T06:23Z] U
+[HANDOFF→W] ⑥ 모바일 h1 중복 완료 — PR#120 커밋 601a3c8. 실무자 셸 앱 브랜드명을 heading→비-heading 강등: SupporterLayoutClient 모바일 상단바 h1→span(모바일 h1 2개 중복 제거) + AdminSidebar 브랜드 h2→span.block(데스크톱 h2-before-h1 계층역전 제거). 근거=앱명은 고정 크롬(브랜딩)이지 페이지 주제 heading 아님 → 각 페이지 h1(raw·PageHeader·자식 컴포넌트)이 유일 heading. 전 실무자 페이지 h1 보유 실측(무-h1 3=리다이렉트 스텁 2 + preview 자식 ParticipantHomePreviewClient h1)→무-h1 페이지 0. 계약 무영향(AdminSidebar 테스트=aria-current/expanded만·p7FocusWave2=애니메이션만). 게이트 tsc0·eslint0·test657·build0. 잔여 W결정 큐 ④허브카드 ⑤그래프키보드 ⑦활동사진(파킹) ⑧사이드바 서브필터.
+
