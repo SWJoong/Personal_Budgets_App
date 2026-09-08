@@ -131,7 +131,9 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
           // 브랜드(로고) 링크도 role 기반 — 실무자에게 /admin(requireAdmin)을 주면 로고 클릭 시
           // '/' 로 튕기는 死링크가 된다(08 QA CRITICAL). 메뉴·퀵항목 필터가 놓쳤던 지점.
           <Link href={isSupporter ? '/supporter' : '/admin'} className="block hover:opacity-80 transition-opacity min-w-0 flex-1 mr-2">
-            <h2 className="text-sidebar-strong font-bold text-base tracking-tight leading-tight truncate">서울형 개인예산제</h2>
+            {/* 앱명 = 브랜딩(고정 크롬)이라 heading 아님(block span). 데스크톱에서 사이드바 h2 가
+                페이지 h1 앞에 와 계층이 역전되던 것 제거 — 페이지 <h1> 이 유일 heading(08 §8 ⑥). */}
+            <span className="block text-sidebar-strong font-bold text-base tracking-tight leading-tight truncate">서울형 개인예산제</span>
             <span className="text-sidebar-muted-foreground text-xs font-normal">{roleLabel}</span>
           </Link>
         )}

@@ -74,7 +74,9 @@ export function SupporterLayoutClient({
         >
           <span className="text-xl">{mobileMenuOpen ? '✕' : '☰'}</span>
         </button>
-        <h1 className="text-sm font-bold">서울형 개인예산제</h1>
+        {/* 앱명은 브랜딩(고정 크롬)이라 heading 이 아니다 — 각 페이지의 <h1> 을 유일 h1 로
+            남겨 모바일에서 h1 이 2개가 되던 중복을 없앤다(08 §8 ⑥). */}
+        <span className="text-sm font-bold">서울형 개인예산제</span>
         <div className="w-[44px]" />
       </div>
 
