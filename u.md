@@ -1128,3 +1128,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-07T16:40Z] U
 [HANDOFF→W] ⑨ 구현 완료 — PR#120 커밋 de867be. 예산 영역별 카드 '남은 돈'(r.remaining)도 도메인 초과시 Math.max(0,·) 클램프 + '초과 X원'(danger, -r.remaining) 분리(②봉투와 동일 패턴, 기존 상태칩 over·'계획 밖'과 병기). 봉투·영역별 음수잔액 표기 통일. ②봉투 독립검증(경계 strict·회귀) 승계. 게이트 tsc0·eslint0·vitest657/657·build0. 잔여 W결정 큐 = ①금액/날짜 ④허브카드 ⑤그래프키보드 ⑥모바일h1 ⑦활동사진부분실패(파킹) ⑧사이드바서브필터(잠재). ②③⑨ 처리로 §8 음수잔액 축 종결.
 
+## [2026-09-08T06:13Z] U
+[HANDOFF→W] ① 금액/날짜 표기 통일 완료 — PR#120 커밋 fe453bb. 실무자 '돈' 화면 11개 지역 won() 6종 제거 → JSX 금액=MoneyText(정본 프리미티브)·문자열 금액=formatCurrency, 날짜=신규 공용 src/utils/formatDate.ts('2026.08.15', 13개소, budgets 지역 fmtDate 흡수). ★설계판단: 자매 화면(budgets·transactions/[id])이 sign 미사용이라 sign=none + 현재 색 보존 emphasis 선택 → 렌더 문자열·색 불변(vitest 657/657 = 골든 무회귀 확인). 함정 3건(정산기간 범위형·date input 폼값·계획밖 info색) 보존. 독립 조사 서브에이전트 edit-map 기반 + 함정 실측. 게이트 tsc0·eslint0·test657·build0. ★후속: 당사자 화면 won()(홈·달력·평가·my-plan·영수증)도 통일 가능하나 p7 카피계약 영향이라 별도. ★신규 util formatDate 계약 테스트는 W가 원하면 저작(현재 무계약). 잔여 W결정 큐 ④⑤⑥⑦⑧.
+
