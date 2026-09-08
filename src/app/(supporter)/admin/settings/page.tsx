@@ -1,5 +1,8 @@
 import Link from 'next/link'
 import { requireAdmin } from '@/utils/supabase/staff'
+import { formatCurrency } from '@/utils/budget-visuals'
+import { formatDate } from '@/utils/formatDate'
+import { MoneyText } from '@/components/ui/MoneyText'
 
 export const metadata = { title: '시스템 설정' }
 
@@ -30,7 +33,6 @@ const ENFORCEMENT: Record<string, { label: string; cls: string }> = {
   flag: { label: '기록', cls: 'bg-info-bg text-info-fg ring-border' },
 }
 
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 const pct = (r: number) => `${Number((r * 100).toFixed(2))}%`
 
 /** 슈퍼관리자 이메일 부분 마스킹 — 로컬파트 첫 글자만 남기고 도메인은 유지. 표시 전용(편집·전송 없음). */
@@ -153,11 +155,11 @@ export default async function AdminSettingsPage() {
                     )}
                   </div>
                   <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <div className="flex justify-between"><dt className="text-muted-foreground">기간</dt><dd>{c.starts_on && c.ends_on ? `${c.starts_on} ~ ${c.ends_on}` : `${c.period_months}개월`}</dd></div>
-                    <div className="flex justify-between"><dt className="text-muted-foreground">총 한도</dt><dd>{won(c.total_ceiling)}</dd></div>
-                    <div className="flex justify-between"><dt className="text-muted-foreground">월 한도</dt><dd>{won(c.monthly_ceiling)}</dd></div>
+                    <div className="flex justify-between"><dt className="text-muted-foreground">기간</dt><dd>{c.starts_on && c.ends_on ? `${formatDate(c.starts_on)} ~ ${formatDate(c.ends_on)}` : `${c.period_months}개월`}</dd></div>
+                    <div className="flex justify-between"><dt className="text-muted-foreground">총 한도</dt><dd><MoneyText value={c.total_ceiling} emphasis="muted" /></dd></div>
+                    <div className="flex justify-between"><dt className="text-muted-foreground">월 한도</dt><dd><MoneyText value={c.monthly_ceiling} emphasis="muted" /></dd></div>
                     <div className="flex justify-between"><dt className="text-muted-foreground">이월</dt><dd>{c.carry_over_allowed ? '총액 내 허용' : '월 한도 고정'}</dd></div>
-                    <div className="flex justify-between"><dt className="text-muted-foreground">본인부담률</dt><dd>{pct(c.copay_rate)}{c.copay_max ? ` (최대 ${won(c.copay_max)})` : ''}</dd></div>
+                    <div className="flex justify-between"><dt className="text-muted-foreground">본인부담률</dt><dd>{pct(c.copay_rate)}{c.copay_max ? ` (최대 ${formatCurrency(c.copay_max)})` : ''}</dd></div>
                   </dl>
                 </li>
               ))}

@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { recordServiceUsage } from '@/app/actions/serviceUsage'
 import { addActivityPhotos } from '@/app/actions/activityPhoto'
+import { formatCurrency } from '@/utils/budget-visuals'
+import { formatDate } from '@/utils/formatDate'
 
 interface Allocation {
   id: string
@@ -35,10 +37,6 @@ const PROGRAM_LABEL: Record<Program, string> = { seoul: '서울형', mohw: '보�
 
 const inputClass =
   'p-3 rounded-xl bg-muted ring-1 ring-border text-foreground leading-relaxed'
-
-function won(n: number): string {
-  return Number(n).toLocaleString('ko-KR') + '원'
-}
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -191,7 +189,7 @@ export default function NewTransactionClient({
             <option value="">골라 주세요</option>
             {allocations.map((a) => (
               <option key={a.id} value={a.id}>
-                {a.starts_on} ~ {a.ends_on} · {won(a.allocated_amount)}
+                {formatDate(a.starts_on)} ~ {formatDate(a.ends_on)} · {formatCurrency(a.allocated_amount)}원
               </option>
             ))}
           </select>

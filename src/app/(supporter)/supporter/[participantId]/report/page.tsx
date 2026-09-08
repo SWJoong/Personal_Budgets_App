@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
 import { buildDomainAxisReport, axisStatusLabel, type AxisStatus } from '@/utils/domainAxisReport'
+import { formatCurrency } from '@/utils/budget-visuals'
+import { MoneyText } from '@/components/ui/MoneyText'
 
 /**
  * 지원영역 흐름 리포트 (GOAL축 B 교차집계) — 도메인별로 사정한 욕구 ↔ 실제 지출을 나란히.
@@ -13,10 +15,6 @@ const STATUS_STYLE: Record<AxisStatus, { badge: string; emoji: string }> = {
   unmet: { badge: 'bg-warning-bg text-warning-fg ring-warning-fg/20', emoji: '⚠️' },
   unplanned: { badge: 'bg-info-bg text-info-fg ring-info-fg/20', emoji: '📌' },
   none: { badge: 'bg-neutral-bg text-neutral-fg ring-neutral-fg/20', emoji: '·' },
-}
-
-function won(n: number): string {
-  return n.toLocaleString('ko-KR') + '원'
 }
 
 export const metadata = { title: '월간 보고서' }
@@ -69,7 +67,7 @@ export default async function DomainAxisReportPage({ params }: { params: Promise
           </div>
           <div className="flex-1 p-3 rounded-2xl bg-muted ring-1 ring-border">
             <div className="text-xs text-muted-foreground">전체 지출</div>
-            <div className="text-lg font-bold">{won(totalUsage)}</div>
+            <div className="text-lg font-bold"><MoneyText value={totalUsage} /></div>
           </div>
         </div>
 
@@ -91,13 +89,13 @@ export default async function DomainAxisReportPage({ params }: { params: Promise
                   </span>
                   <span>
                     <span className="text-muted-foreground">지출 </span>
-                    {won(r.usageSum)}
+                    <MoneyText value={r.usageSum} emphasis="muted" />
                     {r.usageCount ? ` (${r.usageCount}건)` : ''}
                   </span>
                   {r.unplannedSum > 0 && (
                     <span className="text-info-fg">
                       <span className="text-muted-foreground">계획 밖 </span>
-                      {won(r.unplannedSum)}
+                      {formatCurrency(r.unplannedSum)}원
                     </span>
                   )}
                 </div>

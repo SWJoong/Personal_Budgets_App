@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import KakaoMap, { type MapPlace } from '@/components/map/KakaoMap'
 import { providersForDomain, type AssetMarker } from '@/utils/assetMap'
+import { MoneyText } from '@/components/ui/MoneyText'
 
 interface DomainOpt {
   id: string
@@ -85,7 +86,7 @@ export default function SupporterMapClient({
                   ))}
                   {m.usageCount > 0 ? (
                     <span className="text-xs text-muted-foreground">
-                      이용 {m.usageCount}회 · {Math.round(m.totalAmount).toLocaleString('ko-KR')}원
+                      이용 {m.usageCount}회 · <MoneyText value={m.totalAmount} emphasis="muted" />
                     </span>
                   ) : (
                     <span className="text-xs text-muted-foreground">아직 쓴 기록 없음</span>

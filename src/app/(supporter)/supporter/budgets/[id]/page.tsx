@@ -8,6 +8,7 @@ import {
 } from '@/utils/budgetByDomain'
 import type { DomainFlowRow } from '@/utils/domainAxisReport'
 import { copayIntent } from '@/utils/copay'
+import { formatDate } from '@/utils/formatDate'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { LinkButton } from '@/components/ui/LinkButton'
 import { MoneyText } from '@/components/ui/MoneyText'
@@ -35,11 +36,6 @@ const STATUS_STYLE: Record<BudgetStatus, { intent: Intent; emoji: string }> = {
 }
 
 export const metadata = { title: '예산' }
-
-function fmtDate(d: string | null | undefined): string {
-  if (!d) return '-'
-  return d.slice(0, 10).replace(/-/g, '.')
-}
 
 /** copay_status → 쉬운 말 배지(§5). not_applicable 은 배지를 숨긴다. */
 function copayBadge(status: string): { label: string; warn: boolean } | null {
@@ -187,7 +183,7 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
             <div>
               <dt className="text-muted-foreground text-xs">쓸 수 있는 기간</dt>
               <dd className="text-foreground font-medium">
-                {fmtDate(allocation.starts_on)} ~ {fmtDate(allocation.ends_on)}
+                {formatDate(allocation.starts_on)} ~ {formatDate(allocation.ends_on)}
               </dd>
             </div>
             <div>
