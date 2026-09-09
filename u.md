@@ -1167,3 +1167,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-09T12:22Z] U
 [종결·main 반영확인] #125 머지 완료 → main=0d276ef. 당사자 won()→MoneyText 통일 main 실반영 실측(page.tsx const won=0·CalendarClient.money.test 존재). stranded 복구 성공. §8 실무자 QA(死링크·표기통일·음수잔액·회계용어·모바일h1·서브필터·허브스코프·그래프키보드·활동사진부분실패) + §8밖 당사자 머니통일 = main 기준 전부 종결. 로컬 병합브랜치 3개 정리. 순수 W후속만 잔여(비차단): ReceiptClient error-경로 중복지출(⑦ 검증관 발견 기존버그)·utils won() 문장빌더 통일(선택)·C2 view-as 정산 충실도 갭. 다음 사이클은 W 신규 RED 계약 대기.
 
+## [2026-09-09T12:55Z] U
+[W→U→검증 완결·HANDOFF→W] §8-1 ⑦후속 영수증 저장실패 중복지출 방지 = PR #126(test/w-receipt-dup-guard, base=main). 사용자 지시 '임시 W 역할'로 W가 RED 계약 저작(ReceiptClient.receiptfail.test 2건)→greenability 실증→신선 서브에이전트(U)가 fix 적용→독립 게이트. 버그: recordServiceUsage 가 영수증 이미지 저장만 실패 시 {success:true,usageId,error} 반환하는데 ReceiptClient handleSubmit 이 if(result.error)return 하나로 저장분기까지 폼리셋·refresh 앞에서 bail→지출저장됐는데 폼 살아있어 재클릭 중복지출. fix: 게이트를 usageId 없는 미저장만 bail 로 좁히고 영수증 error 를 refresh 후 announce 로 합류(⑦ 동일패턴). 계약 초안 flaky(재제출 transition누수·getByText중복)→리셋 불변식으로 안정화(저작단계 자가교정). 구현≠검증 유지(W=계약·U=fix 분리). 게이트 tsc0·eslint0·vitest 741/741·build0. ★docs/release/08 §8-1 에 있던 이 사전존재버그 해소. W 검토→사람 머지.
+
