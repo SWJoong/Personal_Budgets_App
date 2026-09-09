@@ -19,11 +19,14 @@ export default function SupporterMapClient({
   markers,
   domains,
   domainLabelById,
+  emptyLabel = '등록된 장소가 아직 없어요.',
 }: {
   apiKey: string
   markers: AssetMarker[]
   domains: DomainOpt[]
   domainLabelById: Record<string, string>
+  // 스코프(당사자별) 모드면 "아직 쓴 곳이 없어요." 처럼 컨텍스트에 맞는 빈 문구를 주입(08 §8 ④).
+  emptyLabel?: string
 }) {
   const [domainId, setDomainId] = useState<string | null>(null) // null = 전체
 
@@ -68,7 +71,7 @@ export default function SupporterMapClient({
         </h2>
         {filtered.length === 0 ? (
           <p className="text-muted-foreground text-sm py-6 text-center bg-muted rounded-2xl">
-            {domainId ? '이 영역에서 쓴 곳이 아직 없어요.' : '등록된 장소가 아직 없어요.'}
+            {domainId ? '이 영역에서 쓴 곳이 아직 없어요.' : emptyLabel}
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
