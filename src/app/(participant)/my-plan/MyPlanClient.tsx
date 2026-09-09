@@ -7,6 +7,7 @@ import { markNotificationRead } from '@/app/actions/planReview'
 import { fileAppeal } from '@/app/actions/appeal'
 import ActivitySuggestions from './ActivitySuggestions'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { MoneyText } from '@/components/ui/MoneyText'
 
 interface Plan {
   id: string
@@ -71,8 +72,6 @@ const NARRATIVE_FIELDS: { key: keyof Narrative; label: string }[] = [
   { key: 'desired_life', label: '내가 원하는 삶의 모습' },
   { key: 'goal_to_try', label: '시도하고 싶은 것' },
 ]
-
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 
 /**
  * 당사자의 이용계획 화면 — 열람 전용.
@@ -263,7 +262,7 @@ export default function MyPlanClient({
                         {s.service_name}
                       </span>
                       {s.estimated_cost != null && (
-                        <span className="text-sm text-muted-foreground shrink-0">{won(Number(s.estimated_cost))}</span>
+                        <span className="text-sm shrink-0"><MoneyText value={Number(s.estimated_cost)} emphasis="muted" /></span>
                       )}
                     </li>
                   ))}

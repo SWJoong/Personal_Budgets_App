@@ -14,6 +14,8 @@ import { getUIPreferences } from '@/app/actions/preferences'
 import { BLOCK_METADATA, type BlockId } from '@/utils/uiPreferences'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
+import { MoneyText } from '@/components/ui/MoneyText'
+import { formatCurrency } from '@/utils/budget-visuals'
 
 export const metadata = { title: '홈' }
 
@@ -24,8 +26,6 @@ const SHORTCUT_HREF: Partial<Record<BlockId, string>> = {
   map_shortcut: '/map',
   gallery: '/gallery',
 }
-
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 
 /**
  * 당사자용 영역 상태 라벨 — 담당자용(budgetStatusLabel, 골든 고정)과 목적이 달라 별도로 둔다.
@@ -155,11 +155,11 @@ export default async function Home() {
           <>
             <section className="p-8 rounded-3xl bg-hero text-hero-foreground flex flex-col gap-2">
               <span className="text-sm font-bold text-hero-foreground/70">지금 쓸 수 있는 돈</span>
-              <span className="text-4xl font-black tracking-tight">{won(Number(balance.remaining))}</span>
+              <span className="text-4xl font-black tracking-tight"><MoneyText value={Number(balance.remaining)} emphasis="hero" onHero /></span>
               <span className="text-xs font-medium text-hero-foreground/70 leading-relaxed">
                 {/* 기준은 차수 상한이 아니라 이 사람에게 승인된 금액이다 — remaining 과 같은 축이어야
                     "전체 240만인데 왜 150만만 남았지?" 같은 혼란이 생기지 않는다. */}
-                전체 {won(Number(balance.allocated_amount))} 중 {won(Number(balance.spent))} 사용했어요
+                전체 {formatCurrency(Math.round(Number(balance.allocated_amount)))}원 중 {formatCurrency(Math.round(Number(balance.spent)))}원 사용했어요
               </span>
             </section>
 
@@ -174,7 +174,7 @@ export default async function Home() {
                 >
                   <span className="text-sm font-bold text-muted-foreground">{copay.title}</span>
                   {copay.amount > 0 && (
-                    <span className="text-2xl font-black tracking-tight">{won(copay.amount)}</span>
+                    <span className="text-2xl font-black tracking-tight"><MoneyText value={copay.amount} emphasis="body" /></span>
                   )}
                   <span className="text-xs font-medium text-muted-foreground leading-relaxed">{copay.note}</span>
                 </section>
@@ -209,11 +209,11 @@ export default async function Home() {
                         </div>
                         {canSpendMore ? (
                           <div>
-                            <span className="text-2xl font-black tracking-tight">{won(Math.max(0, r.remaining))}</span>
+                            <span className="text-2xl font-black tracking-tight"><MoneyText value={Math.max(0, r.remaining)} emphasis="body" /></span>
                             <p className="text-xs text-muted-foreground mt-0.5">이만큼 더 쓸 수 있어요.</p>
                           </div>
                         ) : dim ? null : (
-                          <p className="text-sm text-muted-foreground">{won(r.usageSum)} 썼어요.</p>
+                          <p className="text-sm text-muted-foreground"><MoneyText value={r.usageSum} emphasis="muted" /> 썼어요.</p>
                         )}
                       </li>
                     )
@@ -260,7 +260,7 @@ export default async function Home() {
                       <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
                       <span className="text-xs text-muted-foreground">{u.usage_date}</span>
                     </div>
-                    <span className="font-bold">{won(Number(u.amount))}</span>
+                    <span className="font-bold"><MoneyText value={Number(u.amount)} emphasis="body" /></span>
                   </li>
                 ))}
               </ul>
