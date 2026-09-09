@@ -101,3 +101,33 @@ export function buildBudgetByDomain(
       }
     })
 }
+
+/**
+ * 예산 봉투(전체) 표시 클램프 — 초과지출이면 "남은 돈"을 음수로 보이지 않고 0원으로,
+ * 초과분을 별도로 낸다(08 §8 ②, 발달장애 맥락 음수잔액 혼동 방지). 경계(usedTotal==allocated)는
+ * 초과가 아니라 정확 소진(overspent=false, 남은 0). budgetStatus 의 경계 철학과 동일(strict `>`).
+ */
+export function clampBudgetEnvelope(
+  allocated: number,
+  usedTotal: number
+): { overspent: boolean; remainingDisplay: number; overageDisplay: number } {
+  const overspent = usedTotal > allocated
+  return {
+    overspent,
+    remainingDisplay: overspent ? 0 : allocated - usedTotal,
+    overageDisplay: overspent ? usedTotal - allocated : 0,
+  }
+}
+
+/**
+ * 영역별 "남은 돈" 표시 분할 — 도메인 초과(remaining<0) 시 음수 대신 0원 + 초과분(08 §8 ⑨).
+ * remaining = plannedSum − usageSum (BudgetDomainRow.remaining). 봉투(clampBudgetEnvelope)와 일관.
+ */
+export function splitRemaining(
+  remaining: number
+): { remainingDisplay: number; overageDisplay: number } {
+  return {
+    remainingDisplay: Math.max(0, remaining),
+    overageDisplay: remaining < 0 ? -remaining : 0,
+  }
+}

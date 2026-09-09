@@ -3,6 +3,8 @@ import { requireStaff } from '@/utils/supabase/staff'
 import {
   buildBudgetByDomain,
   budgetStatusLabel,
+  clampBudgetEnvelope,
+  splitRemaining,
   type BudgetStatus,
   type PlannedServiceRow,
 } from '@/utils/budgetByDomain'
@@ -120,8 +122,8 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
   // 봉투 레벨: 쓴 돈 = Σ 모든 지출(미분류 포함) → flow 전체 합. 남은 돈 = 배정액 − 쓴 돈.
   const allocated = Number(allocation.allocated_amount ?? 0)
   const usedTotal = flowRows.reduce((s, r) => s + Number(r.금액 ?? 0), 0)
-  const remainingTotal = allocated - usedTotal
-  const overspent = usedTotal > allocated
+  // 봉투 표시 클램프(계약: budgetByDomain.clampBudgetEnvelope) — 초과 시 남은 0원 + 초과분 분리(§8②).
+  const { overspent, remainingDisplay, overageDisplay } = clampBudgetEnvelope(allocated, usedTotal)
   const pct = allocated > 0 ? Math.min(100, Math.round((usedTotal / allocated) * 100)) : 0
   const barColor = overspent ? 'bg-danger' : pct >= 80 ? 'bg-warning' : 'bg-positive'
 
@@ -145,14 +147,13 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
           <div>
             <div className="text-sm text-muted-foreground">남은 돈</div>
             <div className="text-4xl font-black tracking-tight">
-              {/* 초과지출이면 "남은 돈"을 음수(-12,345원)로 보여주지 않는다 — 발달장애 맥락에서
-                  음수 잔액은 혼동을 준다(08 §8 ②). 남은 돈은 0원으로 클램프하고, 초과분은
-                  아래에 "초과 X원"으로 분리해 danger 로 표기(경고문 "배정된 돈보다 많이 썼어요"와 함께). */}
-              <MoneyText value={overspent ? 0 : remainingTotal} emphasis="hero" />
+              {/* 초과지출이면 "남은 돈"을 0원으로 클램프하고 초과분은 아래 "초과 X원"으로 분리한다
+                  (§8②, 음수잔액 혼동 방지). 로직은 clampBudgetEnvelope(경고문 "배정된 돈보다 많이 썼어요"와 함께). */}
+              <MoneyText value={remainingDisplay} emphasis="hero" />
             </div>
             {overspent && (
               <div className="mt-1 text-base font-bold text-danger">
-                초과 <MoneyText value={usedTotal - allocated} emphasis="body" />
+                초과 <MoneyText value={overageDisplay} emphasis="body" />
               </div>
             )}
           </div>
@@ -218,6 +219,8 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
             {rows.map((r) => {
               const s = STATUS_STYLE[r.status]
               const dim = r.status === 'none'
+              // 도메인 초과 시 0원 + 초과분 분리(§8⑨) — 봉투와 동일 규칙, 계약: splitRemaining.
+              const { remainingDisplay: domainRemaining, overageDisplay: domainOverage } = splitRemaining(r.remaining)
               return (
                 <li
                   key={r.domainId}
@@ -243,13 +246,12 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
                       </span>
                       <span>
                         <span className="text-muted-foreground">남은 돈 </span>
-                        {/* 봉투(§8 ②)와 동일 — 도메인 초과 시 음수 대신 0원, 초과분은 "초과"로 분리(⑨). */}
-                        <MoneyText value={Math.max(0, r.remaining)} emphasis="body" />
+                        <MoneyText value={domainRemaining} emphasis="body" />
                       </span>
-                      {r.remaining < 0 && (
+                      {domainOverage > 0 && (
                         <span>
                           <span className="text-danger">초과 </span>
-                          <MoneyText value={-r.remaining} emphasis="body" />
+                          <MoneyText value={domainOverage} emphasis="body" />
                         </span>
                       )}
                       {r.unplannedSum > 0 && (

@@ -3,6 +3,7 @@ import { requireStaff } from '@/utils/supabase/staff'
 import { getUtilizationPlans } from '@/app/actions/utilizationPlan'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { formatDate } from '@/utils/formatDate'
+import { scopePlansToParticipant } from '@/utils/participantScope'
 
 const STATUS_LABEL: Record<string, string> = {
   draft: '작성 중',
@@ -23,7 +24,7 @@ export default async function PlansPage({ searchParams }: { searchParams: Promis
 
   // 당사자 허브에서 ?participant=pid 로 오면 그 당사자 계획만 보여준다(허브 컨텍스트 유지, 08 §8 ④).
   // 사이드바 '이용계획'은 파라미터 없이 = 전체. RLS 가 담당범위로 이미 스코프.
-  const plans = participant ? (allPlans ?? []).filter((p) => p.participant_id === participant) : allPlans
+  const plans = scopePlansToParticipant(allPlans ?? [], participant)
 
   // 스코프 헤더용 이름 — 계획이 0건이어도 이름은 보여야 하므로 별도 조회(RLS 밖이면 null).
   let scopedName: string | null = null
