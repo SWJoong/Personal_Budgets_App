@@ -167,14 +167,19 @@ export default function ReceiptClient({
         receiptBase64: photo?.base64,
         receiptMimeType: photo?.mimeType,
       })
-      if (result.error) {
-        setError(result.error)
-        announce(result.error, 'assertive')
+      // 지출이 저장 안 된 경우(usageId 없음)만 폼을 유지해 재시도를 허용한다.
+      // 지출은 저장됐는데 영수증만 실패한 경우(success+usageId+error)는 '저장'으로 취급 —
+      // 폼을 리셋(빈 폼은 재제출돼도 금액검증에 막힘)해 당사자 중복지출을 막고, 영수증 문제는 아래서 알린다(§8-1 ⑦ 후속).
+      if (!('usageId' in result) || !result.usageId) {
+        const msg = result.error ?? '지출을 기록하지 못했어요.'
+        setError(msg)
+        announce(msg, 'assertive')
         return
       }
+      const receiptWarning = result.error
       // usage 생성 후 활동사진(다건)을 그 usageId 로 올린다. 경로 접두는 addActivityPhotos 가 서버측에서 강제.
       let photoFailed = 0
-      if (activityPhotos.length && 'usageId' in result && result.usageId) {
+      if (activityPhotos.length && result.usageId) {
         const pr = await addActivityPhotos(result.usageId, activityPhotos)
         photoFailed = activityPhotos.length - (pr.added ?? 0)
       }
@@ -187,8 +192,12 @@ export default function ReceiptClient({
       if (fileInputRef.current) fileInputRef.current.value = ''
       if (activityInputRef.current) activityInputRef.current.value = ''
       router.refresh()
-      // 지출은 저장됐지만 사진 일부/전부가 안 올라갔으면 조용히 넘기지 않고 알린다(§8 ⑦).
-      if (photoFailed > 0) {
+      // 지출은 저장됐지만 영수증/사진이 안 올라갔으면 조용히 넘기지 않고 알린다(§8 ⑦).
+      // 영수증 실패(receiptWarning)가 우선 — 없을 때만 활동사진 부분실패를 알린다.
+      if (receiptWarning) {
+        setError(receiptWarning)
+        announce(receiptWarning, 'assertive')
+      } else if (photoFailed > 0) {
         const msg = `지출은 저장했어요. 그런데 사진 ${photoFailed}장이 안 올라갔어요.`
         setError(msg)
         announce(msg, 'assertive')
