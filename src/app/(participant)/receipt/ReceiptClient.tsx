@@ -126,13 +126,21 @@ export default function ReceiptClient({
   }
 
   async function handleActivityPhotosSelected(files: FileList) {
+    // 활동사진도 영수증처럼 5MB 상한(§8 ⑦) — 큰 파일은 업로드가 잘 안 돼요.
+    const all = Array.from(files)
+    const ok = all.filter((f) => f.size <= 5 * 1024 * 1024)
     const converted = await Promise.all(
-      Array.from(files).map(async (file) => {
+      ok.map(async (file) => {
         const { base64, mimeType } = await fileToBase64(file)
         return { base64, mimeType }
       }),
     )
     setActivityPhotos((prev) => [...prev, ...converted])
+    if (ok.length < all.length) {
+      const msg = `사진 ${all.length - ok.length}장은 너무 커서 뺐어요.`
+      setError(msg)
+      announce(msg, 'assertive')
+    }
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -165,8 +173,10 @@ export default function ReceiptClient({
         return
       }
       // usage 생성 후 활동사진(다건)을 그 usageId 로 올린다. 경로 접두는 addActivityPhotos 가 서버측에서 강제.
+      let photoFailed = 0
       if (activityPhotos.length && 'usageId' in result && result.usageId) {
-        await addActivityPhotos(result.usageId, activityPhotos)
+        const pr = await addActivityPhotos(result.usageId, activityPhotos)
+        photoFailed = activityPhotos.length - (pr.added ?? 0)
       }
       setAmount('')
       setDescription('')
@@ -177,6 +187,12 @@ export default function ReceiptClient({
       if (fileInputRef.current) fileInputRef.current.value = ''
       if (activityInputRef.current) activityInputRef.current.value = ''
       router.refresh()
+      // 지출은 저장됐지만 사진 일부/전부가 안 올라갔으면 조용히 넘기지 않고 알린다(§8 ⑦).
+      if (photoFailed > 0) {
+        const msg = `지출은 저장했어요. 그런데 사진 ${photoFailed}장이 안 올라갔어요.`
+        setError(msg)
+        announce(msg, 'assertive')
+      }
     })
   }
 
