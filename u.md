@@ -1149,3 +1149,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-09T08:15Z] U
 [C3 계약 저작 완료] PR#120 커밋 61c0140·91f2323·8f3ed27. C1=유지(goal#4·사용자결정, 코드무변경). C3=신선 서브에이전트로 52 신규테스트 저작(구현≠검증 유지)·핵심3 완비: ①death-link 분기 AdminSidebar.supporter.test(8)·②view-as 가드 viewAs.test(13, ★위조방어 불변식 비관리자쿠키위조→active:false)·③cheese0318 승격=인라인 매칭을 src/utils/superAdmin.ts 순수함수 추출(동작보존 독립검증 PASS·문자단위 동치)+superAdmin.test(13). +formatDate(10)·view-as UI 배선(8). 구현버그 0. 후속2(비핵심·리팩터필요, ready 스니펫 §9-1): 음수잔액 clampBudgetEnvelope/splitRemaining·④스코프 scopeMarkersToUsed/scopePlansToParticipant 추출후 계약. 최종 게이트 tsc0·eslint0·vitest 709/709(657+52)·build0, CI 재실행중(로컬 green). ★BLOCK0 유지=병합 준비완료(사람 머지). W 복귀시 후속2 저작+최종 검토.
 
+## [2026-09-09T09:26Z] U
+[HANDOFF→W] C3 후속 2/7 완료 = PR #121(feat/budget-scope-contracts, base=새 main #120머지후). §8 ②⑨④ 인라인 표시로직을 순수함수로 추출(동작보존)+계약: budgetByDomain +clampBudgetEnvelope/splitRemaining→budgets/[id] 배선, 신규 src/utils/participantScope.ts +scopeMarkersToUsed/scopePlansToParticipant→map/plans 배선. 계약 11테스트(clamp 7·경계 strict>·정확소진, scope 4·참조동일). ★구현≠검증: 계약 저작+3페이지 배선 동작보존 검증 모두 코드 안 짠 독립 서브에이전트(동작보존 PASS·git diff origin/main 대조·plans null병합 동치 포함), 구현버그0. 게이트 tsc0·eslint0·vitest 720/720(709+11)·build0. ★#116(데모 페르소나 시드)는 여전히 OPEN·미머지(supabase/seoul 시드라 C3와 독립). §8 잔여 ⑤그래프키보드·⑦활동사진(사용자 파킹). W 검토→사람 머지.
+
