@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getProviders } from '@/app/actions/serviceProvider'
 import { buildProviderAssets, type UsageRow } from '@/utils/assetMap'
+import { scopeMarkersToUsed } from '@/utils/participantScope'
 import SupporterMapClient from './MapClient'
 
 /**
@@ -30,8 +31,8 @@ export default async function SupporterMapPage({ searchParams }: { searchParams:
   }
 
   const allMarkers = buildProviderAssets(providers, (usages ?? []) as UsageRow[])
-  // 스코프 모드면 이 당사자가 실제로 쓴 곳(usageCount>0)만, 전체 모드면 모든 자산.
-  const markers = participant ? allMarkers.filter((m) => m.usageCount > 0) : allMarkers
+  // 스코프 모드면 이 당사자가 실제로 쓴 곳(usageCount>0)만, 전체 모드면 모든 자산(계약: scopeMarkersToUsed).
+  const markers = scopeMarkersToUsed(allMarkers, participant)
   const sortedDomains = [...(domains ?? [])].sort((a, b) => a.sort_order - b.sort_order).map((d) => ({ id: d.id, label: d.label }))
   const domainLabelById = Object.fromEntries((domains ?? []).map((d) => [d.id, d.label]))
 

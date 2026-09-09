@@ -153,7 +153,7 @@ W(설계·검증 축) 부재로 U 세션에서 W 검증 수행. **구현≠검�
 - **C1(하드코딩 슈퍼관리자) = 유지**(사용자 결정): goal #4 요구 그대로, 코드 변경 없음. 배포 격리 트레이드오프는 수용(이 저장소 단독 운영 전제).
 - **C3(계약 공백) = 지금 신선 서브에이전트로 저작**(사용자 결정, 핵심3 우선). 구현≠검증 유지 — 코드 안 짠 독립 서브에이전트가 계약 저작·자체 GREEN. **52개 신규 테스트, 구현 버그 0.**
   - ✅ **저작 완료(5/7 · 핵심3 전부)**: formatDate(10)·**view-as 가드 viewAs.test.ts(13, ★위조방어 불변식)**·**AdminSidebar 死링크 분기(8)**·view-as UI 배선 ViewAsBanner/FAB/TabBar(8) [커밋 61c0140] · **cheese0318 승격** — 인라인 매칭을 `src/utils/superAdmin.ts` 순수함수로 **추출**(동작보존 독립검증 PASS) + superAdmin.test.ts(13) [커밋 91f2323].
-  - ⏳ **후속(2/7 · 비핵심, 리팩터 필요 — ready 스니펫)**:
+  - ✅ **후속(2/7) 완료** (2026-09-09 · 별도 브랜치 `feat/budget-scope-contracts`): 아래 추출 실행 — `budgetByDomain.ts`(+`clampBudgetEnvelope`·`splitRemaining`)·신규 `src/utils/participantScope.ts`(+`scopeMarkersToUsed`·`scopePlansToParticipant`) 추출, budgets/map/plans 인라인 배선 교체(**동작보존 독립 서브에이전트 검증 PASS**), 계약 11테스트(`budgetByDomain.clamp.test.ts`·`participantScope.test.ts`). 게이트 tsc0·eslint0·**vitest 720/720**·build0. (설계: scope 두 함수는 assetMap 대신 신규 `participantScope.ts` 로 응집.) 원래 계획:
     - **음수잔액 클램프**: `budgetByDomain.ts` 에 `clampBudgetEnvelope(allocated,usedTotal)`·`splitRemaining(remaining)` 추출 → budgets/[id] 인라인 대체. 계약: `clampBudgetEnvelope(10000,12000)→{overspent:true,remainingDisplay:0,overageDisplay:2000}`·`(10000,10000)→{false,0,0}`(경계)·`splitRemaining(-2000)→{0,2000}`.
     - **④ 스코프 필터**: `assetMap.ts` 에 `scopeMarkersToUsed(markers,pid)` + (신규)`scopePlansToParticipant(plans,pid)` 추출 → plans/map 인라인 대체. 계약: usageCount>0 필터·participant_id 필터·전역모드(pid undefined) 무필터.
     둘 다 순수 substrate(buildBudgetByDomain·buildProviderAssets)는 이미 골든 → 추출 후 필터/클램프 분기만 계약하면 GREEN(중복 없음).
