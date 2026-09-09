@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
 import { settlementLabel, settlementIntent } from '@/utils/settlementStatus'
+import { formatDate } from '@/utils/formatDate'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { StatusPill } from '@/components/ui/StatusPill'
@@ -76,13 +77,13 @@ export default async function ParticipantHubPage({ params }: { params: Promise<{
   // 바로가기 — 각 축의 기구현 화면으로. 라우트 규약은 파일 상단 주석 참조.
   const cards: { href: string; icon: string; label: string; desc: string }[] = [
     { href: `/supporter/budgets/${pid}`, icon: '💰', label: '예산', desc: '이용계획·잔액' },
-    { href: `/supporter/plans`, icon: '🎯', label: '이용계획·심의', desc: '계획 목록' },
+    { href: `/supporter/plans?participant=${pid}`, icon: '🎯', label: '이용계획·심의', desc: '계획 목록' },
     { href: `/supporter/${pid}/transactions`, icon: '🧾', label: '거래장부', desc: '지출 내역' },
     { href: `/supporter/evaluations/${pid}`, icon: '📋', label: '정산·평가', desc: '월별 평가' },
     { href: `/supporter/${pid}/assessment`, icon: '🧭', label: '욕구사정', desc: 'SIS-A' },
     { href: `/supporter/${pid}/report`, icon: '📊', label: '월간보고서', desc: '리포트' },
     { href: `/supporter/network?participant=${pid}`, icon: '🕸️', label: '관계망', desc: '지원 관계' },
-    { href: `/supporter/map`, icon: '🗺️', label: '활동 지도', desc: '지출 위치' },
+    { href: `/supporter/map?participant=${pid}`, icon: '🗺️', label: '활동 지도', desc: '지출 위치' },
   ]
 
   return (
@@ -153,7 +154,7 @@ export default async function ParticipantHubPage({ params }: { params: Promise<{
                 <li key={u.id} className="flex items-center justify-between gap-3 px-4 py-3 border-t border-border first:border-t-0">
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm text-foreground truncate">{u.description || '내용 없음'}</span>
-                    <span className="text-xs text-muted-foreground">{u.usage_date}</span>
+                    <span className="text-xs text-muted-foreground">{formatDate(u.usage_date)}</span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <StatusPill label={settlementLabel(u.settlement_status)} intent={settlementIntent(u.settlement_status)} />

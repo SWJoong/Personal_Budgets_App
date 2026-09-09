@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import KakaoMap, { type MapPlace } from '@/components/map/KakaoMap'
 import { providersForDomain, type AssetMarker } from '@/utils/assetMap'
+import { MoneyText } from '@/components/ui/MoneyText'
 
 interface DomainOpt {
   id: string
@@ -18,11 +19,14 @@ export default function SupporterMapClient({
   markers,
   domains,
   domainLabelById,
+  emptyLabel = '등록된 장소가 아직 없어요.',
 }: {
   apiKey: string
   markers: AssetMarker[]
   domains: DomainOpt[]
   domainLabelById: Record<string, string>
+  // 스코프(당사자별) 모드면 "아직 쓴 곳이 없어요." 처럼 컨텍스트에 맞는 빈 문구를 주입(08 §8 ④).
+  emptyLabel?: string
 }) {
   const [domainId, setDomainId] = useState<string | null>(null) // null = 전체
 
@@ -47,12 +51,12 @@ export default function SupporterMapClient({
   return (
     <div className="flex flex-col gap-4">
       {/* 영역 필터바 */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-        <button type="button" onClick={() => setDomainId(null)} className={chip(!domainId)}>
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" role="group" aria-label="영역 필터">
+        <button type="button" aria-pressed={!domainId} onClick={() => setDomainId(null)} className={chip(!domainId)}>
           전체
         </button>
         {domains.map((d) => (
-          <button key={d.id} type="button" onClick={() => setDomainId(d.id)} className={chip(domainId === d.id)}>
+          <button key={d.id} type="button" aria-pressed={domainId === d.id} onClick={() => setDomainId(d.id)} className={chip(domainId === d.id)}>
             {d.label}
           </button>
         ))}
@@ -67,7 +71,7 @@ export default function SupporterMapClient({
         </h2>
         {filtered.length === 0 ? (
           <p className="text-muted-foreground text-sm py-6 text-center bg-muted rounded-2xl">
-            {domainId ? '이 영역에서 쓴 곳이 아직 없어요.' : '등록된 장소가 아직 없어요.'}
+            {domainId ? '이 영역에서 쓴 곳이 아직 없어요.' : emptyLabel}
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
@@ -85,7 +89,7 @@ export default function SupporterMapClient({
                   ))}
                   {m.usageCount > 0 ? (
                     <span className="text-xs text-muted-foreground">
-                      이용 {m.usageCount}회 · {Math.round(m.totalAmount).toLocaleString('ko-KR')}원
+                      이용 {m.usageCount}회 · <MoneyText value={m.totalAmount} emphasis="muted" />
                     </span>
                   ) : (
                     <span className="text-xs text-muted-foreground">아직 쓴 기록 없음</span>

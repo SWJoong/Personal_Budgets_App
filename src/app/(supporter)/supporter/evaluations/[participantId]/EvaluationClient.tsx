@@ -7,8 +7,8 @@ import { recordMonitoring } from '@/app/actions/monitoring'
 import { unusedContext, type MonitoringRow, type TimelineEntry } from '@/utils/evaluationTimeline'
 import { FormField } from '@/components/ui/FormField'
 import { useToast } from '@/components/ui/LiveRegion'
-
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
+import { MoneyText } from '@/components/ui/MoneyText'
+import { formatDate } from '@/utils/formatDate'
 
 const METHODS: { value: 'visit' | 'phone' | 'app' | 'document'; label: string; icon: string }[] = [
   { value: 'visit', label: '방문', icon: '🏠' },
@@ -162,7 +162,7 @@ export default function EvaluationClient({
                       <span className="text-xs font-bold text-muted-foreground">
                         {entry.monitoring.method ? METHOD_LABEL[entry.monitoring.method] ?? '기록' : '기록'}
                       </span>
-                      <span className="text-xs text-muted-foreground">{entry.monitoring.monitoringDate}</span>
+                      <span className="text-xs text-muted-foreground">{formatDate(entry.monitoring.monitoringDate)}</span>
                     </div>
                     {entry.monitoring.observedChange && (
                       <p className="text-sm text-muted-foreground leading-relaxed">
@@ -189,10 +189,10 @@ export default function EvaluationClient({
                       <span className="text-xs text-muted-foreground">{entry.settlement.settledPeriod}</span>
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                      <span>받은 돈 <b>{won(entry.settlement.acceptedAmount)}</b></span>
-                      <span>못 받은 돈 {won(entry.settlement.rejectedAmount)}</span>
-                      <span>환수 {won(entry.settlement.recoveredAmount)}</span>
-                      <span>미사용 {won(entry.settlement.unusedAmount)}</span>
+                      <span>받은 돈 <b><MoneyText value={entry.settlement.acceptedAmount} emphasis="muted" /></b></span>
+                      <span>못 받은 돈 <MoneyText value={entry.settlement.rejectedAmount} emphasis="muted" /></span>
+                      <span>환수 <MoneyText value={entry.settlement.recoveredAmount} emphasis="muted" /></span>
+                      <span>미사용 <MoneyText value={entry.settlement.unusedAmount} emphasis="muted" /></span>
                     </div>
                     {entry.settlement.unusedAmount > 0 && (() => {
                       const context = unusedContext(entry.settlement!, monitoring)
@@ -213,7 +213,7 @@ export default function EvaluationClient({
                   <div className="p-4 rounded-2xl bg-muted ring-1 ring-border flex flex-col gap-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-muted-foreground">심의 {DECISION_LABEL[entry.review.decision] ?? entry.review.decision}</span>
-                      <span className="text-xs text-muted-foreground">{entry.review.reviewDate}</span>
+                      <span className="text-xs text-muted-foreground">{formatDate(entry.review.reviewDate)}</span>
                     </div>
                     {entry.review.reason && (
                       <p className="text-sm text-muted-foreground leading-relaxed">사유: {entry.review.reason}</p>

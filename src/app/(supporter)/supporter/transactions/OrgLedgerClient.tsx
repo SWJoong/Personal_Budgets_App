@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { LinkButton } from '@/components/ui/LinkButton'
 import { buildOrgLedger, type OrgUsageRow } from '@/utils/orgLedger'
 import { settlementLabel, settlementIntent } from '@/utils/settlementStatus'
+import { formatDate } from '@/utils/formatDate'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -111,7 +112,7 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
                   >
                     <span className="font-bold text-foreground truncate w-full">{p.participantName}</span>
                     <span className="text-xs text-muted-foreground">
-                      <MoneyText value={p.total} emphasis="muted" /> · {p.count}건{p.latestDate ? ` · 최근 ${p.latestDate}` : ''}
+                      <MoneyText value={p.total} emphasis="muted" /> · {p.count}건{p.latestDate ? ` · 최근 ${formatDate(p.latestDate)}` : ''}
                     </span>
                   </button>
                   <LinkButton
@@ -134,7 +135,7 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
                         >
                           <div className="flex flex-col min-w-0">
                             <span className="text-sm truncate">{r.description || '(내용 없음)'}</span>
-                            <span className="text-xs text-muted-foreground">{r.usageDate}</span>
+                            <span className="text-xs text-muted-foreground">{formatDate(r.usageDate)}</span>
                           </div>
                           <div className="flex flex-col items-end gap-1 shrink-0">
                             <span className="text-sm font-bold">

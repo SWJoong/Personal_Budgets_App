@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
+import { getViewAsParticipantId } from '@/utils/supabase/viewAs'
 import { describeCopay } from '@/utils/copay'
 import {
   buildBudgetByDomain,
@@ -63,7 +64,12 @@ export default async function Home() {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role === 'admin') redirect('/admin')
+  // 관리자 '둘러보기(view-as)' 중이면 당사자 홈을 그대로 렌더한다(아래 getCurrentParticipant 가
+  // 대상 당사자를 돌려줌). 미리보기가 아니면 평소대로 관리자 홈으로 보낸다.
+  if (profile?.role === 'admin') {
+    const viewAsId = await getViewAsParticipantId()
+    if (!viewAsId) redirect('/admin')
+  }
   if (profile?.role === 'supporter') redirect('/supporter')
 
   // 참여자 조회 — auth_user_id 경유. participants.id 와 로그인 id 는 다른 값이다.

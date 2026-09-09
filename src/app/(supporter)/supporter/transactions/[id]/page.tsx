@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getReceiptSignedUrl } from '@/app/actions/serviceUsage'
 import { settlementLabel, settlementIntent } from '@/utils/settlementStatus'
+import { formatDate } from '@/utils/formatDate'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
@@ -64,7 +65,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
         {/* 메타 */}
         <Card variant="default" className="flex flex-col gap-3">
           <Meta label="내용" value={usage.description || '(내용 없음)'} />
-          <Meta label="날짜" value={usage.usage_date} />
+          <Meta label="날짜" value={formatDate(usage.usage_date)} />
           {domainLabel && <Meta label="영역" value={domainLabel} />}
           {providerName && <Meta label="제공기관" value={providerName} />}
         </Card>

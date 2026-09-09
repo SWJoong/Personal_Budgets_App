@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 export const metadata = { title: '당사자 목록' }
 
 export default async function ParticipantsOverviewPage() {
-  const { supabase } = await requireStaff()
+  const { supabase, profile } = await requireStaff()
 
   const { data: participants, error } = await supabase
     .from('participants')
@@ -30,7 +30,15 @@ export default async function ParticipantsOverviewPage() {
         )}
 
         {(participants ?? []).length === 0 ? (
-          <EmptyState title="아직 등록된 당사자가 없어요." action={{ label: '당사자 추가하기', href: '/admin/participants/new' }} />
+          // 당사자 등록(createParticipant)은 관리자 전용이라, 실무자에게 '추가하기' CTA 를 주면
+          // 폼은 열려도 제출이 거부되는 허위 어포던스가 된다(08 QA CRITICAL). 또 실무자에게 보이는
+          // 목록은 RLS 로 '담당 배정된' 당사자뿐이므로 '등록된 당사자가 없다'는 문구도 오해를 준다.
+          // → 관리자에게만 등록 CTA, 실무자에겐 안내만.
+          profile.role === 'admin' ? (
+            <EmptyState title="아직 등록된 당사자가 없어요." action={{ label: '당사자 추가하기', href: '/admin/participants/new' }} />
+          ) : (
+            <EmptyState title="담당 배정된 당사자가 없어요." description="새 당사자 등록은 관리자에게 문의해 주세요." />
+          )
         ) : (
           <ul className="flex flex-col gap-2">
             {(participants ?? []).map((p) => (

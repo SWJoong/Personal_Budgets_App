@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { viewAsWriteBlock } from '@/utils/supabase/viewAs'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
 import { callAIDeidentified } from '@/utils/aiDeidentify'
 import { AI_MODELS } from '@/utils/ai'
@@ -28,6 +29,10 @@ import {
 export async function generateActivitySuggestions(): Promise<
   { suggestions: ActivitySuggestion[] } | { error: string }
 > {
+  // 관리자 둘러보기(view-as) 중에는 유료 AI 활동제안 호출·감사로그 기록을 막는다.
+  const viewAsBlock = await viewAsWriteBlock()
+  if (viewAsBlock) return { error: viewAsBlock }
+
   try {
     const supabase = await createClient()
     const participant = await getCurrentParticipant()

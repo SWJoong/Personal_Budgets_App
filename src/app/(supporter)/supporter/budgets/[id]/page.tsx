@@ -8,6 +8,7 @@ import {
 } from '@/utils/budgetByDomain'
 import type { DomainFlowRow } from '@/utils/domainAxisReport'
 import { copayIntent } from '@/utils/copay'
+import { formatDate } from '@/utils/formatDate'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { LinkButton } from '@/components/ui/LinkButton'
 import { MoneyText } from '@/components/ui/MoneyText'
@@ -35,11 +36,6 @@ const STATUS_STYLE: Record<BudgetStatus, { intent: Intent; emoji: string }> = {
 }
 
 export const metadata = { title: '예산' }
-
-function fmtDate(d: string | null | undefined): string {
-  if (!d) return '-'
-  return d.slice(0, 10).replace(/-/g, '.')
-}
 
 /** copay_status → 쉬운 말 배지(§5). not_applicable 은 배지를 숨긴다. */
 function copayBadge(status: string): { label: string; warn: boolean } | null {
@@ -149,8 +145,16 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
           <div>
             <div className="text-sm text-muted-foreground">남은 돈</div>
             <div className="text-4xl font-black tracking-tight">
-              <MoneyText value={remainingTotal} emphasis="hero" />
+              {/* 초과지출이면 "남은 돈"을 음수(-12,345원)로 보여주지 않는다 — 발달장애 맥락에서
+                  음수 잔액은 혼동을 준다(08 §8 ②). 남은 돈은 0원으로 클램프하고, 초과분은
+                  아래에 "초과 X원"으로 분리해 danger 로 표기(경고문 "배정된 돈보다 많이 썼어요"와 함께). */}
+              <MoneyText value={overspent ? 0 : remainingTotal} emphasis="hero" />
             </div>
+            {overspent && (
+              <div className="mt-1 text-base font-bold text-danger">
+                초과 <MoneyText value={usedTotal - allocated} emphasis="body" />
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -179,7 +183,7 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
             <div>
               <dt className="text-muted-foreground text-xs">쓸 수 있는 기간</dt>
               <dd className="text-foreground font-medium">
-                {fmtDate(allocation.starts_on)} ~ {fmtDate(allocation.ends_on)}
+                {formatDate(allocation.starts_on)} ~ {formatDate(allocation.ends_on)}
               </dd>
             </div>
             <div>
@@ -239,8 +243,15 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
                       </span>
                       <span>
                         <span className="text-muted-foreground">남은 돈 </span>
-                        <MoneyText value={r.remaining} emphasis="body" />
+                        {/* 봉투(§8 ②)와 동일 — 도메인 초과 시 음수 대신 0원, 초과분은 "초과"로 분리(⑨). */}
+                        <MoneyText value={Math.max(0, r.remaining)} emphasis="body" />
                       </span>
+                      {r.remaining < 0 && (
+                        <span>
+                          <span className="text-danger">초과 </span>
+                          <MoneyText value={-r.remaining} emphasis="body" />
+                        </span>
+                      )}
                       {r.unplannedSum > 0 && (
                         <span>
                           <span className="text-warning-fg">계획 밖 </span>
@@ -324,14 +335,14 @@ export default async function BudgetDetailsPage({ params }: { params: Promise<{ 
             variant="primary"
             className="flex-1"
           >
-            💳 지출 적기
+            <span aria-hidden="true">💳</span> 지출 적기
           </LinkButton>
           <LinkButton
             href={`/supporter/evaluations/${participantId}`}
             variant="secondary"
             className="flex-1"
           >
-            📋 정산 보기
+            <span aria-hidden="true">📋</span> 정산 보기
           </LinkButton>
         </div>
       </main>

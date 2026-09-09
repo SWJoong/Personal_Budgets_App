@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { decideRuleCheck } from '@/app/actions/ruleCheck'
+import { MoneyText } from '@/components/ui/MoneyText'
+import { formatDate } from '@/utils/formatDate'
 
 interface ReviewItem {
   id: string
@@ -14,8 +16,6 @@ interface ReviewItem {
   placeName: string | null
   receiptUrl: string | null
 }
-
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 
 /**
  * 톤 원칙: 여기 쌓인 항목은 "규칙 위반"이 아니라 "계획에 없던 지출이라 사람이
@@ -52,7 +52,7 @@ export default function ReviewQueueClient({ items }: { items: ReviewItem[] }) {
   return (
     <div className="flex flex-col gap-3">
       {error && (
-        <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm">{error}</div>
+        <div role="alert" className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm">{error}</div>
       )}
       <ul className="flex flex-col gap-3 list-none">
         {items.map((item) => (
@@ -61,11 +61,11 @@ export default function ReviewQueueClient({ items }: { items: ReviewItem[] }) {
             <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-warning-bg text-warning-fg">
               계획에 없던 지출
             </span>
-            <span className="font-bold">{won(item.amount)}</span>
+            <span className="font-bold"><MoneyText value={item.amount} /></span>
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="font-bold">{item.participantName}</span>
-            <span className="text-sm text-muted-foreground">{item.description ?? '활동'} · {item.usageDate}</span>
+            <span className="text-sm text-muted-foreground">{item.description ?? '활동'} · {formatDate(item.usageDate)}</span>
             {item.placeName && <span className="text-xs text-muted-foreground">장소: {item.placeName}</span>}
             {item.ruleLabel && <span className="text-xs text-muted-foreground">확인 이유: {item.ruleLabel}</span>}
           </div>
@@ -83,8 +83,9 @@ export default function ReviewQueueClient({ items }: { items: ReviewItem[] }) {
             type="text"
             value={notes[item.id] ?? ''}
             onChange={(e) => setNotes((prev) => ({ ...prev, [item.id]: e.target.value }))}
+            aria-label={`${item.participantName} 확인 메모 (선택)`}
             placeholder="확인 메모 (선택)"
-            className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm"
+            className="p-2 rounded-lg bg-muted ring-1 ring-border text-sm min-h-[44px]"
           />
           <div className="flex gap-2">
             <button

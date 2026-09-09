@@ -18,11 +18,11 @@ export default async function SupporterPage() {
             <h2 className="text-xl font-black">안녕하세요, {profile.name || '선생님'}님</h2>
           </div>
           <p className="text-sm text-hero-foreground/70 font-medium leading-relaxed">
-            서울형 개인예산제 화면을 새로 만드는 중이에요. 당사자 관리는 관리자 화면에서 볼 수 있어요.
+            서울형 개인예산제 화면을 새로 만드는 중이에요. 담당 당사자 현황을 보고 지원을 이어가요.
           </p>
         </section>
         <Link
-          href="/admin/participants"
+          href="/supporter/participants"
           className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:bg-hero-hover transition-all active:scale-[0.98] shadow-lg"
         >
           <span className="text-xl">👥</span>

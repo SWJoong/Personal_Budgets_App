@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createAdminClient } from '@/utils/supabase/server'
+import { viewAsWriteBlock } from '@/utils/supabase/viewAs'
 import { friendlyDbError } from '@/utils/supabase/errors'
 import { revalidatePath } from 'next/cache'
 
@@ -48,6 +49,10 @@ export async function recordServiceUsage(input: ServiceUsageInput) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.' }
+
+  // 관리자 둘러보기(view-as) 중에는 남의 예산에 지출을 쓰지 못하게 막는다(읽기전용 미리보기).
+  const viewAsBlock = await viewAsWriteBlock()
+  if (viewAsBlock) return { error: viewAsBlock }
 
   let decidedBy = input.decidedBy
   if (!decidedBy) {

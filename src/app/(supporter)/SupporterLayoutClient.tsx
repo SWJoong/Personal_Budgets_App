@@ -5,13 +5,16 @@ import { usePathname } from 'next/navigation'
 import { AdminSidebar } from '@/components/layout/AdminSidebar'
 import NavigationProgress from '@/components/layout/NavigationProgress'
 import FaqButton from '@/components/ui/FaqButton'
+import type { UserRole } from '@/types/database'
 
 const STORAGE_KEY = 'admin_sidebar_collapsed'
 
 export function SupporterLayoutClient({
   children,
+  role,
 }: {
   children: React.ReactNode
+  role: UserRole
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -55,7 +58,7 @@ export function SupporterLayoutClient({
         className={`hidden md:flex fixed left-0 top-0 bottom-0 z-40 transition-all duration-300 print:hidden ${desktopW}`}
         data-print-hide
       >
-        <AdminSidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
+        <AdminSidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} role={role} />
       </div>
 
       {/* 모바일 상단 헤더 + 햄버거 */}
@@ -71,7 +74,9 @@ export function SupporterLayoutClient({
         >
           <span className="text-xl">{mobileMenuOpen ? '✕' : '☰'}</span>
         </button>
-        <h1 className="text-sm font-bold">서울형 개인예산제</h1>
+        {/* 앱명은 브랜딩(고정 크롬)이라 heading 이 아니다 — 각 페이지의 <h1> 을 유일 h1 로
+            남겨 모바일에서 h1 이 2개가 되던 중복을 없앤다(08 §8 ⑥). */}
+        <span className="text-sm font-bold">서울형 개인예산제</span>
         <div className="w-[44px]" />
       </div>
 
@@ -98,7 +103,7 @@ export function SupporterLayoutClient({
               </button>
             </div>
             {/* 모바일 드로어는 항상 펼쳐진 상태 */}
-            <AdminSidebar />
+            <AdminSidebar role={role} />
           </div>
         </>
       )}

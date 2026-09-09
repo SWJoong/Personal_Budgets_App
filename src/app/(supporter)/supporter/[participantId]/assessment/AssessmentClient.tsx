@@ -121,7 +121,7 @@ export default function AssessmentClient({
   return (
     <div className="flex flex-col gap-6">
       {error && (
-        <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium">{error}</div>
+        <div role="alert" className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium">{error}</div>
       )}
 
       {/* 지금까지 적은 욕구 */}

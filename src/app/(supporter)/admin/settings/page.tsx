@@ -1,5 +1,8 @@
 import Link from 'next/link'
 import { requireAdmin } from '@/utils/supabase/staff'
+import { formatCurrency } from '@/utils/budget-visuals'
+import { formatDate } from '@/utils/formatDate'
+import { MoneyText } from '@/components/ui/MoneyText'
 
 export const metadata = { title: '시스템 설정' }
 
@@ -30,7 +33,6 @@ const ENFORCEMENT: Record<string, { label: string; cls: string }> = {
   flag: { label: '기록', cls: 'bg-info-bg text-info-fg ring-border' },
 }
 
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 const pct = (r: number) => `${Number((r * 100).toFixed(2))}%`
 
 /** 슈퍼관리자 이메일 부분 마스킹 — 로컬파트 첫 글자만 남기고 도메인은 유지. 표시 전용(편집·전송 없음). */
@@ -73,7 +75,10 @@ export default async function AdminSettingsPage() {
 
   // ★env: 표시 전용. 서버컴포넌트에서만 읽어 마스킹/정제한 결과만 클라이언트로 내려간다.
   const allowedDomains = (process.env.ALLOWED_EMAIL_DOMAINS ?? '').split(',').map((d) => d.trim()).filter(Boolean)
-  const superAdmin = maskEmail(process.env.SUPER_ADMIN_EMAIL)
+  // SUPER_ADMIN_EMAIL 은 콤마로 여러 개일 수 있으므로 각 항목을 따로 마스킹한다(그러지 않으면
+  // maskEmail 이 첫 '@' 까지만 가려 두 번째 이후 이메일이 평문으로 노출된다).
+  const superAdmin = (process.env.SUPER_ADMIN_EMAIL ?? '')
+    .split(',').map((e) => maskEmail(e.trim())).filter(Boolean).join(', ') || null
   const blockCount = rules.filter((r) => r.enforcement === 'block').length
 
   return (
@@ -150,11 +155,11 @@ export default async function AdminSettingsPage() {
                     )}
                   </div>
                   <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <div className="flex justify-between"><dt className="text-muted-foreground">기간</dt><dd>{c.starts_on && c.ends_on ? `${c.starts_on} ~ ${c.ends_on}` : `${c.period_months}개월`}</dd></div>
-                    <div className="flex justify-between"><dt className="text-muted-foreground">총 한도</dt><dd>{won(c.total_ceiling)}</dd></div>
-                    <div className="flex justify-between"><dt className="text-muted-foreground">월 한도</dt><dd>{won(c.monthly_ceiling)}</dd></div>
+                    <div className="flex justify-between"><dt className="text-muted-foreground">기간</dt><dd>{c.starts_on && c.ends_on ? `${formatDate(c.starts_on)} ~ ${formatDate(c.ends_on)}` : `${c.period_months}개월`}</dd></div>
+                    <div className="flex justify-between"><dt className="text-muted-foreground">총 한도</dt><dd><MoneyText value={c.total_ceiling} emphasis="muted" /></dd></div>
+                    <div className="flex justify-between"><dt className="text-muted-foreground">월 한도</dt><dd><MoneyText value={c.monthly_ceiling} emphasis="muted" /></dd></div>
                     <div className="flex justify-between"><dt className="text-muted-foreground">이월</dt><dd>{c.carry_over_allowed ? '총액 내 허용' : '월 한도 고정'}</dd></div>
-                    <div className="flex justify-between"><dt className="text-muted-foreground">본인부담률</dt><dd>{pct(c.copay_rate)}{c.copay_max ? ` (최대 ${won(c.copay_max)})` : ''}</dd></div>
+                    <div className="flex justify-between"><dt className="text-muted-foreground">본인부담률</dt><dd>{pct(c.copay_rate)}{c.copay_max ? ` (최대 ${formatCurrency(c.copay_max)})` : ''}</dd></div>
                   </dl>
                 </li>
               ))}

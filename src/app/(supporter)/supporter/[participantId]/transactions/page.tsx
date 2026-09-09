@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getServiceUsages } from '@/app/actions/serviceUsage'
 import { settlementLabel, settlementIntent } from '@/utils/settlementStatus'
+import { formatDate } from '@/utils/formatDate'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { LinkButton } from '@/components/ui/LinkButton'
 import { Card } from '@/components/ui/Card'
@@ -73,7 +74,7 @@ export default async function TransactionsPage({ params }: { params: Promise<{ p
                 >
                   <div className="flex flex-col gap-0.5 min-w-0">
                     <span className="font-bold text-foreground truncate">{u.description || '(내용 없음)'}</span>
-                    <span className="text-xs text-muted-foreground">{u.usage_date}</span>
+                    <span className="text-xs text-muted-foreground">{formatDate(u.usage_date)}</span>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
                     <span className="font-bold">

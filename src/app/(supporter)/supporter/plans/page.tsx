@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getUtilizationPlans } from '@/app/actions/utilizationPlan'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { formatDate } from '@/utils/formatDate'
 
 const STATUS_LABEL: Record<string, string> = {
   draft: '작성 중',
@@ -15,9 +16,21 @@ const STATUS_LABEL: Record<string, string> = {
 
 export const metadata = { title: '이용계획' }
 
-export default async function PlansPage() {
+export default async function PlansPage({ searchParams }: { searchParams: Promise<{ participant?: string }> }) {
   const { supabase } = await requireStaff()
-  const { plans, error } = await getUtilizationPlans()
+  const { participant } = await searchParams
+  const { plans: allPlans, error } = await getUtilizationPlans()
+
+  // 당사자 허브에서 ?participant=pid 로 오면 그 당사자 계획만 보여준다(허브 컨텍스트 유지, 08 §8 ④).
+  // 사이드바 '이용계획'은 파라미터 없이 = 전체. RLS 가 담당범위로 이미 스코프.
+  const plans = participant ? (allPlans ?? []).filter((p) => p.participant_id === participant) : allPlans
+
+  // 스코프 헤더용 이름 — 계획이 0건이어도 이름은 보여야 하므로 별도 조회(RLS 밖이면 null).
+  let scopedName: string | null = null
+  if (participant) {
+    const { data: sp } = await supabase.from('participants').select('name').eq('id', participant).maybeSingle()
+    scopedName = (sp as { name: string | null } | null)?.name ?? null
+  }
 
   const participantIds = [...new Set((plans ?? []).map((p) => p.participant_id))]
   const { data: participants } = participantIds.length
@@ -28,7 +41,19 @@ export default async function PlansPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
       <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
-        <h1 className="text-xl font-bold tracking-tight">이용계획 · 심의</h1>
+        <div className="flex items-center gap-2 min-w-0">
+          <h1 className="text-xl font-bold tracking-tight truncate">
+            {participant ? `${scopedName ?? '이 당사자'}님의 이용계획` : '이용계획 · 심의'}
+          </h1>
+          {participant && (
+            <Link
+              href="/supporter/plans"
+              className="shrink-0 text-xs font-bold text-muted-foreground hover:text-foreground px-2 min-h-[44px] flex items-center whitespace-nowrap"
+            >
+              전체 보기
+            </Link>
+          )}
+        </div>
         <Link
           href="/supporter/plans/new"
           className="px-4 py-2 rounded-xl bg-hero text-hero-foreground text-sm font-bold hover:bg-hero-hover transition-colors min-h-[44px] flex items-center"
@@ -43,7 +68,10 @@ export default async function PlansPage() {
         )}
 
         {(plans ?? []).length === 0 ? (
-          <EmptyState title="아직 작성된 이용계획이 없어요." action={{ label: '새 계획 만들기', href: '/supporter/plans/new' }} />
+          <EmptyState
+            title={participant ? `${scopedName ?? '이 당사자'}님의 이용계획이 아직 없어요.` : '아직 작성된 이용계획이 없어요.'}
+            action={{ label: '새 계획 만들기', href: '/supporter/plans/new' }}
+          />
         ) : (
           <ul className="flex flex-col gap-2">
             {(plans ?? []).map((plan) => (
@@ -55,7 +83,7 @@ export default async function PlansPage() {
                   <div className="flex flex-col gap-1">
                     <span className="font-bold">{participantName.get(plan.participant_id) ?? '이름 없음'}</span>
                     <span className="text-xs text-muted-foreground">
-                      {plan.plan_period_start ?? '—'} ~ {plan.plan_period_end ?? '—'}
+                      {formatDate(plan.plan_period_start)} ~ {formatDate(plan.plan_period_end)}
                     </span>
                   </div>
                   <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-muted text-muted-foreground">

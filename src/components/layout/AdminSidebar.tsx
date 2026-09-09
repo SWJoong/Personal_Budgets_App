@@ -1,19 +1,24 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import type { UserRole } from '@/types/database'
 
 interface AdminSidebarProps {
   collapsed?: boolean
   onToggle?: () => void
+  // 서버 레이아웃이 확정한 role. 주면 첫 렌더부터 정확한 메뉴/라벨(초기 flash·조회실패 고착 제거).
+  // 없으면(단위 테스트 등) 아래 useEffect 의 클라 조회로 폴백.
+  role?: UserRole
 }
 
 interface SubItem {
   name: string
   href: string
   soon?: boolean
+  adminOnly?: boolean
 }
 
 interface MenuItem {
@@ -22,16 +27,20 @@ interface MenuItem {
   icon: string
   sub?: SubItem[]
   soon?: boolean
+  // adminOnly: 해당 라우트가 requireAdmin(관리자 전용)이라 실무자(supporter)에게는 숨긴다.
+  // 안 그러면 실무자가 눌러도 '/' 로 리다이렉트되는 死링크가 된다(08 QA finding).
+  adminOnly?: boolean
 }
 
 // soon: true 인 항목은 화면은 있으나 서울형 데이터 모델로 아직 다시 만들지 않은 라우트
 // (ComingSoon 플레이스홀더로 이어짐). 사이드바에 "준비중" 표시로 미리 알린다.
 const menuItems: MenuItem[] = [
-  { name: '관리자 대시보드', href: '/admin', icon: '📊' },
+  { name: '관리자 대시보드', href: '/admin', icon: '📊', adminOnly: true },
   {
     name: '당사자 관리',
     href: '/admin/participants',
     icon: '👥',
+    adminOnly: true, // /admin/participants = requireAdmin. 실무자는 아래 supporterParticipantItem 로 대체.
     sub: [
       { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
       { name: '📋 전체 목록',      href: '/admin/participants' },
@@ -53,17 +62,21 @@ const menuItems: MenuItem[] = [
   { name: '증빙/서류 보관함', href: '/supporter/documents',    icon: '📁' },
   { name: '계획과 평가',      href: '/supporter/evaluations',  icon: '📋' },
   { name: '활동 지도',        href: '/supporter/map',          icon: '🗺️' },
-  { name: '시스템 설정',      href: '/admin/settings',         icon: '⚙️' },
+  { name: '시스템 설정',      href: '/admin/settings',         icon: '⚙️', adminOnly: true },
 ]
 
+// 실무자용 당사자 항목 — 관리자의 '당사자 관리'(/admin/participants, admin 전용) 대체.
+// 실무자가 접근 가능한 당사자 현황(/supporter/participants, requireStaff)으로 연결.
+const supporterParticipantItem: MenuItem = { name: '당사자 현황', href: '/supporter/participants', icon: '👥' }
+
 const quickItems: SubItem[] = [
-  { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
+  { name: '➕ 당사자 등록',    href: '/admin/participants/new', adminOnly: true },
   { name: '📝 신청서 접수',    href: '/supporter/applications/new' },
   { name: '🧾 영수증 검토',    href: '/supporter/review' },
-  { name: '👥 당사자 목록 보기', href: '/admin/participants' },
+  { name: '👥 당사자 목록 보기', href: '/admin/participants', adminOnly: true },
   { name: '📋 평가 작성',      href: '/supporter/evaluations' },
-  { name: '😊 피드백 확인',    href: '/admin/feedback' },
-  { name: '✉️ 초대 관리',      href: '/admin/invitations' },
+  { name: '😊 피드백 확인',    href: '/admin/feedback', adminOnly: true },
+  { name: '✉️ 초대 관리',      href: '/admin/invitations', adminOnly: true },
 ]
 
 function SoonBadge() {
@@ -74,11 +87,33 @@ function SoonBadge() {
   )
 }
 
-export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps) {
+export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: AdminSidebarProps) {
   const pathname = usePathname()
   const { user, supabase } = useAuth()
   const [openSubs, setOpenSubs] = useState<Record<string, boolean>>({})
   const [quickOpen, setQuickOpen] = useState(false)
+  const [role, setRole] = useState<UserRole | null>(roleProp ?? null)
+
+  useEffect(() => {
+    // 서버가 role 을 prop 으로 내려줬으면 그것이 정본 — 클라 조회를 건너뛴다(flash·조회실패 고착 방지).
+    if (roleProp !== undefined) return
+    if (!user) return
+    async function fetchRole() {
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user!.id).single()
+      if (profile?.role) setRole(profile.role as UserRole)
+    }
+    fetchRole()
+  }, [user, supabase, roleProp])
+
+  // 실무자(supporter)면 admin 전용 항목을 숨기고, 접근 가능한 당사자 현황으로 대체한다(권한 확장 없이
+  // 死링크만 제거 — 08 QA finding, 사용자 결정 A). role 불명(로딩/미인증)·관리자면 전체 메뉴 유지
+  // → 관리자 뷰와 단위테스트(useAuth user=null)는 그대로다.
+  const isSupporter = role === 'supporter'
+  const visibleItems = isSupporter
+    ? [supporterParticipantItem, ...menuItems.filter((i) => !i.adminOnly)]
+    : menuItems
+  const visibleQuick = isSupporter ? quickItems.filter((q) => !q.adminOnly) : quickItems
+  const roleLabel = role === 'supporter' ? '담당자' : role === 'participant' ? '당사자' : '관리자'
 
   const toggleSub = (href: string) =>
     setOpenSubs(prev => ({ ...prev, [href]: !prev[href] }))
@@ -93,9 +128,13 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
       {/* 헤더 */}
       <div className={`flex items-center h-14 shrink-0 ${collapsed ? 'justify-center px-2' : 'justify-between px-4'}`}>
         {!collapsed && (
-          <Link href="/admin" className="block hover:opacity-80 transition-opacity min-w-0 flex-1 mr-2">
-            <h2 className="text-sidebar-strong font-bold text-base tracking-tight leading-tight truncate">서울형 개인예산제</h2>
-            <span className="text-sidebar-muted-foreground text-xs font-normal">관리자</span>
+          // 브랜드(로고) 링크도 role 기반 — 실무자에게 /admin(requireAdmin)을 주면 로고 클릭 시
+          // '/' 로 튕기는 死링크가 된다(08 QA CRITICAL). 메뉴·퀵항목 필터가 놓쳤던 지점.
+          <Link href={isSupporter ? '/supporter' : '/admin'} className="block hover:opacity-80 transition-opacity min-w-0 flex-1 mr-2">
+            {/* 앱명 = 브랜딩(고정 크롬)이라 heading 아님(block span). 데스크톱에서 사이드바 h2 가
+                페이지 h1 앞에 와 계층이 역전되던 것 제거 — 페이지 <h1> 이 유일 heading(08 §8 ⑥). */}
+            <span className="block text-sidebar-strong font-bold text-base tracking-tight leading-tight truncate">서울형 개인예산제</span>
+            <span className="text-sidebar-muted-foreground text-xs font-normal">{roleLabel}</span>
           </Link>
         )}
         {onToggle && (
@@ -113,11 +152,15 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
 
       {/* 메인 메뉴 */}
       <nav aria-label="주요 메뉴" className="flex-1 px-2 space-y-0.5">
-        {menuItems.map((item) => {
+        {visibleItems.map((item) => {
           const isActive =
             pathname === item.href ||
             (item.href !== '/supporter' && item.href !== '/admin' && pathname.startsWith(item.href))
-          const hasSub = !collapsed && item.sub && item.sub.length > 0
+          // 실무자(supporter)면 서브항목도 adminOnly 를 거른다 — 지금은 admin 서브가 adminOnly
+          // 부모('당사자 관리') 아래라 누수 0 이지만, 비-adminOnly 부모에 admin 서브가 추가되면
+          // 死링크가 새는 잠재 위험을 선제 차단한다(08 §8 ⑧). role 불명/관리자는 그대로.
+          const subItems = isSupporter ? item.sub?.filter((s) => !s.adminOnly) : item.sub
+          const hasSub = !collapsed && !!subItems && subItems.length > 0
           const isSubOpen = openSubs[item.href] ?? isActive
 
           return (
@@ -160,7 +203,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
               {/* 서브메뉴 */}
               {hasSub && isSubOpen && (
                 <div className="ml-8 mt-0.5 flex flex-col gap-0.5">
-                  {item.sub!.map(sub => (
+                  {subItems!.map(sub => (
                     <Link
                       key={sub.href}
                       href={sub.href}
@@ -197,7 +240,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
           </button>
           {quickOpen && (
             <div className="mt-1 flex flex-col gap-0.5">
-              {quickItems.map(q => (
+              {visibleQuick.map(q => (
                 <Link
                   key={q.href}
                   href={q.href}

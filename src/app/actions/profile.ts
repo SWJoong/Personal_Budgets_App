@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { viewAsWriteBlock } from '@/utils/supabase/viewAs'
 import { revalidatePath } from 'next/cache'
 
 export async function updateProfile(formData: FormData) {
@@ -8,6 +9,10 @@ export async function updateProfile(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) throw new Error('인증이 필요합니다.')
+
+  // 관리자 둘러보기(view-as) 중에는 저장 차단 — 안 그러면 관리자 자신의 프로필이 바뀐다.
+  const viewAsBlock = await viewAsWriteBlock()
+  if (viewAsBlock) throw new Error(viewAsBlock)
 
   const name = formData.get('name') as string
   const bio = formData.get('bio') as string

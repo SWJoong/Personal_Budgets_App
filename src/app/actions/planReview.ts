@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { viewAsWriteBlock } from '@/utils/supabase/viewAs'
 import { assertAdmin, assertStaff } from '@/utils/supabase/staff'
 import { friendlyDbError } from '@/utils/supabase/errors'
 import { revalidatePath } from 'next/cache'
@@ -156,6 +157,10 @@ export async function markNotificationRead(notificationId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.' }
+
+  // 관리자 둘러보기(view-as) 중에는 대상 당사자의 통지 읽음 상태를 바꾸지 못하게 막는다.
+  const viewAsBlock = await viewAsWriteBlock()
+  if (viewAsBlock) return { error: viewAsBlock }
 
   const { data, error } = await supabase.rpc('mark_notification_read', {
     p_notification_id: notificationId,
