@@ -1152,3 +1152,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-09T09:26Z] U
 [HANDOFF→W] C3 후속 2/7 완료 = PR #121(feat/budget-scope-contracts, base=새 main #120머지후). §8 ②⑨④ 인라인 표시로직을 순수함수로 추출(동작보존)+계약: budgetByDomain +clampBudgetEnvelope/splitRemaining→budgets/[id] 배선, 신규 src/utils/participantScope.ts +scopeMarkersToUsed/scopePlansToParticipant→map/plans 배선. 계약 11테스트(clamp 7·경계 strict>·정확소진, scope 4·참조동일). ★구현≠검증: 계약 저작+3페이지 배선 동작보존 검증 모두 코드 안 짠 독립 서브에이전트(동작보존 PASS·git diff origin/main 대조·plans null병합 동치 포함), 구현버그0. 게이트 tsc0·eslint0·vitest 720/720(709+11)·build0. ★#116(데모 페르소나 시드)는 여전히 OPEN·미머지(supabase/seoul 시드라 C3와 독립). §8 잔여 ⑤그래프키보드·⑦활동사진(사용자 파킹). W 검토→사람 머지.
 
+## [2026-09-09T10:14Z] U
+[HANDOFF→W] ⑤ 관계망 그래프 키보드 접근 완료 = PR #122(feat/network-graph-keyboard, base main #116머지후). cytoscape tap(마우스/터치) 전용 노드선택을 키보드 포커스 가능한 '노드 골라 보기' 목록 버튼으로 보강 — selectNode 가 tap 과 동등선택(상세패널+cy 하이라이트·센터링), 선택상세 aria-live 자동안내, 현재노드 aria-pressed. 그림=시각보조·목록으로 동등접근(WCAG/KWCAG 비텍스트 대안 충족). ★캔버스 화살표탐색 미지원=목록 우회(의도, canvas 는 네이티브 포커스대상 아님). 회귀0(그래프 role=img·토글·tap·관계목록·범례 불변). 독립 검증관 a11y PASS + 계약 6테스트(NetworkGraphClient.test.tsx, cytoscape 모킹). 게이트 tsc0·eslint0·vitest 726/726(720+6)·build0. ★§8 실무자 QA 항목 = ⑦(활동사진 부분실패·사용자 파킹)만 잔여. 당사자 won()→MoneyText 통일 미착수(p7 카피계약 영향). W 검토→사람 머지.
+
