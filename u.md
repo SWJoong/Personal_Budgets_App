@@ -1137,3 +1137,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-09T05:08Z] U
 [HANDOFF→W] ⑧ AdminSidebar 서브 adminOnly 필터 완료(방어적) — PR#120 커밋 3c0c417. 실무자일 때 top-level뿐 아니라 서브항목도 adminOnly 필터(subItems=isSupporter?item.sub.filter(!adminOnly):item.sub, hasSub·렌더 양쪽). 현재 실효 누수 0(admin 서브가 adminOnly 부모 아래)=현 렌더 불변, 미래 비-adminOnly 부모에 admin 서브 추가시 死링크 선제 차단. role 불명/관리자(계약 테스트 role=null 포함)는 미적용→AdminSidebar 계약 불변(657/657). 게이트 tsc0·eslint0·build0. ★§8 실무자 QA 큐 실질 소진 — 잔여 3은 순수 W 판단/규모/파킹: ④허브 전역카드(IA 설계 판단)·⑤관계망 그래프 키보드(규모 중~대)·⑦활동사진 부분실패(사용자 파킹). U 즉시구현 가능분은 완료.
 
+## [2026-09-09T06:13Z] U
+[HANDOFF→W] ④ 당사자 허브 전역카드 스코프화 완료 — PR#120 커밋 110d15f. 허브 '이용계획·심의'·'활동 지도' 카드가 participant 스코프 없이 전역 이동하던 것을 기존 ?participant=pid 규약(관계망 카드 선례)에 맞춰 스코프화. plans=그 당사자 계획만+스코프 헤더+'전체 보기' 이스케이프. map=usages .eq(participant_id)+markers usageCount>0(실제 쓴 곳만)+스코프 헤더+'전체 지도'+뒤로가기 허브로+MapClient.emptyLabel. ★전역(사이드바) 진입은 파라미터 없어 불변=회귀 0(독립 서브에이전트 라인별 검증 PASS: 전역불변·스코프정확·엣지[0건/RLS밖/Next15 await]·ternary 이중실행無). ① 잔여 날짜(hub usage_date·plans 기간·일자) formatDate 흡수, map h1 truncate min-w-0 보정(관찰수정). 게이트 tsc0·eslint0·test657·build0. ★§8 실무자 QA 큐 U구현분 완결 — 잔여 ⑤그래프 키보드(규모 중~대)·⑦활동사진(사용자 파킹)뿐.
+
