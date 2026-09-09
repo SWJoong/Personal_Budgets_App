@@ -20,3 +20,5 @@
 - [01-seoul-schema-cutover.md](01-seoul-schema-cutover.md) — seoul 정본 전환(D0 컷오버) 실행 노트
 - [02-ci-gate-and-branch-protection.md](02-ci-gate-and-branch-protection.md) — CI 게이트 정상화·브랜치 보호·욕구사정 삭제 권한(#24)
 - [03-prd-alignment-review.md](03-prd-alignment-review.md) — 서울형 리빌딩 PRD(2026-08-28) 정합성 리뷰: 이미구현/공백/스코프 대조
+- [04-u-parallel-orchestration.md](04-u-parallel-orchestration.md) — U 병렬 오케스트레이션 운영모델
+- [05-demo-personas.md](05-demo-personas.md) — 데모 당사자 10명(Nemotron 페르소나+사람중심계획) 시드 실행노트·수동작업 브리핑
