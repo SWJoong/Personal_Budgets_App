@@ -77,6 +77,8 @@ export default function NewTransactionClient({
   const [subdomainId, setSubdomainId] = useState('')
   const [receipt, setReceipt] = useState<{ base64: string; mime: string; name: string } | null>(null)
   const [activityPhotos, setActivityPhotos] = useState<{ base64: string; mimeType: string }[]>([])
+  // 지출 저장 후 사진 일부 실패로 화면에 남았을 때, 재제출로 지출이 중복 기록되지 않게 잠근다(§8 ⑦).
+  const [savedUsageId, setSavedUsageId] = useState<string | null>(null)
 
   const domainsForProgram = domains.filter((d) => d.program === program)
   const subdomainsForDomain = subdomains.filter((s) => s.domain_id === domainId)
@@ -116,11 +118,20 @@ export default function NewTransactionClient({
   async function handleActivityFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files || !files.length) return
-    const converted = await Promise.all(Array.from(files).map((f) => fileToBase64(f)))
+    // 활동사진도 영수증처럼 5MB 상한 — 큰 파일은 base64 변환·업로드 실패/타임아웃을 유발한다(§8 ⑦).
+    const all = Array.from(files)
+    const ok = all.filter((f) => f.size <= 5 * 1024 * 1024)
+    const converted = await Promise.all(ok.map((f) => fileToBase64(f)))
     setActivityPhotos((prev) => [...prev, ...converted])
+    if (ok.length < all.length) setError(`사진 ${all.length - ok.length}장은 5MB가 넘어 빼놓았어요.`)
   }
 
   function handleSubmit() {
+    // 이미 저장됨(사진 일부 실패로 화면에 남은 경우) — 재기록 방지, 목록으로 나간다(§8 ⑦).
+    if (savedUsageId) {
+      router.push(`/supporter/${participantId}/transactions`)
+      return
+    }
     if (!allocationId) {
       setError('예산을 골라 주세요.')
       return
@@ -149,8 +160,16 @@ export default function NewTransactionClient({
       })
       if ('success' in result && result.success) {
         // usage 생성 후 활동사진(다건) 업로드. 경로 접두는 addActivityPhotos 가 서버측에서 강제.
+        let photoFailed = 0
         if (activityPhotos.length && result.usageId) {
-          await addActivityPhotos(result.usageId, activityPhotos)
+          const pr = await addActivityPhotos(result.usageId, activityPhotos)
+          photoFailed = activityPhotos.length - (pr.added ?? 0)
+        }
+        if (photoFailed > 0) {
+          // 지출은 저장됐지만 사진 일부/전부가 실패 → 유실을 알리고 재기록 잠근 뒤 나가기 유도(§8 ⑦).
+          setSavedUsageId(result.usageId ?? '')
+          setError(`지출은 저장됐어요. 다만 사진 ${activityPhotos.length}장 중 ${photoFailed}장이 저장되지 않았어요. "나가기"를 눌러 주세요.`)
+          return
         }
         router.push(`/supporter/${participantId}/transactions`)
         return
@@ -330,7 +349,7 @@ export default function NewTransactionClient({
         disabled={pending}
         className="p-4 rounded-2xl bg-hero text-hero-foreground font-bold text-base hover:bg-hero-hover transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
       >
-        {pending ? '기록하고 있어요...' : '지출 기록하기'}
+        {savedUsageId ? '나가기' : pending ? '기록하고 있어요...' : '지출 기록하기'}
       </button>
     </div>
   )
