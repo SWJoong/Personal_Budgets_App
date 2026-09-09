@@ -124,3 +124,27 @@
 - **⑧ AdminSidebar 서브항목 adminOnly 필터 — 구현 완료(사용자 지시·방어적)**: 실무자(supporter)일 때 top-level 뿐 아니라 **서브항목도 `adminOnly` 를 거른다**(`subItems = isSupporter ? item.sub?.filter(s=>!s.adminOnly) : item.sub`, `hasSub`·서브 렌더 양쪽). 현재 admin 서브가 adminOnly 부모('당사자 관리') 아래라 **실효 누수 0(현 렌더 불변)**이지만, 비-adminOnly 부모에 admin 서브가 추가되면 死링크가 새는 잠재 위험을 선제 차단. role 불명/관리자(계약 테스트 `role=null` 포함)는 필터 미적용 → AdminSidebar 계약 불변(657/657). 게이트 tsc0·eslint0·build0. PR #120.
 - **④ 당사자 허브 전역카드 스코프화 — 구현 완료(사용자 지시)**: 허브(`participants/[id]`)의 '이용계획·심의'·'활동 지도' 카드가 participant 스코프 없이 전역 이동하던 것을, **이미 있던 `?participant=pid` 규약(관계망 카드 선례)** 에 맞춰 스코프화. **plans**=`?participant=` 로 그 당사자 계획만 필터 + 스코프 헤더 + "전체 보기" 이스케이프; **map**=usages 를 `.eq('participant_id',…)` 필터 + markers 를 `usageCount>0`(실제 쓴 곳)로 좁힘 + 스코프 헤더 + "전체 지도" + 뒤로가기(허브로) + `MapClient.emptyLabel` 스코프 빈문구. **전역(사이드바) 진입은 파라미터 없어 불변**(회귀 0). ① 잔여 날짜(hub·plans 의 usage_date/기간)도 formatDate 로 함께 흡수. 독립 서브에이전트 검증. 게이트 tsc0·eslint0·vitest657/657·build0. PR #120.
 - **잔여 W 결정 대기**: ⑤그래프 키보드(규모 중~대) ⑦활동사진 부분실패(사용자 파킹).
+
+---
+
+## 9. W 검증 결과 (2026-09-09 · W 부재로 이 세션 대행)
+W(설계·검증 축) 부재로 U 세션에서 W 검증 수행. **구현≠검증** 원칙 유지 — 코드를 작성하지 않은 **독립 서브에이전트 5개**를 W의 검증 손으로 병렬 팬아웃(보안·접근성·요구/死링크·테스트계약·easy-read)하고, U는 종합·판정만. 게이트도 HEAD=110d15f 로 **독립 재실행**.
+
+**총평: BLOCK 0 → 병합 차단 사유 없음(사람 머지 준비 완료).** 독립 게이트: tsc0 · lint0 · vitest 657/657 · build0.
+
+| 차원 | 판정 | 요지 |
+|---|---|---|
+| 요구·死링크 | **PASS**(OK12) | 실무자 死링크 잔존 **0** 전수(AdminSidebar role 분기·대시보드 CTA·빈상태 CTA·TabBar·모든 `/admin/*` 타겟 게이트 확인) |
+| 보안 | **PASS**·C1 | 위조쿠키 무력(resolveViewAs admin검증 end-to-end)·9뮤테이션 가드 완비·cheese0318 승격 self-only·④ RLS 우회無·이메일 마스킹 누수 수정 |
+| 접근성 | **PASS** | heading 단수(shell 브랜드 span+PageHeader 단일 h1)·aria(pressed/alert/label)·FAB region·44px·랜드마크 무회귀 |
+| 테스트 | **무회귀**·C3 | named 계약(tokenFoundation·p7Copy/Focus)+렌더 계약 충돌 0. 신규 동작 7건 계약 공백 |
+| easy-read | **PASS** | 당사자 방화벽 누수 0(심의/환수/부과)·배너 쉬운말(validate_easy_read pass)·신청접수 문구 실동작 일치 |
+
+**CONCERN (병합 비차단 · 사용자/W 결정 필요):**
+- **C1 하드코딩 슈퍼관리자 이메일**(보안·요구 중복): `route.ts:26` `BUILTIN_SUPER_ADMINS=['cheese0318@gmail.com']`. **goal #4 명시 요구**라 의도적(사용자 로그인 계정은 gmail, 조직메일 jobcenter.or.kr과 별개 — goal #4 원문이 gmail 지정). 트레이드오프=배포 격리(포크·타 배포에서 그 주소 자동 admin·이메일 소스 커밋·설정으로 제거불가). 옵션: **유지**(현행) vs `SUPER_ADMIN_EMAIL` env 단독 이전(배열 비우기, 코드 이미 지원).
+- **C2 view-as 정산 충실도 갭**: `(participant)/evaluations/page.tsx` 관리자 미리보기가 대상의 최신 allocation 1건만 스코프 → 다건 배정 당사자의 과거 정산 누락. **유출 아님**(sentinel UUID로 전체유출 차단, 당사자 본인 화면 무영향). 문서화 한계.
+- **C3 계약 공백 7건**: formatDate · view-as 가드 · **AdminSidebar 死링크 분기** · 음수잔액 · ④스코프 · cheese0318 승격 · view-as UI 배선 — 커밋된 회귀보호 0(독립 서브에이전트로만 검증). W가 RED 계약 저작 필요(우선: 死링크 분기·가드·승격). ★구현≠검증상 구현자(U) 직접 저작은 자기채점 → **신선 서브에이전트 또는 W** 가 저작해야.
+
+**out-of-scope 관찰**: `supporter/network/page.tsx` h1 2개(조건분기 로딩/로드) — 이 PR 미변경, 별도 후속.
+
+→ 병합은 **사람**이(에이전트 main 직접 머지 금지). C1·C3 결정 후 진행 권고.
