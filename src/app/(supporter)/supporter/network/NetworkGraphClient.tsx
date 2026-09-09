@@ -196,6 +196,22 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
     }
   }, [cycleOnly, ready])
 
+  // 키보드 접근(§8 ⑤) — cy 'tap' 은 마우스/터치 전용이라, 노드 목록 버튼이 이 함수로 tap 과 동일한
+  // 선택을 수행한다: 상세 패널 설정 + 그래프에서 해당 노드 선택·연결 엣지 라벨·센터링(시각 동기화).
+  const selectNode = (id: string) => {
+    const node = graph.nodes.find((n) => n.id === id)
+    if (!node) return
+    setSelected({ id: node.id, label: node.label, group: node.group, ntype: node.node_type })
+    const cy = cyRef.current
+    if (!cy) return
+    const el = cy.$id(id)
+    cy.edges().removeClass('show-label')
+    el.connectedEdges().addClass('show-label')
+    cy.nodes().unselect()
+    el.select()
+    cy.animate({ center: { eles: el } }, { duration: 200 })
+  }
+
   const toggleBtn = (active: boolean) =>
     `min-h-[44px] px-4 rounded-xl text-sm font-bold transition-colors ring-1 ${
       active ? 'bg-hero text-hero-foreground ring-hero' : 'bg-card text-muted-foreground ring-border hover:bg-muted-hover hover:text-foreground'
@@ -249,7 +265,36 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
         )}
       </div>
 
-      {/* 선택 노드 정보 */}
+      {/* 키보드로 노드 고르기(§8 ⑤) — cy tap 은 마우스/터치 전용이라, 이 목록 버튼이 노드 선택을
+          대신한다. 그림은 시각 보조로 두고 키보드 사용자는 여기서 노드를 골라 아래 상세를 본다. */}
+      <details className="rounded-2xl bg-muted ring-1 ring-border">
+        <summary className="p-4 font-bold text-sm text-muted-foreground cursor-pointer select-none min-h-[44px] flex items-center">
+          노드 골라 보기 ({graph.nodes.length})
+        </summary>
+        <ul className="flex flex-col gap-1 px-3 pb-3">
+          {graph.nodes.map((n) => (
+            <li key={n.id}>
+              <button
+                type="button"
+                onClick={() => selectNode(n.id)}
+                aria-pressed={selected?.id === n.id}
+                className={`w-full flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm text-left transition-colors ${
+                  selected?.id === n.id ? 'bg-hero text-hero-foreground' : 'text-foreground hover:bg-muted-hover'
+                }`}
+              >
+                <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: GROUP_COLOR[n.group] }} aria-hidden="true" />
+                <span className="font-medium truncate">{n.label}</span>
+                <span className={`text-xs ml-auto shrink-0 ${selected?.id === n.id ? 'text-hero-foreground/70' : 'text-muted-foreground'}`}>
+                  {GROUP_LABEL[n.group]}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </details>
+
+      {/* 선택 노드 정보 — 노드 선택(마우스·키보드 공통) 결과. aria-live 로 SR 에 자동 안내(§8 ⑤). */}
+      <div aria-live="polite">
       {selected && (
         <div className="p-4 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-2">
           <div className="flex items-center gap-2">
@@ -274,6 +319,7 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
           )}
         </div>
       )}
+      </div>
 
       {/* 관계 목록(텍스트 대안 — 그림을 읽기 어려울 때) */}
       <details className="rounded-2xl bg-muted ring-1 ring-border">
