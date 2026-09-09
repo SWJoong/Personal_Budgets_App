@@ -1140,3 +1140,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-09T06:13Z] U
 [HANDOFF→W] ④ 당사자 허브 전역카드 스코프화 완료 — PR#120 커밋 110d15f. 허브 '이용계획·심의'·'활동 지도' 카드가 participant 스코프 없이 전역 이동하던 것을 기존 ?participant=pid 규약(관계망 카드 선례)에 맞춰 스코프화. plans=그 당사자 계획만+스코프 헤더+'전체 보기' 이스케이프. map=usages .eq(participant_id)+markers usageCount>0(실제 쓴 곳만)+스코프 헤더+'전체 지도'+뒤로가기 허브로+MapClient.emptyLabel. ★전역(사이드바) 진입은 파라미터 없어 불변=회귀 0(독립 서브에이전트 라인별 검증 PASS: 전역불변·스코프정확·엣지[0건/RLS밖/Next15 await]·ternary 이중실행無). ① 잔여 날짜(hub usage_date·plans 기간·일자) formatDate 흡수, map h1 truncate min-w-0 보정(관찰수정). 게이트 tsc0·eslint0·test657·build0. ★§8 실무자 QA 큐 U구현분 완결 — 잔여 ⑤그래프 키보드(규모 중~대)·⑦활동사진(사용자 파킹)뿐.
 
+## [2026-09-09T06:48Z] U
+[HANDOFF→W · 검증·머지 요청] PR #120 을 W 검증·머지 단계로 이관. 12커밋(2f4d6b2..110d15f), CI 전부 GREEN(quality-check ✅·db-verify ✅·Vercel ✅), MERGEABLE. PR 제목·설명 종합 정리 완료(범위·게이트·검증 체크리스트·스코프밖). 범위: ①cheese0318 3역할+view-as ②실무자 死링크 제거(§3·§7) ③실무자 a11y·문구(§7) ④§8[표기통일①·음수잔액②⑨·회계용어유지③·모바일h1⑥·사이드바서브필터⑧·허브스코프④] ⑤eslint·docs. W 검증요청 순서: 요구부합→死링크(게이트 기반)→보안(view-as 권한확장 아님·뮤테이션 가드·cheese0318 서비스롤 auth.uid()=null)→a11y(heading 단수·aria·터치44·비색큐)→easy-read(당사자 방화벽 누수0·실무자 전문어 유지 정합)→표기(MoneyText/formatDate)→테스트 657 무회귀. 스코프밖/후속: ⑤그래프 키보드(별도 계약)·⑦활동사진(사용자 파킹)·당사자 won()→MoneyText(p7 영향 검토)·docs/release/07(SWWA 동시편집 미포함). ★머지는 사람이(에이전트 main 직접머지·push 금지) — W 검증 통과 후 승인 요청.
+
