@@ -1134,3 +1134,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-08T06:23Z] U
 [HANDOFF→W] ⑥ 모바일 h1 중복 완료 — PR#120 커밋 601a3c8. 실무자 셸 앱 브랜드명을 heading→비-heading 강등: SupporterLayoutClient 모바일 상단바 h1→span(모바일 h1 2개 중복 제거) + AdminSidebar 브랜드 h2→span.block(데스크톱 h2-before-h1 계층역전 제거). 근거=앱명은 고정 크롬(브랜딩)이지 페이지 주제 heading 아님 → 각 페이지 h1(raw·PageHeader·자식 컴포넌트)이 유일 heading. 전 실무자 페이지 h1 보유 실측(무-h1 3=리다이렉트 스텁 2 + preview 자식 ParticipantHomePreviewClient h1)→무-h1 페이지 0. 계약 무영향(AdminSidebar 테스트=aria-current/expanded만·p7FocusWave2=애니메이션만). 게이트 tsc0·eslint0·test657·build0. 잔여 W결정 큐 ④허브카드 ⑤그래프키보드 ⑦활동사진(파킹) ⑧사이드바 서브필터.
 
+## [2026-09-09T05:08Z] U
+[HANDOFF→W] ⑧ AdminSidebar 서브 adminOnly 필터 완료(방어적) — PR#120 커밋 3c0c417. 실무자일 때 top-level뿐 아니라 서브항목도 adminOnly 필터(subItems=isSupporter?item.sub.filter(!adminOnly):item.sub, hasSub·렌더 양쪽). 현재 실효 누수 0(admin 서브가 adminOnly 부모 아래)=현 렌더 불변, 미래 비-adminOnly 부모에 admin 서브 추가시 死링크 선제 차단. role 불명/관리자(계약 테스트 role=null 포함)는 미적용→AdminSidebar 계약 불변(657/657). 게이트 tsc0·eslint0·build0. ★§8 실무자 QA 큐 실질 소진 — 잔여 3은 순수 W 판단/규모/파킹: ④허브 전역카드(IA 설계 판단)·⑤관계망 그래프 키보드(규모 중~대)·⑦활동사진 부분실패(사용자 파킹). U 즉시구현 가능분은 완료.
+
