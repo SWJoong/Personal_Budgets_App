@@ -148,3 +148,13 @@ W(설계·검증 축) 부재로 U 세션에서 W 검증 수행. **구현≠검�
 **out-of-scope 관찰**: `supporter/network/page.tsx` h1 2개(조건분기 로딩/로드) — 이 PR 미변경, 별도 후속.
 
 → 병합은 **사람**이(에이전트 main 직접 머지 금지). C1·C3 결정 후 진행 권고.
+
+### 9-1. 검증 후 결정·처리 (2026-09-09)
+- **C1(하드코딩 슈퍼관리자) = 유지**(사용자 결정): goal #4 요구 그대로, 코드 변경 없음. 배포 격리 트레이드오프는 수용(이 저장소 단독 운영 전제).
+- **C3(계약 공백) = 지금 신선 서브에이전트로 저작**(사용자 결정, 핵심3 우선). 구현≠검증 유지 — 코드 안 짠 독립 서브에이전트가 계약 저작·자체 GREEN. **52개 신규 테스트, 구현 버그 0.**
+  - ✅ **저작 완료(5/7 · 핵심3 전부)**: formatDate(10)·**view-as 가드 viewAs.test.ts(13, ★위조방어 불변식)**·**AdminSidebar 死링크 분기(8)**·view-as UI 배선 ViewAsBanner/FAB/TabBar(8) [커밋 61c0140] · **cheese0318 승격** — 인라인 매칭을 `src/utils/superAdmin.ts` 순수함수로 **추출**(동작보존 독립검증 PASS) + superAdmin.test.ts(13) [커밋 91f2323].
+  - ⏳ **후속(2/7 · 비핵심, 리팩터 필요 — ready 스니펫)**:
+    - **음수잔액 클램프**: `budgetByDomain.ts` 에 `clampBudgetEnvelope(allocated,usedTotal)`·`splitRemaining(remaining)` 추출 → budgets/[id] 인라인 대체. 계약: `clampBudgetEnvelope(10000,12000)→{overspent:true,remainingDisplay:0,overageDisplay:2000}`·`(10000,10000)→{false,0,0}`(경계)·`splitRemaining(-2000)→{0,2000}`.
+    - **④ 스코프 필터**: `assetMap.ts` 에 `scopeMarkersToUsed(markers,pid)` + (신규)`scopePlansToParticipant(plans,pid)` 추출 → plans/map 인라인 대체. 계약: usageCount>0 필터·participant_id 필터·전역모드(pid undefined) 무필터.
+    둘 다 순수 substrate(buildBudgetByDomain·buildProviderAssets)는 이미 골든 → 추출 후 필터/클램프 분기만 계약하면 GREEN(중복 없음).
+- **최종 게이트**: tsc0 · eslint0 · vitest **709/709**(657+52) · build0. **BLOCK 0 유지 — 병합 준비 완료(사람 머지).**
