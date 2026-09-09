@@ -1164,3 +1164,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-09T12:14Z] U
 [정정·HANDOFF→W] 당사자 won()→MoneyText 재상정 = PR #125(feat/participant-money-onmain, base=main). ★#123·#124 12초 연속 머지로 GitHub auto-retarget 미발동 → #124 머니가 main 아닌 ⑦브랜치(feat/activity-photo-partial-fail=9926438)로 들어가 stranded. main(8d4b988)=⑦만. 머니커밋 7d26fc0 을 현재 main 위로 cherry-pick(clean, ⑦ 이미 포함이라 doc08 §8-2·ReceiptClient 충돌0)→#125. 게이트 tsc0·eslint0·vitest 739/739·build0. #125는 base=main이라 quality-check·db-verify 정상실행. 교훈=스택PR 연속머지시 retarget 레이스→하위PR이 원래 base(상위 브랜치)로 머지되어 stranded, main 반영 재확인 필수. stranded 브랜치(9926438)는 삭제가능. W 검토→사람 머지(#125).
 
+## [2026-09-09T12:22Z] U
+[종결·main 반영확인] #125 머지 완료 → main=0d276ef. 당사자 won()→MoneyText 통일 main 실반영 실측(page.tsx const won=0·CalendarClient.money.test 존재). stranded 복구 성공. §8 실무자 QA(死링크·표기통일·음수잔액·회계용어·모바일h1·서브필터·허브스코프·그래프키보드·활동사진부분실패) + §8밖 당사자 머니통일 = main 기준 전부 종결. 로컬 병합브랜치 3개 정리. 순수 W후속만 잔여(비차단): ReceiptClient error-경로 중복지출(⑦ 검증관 발견 기존버그)·utils won() 문장빌더 통일(선택)·C2 view-as 정산 충실도 갭. 다음 사이클은 W 신규 RED 계약 대기.
+
