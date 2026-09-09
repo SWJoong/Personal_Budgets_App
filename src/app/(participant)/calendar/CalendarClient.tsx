@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { MoneyText } from '@/components/ui/MoneyText'
 
 interface Usage {
   id: string
@@ -11,7 +12,6 @@ interface Usage {
   description: string | null
 }
 
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
 function toDateKey(y: number, m: number, d: number) {
@@ -84,7 +84,7 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
           </button>
         </div>
 
-        <p className="text-xs text-muted-foreground text-center">이번 달에 쓴 돈: {won(monthTotal)}</p>
+        <p className="text-xs text-muted-foreground text-center">이번 달에 쓴 돈: <MoneyText value={monthTotal} emphasis="muted" /></p>
 
         <div className="grid grid-cols-7 gap-1 text-center">
           {WEEKDAYS.map((w) => (
@@ -123,7 +123,7 @@ export default function CalendarClient({ usages }: { usages: Usage[] }) {
           {selectedUsages.map((u) => (
             <div key={u.id} className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center justify-between">
               <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
-              <span className="font-bold">{won(u.amount)}</span>
+              <span className="font-bold"><MoneyText value={u.amount} emphasis="body" /></span>
             </div>
           ))}
         </section>

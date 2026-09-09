@@ -11,8 +11,8 @@ import { findOrCreateProvider } from '@/app/actions/serviceProvider'
 import { FormField } from '@/components/ui/FormField'
 import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 import { useToast } from '@/components/ui/LiveRegion'
-
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
+import { MoneyText } from '@/components/ui/MoneyText'
+import { formatCurrency } from '@/utils/budget-visuals'
 
 const SETTLEMENT_LABEL: Record<string, string> = {
   pending: '선생님이 살펴봐요',
@@ -302,7 +302,7 @@ export default function ReceiptClient({
               label="얼마 썼어요? (원)"
               required
               error={amountError || undefined}
-              help={remaining !== null ? `남은 예산 ${won(remaining)}` : undefined}
+              help={remaining !== null ? `남은 예산 ${formatCurrency(Math.round(remaining))}원` : undefined}
             >
               {(field) => (
                 <input
@@ -430,7 +430,7 @@ export default function ReceiptClient({
                     <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
                     <span className="text-xs text-muted-foreground">{u.usage_date} · {SETTLEMENT_LABEL[u.settlement_status] ?? u.settlement_status}</span>
                   </div>
-                  <span className="font-bold">{won(u.amount)}</span>
+                  <span className="font-bold"><MoneyText value={u.amount} emphasis="body" /></span>
                 </li>
               ))}
             </ul>

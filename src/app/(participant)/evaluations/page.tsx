@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { getMonitoringRecords } from '@/app/actions/monitoring'
 import { getSettlements } from '@/app/actions/settlement'
 import { resolveViewAs } from '@/utils/supabase/viewAs'
+import { MoneyText } from '@/components/ui/MoneyText'
 
 export const metadata = { title: '선생님이 남긴 기록' }
 
@@ -15,8 +16,6 @@ const METHOD_EASY: Record<string, string> = {
   app: '앱으로 봤어요',
   document: '서류로 봤어요',
 }
-
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 
 export default async function ParticipantEvaluationsPage() {
   const supabase = await createClient()
@@ -102,7 +101,7 @@ export default async function ParticipantEvaluationsPage() {
                 <li key={s.id} className="p-5 rounded-3xl bg-card ring-1 ring-border flex flex-col gap-2">
                   <span className="text-xs text-muted-foreground">{s.settled_period}</span>
                   <p className="text-base text-foreground leading-relaxed">
-                    받은 돈 <b>{won(Number(s.accepted_amount))}</b>
+                    받은 돈 <b><MoneyText value={Number(s.accepted_amount)} emphasis="body" /></b>
                   </p>
                   {Number(s.unused_amount) > 0 && (
                     <p className="text-sm text-muted-foreground bg-success-bg rounded-2xl p-3 leading-relaxed">
