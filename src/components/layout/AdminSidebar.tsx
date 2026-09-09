@@ -156,7 +156,11 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
           const isActive =
             pathname === item.href ||
             (item.href !== '/supporter' && item.href !== '/admin' && pathname.startsWith(item.href))
-          const hasSub = !collapsed && item.sub && item.sub.length > 0
+          // 실무자(supporter)면 서브항목도 adminOnly 를 거른다 — 지금은 admin 서브가 adminOnly
+          // 부모('당사자 관리') 아래라 누수 0 이지만, 비-adminOnly 부모에 admin 서브가 추가되면
+          // 死링크가 새는 잠재 위험을 선제 차단한다(08 §8 ⑧). role 불명/관리자는 그대로.
+          const subItems = isSupporter ? item.sub?.filter((s) => !s.adminOnly) : item.sub
+          const hasSub = !collapsed && !!subItems && subItems.length > 0
           const isSubOpen = openSubs[item.href] ?? isActive
 
           return (
@@ -199,7 +203,7 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
               {/* 서브메뉴 */}
               {hasSub && isSubOpen && (
                 <div className="ml-8 mt-0.5 flex flex-col gap-0.5">
-                  {item.sub!.map(sub => (
+                  {subItems!.map(sub => (
                     <Link
                       key={sub.href}
                       href={sub.href}
