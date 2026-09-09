@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { assignRoleForFirstUser } from '@/app/actions/admin'
+import { isSuperAdminEmail } from '@/utils/superAdmin'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -20,22 +21,15 @@ export async function GET(request: Request) {
 
     if (!error && user) {
       const email = user.email ?? ''
-      // 소유 운영자 계정 — 사용자 명시 요구(2026-09-07): 이 계정은 배포 환경변수 설정 여부와
-      // 무관하게 '항상' 슈퍼관리자로 인식한다(Vercel SUPER_ADMIN_EMAIL 을 깜빡해도 로그인만 하면
-      // 관리자 접근 보장). 환경변수만으로 관리하고 싶으면 이 배열을 비우면 된다.
-      const BUILTIN_SUPER_ADMINS = ['cheese0318@gmail.com']
-      // SUPER_ADMIN_EMAIL 은 콤마로 여러 개 지정 가능(예: 부트스트랩 데모관리자 등). 대소문자 무관.
-      const superAdminEmails = [
-        ...BUILTIN_SUPER_ADMINS,
-        ...(process.env.SUPER_ADMIN_EMAIL ?? '').split(','),
-      ].map((e) => e.trim().toLowerCase()).filter(Boolean)
+      // 슈퍼관리자(운영자) 판정은 순수함수로 분리 — 내장 슈퍼관리자(cheese0318, 사용자 명시요구
+      // 2026-09-07)·SUPER_ADMIN_EMAIL 병합 규칙과 계약은 src/utils/superAdmin.ts 참조(08 §9 C3).
       // 미설정 시 빈 목록 — 예전에는 'nowondaycare.org' 로 폴백해서, 이 변수를
       // 깜빡하면 그 기관 소속이 아닌 모든 신규 배포에서 아무도 로그인할 수 없었다.
       const allowedDomains = (process.env.ALLOWED_EMAIL_DOMAINS ?? process.env.ALLOWED_EMAIL_DOMAIN ?? '')
         .split(',').map(d => d.trim()).filter(Boolean)
 
       // 1. 슈퍼 관리자 이메일
-      const isSuperAdmin = superAdminEmails.includes(email.toLowerCase())
+      const isSuperAdmin = isSuperAdminEmail(email, process.env.SUPER_ADMIN_EMAIL)
 
       // 2. 허용 도메인 (실무자 소속 기관 이메일)
       const isAllowedDomain = allowedDomains.some(d => email.endsWith('@' + d))
