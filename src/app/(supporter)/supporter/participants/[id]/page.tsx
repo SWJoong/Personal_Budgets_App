@@ -81,6 +81,7 @@ export default async function ParticipantHubPage({ params }: { params: Promise<{
     { href: `/supporter/${pid}/transactions`, icon: '🧾', label: '거래장부', desc: '지출 내역' },
     { href: `/supporter/evaluations/${pid}`, icon: '📋', label: '정산·평가', desc: '월별 평가' },
     { href: `/supporter/${pid}/assessment`, icon: '🧭', label: '욕구사정', desc: 'SIS-A' },
+    { href: `/supporter/${pid}/network`, icon: '🫂', label: '관계망 편집', desc: '가족·친구 등' },
     { href: `/supporter/${pid}/report`, icon: '📊', label: '월간보고서', desc: '리포트' },
     { href: `/supporter/network?participant=${pid}`, icon: '🕸️', label: '관계망', desc: '지원 관계' },
     { href: `/supporter/map?participant=${pid}`, icon: '🗺️', label: '활동 지도', desc: '지출 위치' },
