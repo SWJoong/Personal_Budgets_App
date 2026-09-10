@@ -90,6 +90,8 @@
 - **main 직접 push 금지** — PR·CI 경유. 머지는 사람.
 
 ## §4 상태 (2026-09-10)
-- B1 완료(#137 머지 + 대시보드 13 실행 → 테이블 라이브). B2 ACTIVE(이 PR). B3–B4 계획 확정.
+- B1 완료(#137 + 대시보드 13 실행 → 라이브). B2 완료(#138 networkEntities.ts 액션). B3 ACTIVE(이 PR). B4 계획 확정.
+- B3 진입점: 참여자 상세 `supporter/participants/[id]/page.tsx` 메뉴(욕구사정 짝, 라인 83)에 관계망 추가.
+  라우트 `/supporter/[participantId]/network`(literal `/supporter/network` 분석그래프와 별개·공존).
 - RLS=staff-only(사용자 결정). 클라이언트는 `<Database>` 제네릭 미사용(untyped) → B2 손타입으로 선행,
   `database.ts` 재생성은 비차단 hygiene 후속. 데모 관계망 시드는 08 루프 패턴으로 후속.
