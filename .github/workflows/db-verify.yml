@@ -57,6 +57,7 @@ jobs:
             supabase/seoul/11_provider_domains.sql
             supabase/seoul/12_audit_log.sql
             supabase/seoul/13_network_entities.sql
+            supabase/seoul/14_network_graph_overlay.sql
           )
           for f in "${build[@]}"; do
             echo "=== apply $f ==="
@@ -68,7 +69,8 @@ jobs:
                    supabase/seoul/10_fk_ization.sql \
                    supabase/seoul/11_provider_domains.sql \
                    supabase/seoul/12_audit_log.sql \
-                   supabase/seoul/13_network_entities.sql; do
+                   supabase/seoul/13_network_entities.sql \
+                   supabase/seoul/14_network_graph_overlay.sql; do
             psql -v ON_ERROR_STOP=1 -q -f "$f"
           done
 
@@ -88,6 +90,7 @@ jobs:
             verify_audit_log
             verify_activity_photos
             verify_network_entities
+            verify_network_graph_overlay
           )
           out="$(mktemp)"
           for v in "${verify[@]}"; do

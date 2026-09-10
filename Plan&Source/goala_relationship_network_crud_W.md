@@ -71,15 +71,21 @@
   목록 + 추가/**수정**/삭제. ★기존 읽기전용 `/supporter/network`(분석 그래프)와 **다른 라우트**(참여자 스코프).
 - **계약(W)**: 렌더 + CRUD 배선 + 4분면 그룹.
 
-### B4 — 그래프 오버레이 + provenance
-- `05_seoul_graph.sql`: `v_seoul_graph_edges` 종료 세미콜론(현 L184) 앞에 `seoul_network_entities` UNION 브랜치
-  추가 + **모든 ~31 브랜치에 `'derived'::TEXT AS source`**, 신규 브랜치 `'manual'`. `security_invoker` 유지.
-  `v_seoul_graph_edges_bidir`·`seoul_graph_walk` 에도 `source` 스레딩(안 하면 하류 드롭). 4분면 노드도
-  `v_seoul_graph_nodes` UNION.
-- 클라: `egoGraph.ts` `GraphEdge`(from_type/from_id/edge_type/edge_label/to_type/to_id)에 `source` 추가 +
-  `page.tsx` 매핑 + `NODE_GROUP` 에 NetworkEntity/4분면 키(현재 'other' 폴백) + `NetworkGraphClient` 큐레이션
-  엣지 스타일(점선 등, `direction` 클래스 옆). **Manual-Ops**(05 재실행).
-- **계약(W)**: 오버레이 verify(수동엣지가 뷰에 뜸·source 값) + egoGraph/클라 렌더.
+### B4 — 그래프 오버레이 + provenance 【ACTIVE·Track B 마지막】
+- **방식 정련(덜 침습적)**: 05 의 31개 브랜치·bidir·graph_walk 를 **건드리지 않는다**. 대신 신규
+  `14_network_graph_overlay.sql` 에 **큐레이션 뷰** 2개(멱등 `CREATE OR REPLACE VIEW`, `security_invoker`):
+  - `v_seoul_graph_nodes_curated` = `v_seoul_graph_nodes` ∪ `seoul_network_entities`(node_type='NetworkEntity',
+    label=entity_name).
+  - `v_seoul_graph_edges_curated` = `v_seoul_graph_edges`(+`'derived' AS source`) ∪ `seoul_network_entities`
+    (Participant→NetworkEntity, predicate='hasNetworkEntity', predicate_ko=COALESCE(relation_type,'관계'),
+    `'manual' AS source`).
+  - 앱은 기존 flat 뷰만 읽으므로 bidir/graph_walk(미사용) 무관. security_invoker 라 base(각 RLS)+
+    network_entities(staff-only) 인가 유지 — 유출 없음.
+- 클라: `egoGraph.ts` `GraphEdge` 에 `source?: 'derived'|'manual'` 가산(spread 로 EgoEdge 전파) + `NODE_GROUP`
+  에 `NetworkEntity`(→'person') + `network/page.tsx` 가 **큐레이션 뷰** 읽고 `source` 매핑 + `NetworkGraphClient`
+  가 source='manual' 엣지 큐레이션 스타일(점선). **Manual-Ops**(14 대시보드 실행).
+- **계약(W)**: `verify_network_graph_overlay.sql`(큐레이션 뷰 존재·수동엣지 source='manual'·파생 source='derived'·
+  staff 열람/타인 차단) + `egoGraph.overlay.test.ts`(source 전파·NetworkEntity 그룹).
 
 ### (B5) — Ontology-Playground식 비주얼 에디터 폴리시 — 선택·후순위.
 
@@ -90,8 +96,8 @@
 - **main 직접 push 금지** — PR·CI 경유. 머지는 사람.
 
 ## §4 상태 (2026-09-10)
-- B1 완료(#137 + 대시보드 13 실행 → 라이브). B2 완료(#138 networkEntities.ts 액션). B3 ACTIVE(이 PR). B4 계획 확정.
-- B3 진입점: 참여자 상세 `supporter/participants/[id]/page.tsx` 메뉴(욕구사정 짝, 라인 83)에 관계망 추가.
-  라우트 `/supporter/[participantId]/network`(literal `/supporter/network` 분석그래프와 별개·공존).
+- B1 완료(#137 + 대시보드 13). B2 완료(#138). B3 완료(#139 편집 UI, 진입점 '관계망 편집'로 리라벨해 기존
+  '관계망' 분석그래프와 key 충돌 해소). B4 ACTIVE(이 PR·Track B 마지막). (B5 비주얼에디터=선택).
+- B4 큐레이션 뷰 = 신규 `14_network_graph_overlay.sql`(05 무변경). Manual-Ops: 14 대시보드 실행.
 - RLS=staff-only(사용자 결정). 클라이언트는 `<Database>` 제네릭 미사용(untyped) → B2 손타입으로 선행,
   `database.ts` 재생성은 비차단 hygiene 후속. 데모 관계망 시드는 08 루프 패턴으로 후속.

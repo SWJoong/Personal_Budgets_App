@@ -41,6 +41,9 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
 
   const nodeLabelById = useMemo(() => Object.fromEntries(graph.nodes.map((n) => [n.id, n.label])), [graph])
 
+  // 수동 큐레이션(직접 입력한 사회 관계) 엣지가 하나라도 있으면 점선 범례를 노출.
+  const hasCurated = useMemo(() => graph.edges.some((e) => e.source === 'manual'), [graph])
+
   // 선택 노드에 붙은 관계(양방향) — 텍스트 요약용.
   const selectedRelations = useMemo(() => {
     if (!selected) return []
@@ -68,13 +71,17 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
           data: { id: n.id, label: n.label, group: n.group, depth: n.depth, ntype: n.node_type },
         })),
         ...graph.edges.map((e) => ({
+          // data.source/target 는 cytoscape 예약키(엣지 양끝 노드) — provenance 는 별도 키로 싣는다.
           data: {
             id: `${e.from_id}>${e.to_id}:${e.edge_type}`,
             source: e.from_id,
             target: e.to_id,
             label: e.edge_label,
             direction: e.direction,
+            provenance: e.source ?? 'derived',
           },
+          // 수동 큐레이션(직접 입력한 사회 관계) 엣지 = 점선(.curated). 파생 엣지와 시각 구분.
+          classes: e.source === 'manual' ? 'curated' : undefined,
         })),
       ]
 
@@ -113,6 +120,15 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
             'arrow-scale': 0.9,
+          },
+        },
+        // 큐레이션(수동 입력) 엣지 — 점선 + 보라: 파생(FK) 관계와 구분되는 '직접 입력한 사회 관계'.
+        {
+          selector: 'edge.curated',
+          style: {
+            'line-style': 'dashed',
+            'line-color': '#8b5cf6',
+            'target-arrow-color': '#8b5cf6',
           },
         },
         {
@@ -262,6 +278,11 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
               <span className="w-4 border-t-2 border-dashed" style={{ borderColor: '#e11d48' }} />남이 대신(For)
             </span>
           </>
+        )}
+        {hasCurated && (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-4 border-t-2 border-dashed" style={{ borderColor: '#8b5cf6' }} />점선 = 직접 입력한 관계
+          </span>
         )}
       </div>
 

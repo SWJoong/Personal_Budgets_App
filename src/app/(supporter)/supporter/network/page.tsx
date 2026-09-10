@@ -75,8 +75,8 @@ export default async function NetworkPage({
 
   // ── 그래프 소스 — 사용자 권한(RLS)으로 SELECT ─────────────────────────
   const [{ data: nodeRows }, { data: edgeRows }] = await Promise.all([
-    supabase.from('v_seoul_graph_nodes').select('node_type, id, label'),
-    supabase.from('v_seoul_graph_edges').select('s_type, s_id, predicate, predicate_ko, o_type, o_id'),
+    supabase.from('v_seoul_graph_nodes_curated').select('node_type, id, label'),
+    supabase.from('v_seoul_graph_edges_curated').select('s_type, s_id, predicate, predicate_ko, o_type, o_id, source'),
   ])
 
   // 뷰 컬럼 → 순수 로직 shape 매핑(널 endpoint 제외).
@@ -85,7 +85,7 @@ export default async function NetworkPage({
     .map((n) => ({ node_type: n.node_type, id: n.id, label: n.label ?? '(이름 없음)' }))
   const edges: GraphEdge[] = (edgeRows ?? [])
     .filter(
-      (e): e is { s_type: string; s_id: string; predicate: string; predicate_ko: string | null; o_type: string; o_id: string } =>
+      (e): e is { s_type: string; s_id: string; predicate: string; predicate_ko: string | null; o_type: string; o_id: string; source: 'derived' | 'manual' | null } =>
         !!e.s_id && !!e.o_id && !!e.predicate && !!e.s_type && !!e.o_type,
     )
     .map((e) => ({
@@ -95,6 +95,7 @@ export default async function NetworkPage({
       edge_label: e.predicate_ko ?? e.predicate,
       to_type: e.o_type,
       to_id: e.o_id,
+      source: e.source ?? undefined, // provenance(파생/수동) — NetworkGraphClient 큐레이션 스타일
     }))
 
   const graph = buildEgoGraph(nodes, edges, participantId)
