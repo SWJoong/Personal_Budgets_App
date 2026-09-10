@@ -1194,3 +1194,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T04:14Z] U
 [W→U→검증 완결·HANDOFF→W] 관리자 미리보기 won() 통일 = PR #130(feat/admin-preview-money-unify, base=main). ParticipantHomePreviewClient(view-as 대리 렌더=당사자 홈 미러) 지역 won() 6개→MoneyText/formatCurrency(#125 관리자 짝, render-preserving). 색 콜사이트별 보존(hero→onHero·copay/영역잔액/최근→body·hero부제/문장→formatCurrency 문자열). 리팩터=이 세션, 검증+렌더계약=독립 검증관(6/6 색 PASS·Math.round 일치·anti-revert 실증 5단언). tokenFoundation GREEN 유지. 게이트 tsc0·eslint0·vitest757/757·build0. ★앱 전역 display won() 소진(AI 소스 결정성 won.ts는 별개 #127). §8·§9 QA 완전 종결. W 검토→사람 머지.
 
+## [2026-09-10T05:22Z] U
+[HANDOFF→W] Track A(실무자 회계·서류 보강) 착수. 설계 authority=Plan&Source/goala_supporter_accounting_W.md(§0 손실은 P1~P7 아님·036a8d1 서울리빌딩+#64/#72 · §2 슬라이스 A1~A6). A1=정산 반려/환수 UI 입력 노출 PR #131(RED계약+구현). recordSettlement/SettlementInput은 이미 rejected/recovered 저장·표시도 4개, 폼만 인정/미사용만 수집이던 갭 해소. 액션/스키마 무변경. 계약=W(ParticipantDetailClient.settlement.test 2)·구현=신선서브에이전트·검증=W(빌드포함). tsc0·lint0신규·tokenFoundation113·vitest759·build0. 구현≠검증. 다음=A2 지출 수정/삭제(#131 머지 후). B(관계망 CRUD)는 A 뒤·모델='파생그래프+수동 큐레이션(provenance)' 확정.
+
