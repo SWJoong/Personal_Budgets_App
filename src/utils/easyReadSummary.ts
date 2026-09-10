@@ -1,4 +1,5 @@
 import type { PiiTerm } from '@/utils/deidentify'
+import { won } from '@/utils/won'
 
 /**
  * 쉬운말 요약 — 순수 로직(입력 조립 · PII terms · 시스템 프롬프트). 계약: src/utils/easyReadSummary.test.ts.
@@ -54,11 +55,6 @@ const NARRATIVE_FIELDS: [keyof SummaryNarrative, string][] = [
   ['desiredLife', '바라는 생활'],
   ['goalToTry', '해보고 싶은 것'],
 ]
-
-/** 원화 포맷(로케일 비의존, 결정성). 음수도 안전. */
-function won(n: number): string {
-  return `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}원`
-}
 
 /**
  * 요약 원문(AI 입력) 조립 — 빈 항목은 건너뛴다. 아무 내용도 없으면 빈 문자열.

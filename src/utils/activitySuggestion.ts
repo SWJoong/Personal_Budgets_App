@@ -1,4 +1,5 @@
 import type { PiiTerm } from '@/utils/deidentify'
+import { won } from '@/utils/won'
 
 /**
  * AI 활동 제안 — 순수 로직(입력 조립 · 응답 파싱 · 시스템 프롬프트). 계약: src/utils/activitySuggestion.test.ts.
@@ -38,11 +39,6 @@ export interface ActivitySuggestion {
   domainId: string
   why: string
   estCost?: number
-}
-
-/** 원화 포맷(로케일 비의존, 결정성). */
-function won(n: number): string {
-  return `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}원`
 }
 
 /**
