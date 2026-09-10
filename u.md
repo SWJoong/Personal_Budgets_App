@@ -1242,3 +1242,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T14:11Z] U
 [HANDOFF→W] 담당자 QA 1차 수정 3건 완료(전부 라이브 브라우저 확인): F1 서류함 당사자-선택 업로드+데모시드(#142·#143) · F2 관계망 진입점 통일 list→editor↔graph(#144) · F3 대시보드 자주쓰는기능 그리드(#145). 리뷰 대기 4 PR. F1b Manual-Ops=대시보드 16 실행. 다음=사용자 담당자 발견 또는 다음 역할(당사자/관리자) QA.
 
+## [2026-09-10T14:39Z] U
+[HANDOFF→W] 당사자 QA. P1 하이드레이션: 초기 1회 관찰됐으나 계측(console.error 패치+window error 리스너, 여러 fresh 로드+하드리로드)으로 재현 불가 → 결정적 버그 아님/운영 안전. 배제완료: 레이아웃 컴포넌트 SSR-safe·루트 테마스크립트 없음(정적 data-theme)·홈 프리미티브 clean·루트 Vercel 아님(참여자 특정). 결론=초기로드 타이밍 아티팩트(폰트/CSS·dev HMR·Vercel Suspense). 무한추적 저가치로 종결. ★부수발견: ReceiptClient 62행 new Date() in useState = receipt 페이지 잠재 하이드레이션 위험(UTC라 자정교차시만·경미). 카메라요청=PR #146 진입시 영수증 카메라 auto-open(capture 입력 마운트 click·useEffect·브라우저 제스처정책상 best-effort·무해). 계약1/1·receipt11/11·tsc0·lint0·818·build0. 다음=사용자 결정.
+
