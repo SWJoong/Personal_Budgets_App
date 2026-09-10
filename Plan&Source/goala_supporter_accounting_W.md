@@ -101,6 +101,11 @@ P1–P7 재구성(#82–#115)은 **이 영역에서 아무것도 삭제하지 �
 - **계약(W)**: 액션 `document.mutate.test.ts` — 업로드(application 해결·경로 participantId 접두·insert)·
   application 없음 거부·삭제(행+파일)·미인가 삭제 거부 4건. UI `DocumentShelfClient.mutate.test.tsx` —
   삭제 노출·배선·업로드 어포던스·배선.
+- **★F1 후속(담당자 QA 발견)**: 그룹별 업로드는 서류 0건이면 진입점 부재(빈 셸프 dead-end). → 업로드를
+  **상단 당사자-선택 업로드로 통일**(빈 셸프에서도 담당 당사자 골라 첫 서류 업로드). `documents/page.tsx`
+  가 담당 참여자 목록(`assignableParticipants`, RLS 스코프) 조회해 전달. `DocumentShelfClient` 상단
+  picker(당사자 select + 종류 + 파일 + 메모 + 올리기), 그룹별 업로드 제거(삭제·열기는 유지). 계약 갱신
+  (mutate.test: 삭제 2 + 빈셸프 picker 업로드 2). + 데모 서류 시드(F1b, 16_seed_documents_demo.sql).
 
 ### A4 — 원장 기간 필터 + 참여자별 지출상태 내역 【ACTIVE】
 - **갭**: org 원장이 org 전체 합계/상태칩 + 참여자별 total/count 뿐. 기간 필터 없음, 참여자별
