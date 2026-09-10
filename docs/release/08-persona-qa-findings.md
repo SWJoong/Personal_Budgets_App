@@ -152,7 +152,7 @@ W(설계·검증 축) 부재로 U 세션에서 W 검증 수행. **구현≠검�
 
 **CONCERN (병합 비차단 · 사용자/W 결정 필요):**
 - **C1 하드코딩 슈퍼관리자 이메일**(보안·요구 중복): `route.ts:26` `BUILTIN_SUPER_ADMINS=['cheese0318@gmail.com']`. **goal #4 명시 요구**라 의도적(사용자 로그인 계정은 gmail, 조직메일 jobcenter.or.kr과 별개 — goal #4 원문이 gmail 지정). 트레이드오프=배포 격리(포크·타 배포에서 그 주소 자동 admin·이메일 소스 커밋·설정으로 제거불가). 옵션: **유지**(현행) vs `SUPER_ADMIN_EMAIL` env 단독 이전(배열 비우기, 코드 이미 지원).
-- **C2 view-as 정산 충실도 갭**: `(participant)/evaluations/page.tsx` 관리자 미리보기가 대상의 최신 allocation 1건만 스코프 → 다건 배정 당사자의 과거 정산 누락. **유출 아님**(sentinel UUID로 전체유출 차단, 당사자 본인 화면 무영향). 문서화 한계.
+- **C2 view-as 정산 충실도 갭** *(→ 2026-09-10 **해소**, §9-1 참조)*: `(participant)/evaluations/page.tsx` 관리자 미리보기가 대상의 최신 allocation 1건만 스코프 → 다건 배정 당사자의 과거 정산 누락. **유출 아님**(sentinel UUID로 전체유출 차단, 당사자 본인 화면 무영향). ~~문서화 한계~~ → **PR #128 로 대상 전체 allocation 스코프로 해소**.
 - **C3 계약 공백 7건**: formatDate · view-as 가드 · **AdminSidebar 死링크 분기** · 음수잔액 · ④스코프 · cheese0318 승격 · view-as UI 배선 — 커밋된 회귀보호 0(독립 서브에이전트로만 검증). W가 RED 계약 저작 필요(우선: 死링크 분기·가드·승격). ★구현≠검증상 구현자(U) 직접 저작은 자기채점 → **신선 서브에이전트 또는 W** 가 저작해야.
 
 **out-of-scope 관찰**: `supporter/network/page.tsx` h1 2개(조건분기 로딩/로드) — 이 PR 미변경, 별도 후속.
@@ -161,6 +161,7 @@ W(설계·검증 축) 부재로 U 세션에서 W 검증 수행. **구현≠검�
 
 ### 9-1. 검증 후 결정·처리 (2026-09-09)
 - **C1(하드코딩 슈퍼관리자) = 유지**(사용자 결정): goal #4 요구 그대로, 코드 변경 없음. 배포 격리 트레이드오프는 수용(이 저장소 단독 운영 전제).
+- **C2(view-as 정산 충실도) = 해소**(2026-09-10, PR #128 · `test/w-viewas-settlement`): 관리자 view-as 가 대상의 **최신 allocation 1건**만 스코프하던 것을 **대상의 모든 allocation** 스코프로 넓혀, 당사자 본인 화면(RLS self=자기 모든 정산)과 **동일한 충실도**로 다건 배정 과거 정산까지 보이게 함. 근본=정산(`seoul_settlements`)은 `participant_id` 컬럼이 없고 `allocation_id` 로만 참여자에 묶임. `getSettlements(allocation?: string | string[])` — 배열→`.in`(전체·빈 배열은 유출방지 sentinel)·string→`.eq`(admin/participants·supporter/evaluations 상세 3곳 **하위호환**)·undefined→무필터(RLS self); `evaluations/page.tsx` view-as 는 `.limit(1).maybeSingle()` 제거하고 대상의 모든 allocation id 배열 전달. 구현≠검증: **W가 RED 계약 2건**(`settlement.test.ts` 4·`page.viewas.test.tsx` 1) 저작·greenability 실증 → **신선 서브에이전트(U) 구현**. 독립 게이트 tsc0·eslint0·**vitest 752/752**·build0. → **CONCERN 3건 전부 종결**(C1 유지·C2 해소·C3 계약).
 - **C3(계약 공백) = 지금 신선 서브에이전트로 저작**(사용자 결정, 핵심3 우선). 구현≠검증 유지 — 코드 안 짠 독립 서브에이전트가 계약 저작·자체 GREEN. **52개 신규 테스트, 구현 버그 0.**
   - ✅ **저작 완료(5/7 · 핵심3 전부)**: formatDate(10)·**view-as 가드 viewAs.test.ts(13, ★위조방어 불변식)**·**AdminSidebar 死링크 분기(8)**·view-as UI 배선 ViewAsBanner/FAB/TabBar(8) [커밋 61c0140] · **cheese0318 승격** — 인라인 매칭을 `src/utils/superAdmin.ts` 순수함수로 **추출**(동작보존 독립검증 PASS) + superAdmin.test.ts(13) [커밋 91f2323].
   - ✅ **후속(2/7) 완료** (2026-09-09 · 별도 브랜치 `feat/budget-scope-contracts`): 아래 추출 실행 — `budgetByDomain.ts`(+`clampBudgetEnvelope`·`splitRemaining`)·신규 `src/utils/participantScope.ts`(+`scopeMarkersToUsed`·`scopePlansToParticipant`) 추출, budgets/map/plans 인라인 배선 교체(**동작보존 독립 서브에이전트 검증 PASS**), 계약 11테스트(`budgetByDomain.clamp.test.ts`·`participantScope.test.ts`). 게이트 tsc0·eslint0·**vitest 720/720**·build0. (설계: scope 두 함수는 assetMap 대신 신규 `participantScope.ts` 로 응집.) 원래 계획:
