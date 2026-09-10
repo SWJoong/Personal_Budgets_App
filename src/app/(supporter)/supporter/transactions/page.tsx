@@ -23,6 +23,14 @@ export default async function TransactionsPage() {
     for (const p of parts ?? []) nameById.set(p.id, (p.name as string | null) ?? '이름 없음')
   }
 
+  // 영역(도메인) 라벨 — 영역 필터·CSV export(A5)가 공유. non-null domain_id 만 조회.
+  const domainIds = [...new Set(usages.map((u) => u.domain_id).filter((id): id is string => !!id))]
+  const domainById = new Map<string, string>()
+  if (domainIds.length > 0) {
+    const { data: domains } = await supabase.from('seoul_service_domains').select('id, label').in('id', domainIds)
+    for (const d of domains ?? []) domainById.set(d.id, d.label)
+  }
+
   const rows: LedgerRow[] = usages.map((u) => ({
     id: u.id,
     participantId: u.participant_id,
@@ -31,6 +39,7 @@ export default async function TransactionsPage() {
     settlementStatus: u.settlement_status,
     usageDate: u.usage_date,
     description: u.description,
+    domainLabel: u.domain_id ? domainById.get(u.domain_id) ?? null : null,
   }))
 
   return (

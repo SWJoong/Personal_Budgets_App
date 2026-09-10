@@ -12,9 +12,11 @@ import { Card } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { EmptyState } from '@/components/ui/EmptyState'
 
-/** org 원장 한 행 — buildOrgLedger 입력(OrgUsageRow) + 펼침 표시용 description. */
+/** org 원장 한 행 — buildOrgLedger 입력(OrgUsageRow) + 펼침 표시용 description + 영역 라벨(선택). */
 export interface LedgerRow extends OrgUsageRow {
   description: string | null
+  /** 영역(도메인) 라벨 — 영역 필터·export(A5) 용. 선택 필드(A4 필터 계약 무회귀). */
+  domainLabel?: string | null
 }
 
 const STATUS_FILTERS: { value: string; label: string }[] = [
@@ -49,14 +51,19 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
   const [status, setStatus] = useState('all')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  const [domain, setDomain] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
 
-  // 정산상태 + 기간(usageDate) 필터. usageDate·입력값 모두 'YYYY-MM-DD' 라 문자열 비교로 충분.
+  // 영역 드롭다운 옵션 — rows 의 distinct domainLabel(있는 것만), 이름순.
+  const domains = [...new Set(rows.map((r) => r.domainLabel).filter((d): d is string => !!d))].sort()
+
+  // 정산상태 + 기간(usageDate) + 영역 필터. usageDate·입력값 모두 'YYYY-MM-DD' 라 문자열 비교로 충분.
   const filtered = rows.filter(
     (r) =>
       (status === 'all' || r.settlementStatus === status) &&
       (!from || r.usageDate >= from) &&
-      (!to || r.usageDate <= to),
+      (!to || r.usageDate <= to) &&
+      (!domain || r.domainLabel === domain),
   )
   const ledger = buildOrgLedger(filtered)
 
@@ -70,6 +77,29 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* ⓪ 도구모음 — 영역 필터 + CSV 내려받기(브라우저 attachment 다운로드, plain <a>) */}
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          aria-label="영역"
+          value={domain}
+          onChange={(e) => setDomain(e.target.value)}
+          className="p-2 rounded-lg bg-card ring-1 ring-border text-sm"
+        >
+          <option value="">모든 영역</option>
+          {domains.map((d) => (
+            <option key={d} value={d}>
+              {d}
+            </option>
+          ))}
+        </select>
+        <a
+          href="/api/export/transactions"
+          className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-lg bg-card ring-1 ring-border text-sm font-medium text-foreground hover:bg-muted-hover transition-colors"
+        >
+          CSV 내려받기
+        </a>
+      </div>
+
       {/* ① 요약 바 */}
       <Card variant="muted" className="flex flex-col gap-2">
         <div>
