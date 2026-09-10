@@ -1206,3 +1206,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T08:31Z] U
 [HANDOFF→W] A4 원장 기간 필터+참여자별 상태내역 = PR #134. buildOrgLedger 참여자별 byStatus 가산 + OrgLedgerClient 기간(usageDate) from/to 필터 + 상태별 금액내역(대기/인정/반려/환수). 순수 util+클라이언트·서버/스키마 무변경. 계약=W(orgLedger.byparticipant golden 5 + OrgLedgerClient.filter UI 3)·구현=신선서브·검증=W(빌드+diff). tsc0·lint0·vitest784·build0. ★A4→A5 이월: 영역/제공기관 필터(domain_id 노출+라벨 배선, export와 공유). A4→A6 이월: 실제 정산기록(미사용). 다음=A5 CSV export+영역라벨(#134 머지 후).
 
+## [2026-09-10T08:53Z] U
+[HANDOFF→W] A5 회계 CSV export + 영역 필터 = PR #135. ledgerCsv.ts(순수 buildLedgerCsv·BOM·RFC4180 이스케이프·상태라벨·원시금액) + /api/export/transactions Route Handler(assertStaff→403·getServiceUsages RLS·라벨 RLS조회·CSV attachment, 다운로드=사용자 브라우저) + getServiceUsages domain_id 가산 + page 영역라벨 배선 + OrgLedgerClient 영역 필터·CSV 내려받기(plain <a>). 계약=W(ledgerCsv golden 5 + OrgLedgerClient.export UI 2)·구현=신선서브·검증=W(빌드+보안 diff). tsc0·lint0·vitest791·build0(라우트 컴파일 확인). A4 필터 무회귀. 제공기관 필터·필터반영 export는 후속. 다음=A6 /supporter/settlements 정산 원장(#135 머지 후·Track A 마지막).
+
