@@ -1200,3 +1200,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T06:41Z] U
 [HANDOFF→W] A2 지출 수정/삭제 = PR #132. updateServiceUsage/deleteServiceUsage 신설(pending 가드)+TransactionEditClient(거래상세)+page 배선. ★스키마변경0(seoul_service_usages RLS 04:188-205 이미 staff UPDATE/DELETE 허용→Manual-Ops 불필요). 정책=편집/삭제 모두 settlement_status='pending'일 때만(RLS보다 보수적·사용자 확인요청). 트리거: check_usage=BEFORE INS OR UPD(편집 재검증)·flag_criteria=AFTER INS만. 계약=W(serviceUsage.mutate 5+TransactionEditClient UI 4)·구현=신선서브에이전트·검증=W(빌드포함). tsc0·lint0신규·vitest768(9+113 포함)·build0. 구현≠검증. 다음=A3 서류함 업로드/삭제(#132 머지 후).
 
+## [2026-09-10T07:02Z] U
+[HANDOFF→W] A3 서류함 업로드/삭제 = PR #133. uploadShelfDocument/deleteShelfDocument 신설 + 셸프 UI(문서별 삭제[confirm]·그룹별 서류 추가[종류·파일·메모]). ★스키마변경0(seoul_application_documents·documents 버킷 RLS 이미 staff write/delete). application_id NOT NULL은 참여자 최신 신청 자동해결(없으면 거부). 보안계약 준수(세션 RLS가 인가·admin 저장/제거만·경로 첫세그먼트=participantId 위조방지·insert실패 고아롤백·삭제audit participant_id만). 계약=W(document.mutate 4+DocumentShelfClient UI 4)·구현=신선서브에이전트·검증=W(빌드+보안 diff 검토). tsc0·lint0신규·vitest776(8+113)·build0. 구현≠검증. UI범위=셸프 기존 참여자(서류≥1)만 업로드(신규 첫서류는 신청서 상세). 다음=A4 원장 필터+정산컬럼(#133 머지 후).
+
