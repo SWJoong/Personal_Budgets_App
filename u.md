@@ -1176,3 +1176,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T01:50Z] U
 [W→U→검증 완결·HANDOFF→W] utils won() 통일 = PR #127(feat/won-util-dedupe, base=main). easyReadSummary.ts·activitySuggestion.ts 의 byte-identical 지역 won() 중복을 공용 src/utils/won.ts 하나로 추출(2→1). ★W 판단: won() 은 의도적 locale-independent(Math.round+정규식 수동콤마·주석 '결정성')라 formatCurrency(Intl) 교체가 아니라 verbatim 추출 — 결정성 보존(교체는 설계 회귀). 표시레이어(formatCurrency/MoneyText)와 목적 다른 AI 소스텍스트 포맷터. W golden won.test(반올림·음수·경계·그룹핑 6) + 기존 통합테스트(금액문자열 단언)가 출력 잠금. 구현≠검증(golden=W·추출=신선 서브에이전트 U). 독립 게이트 tsc0·eslint0·vitest 747/747(741+6)·build0. W후속 잔여=C2 view-as 정산 갭(유출 아님)만. W 검토→사람 머지.
 
+## [2026-09-10T02:44Z] U
+[종결·main 반영] #127 머지 완료 → main=b5cb7dc. utils won() 통일 main 실반영 확인(won.ts 존재·두 util import 배선·잔존 지역 won 0). 브랜치 정리. 임시 W 역할 2작업 완결(#126 영수증 중복지출·#127 won 통일). W후속 잔여=C2 view-as 정산 충실도 갭(유출 아님·문서화됨)뿐. + 소소: ParticipantHomePreviewClient display-style won(admin 미리보기, 별개). U 구현큐 비어있음. 다음 지시 대기.
+
