@@ -1203,3 +1203,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T07:02Z] U
 [HANDOFF→W] A3 서류함 업로드/삭제 = PR #133. uploadShelfDocument/deleteShelfDocument 신설 + 셸프 UI(문서별 삭제[confirm]·그룹별 서류 추가[종류·파일·메모]). ★스키마변경0(seoul_application_documents·documents 버킷 RLS 이미 staff write/delete). application_id NOT NULL은 참여자 최신 신청 자동해결(없으면 거부). 보안계약 준수(세션 RLS가 인가·admin 저장/제거만·경로 첫세그먼트=participantId 위조방지·insert실패 고아롤백·삭제audit participant_id만). 계약=W(document.mutate 4+DocumentShelfClient UI 4)·구현=신선서브에이전트·검증=W(빌드+보안 diff 검토). tsc0·lint0신규·vitest776(8+113)·build0. 구현≠검증. UI범위=셸프 기존 참여자(서류≥1)만 업로드(신규 첫서류는 신청서 상세). 다음=A4 원장 필터+정산컬럼(#133 머지 후).
 
+## [2026-09-10T08:31Z] U
+[HANDOFF→W] A4 원장 기간 필터+참여자별 상태내역 = PR #134. buildOrgLedger 참여자별 byStatus 가산 + OrgLedgerClient 기간(usageDate) from/to 필터 + 상태별 금액내역(대기/인정/반려/환수). 순수 util+클라이언트·서버/스키마 무변경. 계약=W(orgLedger.byparticipant golden 5 + OrgLedgerClient.filter UI 3)·구현=신선서브·검증=W(빌드+diff). tsc0·lint0·vitest784·build0. ★A4→A5 이월: 영역/제공기관 필터(domain_id 노출+라벨 배선, export와 공유). A4→A6 이월: 실제 정산기록(미사용). 다음=A5 CSV export+영역라벨(#134 머지 후).
+
