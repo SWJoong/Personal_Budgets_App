@@ -1221,3 +1221,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T11:07Z] U
 [HANDOFF→W] B2 관계망 액션 = PR #138. networkEntities.ts(create/update/delete/get) + networkEntity.ts 검증util(4분면·이름·closeness 1~4). needsAssessment 템플릿·assertStaff·RLS 0행=권한없음. 손타입(untyped 클라·database.ts 재생성 불요). 계약=W(golden 7+액션 6)·구현=신선서브·검증=W(빌드). tsc0·lint0·vitest811·build0. B1 라이브 테이블 위. 다음=B3 편집 UI /supporter/[pid]/network(AssessmentClient 템플릿·4분면 목록+추가/수정/삭제).
 
+## [2026-09-10T11:36Z] U
+[HANDOFF→W] B3 관계망 편집 UI = PR #139. NetworkEditorClient(4분면 그룹+추가/인라인수정/삭제·EditRow 프리필·confirm) + /supporter/[participantId]/network page(requireStaff·getNetworkEntities) + 참여자 허브 진입점. ★서브에이전트가 IA버그 플래그(기존 '관계망' 분석그래프 카드와 라벨중복→key충돌)→W판단으로 '관계망 편집'으로 리라벨 해소. 계약=W(렌더/CRUD 4)·구현=신선서브·검증=W(빌드+IA수정). tsc0·lint0·vitest815·build0. 실무자가 실제 관계 CRUD 가능(역할별 QA 지점). 다음=B4 그래프 오버레이(05 뷰에 source provenance·Manual-Ops 재실행).
+
