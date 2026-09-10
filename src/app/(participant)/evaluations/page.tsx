@@ -26,25 +26,23 @@ export default async function ParticipantEvaluationsPage() {
   // 관리자 기준이라 view-as 에서 빈 화면이 된다). 일반 당사자는 view-as 아님 → 인자 없이 RLS self.
   // resolveViewAs 는 쿠키 없으면 .from 호출 전에 조기반환하므로 서버컴포넌트 단위테스트 안전.
   const viewAs = await resolveViewAs()
-  // view-as 면 대상 당사자의 정산도 '그 사람 것만' 보이도록 최신 allocation 을 찾아 넘긴다.
+  // view-as 면 대상 당사자의 정산도 '그 사람 것만' 보이도록 대상의 allocation 으로 스코프해 넘긴다.
   // (인자 없이 부르면 관리자 세션의 RLS 상 전체 당사자 정산이 섞여 나온다.) 일반 당사자는
   // view-as 아님 → 이 supabase.from 블록을 건너뛰므로 서버컴포넌트 단위테스트에서도 안전하다.
-  let allocationId: string | undefined
+  let allocationIds: string[] | undefined
   if (viewAs.active && viewAs.participantId) {
-    const { data: alloc } = await supabase
+    // 대상 참여자의 **모든** allocation 을 스코프한다 — 다건 배정 당사자의 과거 정산까지 포함해
+    // 당사자 본인 화면(RLS self=자기 모든 정산)과 동일한 충실도를 보장한다(C2). 빈 배열(신규 당사자)은
+    // getSettlements 가 유출 방지 sentinel 로 처리하므로 관리자 RLS 전체유출이 나지 않는다.
+    const { data: allocs } = await supabase
       .from('seoul_budget_allocations')
       .select('id')
       .eq('participant_id', viewAs.participantId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    // 대상에게 allocation 이 아직 없으면(신규 당사자) 존재할 수 없는 id 로 스코프한다 —
-    // undefined 로 두면 getSettlements 가 관리자 RLS 로 전체 정산을 반환해 유출된다.
-    allocationId = alloc?.id ?? '00000000-0000-0000-0000-000000000000'
+    allocationIds = (allocs ?? []).map((a) => a.id as string)
   }
   const [{ records }, { settlements }] = await Promise.all([
     getMonitoringRecords(viewAs.participantId ?? undefined),
-    getSettlements(allocationId),
+    getSettlements(allocationIds),
   ])
 
   return (

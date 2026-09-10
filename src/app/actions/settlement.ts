@@ -78,8 +78,16 @@ export interface SettlementRow {
   settled_on: string
 }
 
-/** 참여자 본인 또는 실무자 — RLS 가 실제 볼 수 있는 범위를 정한다 (allocation 을 통한 조인) */
-export async function getSettlements(allocationId?: string): Promise<{ error?: string; settlements: SettlementRow[] }> {
+/**
+ * 참여자 본인 또는 실무자 — RLS 가 실제 볼 수 있는 범위를 정한다 (allocation 을 통한 조인).
+ *
+ * allocation 스코프(정산은 participant_id 가 없고 allocation_id 로만 참여자에 묶인다):
+ *   - string    → .eq('allocation_id', id)        단일 배정 조회(실무자/관리자 상세 화면 하위호환)
+ *   - string[]  → .in('allocation_id', ids)       view-as: 대상의 **모든** allocation(다건 배정 포함)
+ *   - []        → .in('allocation_id', [sentinel]) 신규 당사자(빈 배열): 관리자 RLS 전체유출 방지, 무매칭
+ *   - undefined → allocation 필터 없음             일반 당사자 RLS self(자기 모든 정산)
+ */
+export async function getSettlements(allocation?: string | string[]): Promise<{ error?: string; settlements: SettlementRow[] }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '로그인이 필요합니다.', settlements: [] }
@@ -89,7 +97,12 @@ export async function getSettlements(allocationId?: string): Promise<{ error?: s
     .select('id, allocation_id, settled_period, accepted_amount, rejected_amount, recovered_amount, unused_amount, note, settled_on')
     .order('settled_on', { ascending: false })
 
-  if (allocationId) query = query.eq('allocation_id', allocationId)
+  if (Array.isArray(allocation)) {
+    // 빈 배열(신규 당사자)은 관리자 RLS 로 전체 유출되지 않게 존재할 수 없는 id 로 스코프한다.
+    query = query.in('allocation_id', allocation.length ? allocation : ['00000000-0000-0000-0000-000000000000'])
+  } else if (allocation) {
+    query = query.eq('allocation_id', allocation)
+  }
 
   const { data, error } = await query
   if (error) return { error: error.message, settlements: [] }
