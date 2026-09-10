@@ -8,6 +8,8 @@ import DisplaySettingsClient from '@/app/(participant)/settings/display/DisplayS
 import { BLOCK_METADATA, type BlockId, type UIPreferences } from '@/utils/uiPreferences'
 import type { BudgetDomainRow, BudgetStatus } from '@/utils/budgetByDomain'
 import type { CopayDisplay } from '@/utils/copay'
+import { MoneyText } from '@/components/ui/MoneyText'
+import { formatCurrency } from '@/utils/budget-visuals'
 
 /**
  * 관리자 대리 렌더 — 당사자 홈을 그 사람 눈으로 본다. 설계: goala_comingsoon_stubs_triage_W.md §4-8.
@@ -24,8 +26,6 @@ import type { CopayDisplay } from '@/utils/copay'
  * (participant)/page.tsx 의 공유 뷰 추출(ParticipantHomeView)은 §4-8-1 이 권장하지만, 그 파일이 별도
  * 진행 중인 PR 과 겹쳐 이번 스코프에서는 보류하고 홈 렌더 로직을 여기서 중복 유지한다(후속 과제).
  */
-
-const won = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`
 
 /** 선택 블록 중 바로가기(shortcut) 카드의 라우트. (participant)/page.tsx 와 동일. */
 const SHORTCUT_HREF: Partial<Record<BlockId, string>> = {
@@ -139,9 +139,9 @@ export default function ParticipantHomePreviewClient({
                 <>
                   <section className="p-8 rounded-3xl bg-hero text-hero-foreground flex flex-col gap-2">
                     <span className="text-sm font-bold text-hero-foreground/70">지금 쓸 수 있는 돈</span>
-                    <span className="text-4xl font-black tracking-tight">{won(balance.remaining)}</span>
+                    <span className="text-4xl font-black tracking-tight"><MoneyText value={balance.remaining} onHero /></span>
                     <span className="text-xs font-medium text-hero-foreground/70 leading-relaxed">
-                      전체 {won(balance.allocatedAmount)} 중 {won(balance.spent)} 사용했어요
+                      전체 {formatCurrency(Math.round(balance.allocatedAmount))}원 중 {formatCurrency(Math.round(balance.spent))}원 사용했어요
                     </span>
                   </section>
 
@@ -153,7 +153,7 @@ export default function ParticipantHomePreviewClient({
                     >
                       <span className="text-sm font-bold text-muted-foreground">{copay.title}</span>
                       {copay.amount > 0 && (
-                        <span className="text-2xl font-black tracking-tight">{won(copay.amount)}</span>
+                        <span className="text-2xl font-black tracking-tight"><MoneyText value={copay.amount} emphasis="body" /></span>
                       )}
                       <span className="text-xs font-medium text-muted-foreground leading-relaxed">{copay.note}</span>
                     </section>
@@ -185,11 +185,11 @@ export default function ParticipantHomePreviewClient({
                               </div>
                               {canSpendMore ? (
                                 <div>
-                                  <span className="text-2xl font-black tracking-tight">{won(Math.max(0, r.remaining))}</span>
+                                  <span className="text-2xl font-black tracking-tight"><MoneyText value={Math.max(0, r.remaining)} emphasis="body" /></span>
                                   <p className="text-xs text-muted-foreground mt-0.5">이만큼 더 쓸 수 있어요.</p>
                                 </div>
                               ) : dim ? null : (
-                                <p className="text-sm text-muted-foreground">{won(r.usageSum)} 썼어요.</p>
+                                <p className="text-sm text-muted-foreground">{formatCurrency(Math.round(r.usageSum))}원 썼어요.</p>
                               )}
                             </li>
                           )
@@ -229,7 +229,7 @@ export default function ParticipantHomePreviewClient({
                             <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
                             <span className="text-xs text-muted-foreground">{u.usageDate}</span>
                           </div>
-                          <span className="font-bold">{won(u.amount)}</span>
+                          <span className="font-bold"><MoneyText value={u.amount} emphasis="body" /></span>
                         </li>
                       ))}
                     </ul>
