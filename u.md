@@ -1188,3 +1188,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T03:49Z] U
 [HANDOFF→W] §9 C2 resolved 마킹 정리 = PR #129(feat/docs-c2-resolved, base=main, 문서만). docs/release/08 §9 CONCERN C2 를 해소로 표기 + §9-1 에 C1/C3 형식 C2 해소 항목 추가(PR #128 참조). CONCERN 3건 전부 종결 명시(C1유지·C2해소·C3계약). 코드/테스트 무변경. W 검토→사람 머지.
 
+## [2026-09-10T03:55Z] U
+[종결·main 반영] #129 머지 완료 → main=c6ca0cf. docs/release/08 §9 C2 해소 마킹 반영 확인. ★§8·§9 QA 큐 전면 종결: 실무자/당사자 QA(①~⑨) + CONCERN 3건(C1유지·C2해소·C3계약) + 후속(영수증 중복지출·won통일·C2정산) 전부 main 반영. 임시 W 역할 4작업(#126·#127·#128·#129) 완결. 남은 소소: ParticipantHomePreviewClient display-style won(admin 미리보기). U 구현큐 비어있음. 다음 지시 대기.
+
