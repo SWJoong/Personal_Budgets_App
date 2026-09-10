@@ -24,6 +24,10 @@
 09_ontology_classification.sql
                        GOAL축B 분류축 — 중분류(subdomain)·복지부 8대분류 시드·욕구사정(needs_assessment)
                        (03 에서 seoul_service_domains 에 program 스코프 추가: 서울형6 ↔ 복지부8 병존)
+10_fk_ization.sql      GOAL축B FK-ization — 사정→목표→예산→지출→평가를 단일 분류축 FK 로 연결
+11_provider_domains.sql  자산지도 "쓸 수 있는 곳" — 전역 제공기관→지원영역 발견 함수
+12_audit_log.sql       통합 감사 로그 seoul_audit_log (append-only·행위자 스탬프·관리자 열람)
+13_network_entities.sql  관계망 CRUD 테이블·RLS staff-only (Track B) — 사회 관계망 4분면
 ```
 
 여기까지가 **운영 환경에도 그대로 실행하는 부분**입니다. 이어서 데모 계정이 필요하면:
