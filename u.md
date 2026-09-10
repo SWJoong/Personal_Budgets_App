@@ -1224,3 +1224,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T11:36Z] U
 [HANDOFF→W] B3 관계망 편집 UI = PR #139. NetworkEditorClient(4분면 그룹+추가/인라인수정/삭제·EditRow 프리필·confirm) + /supporter/[participantId]/network page(requireStaff·getNetworkEntities) + 참여자 허브 진입점. ★서브에이전트가 IA버그 플래그(기존 '관계망' 분석그래프 카드와 라벨중복→key충돌)→W판단으로 '관계망 편집'으로 리라벨 해소. 계약=W(렌더/CRUD 4)·구현=신선서브·검증=W(빌드+IA수정). tsc0·lint0·vitest815·build0. 실무자가 실제 관계 CRUD 가능(역할별 QA 지점). 다음=B4 그래프 오버레이(05 뷰에 source provenance·Manual-Ops 재실행).
 
+## [2026-09-10T12:12Z] U
+[HANDOFF→W] B4 그래프 오버레이 = PR #140 (Track B 마지막). 큐레이션 뷰 14_network_graph_overlay.sql(security_invoker·멱등) = 파생그래프(05 무변경) ∪ 수동관계(13) + source(derived/manual). egoGraph GraphEdge.source·NetworkEntity→person + network page 큐레이션뷰 + NetworkGraphClient 점선 큐레이션엣지. 검증=W docker pg17 RED→GREEN 6/6(B 유출0)+egoGraph golden. tsc0·lint0·vitest817·build0. ★Manual-Ops: CI db-verify green+머지 후 사용자가 대시보드 14 실행. ★Track B(B1~B4) 완주 — 실무자 관계망 CRUD + 파생/수동 오버레이 완성.
+
