@@ -1218,3 +1218,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T10:28Z] U
 [HANDOFF→W] B1 관계망 테이블 = PR #137. seoul_network_entities(4분면 CHECK·closeness1~4·FK CASCADE·인덱스2·멱등) + RLS staff-only(사용자 결정) + verify_network_entities.sql(15항목) + db-verify.yml/README 등록. 계약=W·빌드=신선서브·검증=W(로컬 docker pg17 RED→GREEN 15/15). ★Manual-Ops: CI db-verify green+머지 후 사용자가 대시보드에서 13 실행→그 뒤 타입재생성·B2 액션. 다음=B2 networkEntities.ts 액션(테이블 라이브 전 손타입으로 선행 가능).
 
+## [2026-09-10T11:07Z] U
+[HANDOFF→W] B2 관계망 액션 = PR #138. networkEntities.ts(create/update/delete/get) + networkEntity.ts 검증util(4분면·이름·closeness 1~4). needsAssessment 템플릿·assertStaff·RLS 0행=권한없음. 손타입(untyped 클라·database.ts 재생성 불요). 계약=W(golden 7+액션 6)·구현=신선서브·검증=W(빌드). tsc0·lint0·vitest811·build0. B1 라이브 테이블 위. 다음=B3 편집 UI /supporter/[pid]/network(AssessmentClient 템플릿·4분면 목록+추가/수정/삭제).
+
