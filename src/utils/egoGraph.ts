@@ -27,6 +27,8 @@ export interface GraphEdge {
   edge_label: string
   to_type: string
   to_id: string
+  /** provenance — 큐레이션 뷰(14)의 파생/수동 구분. 미지정이면 기존 파생 그래프 호출부(선택적). */
+  source?: 'derived' | 'manual'
 }
 
 /** 색 그룹. */
@@ -50,6 +52,8 @@ export interface EgoGraph {
 // 노드 타입 → 색 그룹 (설계 §3, 골든 고정).
 const NODE_GROUP: Record<string, NodeGroup> = {
   Participant: 'person',
+  // NetworkEntity — 수동 큐레이션 사회 관계망 개체(가족·친구·유급지원·지역사회). 사람 그룹으로 색칠.
+  NetworkEntity: 'person',
   // cycle — 순환 고리(신청·동의·선정·계획·자기서사·요청·심의·통지·이의). 설계 §3 "…" 범위:
   // v_seoul_graph_nodes 의 신청→선정→심의→통지→이의 흐름 개체를 모두 cycle 색으로.
   Application: 'cycle',

@@ -28,6 +28,7 @@
 11_provider_domains.sql  자산지도 "쓸 수 있는 곳" — 전역 제공기관→지원영역 발견 함수
 12_audit_log.sql       통합 감사 로그 seoul_audit_log (append-only·행위자 스탬프·관리자 열람)
 13_network_entities.sql  관계망 CRUD 테이블·RLS staff-only (Track B) — 사회 관계망 4분면
+14_network_graph_overlay.sql  관계망 그래프 오버레이 큐레이션 뷰 (Track B) — 파생 그래프 ∪ 수동 관계(provenance)
 ```
 
 여기까지가 **운영 환경에도 그대로 실행하는 부분**입니다. 이어서 데모 계정이 필요하면:
