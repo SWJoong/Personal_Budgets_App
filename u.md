@@ -1212,3 +1212,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T09:08Z] U
 [HANDOFF→W] A6 실무자 정산 원장 /supporter/settlements = PR #136 (Track A 마지막). settlementLedger.ts(순수·allocation→participant 그룹·4금액 totals·미매핑 폴백) + SettlementsLedgerClient(MoneyText) + page(requireStaff·getSettlements RLS·allocMap) + loading + AdminSidebar 진입. 열람전용(WRITE=is_admin). settlement.ts:62 없는 라우트 실체화. 계약=W(golden 5+렌더 2)·구현=신선서브·검증=W(빌드+diff). tsc0·lint0·vitest798·build0(라우트 컴파일). ★Track A(A1~A6) 슬라이스 전부 PR화 완료(A1~A5 머지·A6 리뷰중). 다음=사용자 결정: Track B(관계망 CRUD·모델=파생그래프+수동큐레이션) 또는 역할별 QA.
 
+## [2026-09-10T09:21Z] U
+[종결·main] #136 머지 → main=a69b820. ★Track A(실무자 회계·서류 보강) 전량 완료: A1 정산반려/환수(#131)·A2 지출수정/삭제(#132)·A3 서류함 업로드/삭제(#133)·A4 원장 기간필터/상태내역(#134)·A5 CSV export/영역필터(#135)·A6 정산원장(#136). 6슬라이스 전부 구현≠검증·빌드 green. 다음=Track B 관계망 CRUD(사용자 결정) 착수 — 설계-먼저 조사 진행중(모델=파생그래프+수동 큐레이션·B1은 새 테이블 seoul_network_entities=Manual-Ops). 브랜치 정리 완료.
+
