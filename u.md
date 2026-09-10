@@ -1209,3 +1209,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T08:53Z] U
 [HANDOFF→W] A5 회계 CSV export + 영역 필터 = PR #135. ledgerCsv.ts(순수 buildLedgerCsv·BOM·RFC4180 이스케이프·상태라벨·원시금액) + /api/export/transactions Route Handler(assertStaff→403·getServiceUsages RLS·라벨 RLS조회·CSV attachment, 다운로드=사용자 브라우저) + getServiceUsages domain_id 가산 + page 영역라벨 배선 + OrgLedgerClient 영역 필터·CSV 내려받기(plain <a>). 계약=W(ledgerCsv golden 5 + OrgLedgerClient.export UI 2)·구현=신선서브·검증=W(빌드+보안 diff). tsc0·lint0·vitest791·build0(라우트 컴파일 확인). A4 필터 무회귀. 제공기관 필터·필터반영 export는 후속. 다음=A6 /supporter/settlements 정산 원장(#135 머지 후·Track A 마지막).
 
+## [2026-09-10T09:08Z] U
+[HANDOFF→W] A6 실무자 정산 원장 /supporter/settlements = PR #136 (Track A 마지막). settlementLedger.ts(순수·allocation→participant 그룹·4금액 totals·미매핑 폴백) + SettlementsLedgerClient(MoneyText) + page(requireStaff·getSettlements RLS·allocMap) + loading + AdminSidebar 진입. 열람전용(WRITE=is_admin). settlement.ts:62 없는 라우트 실체화. 계약=W(golden 5+렌더 2)·구현=신선서브·검증=W(빌드+diff). tsc0·lint0·vitest798·build0(라우트 컴파일). ★Track A(A1~A6) 슬라이스 전부 PR화 완료(A1~A5 머지·A6 리뷰중). 다음=사용자 결정: Track B(관계망 CRUD·모델=파생그래프+수동큐레이션) 또는 역할별 QA.
+
