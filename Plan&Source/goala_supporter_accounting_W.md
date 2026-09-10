@@ -140,12 +140,25 @@ P1–P7 재구성(#82–#115)은 **이 영역에서 아무것도 삭제하지 �
 - **계약(W)**: `ledgerCsv.test.ts` golden(BOM·헤더·이스케이프·상태라벨·null·빈) + `OrgLedgerClient.export.test.tsx`
   (영역 필터 좁힘·export 링크 href).
 
-### A6 — `/supporter/settlements` 라우트
-- **갭**: `settlement.ts:62` 가 존재하지 않는 `/supporter/settlements` 를 revalidate. 정산은 관리자
-  참여자 상세 안에만 있음.
-- **설계**: 실무자 **열람** 정산 원장 라우트 신설(`getSettlements` RLS 스코프). 기록은 관리자 유지
-  (`recordSettlement` = `assertAdmin`). 실무자는 담당 참여자 정산을 모아 봄.
-- **계약**: 라우트 렌더 + RLS 스코프(담당 외 미노출) 계약.
+### A6 — `/supporter/settlements` 정산 원장 【ACTIVE·Track A 마지막】
+- **갭**: `settlement.ts:62` 가 존재하지 않는 `/supporter/settlements` 를 revalidate. 정산 열람은
+  관리자 참여자 상세 안에만 있어, 실무자가 담당 참여자 정산(인정/반려/환수/미사용)을 한 화면에서 못 봄.
+- **조사 확정**: `seoul_settlements` SELECT RLS(04:354) = `seoul_can_access(a.participant_id)` →
+  **실무자 열람 가능**, WRITE(04:359) = `seoul_is_admin` 뿐 → 기록은 관리자 유지. `getSettlements()`
+  무인자 → 담당분 전체 정산(RLS). 정산은 allocation_id 로만 참여자에 묶임 → `seoul_budget_allocations`
+  (id·participant_id)로 매핑. 내비 = `AdminSidebar`(회계/거래장부 다음).
+- **설계**:
+  - `src/utils/settlementLedger.ts`(신규 순수) — `buildSettlementLedger(rows: SettlementRow[],
+    allocMap)`: allocation→{participantId,participantName} 매핑으로 참여자별 그룹 + 참여자 totals
+    (인정/반려/환수/미사용 합) + 전체 totals. 미매핑 allocation → '(알 수 없음)' 폴백(데이터 무손실).
+  - `src/app/(supporter)/supporter/settlements/page.tsx`(신규 서버) — `requireStaff` → `getSettlements()`
+    → 배정(id→participant_id)·참여자명 조회 → `buildSettlementLedger` → 렌더.
+  - `src/app/(supporter)/supporter/settlements/SettlementsLedgerClient.tsx`(신규 표현) — 전체 요약
+    (인정/반려/환수/미사용) + 참여자 그룹(기간·4금액 MoneyText). 열람 전용(기록 없음).
+  - `src/app/(supporter)/supporter/settlements/loading.tsx`(형제 맞춤).
+  - `AdminSidebar.tsx` — `정산 원장 → /supporter/settlements`(회계/거래장부 다음, 💰).
+- **계약(W)**: `settlementLedger.test.ts` golden(참여자 그룹·totals·교차합치·미매핑 폴백·빈) +
+  `SettlementsLedgerClient.money.test.tsx`(참여자 4금액 MoneyText 렌더·전체 요약).
 
 ## §3 공통 원칙
 
@@ -160,6 +173,7 @@ P1–P7 재구성(#82–#115)은 **이 영역에서 아무것도 삭제하지 �
 - **main 직접 push 금지** — 항상 PR·CI 경유. 머지는 사람.
 
 ## §4 상태 (2026-09-10)
-- A1 완료(#131). A2 완료(#132). A3 완료(#133). A4 완료(#134). A5 ACTIVE(이 PR). A6 계획 확정.
-- A4→A5 흡수: 영역 필터(도메인 라벨 배선, export 컬럼과 공유). A4→A6 이월: 실제 정산기록(미사용).
-- 제공기관 필터는 A5 밖(export 컬럼엔 포함) — 필요 시 후속.
+- A1 완료(#131). A2 완료(#132). A3 완료(#133). A4 완료(#134). A5 완료(#135). A6 ACTIVE(이 PR·Track A 마지막).
+- A4→A5 흡수: 영역 필터(도메인 라벨 배선). A4→A6 반영: 실제 정산기록(인정/반려/환수/미사용) 표면.
+- A6 후 Track A 종료. 후속 후보(사용자 결정): 제공기관 필터·필터반영 export·서류 전체참여자 업로드 등
+  소소 fast-follow / Track B(관계망 CRUD) / 역할별 QA.
