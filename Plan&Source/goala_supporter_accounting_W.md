@@ -76,11 +76,31 @@ P1–P7 재구성(#82–#115)은 **이 영역에서 아무것도 삭제하지 �
 - **계약(W)**: 액션 `serviceUsage.mutate.test.ts` — update/delete × pending허용/non-pending거부 4건
   (supabase thenable 모킹). UI `TransactionEditClient.test.tsx` — canEdit 시 폼·삭제 노출, 아니면 미노출.
 
-### A3 — 서류함 업로드/삭제
-- **갭**: 서류 추가가 신청서 상세에서만 가능, 서류함(`DocumentShelfClient`)에서 직접 못 함.
-- **설계**: `document.ts` 에 `uploadDocument`(경로접두 강제 — activity-photos 패턴)·`deleteDocument`
-  추가, 셸프에 업로드/삭제 컨트롤. Storage `documents` 버킷(private) 기존. RLS staff-write.
-- **계약**: 액션 계약(업로드 경로위조 방지·삭제 권한) + 셸프 UI 계약.
+### A3 — 서류함 업로드/삭제 【ACTIVE】
+- **갭**: 서류 추가가 신청서 상세(`uploadApplicationDocument`)에서만 가능 → 서류함
+  (`DocumentShelfClient`)에서 직접 올리거나 지울 수 없음.
+- **조사 확정(스키마 변경 0)**:
+  - 테이블 `seoul_application_documents` RLS(04:78-85 staff-write 루프)가 이미 staff INSERT/UPDATE/
+    DELETE 허용. Storage `documents` 버킷(06:98-100) write/delete 도 `seoul_is_staff_for(owner)` 허용,
+    read 는 `seoul_can_access`(self 포함). → **Manual-Ops 불필요**.
+  - ★제약: `application_id UUID NOT NULL`(03) — 모든 서류 행이 신청서에 종속. 서류함(참여자 단위)
+    업로드는 서버가 참여자의 **최신 seoul_applications** 를 자동 해결해 그 application_id 로 넣는다
+    (스키마 변경 회피). 신청이 없는 당사자는 업로드 불가(명확한 에러) — 첫 서류는 여전히 신청서 상세.
+  - 경로 첫 세그먼트 = 참여자 id(06 `seoul_storage_owner`). 서류함 업로드 경로 = `{participantId}/
+    shelf/{uuid}.{ext}`(소유자 규칙 준수).
+- **설계**:
+  - `uploadShelfDocument({participantId,docType,fileName,base64,mimeType?,note?})` — `assertStaff` →
+    최신 application 해결(없으면 에러) → admin.storage upload(경로접두 강제) → 세션client insert
+    (RLS staff) → 실패 시 파일 롤백 → `auditLog`·revalidate. `uploadApplicationDocument` 패턴 복제.
+  - `deleteShelfDocument(documentId)` — `assertStaff` → 세션client 로 storage_path 조회(RLS 인가) →
+    행 delete(RLS staff) → admin.storage remove → `auditLog`·revalidate.
+  - UI(`DocumentShelfClient`) — 문서별 **삭제**(확인) + 참여자 그룹별 **서류 추가**(docType 3종·파일·
+    메모, base64 변환). `useToast` announce + `router.refresh()`.
+  - ★UI 범위: 업로드는 셸프에 이미 있는 참여자(서류≥1)에 한함(그룹 컨텍스트). 서류 0건 신규 참여자
+    첫 업로드는 신청서 상세 유지(후속에서 전체 참여자 picker 확장 가능).
+- **계약(W)**: 액션 `document.mutate.test.ts` — 업로드(application 해결·경로 participantId 접두·insert)·
+  application 없음 거부·삭제(행+파일)·미인가 삭제 거부 4건. UI `DocumentShelfClient.mutate.test.tsx` —
+  삭제 노출·배선·업로드 어포던스·배선.
 
 ### A4 — 원장 필터 + 정산 컬럼
 - **갭**: org 원장이 합계/건수뿐 — 기간·영역·제공기관 필터 없음, 참여자별 정산(인정/반려/환수/미사용)
@@ -114,4 +134,4 @@ P1–P7 재구성(#82–#115)은 **이 영역에서 아무것도 삭제하지 �
 - **main 직접 push 금지** — 항상 PR·CI 경유. 머지는 사람.
 
 ## §4 상태 (2026-09-10)
-- A1 완료(#131, main). A2 ACTIVE(이 PR). A3–A6 계획 확정, 순차 착수.
+- A1 완료(#131). A2 완료(#132). A3 ACTIVE(이 PR). A4–A6 계획 확정, 순차 착수.

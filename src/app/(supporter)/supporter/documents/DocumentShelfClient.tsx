@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/LiveRegion'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { getDocumentSignedUrl } from '@/app/actions/document'
+import { getDocumentSignedUrl, deleteShelfDocument, uploadShelfDocument } from '@/app/actions/document'
 import type { DocumentShelf } from '@/utils/documentShelf'
 
 /** 유형칩 색(색상만으로 의미 전달 금지 — 텍스트 라벨 병기, §5 a11y). */
@@ -13,14 +14,30 @@ const TYPE_STYLE: Record<string, string> = {
   기타: 'bg-neutral-bg text-neutral-fg',
 }
 
+/** 서류 유형 3종(seoul_application_documents.doc_type). 라벨은 documentShelf.documentTypeLabel 과 동일. */
+type ShelfDocType = 'application_form' | 'consent_form' | 'other'
+const DOC_TYPE_OPTIONS: { value: ShelfDocType; label: string }[] = [
+  { value: 'application_form', label: '신청서' },
+  { value: 'consent_form', label: '동의서' },
+  { value: 'other', label: '기타' },
+]
+
 /**
- * 서류 보관함(B2) — 당사자별 그룹(펼침) + 문서 [열기]. 담당자 화면(표준어). 설계 §1 IA.
+ * 서류 보관함(B2) — 당사자별 그룹(펼침) + 문서 [열기]·[삭제] + 그룹별 [서류 추가]. 담당자 화면(표준어). 설계 §1 IA·§2 A3.
  * [열기]는 클릭 시 getDocumentSignedUrl 발급(private 버킷·1h 만료, 사전 전량발급 금지).
+ * [삭제]·[서류 추가]는 deleteShelfDocument·uploadShelfDocument(세션 RLS 인가) 후 router.refresh().
  */
 export default function DocumentShelfClient({ shelf }: { shelf: DocumentShelf }) {
   const { announce } = useToast()
+  const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [expanded, setExpanded] = useState<string | null>(null)
+
+  // 업로드 폼은 한 번에 한 그룹만 열린다(그 그룹 participantId 를 컨텍스트로 씀).
+  const [uploadOpen, setUploadOpen] = useState<string | null>(null)
+  const [docType, setDocType] = useState<ShelfDocType>('application_form')
+  const [note, setNote] = useState('')
+  const [file, setFile] = useState<File | null>(null)
 
   function handleOpen(documentId: string) {
     announce('서류를 열고 있어요.', 'polite')
@@ -32,6 +49,69 @@ export default function DocumentShelfClient({ shelf }: { shelf: DocumentShelf })
       }
       announce(result.error ?? '서류를 열지 못했어요.', 'assertive')
     })
+  }
+
+  function handleDelete(documentId: string) {
+    if (!window.confirm('이 서류를 삭제할까요?')) return
+    announce('서류를 지우고 있어요.', 'polite')
+    startTransition(async () => {
+      const result = await deleteShelfDocument(documentId)
+      if (result.success) {
+        announce('서류를 지웠어요.', 'polite')
+        router.refresh()
+        return
+      }
+      announce(result.error ?? '서류를 지우지 못했어요.', 'assertive')
+    })
+  }
+
+  function openUpload(participantId: string) {
+    setUploadOpen(participantId)
+    setDocType('application_form')
+    setNote('')
+    setFile(null)
+  }
+
+  function closeUpload() {
+    setUploadOpen(null)
+    setDocType('application_form')
+    setNote('')
+    setFile(null)
+  }
+
+  function handleUpload(e: React.FormEvent, participantId: string) {
+    e.preventDefault()
+    if (!file) {
+      announce('올릴 파일을 먼저 골라 주세요.', 'assertive')
+      return
+    }
+    const picked = file
+    const reader = new FileReader()
+    reader.onload = () => {
+      const raw = typeof reader.result === 'string' ? reader.result : ''
+      // data:...;base64,XXXX → 접두 제거 후 순수 base64 만.
+      const base64 = raw.includes(',') ? raw.slice(raw.indexOf(',') + 1) : raw
+      announce('서류를 올리고 있어요.', 'polite')
+      startTransition(async () => {
+        const result = await uploadShelfDocument({
+          participantId,
+          docType,
+          fileName: picked.name,
+          base64,
+          mimeType: picked.type,
+          note: note.trim() || undefined,
+        })
+        if (result.success) {
+          announce('서류를 올렸어요.', 'polite')
+          closeUpload()
+          router.refresh()
+          return
+        }
+        announce(result.error ?? '서류를 올리지 못했어요.', 'assertive')
+      })
+    }
+    reader.onerror = () => announce('파일을 읽지 못했어요.', 'assertive')
+    reader.readAsDataURL(picked)
   }
 
   if (shelf.participants.length === 0) {
@@ -49,6 +129,7 @@ export default function DocumentShelfClient({ shelf }: { shelf: DocumentShelf })
       <ul className="flex flex-col gap-2">
         {shelf.participants.map((p) => {
           const isOpen = expanded === p.participantId
+          const isUploading = uploadOpen === p.participantId
           return (
             <li key={p.participantId} className="rounded-2xl bg-card ring-1 ring-border overflow-hidden">
               <button
@@ -63,34 +144,131 @@ export default function DocumentShelfClient({ shelf }: { shelf: DocumentShelf })
               </button>
 
               {isOpen && (
-                <ul className="border-t border-border">
-                  {p.docs.map((d) => (
-                    <li
-                      key={d.id}
-                      className="flex items-center justify-between gap-3 px-4 py-3 border-t border-border first:border-t-0"
-                    >
-                      <div className="flex flex-col min-w-0 gap-1">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${TYPE_STYLE[d.docTypeLabel] ?? 'bg-neutral-bg text-neutral-fg'}`}
-                          >
-                            {d.docTypeLabel}
-                          </span>
-                          <span className="text-sm truncate">{d.fileName}</span>
-                        </div>
-                        <span className="text-xs text-muted-foreground">{d.createdAt.slice(0, 10)}</span>
-                        {d.note && <span className="text-xs text-muted-foreground leading-relaxed">{d.note}</span>}
-                      </div>
-                      <button
-                        onClick={() => handleOpen(d.id)}
-                        disabled={pending}
-                        className="shrink-0 px-3 min-h-[44px] rounded-xl bg-hero text-hero-foreground text-sm font-bold hover:bg-hero-hover disabled:opacity-50"
+                <div className="border-t border-border">
+                  <ul>
+                    {p.docs.map((d) => (
+                      <li
+                        key={d.id}
+                        className="flex items-center justify-between gap-3 px-4 py-3 border-t border-border first:border-t-0"
                       >
-                        열기
+                        <div className="flex flex-col min-w-0 gap-1">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${TYPE_STYLE[d.docTypeLabel] ?? 'bg-neutral-bg text-neutral-fg'}`}
+                            >
+                              {d.docTypeLabel}
+                            </span>
+                            <span className="text-sm truncate">{d.fileName}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">{d.createdAt.slice(0, 10)}</span>
+                          {d.note && (
+                            <span className="text-xs text-muted-foreground leading-relaxed">{d.note}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={() => handleOpen(d.id)}
+                            disabled={pending}
+                            className="px-3 min-h-[44px] rounded-xl bg-hero text-hero-foreground text-sm font-bold hover:bg-hero-hover disabled:opacity-50"
+                          >
+                            열기
+                          </button>
+                          <button
+                            onClick={() => handleDelete(d.id)}
+                            disabled={pending}
+                            className="px-3 min-h-[44px] rounded-xl bg-danger-bg text-danger-fg text-sm font-bold hover:bg-danger-bg-hover disabled:opacity-50"
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="px-4 py-3 border-t border-border">
+                    {isUploading ? (
+                      <form onSubmit={(e) => handleUpload(e, p.participantId)} className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label
+                            htmlFor={`shelf-doctype-${p.participantId}`}
+                            className="text-xs text-muted-foreground font-medium"
+                          >
+                            서류 종류
+                          </label>
+                          <select
+                            id={`shelf-doctype-${p.participantId}`}
+                            value={docType}
+                            onChange={(e) => setDocType(e.target.value as ShelfDocType)}
+                            className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground font-medium"
+                          >
+                            {DOC_TYPE_OPTIONS.map((o) => (
+                              <option key={o.value} value={o.value}>
+                                {o.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label
+                            htmlFor={`shelf-file-${p.participantId}`}
+                            className="text-xs text-muted-foreground font-medium"
+                          >
+                            파일 고르기
+                          </label>
+                          <input
+                            id={`shelf-file-${p.participantId}`}
+                            type="file"
+                            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                            className="text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-muted file:px-3 file:py-2 file:text-sm file:font-bold file:text-muted-foreground"
+                          />
+                          {file && <span className="text-xs text-muted-foreground">📎 {file.name}</span>}
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <label
+                            htmlFor={`shelf-note-${p.participantId}`}
+                            className="text-xs text-muted-foreground font-medium"
+                          >
+                            메모 (안 써도 돼요)
+                          </label>
+                          <input
+                            id={`shelf-note-${p.participantId}`}
+                            type="text"
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
+                            className="p-3 rounded-xl bg-muted ring-1 ring-border text-foreground"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="submit"
+                            disabled={pending}
+                            className="px-4 min-h-[44px] rounded-xl bg-hero text-hero-foreground text-sm font-bold hover:bg-hero-hover disabled:opacity-50"
+                          >
+                            올리기
+                          </button>
+                          <button
+                            type="button"
+                            onClick={closeUpload}
+                            disabled={pending}
+                            className="px-4 min-h-[44px] rounded-xl bg-muted text-foreground text-sm font-bold ring-1 ring-border hover:bg-muted-hover disabled:opacity-50"
+                          >
+                            취소
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <button
+                        onClick={() => openUpload(p.participantId)}
+                        className="px-4 min-h-[44px] rounded-xl bg-muted text-foreground text-sm font-bold ring-1 ring-border hover:bg-muted-hover"
+                      >
+                        서류 추가
                       </button>
-                    </li>
-                  ))}
-                </ul>
+                    )}
+                  </div>
+                </div>
               )}
             </li>
           )
