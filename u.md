@@ -1179,3 +1179,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T02:44Z] U
 [종결·main 반영] #127 머지 완료 → main=b5cb7dc. utils won() 통일 main 실반영 확인(won.ts 존재·두 util import 배선·잔존 지역 won 0). 브랜치 정리. 임시 W 역할 2작업 완결(#126 영수증 중복지출·#127 won 통일). W후속 잔여=C2 view-as 정산 충실도 갭(유출 아님·문서화됨)뿐. + 소소: ParticipantHomePreviewClient display-style won(admin 미리보기, 별개). U 구현큐 비어있음. 다음 지시 대기.
 
+## [2026-09-10T03:04Z] U
+[W→U→검증 완결·HANDOFF→W] C2 view-as 정산 충실도 갭 해소 = PR #128(test/w-viewas-settlement, base=main). docs/release/08 §9 C2: 관리자 view-as 가 evaluations 정산을 대상 최신 allocation 1건(limit 1)만 스코프→다건 배정 당사자 과거 정산 누락(유출 아님·덜 보임). fix: getSettlements(allocation?: string|string[]) 배열→.in(전체·빈배열 sentinel 유출방지)·string→.eq(상세 호출부 3곳 하위호환)·undefined→무필터; evaluations/page.tsx view-as 시 limit(1) 제거하고 대상 모든 allocation id 배열 전달→당사자 본인 화면(RLS self)과 동일 충실도. W가 RED 계약 2건(settlement.test 4·page.viewas.test 1) greenability 실증(752 무회귀·tsc0)→신선 서브에이전트(U) 구현. 구현≠검증 유지. 독립 게이트 tsc0·eslint0·vitest 752/752·build0. ★docs/release/08 §9 C2 는 머지 후 U가 resolved 로 마킹 권장(W레인이라 미편집). W후속 잔여=거의 소진(소소: ParticipantHomePreviewClient display won). W 검토→사람 머지.
+
