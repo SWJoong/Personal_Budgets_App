@@ -221,6 +221,7 @@ export interface ServiceUsageRow {
   description: string | null
   requested_service_id: string | null
   provider_id: string | null
+  domain_id: string | null
   settlement_status: string
 }
 
@@ -232,7 +233,7 @@ export async function getServiceUsages(participantId?: string): Promise<{ error?
 
   let query = supabase
     .from('seoul_service_usages')
-    .select('id, participant_id, allocation_id, usage_date, amount, description, requested_service_id, provider_id, settlement_status')
+    .select('id, participant_id, allocation_id, usage_date, amount, description, requested_service_id, provider_id, domain_id, settlement_status')
     .order('usage_date', { ascending: false })
 
   if (participantId) query = query.eq('participant_id', participantId)

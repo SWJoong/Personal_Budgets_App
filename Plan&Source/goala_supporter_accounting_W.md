@@ -119,13 +119,26 @@ P1–P7 재구성(#82–#115)은 **이 영역에서 아무것도 삭제하지 �
 - **계약(W)**: `orgLedger.byparticipant.test.ts` golden(참여자별 byStatus·교차합치) +
   `OrgLedgerClient.filter.test.tsx`(기간 필터 좁힘·참여자 상태 내역 렌더).
 
-### A5 — 회계 export (+ 영역 라벨 배선)
-- **갭**: export 전무(리빌딩 때 제거).
-- **설계**: 서버액션/route 로 CSV(Excel BOM) 생성 — 서울형 컬럼(날짜·당사자·영역·제공기관·금액·
-  정산상태·메모). 다운로드는 **사용자 브라우저**가 수행(에이전트 대행 아님). 원장/참여자거래에 버튼.
-  ★A4 에서 연기한 **영역/제공기관 필터**를 여기서 함께: getServiceUsages 에 domain_id 노출 +
-  seoul_service_domains/providers 라벨 배선(export 컬럼과 원장 필터가 공유).
-- **계약**: CSV 직렬화 golden(컬럼·이스케이프·BOM) + (영역 배선 시) 원장 영역 필터.
+### A5 — 회계 CSV export + 영역 필터 【ACTIVE】
+- **갭**: export 전무(리빌딩 때 제거). A4 에서 연기한 영역 필터도 라벨 배선이 필요.
+- **조사 확정**: `settlementLabel`(대기/완료/반려/환수) 존재. `seoul_service_domains.label`·
+  `seoul_service_providers.name` 로 라벨 조회(거래상세 page 가 이미 그 패턴). `ServiceUsageRow` 는
+  provider_id 는 있으나 **domain_id 없음** → getServiceUsages 에 가산 필요. 다운로드는 **사용자
+  브라우저**(Route Handler attachment)가 수행 — 에이전트 대행 아님(안전). Route Handler 패턴은
+  `api/supporters/route.ts` 참고. LedgerRow 에 domainLabel 은 **선택 필드**로 추가(A4 필터 계약 무회귀).
+- **설계**:
+  - `src/utils/ledgerCsv.ts`(신규 순수) — `buildLedgerCsv(rows: LedgerExportRow[])`: `﻿`(BOM) +
+    헤더 `날짜,당사자,영역,제공기관,금액,정산상태,메모` + 행. CSV 이스케이프(`,"\n\r` 포함 시 `"`
+    래핑·내부 `"` 이중화), 금액=원시 정수(Excel 계산용), 상태=`settlementLabel`, null→''. 줄바꿈 `\r\n`.
+  - `src/app/api/export/transactions/route.ts`(신규) — GET: `assertStaff`(try/catch→403) → `getServiceUsages`
+    → 참여자명·영역·제공기관 라벨 조회 → `buildLedgerCsv` → `text/csv; charset=utf-8` + Content-Disposition
+    attachment.
+  - `serviceUsage.ts` — `ServiceUsageRow`+`domain_id`, select 가산(하위호환).
+  - `transactions/page.tsx` — 영역 라벨 조회 → `LedgerRow.domainLabel`(선택).
+  - `OrgLedgerClient.tsx` — 영역 필터(rows 의 distinct domainLabel 드롭다운) + export `<a href="/api/
+    export/transactions">` 버튼. 제공기관 필터는 이번 밖(export 컬럼엔 포함).
+- **계약(W)**: `ledgerCsv.test.ts` golden(BOM·헤더·이스케이프·상태라벨·null·빈) + `OrgLedgerClient.export.test.tsx`
+  (영역 필터 좁힘·export 링크 href).
 
 ### A6 — `/supporter/settlements` 라우트
 - **갭**: `settlement.ts:62` 가 존재하지 않는 `/supporter/settlements` 를 revalidate. 정산은 관리자
@@ -147,5 +160,6 @@ P1–P7 재구성(#82–#115)은 **이 영역에서 아무것도 삭제하지 �
 - **main 직접 push 금지** — 항상 PR·CI 경유. 머지는 사람.
 
 ## §4 상태 (2026-09-10)
-- A1 완료(#131). A2 완료(#132). A3 완료(#133). A4 ACTIVE(이 PR). A5–A6 계획 확정, 순차 착수.
-- A4→A5 이월: 영역/제공기관 필터(도메인 라벨 배선). A4→A6 이월: 실제 정산기록(미사용) 표면.
+- A1 완료(#131). A2 완료(#132). A3 완료(#133). A4 완료(#134). A5 ACTIVE(이 PR). A6 계획 확정.
+- A4→A5 흡수: 영역 필터(도메인 라벨 배선, export 컬럼과 공유). A4→A6 이월: 실제 정산기록(미사용).
+- 제공기관 필터는 A5 밖(export 컬럼엔 포함) — 필요 시 후속.
