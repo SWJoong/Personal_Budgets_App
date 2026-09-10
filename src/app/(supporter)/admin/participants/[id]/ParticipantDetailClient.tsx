@@ -58,6 +58,8 @@ export default function ParticipantDetailClient({
 
   const [settledPeriod, setSettledPeriod] = useState('')
   const [acceptedAmount, setAcceptedAmount] = useState('')
+  const [rejectedAmount, setRejectedAmount] = useState('')
+  const [recoveredAmount, setRecoveredAmount] = useState('')
   const [unusedAmount, setUnusedAmount] = useState('')
 
   const [appealNotes, setAppealNotes] = useState<Record<string, string>>({})
@@ -100,6 +102,8 @@ export default function ParticipantDetailClient({
         allocationId,
         settledPeriod: settledPeriod.trim(),
         acceptedAmount: Number(acceptedAmount),
+        rejectedAmount: rejectedAmount ? Number(rejectedAmount) : undefined,
+        recoveredAmount: recoveredAmount ? Number(recoveredAmount) : undefined,
         unusedAmount: unusedAmount ? Number(unusedAmount) : undefined,
       })
       if (result.error) {
@@ -108,6 +112,8 @@ export default function ParticipantDetailClient({
       }
       setSettledPeriod('')
       setAcceptedAmount('')
+      setRejectedAmount('')
+      setRecoveredAmount('')
       setUnusedAmount('')
       router.refresh()
     })
@@ -297,6 +303,22 @@ export default function ParticipantDetailClient({
                 value={acceptedAmount}
                 onChange={(e) => setAcceptedAmount(e.target.value)}
                 placeholder="인정 금액"
+                className="flex-1 p-2 rounded-lg bg-card ring-1 ring-border text-sm"
+              />
+              <input
+                type="number"
+                value={rejectedAmount}
+                onChange={(e) => setRejectedAmount(e.target.value)}
+                placeholder="반려 금액"
+                className="flex-1 p-2 rounded-lg bg-card ring-1 ring-border text-sm"
+              />
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                value={recoveredAmount}
+                onChange={(e) => setRecoveredAmount(e.target.value)}
+                placeholder="환수 금액"
                 className="flex-1 p-2 rounded-lg bg-card ring-1 ring-border text-sm"
               />
               <input
