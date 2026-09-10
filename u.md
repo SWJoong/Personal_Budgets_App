@@ -1227,3 +1227,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T12:12Z] U
 [HANDOFF→W] B4 그래프 오버레이 = PR #140 (Track B 마지막). 큐레이션 뷰 14_network_graph_overlay.sql(security_invoker·멱등) = 파생그래프(05 무변경) ∪ 수동관계(13) + source(derived/manual). egoGraph GraphEdge.source·NetworkEntity→person + network page 큐레이션뷰 + NetworkGraphClient 점선 큐레이션엣지. 검증=W docker pg17 RED→GREEN 6/6(B 유출0)+egoGraph golden. tsc0·lint0·vitest817·build0. ★Manual-Ops: CI db-verify green+머지 후 사용자가 대시보드 14 실행. ★Track B(B1~B4) 완주 — 실무자 관계망 CRUD + 파생/수동 오버레이 완성.
 
+## [2026-09-10T12:46Z] U
+[종결] Track B(B1~B4) 완주·전부 라이브. 13 테이블+14 큐레이션뷰 대시보드 실행 완료(★#137 후 13이 실제 DB 미반영이었고 14 실행 시 relation-not-exist로 드러나 13 재실행으로 해소·멱등). 관계망 CRUD(4분면 편집)+파생/수동 오버레이(provenance) end-to-end 동작. Track A(회계·서류 #131~#136)+Track B(#137~#140) 둘 다 완료. 다음=역할별 QA(당사자/담당자/관리자·사용자 제공). 선택 후속: 데모 관계망 시드(08 루프)로 QA용 데이터 채우기.
+
