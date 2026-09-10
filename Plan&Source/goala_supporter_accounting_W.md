@@ -102,17 +102,30 @@ P1–P7 재구성(#82–#115)은 **이 영역에서 아무것도 삭제하지 �
   application 없음 거부·삭제(행+파일)·미인가 삭제 거부 4건. UI `DocumentShelfClient.mutate.test.tsx` —
   삭제 노출·배선·업로드 어포던스·배선.
 
-### A4 — 원장 필터 + 정산 컬럼
-- **갭**: org 원장이 합계/건수뿐 — 기간·영역·제공기관 필터 없음, 참여자별 정산(인정/반려/환수/미사용)
-  컬럼 없음.
-- **설계**: `orgLedger.ts`(`buildOrgLedger`)·`OrgLedgerClient` 확장(가산 read, 뮤테이션 없음).
-- **계약**: `orgLedger` 순수함수 golden(필터·집계) + 렌더 계약.
+### A4 — 원장 기간 필터 + 참여자별 지출상태 내역 【ACTIVE】
+- **갭**: org 원장이 org 전체 합계/상태칩 + 참여자별 total/count 뿐. 기간 필터 없음, 참여자별
+  상태(대기/인정/반려/환수) 금액 내역 없음.
+- **조사 확정**: `OrgLedgerClient` 는 이미 정산상태 필터 보유(all/대기/완료/반려/환수). rows(LedgerRow)=
+  id·participant·amount·settlementStatus·usageDate·description — **domain/provider 없음**(page 가
+  getServiceUsages 만 쓰고 domain_id 미포함). 순수·클라이언트 확장이라 서버/액션 무변경. 기존 golden은
+  필드단위 단언이라 참여자 객체에 필드 추가해도 안 깨짐.
+- **범위(정한 것)**:
+  - **기간 필터**(usageDate from/to, 클라이언트) 추가.
+  - **참여자별 상태 내역** — `buildOrgLedger` 의 `OrgLedgerParticipant` 에 `byStatus`(버킷별 amount/
+    count) 추가(가산). 각 참여자 행이 대기/인정/반려/환수 금액을 보여줌.
+  - **연기**: 영역/제공기관 필터 = getServiceUsages 에 domain_id 노출 + 라벨 배선 필요 → **A5**(export
+    가 영역 라벨을 어차피 필요로 하므로 함께 배선). **실제 정산기록(미사용 포함)** = **A6** 정산 라우트
+    (정산 전용 표면)에서.
+- **계약(W)**: `orgLedger.byparticipant.test.ts` golden(참여자별 byStatus·교차합치) +
+  `OrgLedgerClient.filter.test.tsx`(기간 필터 좁힘·참여자 상태 내역 렌더).
 
-### A5 — 회계 export
+### A5 — 회계 export (+ 영역 라벨 배선)
 - **갭**: export 전무(리빌딩 때 제거).
 - **설계**: 서버액션/route 로 CSV(Excel BOM) 생성 — 서울형 컬럼(날짜·당사자·영역·제공기관·금액·
   정산상태·메모). 다운로드는 **사용자 브라우저**가 수행(에이전트 대행 아님). 원장/참여자거래에 버튼.
-- **계약**: CSV 직렬화 golden(컬럼·이스케이프·BOM).
+  ★A4 에서 연기한 **영역/제공기관 필터**를 여기서 함께: getServiceUsages 에 domain_id 노출 +
+  seoul_service_domains/providers 라벨 배선(export 컬럼과 원장 필터가 공유).
+- **계약**: CSV 직렬화 golden(컬럼·이스케이프·BOM) + (영역 배선 시) 원장 영역 필터.
 
 ### A6 — `/supporter/settlements` 라우트
 - **갭**: `settlement.ts:62` 가 존재하지 않는 `/supporter/settlements` 를 revalidate. 정산은 관리자
@@ -134,4 +147,5 @@ P1–P7 재구성(#82–#115)은 **이 영역에서 아무것도 삭제하지 �
 - **main 직접 push 금지** — 항상 PR·CI 경유. 머지는 사람.
 
 ## §4 상태 (2026-09-10)
-- A1 완료(#131). A2 완료(#132). A3 ACTIVE(이 PR). A4–A6 계획 확정, 순차 착수.
+- A1 완료(#131). A2 완료(#132). A3 완료(#133). A4 ACTIVE(이 PR). A5–A6 계획 확정, 순차 착수.
+- A4→A5 이월: 영역/제공기관 필터(도메인 라벨 배선). A4→A6 이월: 실제 정산기록(미사용) 표면.
