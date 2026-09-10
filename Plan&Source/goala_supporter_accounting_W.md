@@ -52,12 +52,29 @@ P1–P7 재구성(#82–#115)은 **이 영역에서 아무것도 삭제하지 �
 - **구현힌트(U)**: `unusedAmount` 패턴 복제(`x ? Number(x) : undefined`). `ParticipantDetailClient.tsx`
   만 수정. 게이트 tsc0·lint0·vitest·build0.
 
-### A2 — 지출 수정/삭제
-- **갭**: `serviceUsage.ts` 에 update/delete 없음 → 잘못 기록한 지출을 실무자가 못 고침(생성만).
-- **설계**: `updateServiceUsage`/`deleteServiceUsage` 신설(RLS: `seoul_is_staff_for`). **정책**: 정산
-  완료(`settled`)·환수된 지출은 편집/삭제 차단, 대기/반려만 허용(자기채점 방지 + 회계 무결성). 편집
-  UI 는 `[id]/page.tsx` 에 진입점 + `NewTransactionClient` 재사용 폼. audit_log 필수.
-- **계약**: 액션 계약(update/delete 성공·정산완료 차단·권한) + UI 진입 계약.
+### A2 — 지출 수정/삭제 【ACTIVE】
+- **갭**: `serviceUsage.ts` 에 update/delete 없음(생성만) → 잘못 기록한 지출을 실무자가 못 고침.
+- **조사 확정**:
+  - 스키마 변경 **불필요** — `seoul_service_usages` RLS(04:188-205)가 이미 staff UPDATE/DELETE 허용
+    (`seoul_is_staff_for(participant_id)`), self 는 pending 까지만. → **Manual-Ops Gate 없음**.
+  - `settlement_status` 값 = `pending·accepted·rejected·recovered`(03:520-521, DEFAULT pending).
+  - 트리거: `trg_seoul_check_usage`=BEFORE INSERT **OR UPDATE**(금지항목은 편집도 재검증 → 트리거
+    에러 그대로 전달) · `trg_seoul_flag_criteria`=AFTER **INSERT만**(편집은 계획외 재플래그 안 됨).
+- **정책(정한 기본값)**: 편집·삭제 **모두 settlement_status='pending' 일 때만** 허용. 검토 끝난
+  지출(accepted/rejected/recovered)은 액션이 거부("정산 검토가 끝난 지출은 수정/삭제할 수 없어요").
+  근거: flag_criteria 가 INSERT-only 라 검토 후 편집 시 리뷰가 stale · 정산기록/감사추적 보호 · RLS
+  self-rule(pending-only)과 일관. 앱이 RLS 보다 보수적(staff 라도 pending 만) — 완화는 후속 결정.
+  ★사용자에게 이 기본값을 플래그(더 강한 제약이므로).
+- **편집 필드(A2 범위)**: `amount·usage_date·description`(오기 정정 핵심). domain/subdomain/provider·
+  영수증 재업로드는 A2 밖(분류=A4·영수증=별도 백로그).
+- **설계**: `updateServiceUsage(usageId, {amount?,usageDate?,description?})` · `deleteServiceUsage(usageId)`
+  — auth · `viewAsWriteBlock` · **pending 가드**(먼저 settlement_status select) · `auditLog`(둘 다, 금전
+  삭제 감사추적) · 트리거 에러 `friendlyDbError` 전달 · `revalidatePath`. UI = 새 클라이언트
+  `TransactionEditClient`(`[id]/page.tsx` 서버컴포넌트가 `canEdit=pending`·초기값 prop 전달) — pending
+  이면 프리필 폼(금액/날짜/내용)+삭제(확인), 아니면 "검토 끝나 수정불가" 안내. NewTransactionClient
+  필드 스타일 참조. 삭제 성공 시 목록으로, 수정 성공 시 refresh.
+- **계약(W)**: 액션 `serviceUsage.mutate.test.ts` — update/delete × pending허용/non-pending거부 4건
+  (supabase thenable 모킹). UI `TransactionEditClient.test.tsx` — canEdit 시 폼·삭제 노출, 아니면 미노출.
 
 ### A3 — 서류함 업로드/삭제
 - **갭**: 서류 추가가 신청서 상세에서만 가능, 서류함(`DocumentShelfClient`)에서 직접 못 함.
@@ -97,4 +114,4 @@ P1–P7 재구성(#82–#115)은 **이 영역에서 아무것도 삭제하지 �
 - **main 직접 push 금지** — 항상 PR·CI 경유. 머지는 사람.
 
 ## §4 상태 (2026-09-10)
-- A1 ACTIVE(이 PR). A2–A6 계획 확정, 순차 착수.
+- A1 완료(#131, main). A2 ACTIVE(이 PR). A3–A6 계획 확정, 순차 착수.
