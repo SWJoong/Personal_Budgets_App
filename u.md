@@ -1185,3 +1185,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T03:41Z] U
 [종결·main 반영] #128 머지 완료 → main=ed72469. C2 view-as 정산 충실도 갭 fix + RED계약 main 실반영 확인(getSettlements string|string[]·page allocationIds 배열·limit(1) 제거·계약파일 존재). 브랜치 정리. 임시 W 역할 3작업 완결(#126·#127·#128). QA CONCERN 3건 전부 종결(C1유지·C2해소·C3계약). ★잔여 loose end: docs/release/08 §9 C2 아직 '문서화 한계'로 남음→resolved 마킹(U레인 doc PR) 필요. 그 외 소소: ParticipantHomePreviewClient display-style won(admin 미리보기). 다음 지시 대기.
 
+## [2026-09-10T03:49Z] U
+[HANDOFF→W] §9 C2 resolved 마킹 정리 = PR #129(feat/docs-c2-resolved, base=main, 문서만). docs/release/08 §9 CONCERN C2 를 해소로 표기 + §9-1 에 C1/C3 형식 C2 해소 항목 추가(PR #128 참조). CONCERN 3건 전부 종결 명시(C1유지·C2해소·C3계약). 코드/테스트 무변경. W 검토→사람 머지.
+
