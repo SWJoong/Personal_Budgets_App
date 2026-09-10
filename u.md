@@ -1215,3 +1215,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T09:21Z] U
 [종결·main] #136 머지 → main=a69b820. ★Track A(실무자 회계·서류 보강) 전량 완료: A1 정산반려/환수(#131)·A2 지출수정/삭제(#132)·A3 서류함 업로드/삭제(#133)·A4 원장 기간필터/상태내역(#134)·A5 CSV export/영역필터(#135)·A6 정산원장(#136). 6슬라이스 전부 구현≠검증·빌드 green. 다음=Track B 관계망 CRUD(사용자 결정) 착수 — 설계-먼저 조사 진행중(모델=파생그래프+수동 큐레이션·B1은 새 테이블 seoul_network_entities=Manual-Ops). 브랜치 정리 완료.
 
+## [2026-09-10T10:28Z] U
+[HANDOFF→W] B1 관계망 테이블 = PR #137. seoul_network_entities(4분면 CHECK·closeness1~4·FK CASCADE·인덱스2·멱등) + RLS staff-only(사용자 결정) + verify_network_entities.sql(15항목) + db-verify.yml/README 등록. 계약=W·빌드=신선서브·검증=W(로컬 docker pg17 RED→GREEN 15/15). ★Manual-Ops: CI db-verify green+머지 후 사용자가 대시보드에서 13 실행→그 뒤 타입재생성·B2 액션. 다음=B2 networkEntities.ts 액션(테이블 라이브 전 손타입으로 선행 가능).
+
