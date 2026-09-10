@@ -1197,3 +1197,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T05:22Z] U
 [HANDOFF→W] Track A(실무자 회계·서류 보강) 착수. 설계 authority=Plan&Source/goala_supporter_accounting_W.md(§0 손실은 P1~P7 아님·036a8d1 서울리빌딩+#64/#72 · §2 슬라이스 A1~A6). A1=정산 반려/환수 UI 입력 노출 PR #131(RED계약+구현). recordSettlement/SettlementInput은 이미 rejected/recovered 저장·표시도 4개, 폼만 인정/미사용만 수집이던 갭 해소. 액션/스키마 무변경. 계약=W(ParticipantDetailClient.settlement.test 2)·구현=신선서브에이전트·검증=W(빌드포함). tsc0·lint0신규·tokenFoundation113·vitest759·build0. 구현≠검증. 다음=A2 지출 수정/삭제(#131 머지 후). B(관계망 CRUD)는 A 뒤·모델='파생그래프+수동 큐레이션(provenance)' 확정.
 
+## [2026-09-10T06:41Z] U
+[HANDOFF→W] A2 지출 수정/삭제 = PR #132. updateServiceUsage/deleteServiceUsage 신설(pending 가드)+TransactionEditClient(거래상세)+page 배선. ★스키마변경0(seoul_service_usages RLS 04:188-205 이미 staff UPDATE/DELETE 허용→Manual-Ops 불필요). 정책=편집/삭제 모두 settlement_status='pending'일 때만(RLS보다 보수적·사용자 확인요청). 트리거: check_usage=BEFORE INS OR UPD(편집 재검증)·flag_criteria=AFTER INS만. 계약=W(serviceUsage.mutate 5+TransactionEditClient UI 4)·구현=신선서브에이전트·검증=W(빌드포함). tsc0·lint0신규·vitest768(9+113 포함)·build0. 구현≠검증. 다음=A3 서류함 업로드/삭제(#132 머지 후).
+
