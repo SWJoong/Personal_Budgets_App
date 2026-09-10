@@ -1236,3 +1236,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T13:41Z] U
 [HANDOFF→W] 담당자 QA 수정 F1 완료. F1a=PR #142 서류함 당사자-선택 업로드 통일(빈 셸프 dead-end 해소·그룹별→상단 picker·page assignableParticipants RLS 조회). 계약 갱신 4/4·tsc0·lint0·vitest817·build0·★라이브 브라우저 확인(빈 서류함에 업로드 폼). F1b=PR #143 데모 서류 시드 16_seed_documents_demo.sql(김지수 3·박준호 2·윤미래 1, 메타데이터만·열기 미동작 명시·멱등). docker 실측. ★F1b Manual-Ops: 대시보드 16 실행(08 이후). 다음=담당자 QA 계속(F2 관계망 진입점 이원화·F3 대시보드 희소 또는 사용자 발견).
 
+## [2026-09-10T13:51Z] U
+[HANDOFF→W] 담당자 QA 수정 F2 완료 = PR #144. 관계망 진입점 이원화 해소: 목록 '관계망' 칩→편집기(/supporter/[id]/network) + 편집기 헤더 '관계망 그래프' 링크 + 그래프 헤더 '관계 편집' 링크(참여자 선택시). list→editor↔graph 양방향. 서버컴포넌트 nav 링크라 신선서브 구현·W 빌드+라이브 브라우저 walk 검증(3링크 전부 확인). tsc0·lint0·vitest817·build0. 남은 내 QA 발견=F3(대시보드 희소). 다음=F3 또는 사용자 담당자 발견.
+
