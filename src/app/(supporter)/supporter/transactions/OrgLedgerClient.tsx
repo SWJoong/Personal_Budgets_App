@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { LinkButton } from '@/components/ui/LinkButton'
-import { buildOrgLedger, type OrgUsageRow } from '@/utils/orgLedger'
+import { buildOrgLedger, type OrgUsageRow, type OrgLedgerParticipant } from '@/utils/orgLedger'
 import { settlementLabel, settlementIntent } from '@/utils/settlementStatus'
 import { formatDate } from '@/utils/formatDate'
 import { StatusPill } from '@/components/ui/StatusPill'
@@ -32,15 +32,32 @@ const CHIPS: { key: 'pending' | 'accepted' | 'rejected' | 'recovered'; label: st
   { key: 'recovered', label: '환수' },
 ]
 
+/** 참여자별 상태 내역 라벨(pending→대기 … other→기타) — 0건 버킷은 렌더 생략. */
+const STATUS_BREAKDOWN: { key: keyof OrgLedgerParticipant['byStatus']; label: string }[] = [
+  { key: 'pending', label: '대기' },
+  { key: 'accepted', label: '인정' },
+  { key: 'rejected', label: '반려' },
+  { key: 'recovered', label: '환수' },
+  { key: 'other', label: '기타' },
+]
+
 /**
  * org 거래장부 — 요약 바 + 정산상태 필터 + 당사자별 그룹(펼치면 최근 지출). 설계 §4-1.
  * 집계는 순수 util buildOrgLedger 를 필터된 행에 클라이언트에서 돌린다(필터 즉시 반영).
  */
 export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
   const [status, setStatus] = useState('all')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
 
-  const filtered = status === 'all' ? rows : rows.filter((r) => r.settlementStatus === status)
+  // 정산상태 + 기간(usageDate) 필터. usageDate·입력값 모두 'YYYY-MM-DD' 라 문자열 비교로 충분.
+  const filtered = rows.filter(
+    (r) =>
+      (status === 'all' || r.settlementStatus === status) &&
+      (!from || r.usageDate >= from) &&
+      (!to || r.usageDate <= to),
+  )
   const ledger = buildOrgLedger(filtered)
 
   // 펼침용 — 당사자별 최근 지출(원본 순서 = usage_date 내림차순).
@@ -94,6 +111,30 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
         })}
       </div>
 
+      {/* ②-b 기간 필터 (usageDate from/to) */}
+      <div role="group" aria-label="기간으로 거르기" className="flex flex-wrap items-center gap-2">
+        <input
+          type="date"
+          aria-label="시작일"
+          value={from}
+          onChange={(e) => setFrom(e.target.value)}
+          className="p-2 rounded-lg bg-card ring-1 ring-border text-sm"
+        />
+        <span className="text-sm text-muted-foreground">~</span>
+        <input
+          type="date"
+          aria-label="종료일"
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+          className="p-2 rounded-lg bg-card ring-1 ring-border text-sm"
+        />
+        {(from || to) && (
+          <Button onClick={() => { setFrom(''); setTo('') }} variant="secondary" size="sm">
+            기간 지우기
+          </Button>
+        )}
+      </div>
+
       {/* ③ 당사자별 그룹 */}
       {ledger.participants.length === 0 ? (
         <EmptyState emoji="📭" title="해당하는 지출이 없어요." description="조건을 바꿔서 다시 찾아보세요." variant="inline" />
@@ -105,16 +146,27 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
             return (
               <li key={p.participantId} className="rounded-2xl bg-card ring-1 ring-border overflow-hidden">
                 <div className="flex items-center justify-between gap-2 p-4">
-                  <button
-                    onClick={() => setExpanded(isOpen ? null : p.participantId)}
-                    aria-expanded={isOpen}
-                    className="flex-1 min-w-0 flex flex-col items-start gap-0.5 text-left min-h-[44px] justify-center"
-                  >
-                    <span className="font-bold text-foreground truncate w-full">{p.participantName}</span>
-                    <span className="text-xs text-muted-foreground">
-                      <MoneyText value={p.total} emphasis="muted" /> · {p.count}건{p.latestDate ? ` · 최근 ${formatDate(p.latestDate)}` : ''}
-                    </span>
-                  </button>
+                  <div className="flex-1 min-w-0 flex flex-col items-start gap-1">
+                    <button
+                      onClick={() => setExpanded(isOpen ? null : p.participantId)}
+                      aria-expanded={isOpen}
+                      className="w-full flex flex-col items-start gap-0.5 text-left min-h-[44px] justify-center"
+                    >
+                      <span className="font-bold text-foreground truncate w-full">{p.participantName}</span>
+                      <span className="text-xs text-muted-foreground">
+                        <MoneyText value={p.total} emphasis="muted" /> · {p.count}건{p.latestDate ? ` · 최근 ${formatDate(p.latestDate)}` : ''}
+                      </span>
+                    </button>
+                    {/* 상태별 금액 내역 — 건수 0 버킷은 생략, 순서 대기/인정/반려/환수/기타 */}
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                      {STATUS_BREAKDOWN.filter((b) => p.byStatus[b.key].count > 0).map((b) => (
+                        <span key={b.key} className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                          <span>{b.label}</span>
+                          <MoneyText value={p.byStatus[b.key].amount} emphasis="muted" />
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                   <LinkButton
                     href={`/supporter/${p.participantId}/transactions`}
                     variant="secondary"

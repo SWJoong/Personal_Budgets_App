@@ -23,6 +23,7 @@ export interface OrgLedgerParticipant {
   total: number
   count: number
   latestDate: string | null
+  byStatus: Record<StatusBucket, { amount: number; count: number }>
 }
 
 type StatusBucket = 'pending' | 'accepted' | 'rejected' | 'recovered' | 'other'
@@ -41,6 +42,17 @@ function statusBucket(status: string): StatusBucket {
   return STANDARD_STATUSES.has(status) ? (status as StatusBucket) : 'other'
 }
 
+/** 빈 상태버킷 레코드(org·참여자 공용) — 5버킷 모두 0으로 초기화. */
+function emptyByStatus(): Record<StatusBucket, { amount: number; count: number }> {
+  return {
+    pending: { amount: 0, count: 0 },
+    accepted: { amount: 0, count: 0 },
+    rejected: { amount: 0, count: 0 },
+    recovered: { amount: 0, count: 0 },
+    other: { amount: 0, count: 0 },
+  }
+}
+
 /**
  * 거래장부 요약 집계. 불변식(골든 §5):
  * 1) 당사자별 그룹핑(total·count, 이름 대표값) 2) 정산상태 5버킷 롤업(미지→other)
@@ -48,13 +60,7 @@ function statusBucket(status: string): StatusBucket {
  * 5) latestDate = 그룹 내 최신 usageDate(Date 파싱) 6) 빈 입력 → 0·빈 그룹 7) 교차 합치성(회계 무결성).
  */
 export function buildOrgLedger(rows: OrgUsageRow[]): OrgLedgerSummary {
-  const byStatus: Record<StatusBucket, { amount: number; count: number }> = {
-    pending: { amount: 0, count: 0 },
-    accepted: { amount: 0, count: 0 },
-    rejected: { amount: 0, count: 0 },
-    recovered: { amount: 0, count: 0 },
-    other: { amount: 0, count: 0 },
-  }
+  const byStatus = emptyByStatus()
 
   const groups = new Map<string, OrgLedgerParticipant & { _latestMs: number }>()
   let grandTotal = 0
@@ -77,12 +83,15 @@ export function buildOrgLedger(rows: OrgUsageRow[]): OrgLedgerSummary {
         total: 0,
         count: 0,
         latestDate: null,
+        byStatus: emptyByStatus(),
         _latestMs: -Infinity,
       }
       groups.set(r.participantId, g)
     }
     g.total += amount
     g.count += 1
+    g.byStatus[bucket].amount += amount
+    g.byStatus[bucket].count += 1
     const ms = Date.parse(r.usageDate)
     if (!Number.isNaN(ms) && ms > g._latestMs) {
       g._latestMs = ms
@@ -97,6 +106,7 @@ export function buildOrgLedger(rows: OrgUsageRow[]): OrgLedgerSummary {
       total: g.total,
       count: g.count,
       latestDate: g.latestDate,
+      byStatus: g.byStatus,
     }))
     .sort((a, b) => b.total - a.total || a.participantName.localeCompare(b.participantName))
 
