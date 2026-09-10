@@ -3,6 +3,7 @@
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { viewAsWriteBlock } from '@/utils/supabase/viewAs'
 import { friendlyDbError } from '@/utils/supabase/errors'
+import { auditLog } from '@/utils/audit'
 import { revalidatePath } from 'next/cache'
 
 export interface ServiceUsageInput {
@@ -112,6 +113,103 @@ export async function recordServiceUsage(input: ServiceUsageInput) {
   revalidatePath('/gallery')
   revalidatePath('/')
   return { success: true, usageId: usage.id as string }
+}
+
+/**
+ * 지출 수정 — 실무자가 잘못 기록한 지출의 금액·날짜·내용을 고친다(오기 정정).
+ *
+ * 정책: settlement_status='pending' 일 때만 허용한다. 검토가 끝난 지출
+ * (accepted/rejected/recovered)은 액션이 DB 를 건드리지 않고 거부한다 —
+ * trg_seoul_flag_criteria 가 AFTER INSERT-only 라 검토 후 편집은 리뷰가 stale 해지고,
+ * 정산기록·감사추적을 보호해야 하기 때문. RLS(04:188-205)는 staff 에게 더 관대하지만
+ * 앱이 pending-only 로 보수적으로 좁힌다. 금지항목 차단(trg_seoul_check_usage=BEFORE
+ * UPDATE)은 편집도 재검증하므로 트리거 에러를 friendlyDbError 로 그대로 전달한다.
+ */
+export async function updateServiceUsage(
+  usageId: string,
+  patch: { amount?: number; usageDate?: string; description?: string }
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.' }
+
+  // 관리자 둘러보기(view-as) 중에는 남의 예산에 쓰기를 못하게 막는다(읽기전용 미리보기).
+  const viewAsBlock = await viewAsWriteBlock()
+  if (viewAsBlock) return { error: viewAsBlock }
+
+  const { data: current } = await supabase
+    .from('seoul_service_usages')
+    .select('settlement_status, participant_id')
+    .eq('id', usageId)
+    .maybeSingle()
+
+  if (!current) return { error: '지출을 찾을 수 없어요.' }
+  if (current.settlement_status !== 'pending') {
+    return { error: '정산 검토가 끝난 지출은 수정할 수 없어요.' }
+  }
+
+  // patch 로 넘어온 키만 갱신한다(넘기지 않은 필드는 그대로 둠).
+  const fields: { amount?: number; usage_date?: string; description?: string | null } = {}
+  if (patch.amount !== undefined) fields.amount = patch.amount
+  if (patch.usageDate !== undefined) fields.usage_date = patch.usageDate
+  if (patch.description !== undefined) fields.description = patch.description || null
+
+  const { error } = await supabase
+    .from('seoul_service_usages')
+    .update(fields)
+    .eq('id', usageId)
+
+  if (error) return { error: friendlyDbError(error) }
+
+  await auditLog(supabase, 'usage.update', {
+    targetType: 'service_usage',
+    targetId: usageId,
+    metadata: fields,
+  })
+
+  revalidatePath('/supporter/transactions')
+  revalidatePath(`/supporter/transactions/${usageId}`)
+  return { success: true }
+}
+
+/**
+ * 지출 삭제 — pending 지출만 삭제할 수 있다(updateServiceUsage 와 동일 가드).
+ * 금전 삭제라 auditLog 로 감사추적을 남긴다(대상 참여자 id 만, PII 금지).
+ */
+export async function deleteServiceUsage(usageId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.' }
+
+  const viewAsBlock = await viewAsWriteBlock()
+  if (viewAsBlock) return { error: viewAsBlock }
+
+  const { data: current } = await supabase
+    .from('seoul_service_usages')
+    .select('settlement_status, participant_id')
+    .eq('id', usageId)
+    .maybeSingle()
+
+  if (!current) return { error: '지출을 찾을 수 없어요.' }
+  if (current.settlement_status !== 'pending') {
+    return { error: '정산 검토가 끝난 지출은 삭제할 수 없어요.' }
+  }
+
+  const { error } = await supabase
+    .from('seoul_service_usages')
+    .delete()
+    .eq('id', usageId)
+
+  if (error) return { error: friendlyDbError(error) }
+
+  await auditLog(supabase, 'usage.delete', {
+    targetType: 'service_usage',
+    targetId: usageId,
+    metadata: { participantId: current.participant_id },
+  })
+
+  revalidatePath('/supporter/transactions')
+  return { success: true }
 }
 
 export interface ServiceUsageRow {

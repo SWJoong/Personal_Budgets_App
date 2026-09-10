@@ -8,13 +8,15 @@ import { Card } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { EmptyState } from '@/components/ui/EmptyState'
+import TransactionEditClient from './TransactionEditClient'
 
 export const metadata = { title: '거래 상세' }
 
 /**
- * 거래 상세 (GOAL축 A, §4-2) — 지출 1건 열람. ComingSoon 스텁 대체.
- * 금액·날짜·내용·영역·제공기관·정산상태·영수증(signed URL). RLS 로 담당분만. 편집은 이번 스코프 밖(열람 전용).
- * 진입: org 원장(A1) 그룹 펼침 행 · 당사자별 장부.
+ * 거래 상세 (GOAL축 A, §4-2) — 지출 1건 열람 + 수정/삭제(A2). ComingSoon 스텁 대체.
+ * 금액·날짜·내용·영역·제공기관·정산상태·영수증(signed URL). RLS 로 담당분만.
+ * A2: settlement_status='pending' 일 때만 금액·날짜·내용 수정/삭제 허용(canEdit prop 으로 전달),
+ * 검토가 끝나면 안내만(TransactionEditClient). 진입: org 원장(A1) 그룹 펼침 행 · 당사자별 장부.
  */
 export default async function TransactionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -69,6 +71,21 @@ export default async function TransactionDetailPage({ params }: { params: Promis
           {domainLabel && <Meta label="영역" value={domainLabel} />}
           {providerName && <Meta label="제공기관" value={providerName} />}
         </Card>
+
+        {/* 수정/삭제 (A2) — pending 이면 프리필 폼+삭제, 아니면 안내만 */}
+        <section className="flex flex-col gap-2">
+          <h2 className="text-xs font-black text-muted-foreground uppercase tracking-widest">수정</h2>
+          <TransactionEditClient
+            usageId={usage.id}
+            participantId={usage.participant_id}
+            canEdit={usage.settlement_status === 'pending'}
+            initial={{
+              amount: Number(usage.amount),
+              usageDate: usage.usage_date,
+              description: usage.description ?? '',
+            }}
+          />
+        </section>
 
         {/* 영수증 */}
         <section className="flex flex-col gap-2">
