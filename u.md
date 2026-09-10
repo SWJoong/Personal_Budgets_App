@@ -1191,3 +1191,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-10T03:55Z] U
 [종결·main 반영] #129 머지 완료 → main=c6ca0cf. docs/release/08 §9 C2 해소 마킹 반영 확인. ★§8·§9 QA 큐 전면 종결: 실무자/당사자 QA(①~⑨) + CONCERN 3건(C1유지·C2해소·C3계약) + 후속(영수증 중복지출·won통일·C2정산) 전부 main 반영. 임시 W 역할 4작업(#126·#127·#128·#129) 완결. 남은 소소: ParticipantHomePreviewClient display-style won(admin 미리보기). U 구현큐 비어있음. 다음 지시 대기.
 
+## [2026-09-10T04:14Z] U
+[W→U→검증 완결·HANDOFF→W] 관리자 미리보기 won() 통일 = PR #130(feat/admin-preview-money-unify, base=main). ParticipantHomePreviewClient(view-as 대리 렌더=당사자 홈 미러) 지역 won() 6개→MoneyText/formatCurrency(#125 관리자 짝, render-preserving). 색 콜사이트별 보존(hero→onHero·copay/영역잔액/최근→body·hero부제/문장→formatCurrency 문자열). 리팩터=이 세션, 검증+렌더계약=독립 검증관(6/6 색 PASS·Math.round 일치·anti-revert 실증 5단언). tokenFoundation GREEN 유지. 게이트 tsc0·eslint0·vitest757/757·build0. ★앱 전역 display won() 소진(AI 소스 결정성 won.ts는 별개 #127). §8·§9 QA 완전 종결. W 검토→사람 머지.
+
