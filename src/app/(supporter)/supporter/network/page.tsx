@@ -113,6 +113,13 @@ export default async function NetworkPage({
         <h1 className="text-xl font-bold tracking-tight truncate">
           {selected?.name ?? '당사자'} · 관계망
         </h1>
+        <Link
+          href={`/supporter/${participantId}/network`}
+          className="ml-auto text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center gap-1 shrink-0"
+        >
+          <span aria-hidden="true">🫂</span>
+          관계 편집
+        </Link>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6">

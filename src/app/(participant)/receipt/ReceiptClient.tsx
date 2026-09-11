@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { recordServiceUsage } from '@/app/actions/serviceUsage'
@@ -70,6 +70,12 @@ export default function ReceiptClient({
   const [placeResults, setPlaceResults] = useState<PlaceResult[]>([])
   const [placeSearching, setPlaceSearching] = useState(false)
   const [selectedPlace, setSelectedPlace] = useState<{ name: string; providerId: string } | null>(null)
+
+  // 접근성: 진입 즉시 영수증 카메라를 연다(capture="environment"). 사진→OCR 자동채움이 폼 입력보다
+  // 인지부담이 적다(발달장애인 당사자). 브라우저 사용자활성화 정책상 안 열릴 수 있으나 그 경우 폼은 그대로(무해).
+  useEffect(() => {
+    fileInputRef.current?.click()
+  }, [])
 
   async function handlePlaceSearch() {
     if (!placeQuery.trim()) return

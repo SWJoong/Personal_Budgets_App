@@ -72,7 +72,7 @@ export default async function ParticipantsOverviewPage() {
                     예산
                   </Link>
                   <Link
-                    href={`/supporter/network?participant=${p.id}`}
+                    href={`/supporter/${p.id}/network`}
                     className="text-xs font-bold px-3 rounded-full bg-muted text-muted-foreground hover:bg-muted-hover hover:text-foreground transition-colors min-h-[44px] flex items-center"
                   >
                     관계망
