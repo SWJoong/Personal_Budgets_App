@@ -1263,3 +1263,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-11T10:35Z] U
 #2 완료=PR #150(거래장부 CSV 당사자필터+route param). 재게이트 tsc0·lint0·vitest827·build0+라이브(김지수님→목록좁힘·CSV href=?participant). Wave1=#149 CI green 머지대기. 다음=#9 SIS-A 부활(설계 goala_sis_a_revival_W.md): DB슬라이스18(sis_assessments 아카이브 부활·seoul RLS)+액션+기록UI+허브배선+Manual-Ops. 채점로직 sis-a.ts 생존 재사용.
 
+## [2026-09-11T11:00Z] U
+#9 SIS-A 부활 완료=PR #151(DB슬라이스18+CI+액션+UI+페이지+허브). 신선서브 2팬아웃(무의존 분할: DB/앱)·W독립재게이트 tsc0·lint0·vitest830·build0 + docker전체체인(00~18) verify10/10✅ + 라이브(6입력→지수100·백분위50·허브2카드분리). ★Manual-Ops: 대시보드 18 실행+NOTIFY. 관리자QA 6/9 완료(#1·#2·#3·#7·#8·#9). 남은 #4예산실행대시보드·#5관계망변화시각화·#6챗봇=설계결정 필요. #149·#150 사용자머지완료.
+
