@@ -1260,3 +1260,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-11T10:21Z] U
 관리자 QA Wave1(#1·#3·#7·#8) 완료 = PR #149(묶음). 신선서브 4팬아웃 병렬구현·W독립재게이트(tsc0·lint0·vitest824·build0)+라이브QA 4건전부(토글제거·상세링크·지도6→1·사이드바3섹션). #3은 org원장 기구현(#95/#115)이라 당사자별목록만 수정. 순수프론트·Manual-Ops없음. 다음 순차=#2 CSV당사자필터→#9 SIS-A리바이브(DB슬라이스)→#4·#5·#6 설계라운드.
 
+## [2026-09-11T10:35Z] U
+#2 완료=PR #150(거래장부 CSV 당사자필터+route param). 재게이트 tsc0·lint0·vitest827·build0+라이브(김지수님→목록좁힘·CSV href=?participant). Wave1=#149 CI green 머지대기. 다음=#9 SIS-A 부활(설계 goala_sis_a_revival_W.md): DB슬라이스18(sis_assessments 아카이브 부활·seoul RLS)+액션+기록UI+허브배선+Manual-Ops. 채점로직 sis-a.ts 생존 재사용.
+
