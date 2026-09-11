@@ -77,6 +77,7 @@ export default async function ParticipantHubPage({ params }: { params: Promise<{
   // 바로가기 — 각 축의 기구현 화면으로. 라우트 규약은 파일 상단 주석 참조.
   const cards: { href: string; icon: string; label: string; desc: string }[] = [
     { href: `/supporter/budgets/${pid}`, icon: '💰', label: '예산', desc: '이용계획·잔액' },
+    { href: `/supporter/${pid}/budget-execution`, icon: '💳', label: '예산 실행', desc: '계획·실제·자부담' },
     { href: `/supporter/plans?participant=${pid}`, icon: '🎯', label: '이용계획·심의', desc: '계획 목록' },
     { href: `/supporter/${pid}/transactions`, icon: '🧾', label: '거래장부', desc: '지출 내역' },
     { href: `/supporter/evaluations/${pid}`, icon: '📋', label: '정산·평가', desc: '월별 평가' },
