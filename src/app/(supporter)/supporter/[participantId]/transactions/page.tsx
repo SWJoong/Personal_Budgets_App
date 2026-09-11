@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getServiceUsages } from '@/app/actions/serviceUsage'
@@ -67,10 +68,9 @@ export default async function TransactionsPage({ params }: { params: Promise<{ p
           <ul className="flex flex-col gap-2">
             {usages.map((u) => (
               <li key={u.id}>
-                <Card
-                  as="div"
-                  variant="default"
-                  className="flex items-center justify-between gap-3"
+                <Link
+                  href={`/supporter/transactions/${u.id}`}
+                  className="flex items-center justify-between gap-3 rounded-2xl p-4 min-h-[44px] bg-card ring-1 ring-border hover:bg-muted-hover transition-colors"
                 >
                   <div className="flex flex-col gap-0.5 min-w-0">
                     <span className="font-bold text-foreground truncate">{u.description || '(내용 없음)'}</span>
@@ -85,7 +85,7 @@ export default async function TransactionsPage({ params }: { params: Promise<{ p
                       intent={settlementIntent(u.settlement_status)}
                     />
                   </div>
-                </Card>
+                </Link>
               </li>
             ))}
           </ul>
