@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type Cy from 'cytoscape'
-import type { EgoGraph, NodeGroup } from '@/utils/egoGraph'
+import type { EgoGraph, NodeGroup, RelationCategory } from '@/utils/egoGraph'
 
 /**
  * 관계망 렌더 — cytoscape(동적 import, 이 staff 전용 라우트에서만 로드=코드분할).
@@ -30,19 +30,51 @@ const GROUP_LABEL: Record<NodeGroup, string> = {
 }
 // 순환 고리(사정→계획→예산→지출→정산→평가) 강조 시 살려둘 그룹. 나머지는 디밍.
 const CYCLE_CORE: ReadonlySet<NodeGroup> = new Set<NodeGroup>(['person', 'cycle', 'money', 'eval'])
+// #5 관계·활동 중심: 살려둘 그룹 = 사람(당사자+사회관계)·활동처(제공기관·영역)·활동(예산·지출).
+// 나머지(cycle 신청·심의 · eval 점검 · for 대리·담당 = 제도 워크플로)는 디밍(삭제 아님).
+const ACTIVITY_CORE: ReadonlySet<NodeGroup> = new Set<NodeGroup>(['person', 'asset', 'money'])
+// #5 4분면 라벨·정렬(고정). manual 엣지의 relation_category 별 칩.
+const CATEGORY_ORDER: readonly RelationCategory[] = ['family', 'friend', 'paid_support', 'community']
+const CATEGORY_LABEL: Record<RelationCategory, string> = {
+  family: '가족',
+  friend: '친구',
+  paid_support: '유급지원',
+  community: '지역사회',
+}
+const COMMUNITY_COLOR = '#0891b2' // 지역사회 강조(청록) — provenance 승격 대비 활동 관계 부각.
+const MANUAL_COLOR = '#8b5cf6' // 직접 얹은 관계(보라) — 실선·굵게로 핵심 승격.
 
 export default function NetworkGraphClient({ graph, participantName }: { graph: EgoGraph; participantName: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const cyRef = useRef<Cy.Core | null>(null)
   const [ready, setReady] = useState(false)
   const [cycleOnly, setCycleOnly] = useState(false)
+  const [activityFocus, setActivityFocus] = useState(false)
   const [showDirection, setShowDirection] = useState(false)
   const [selected, setSelected] = useState<{ id: string; label: string; group: NodeGroup; ntype: string } | null>(null)
 
   const nodeLabelById = useMemo(() => Object.fromEntries(graph.nodes.map((n) => [n.id, n.label])), [graph])
 
-  // 수동 큐레이션(직접 입력한 사회 관계) 엣지가 하나라도 있으면 점선 범례를 노출.
+  // 수동 큐레이션(직접 입력한 사회 관계) 엣지가 하나라도 있으면 승격 범례를 노출.
   const hasCurated = useMemo(() => graph.edges.some((e) => e.source === 'manual'), [graph])
+
+  // #5 provenance 요약 — 실무자가 직접 얹은 관계(manual) vs 자동 연결(derived=나머지).
+  const manualCount = useMemo(() => graph.edges.filter((e) => e.source === 'manual').length, [graph])
+  const derivedCount = graph.edges.length - manualCount
+
+  // #5 4분면 칩 — manual 엣지의 relation_category 별 개수(존재하는 분면만, 고정 순서).
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<RelationCategory, number>()
+    for (const e of graph.edges) {
+      if (e.source === 'manual' && e.relation_category) {
+        counts.set(e.relation_category, (counts.get(e.relation_category) ?? 0) + 1)
+      }
+    }
+    return CATEGORY_ORDER.filter((c) => counts.has(c)).map((c) => ({ category: c, count: counts.get(c)! }))
+  }, [graph])
+
+  // #5 지역사회(community) 관계 존재 여부 — 범례 청록 스와치 노출.
+  const hasCommunity = useMemo(() => graph.edges.some((e) => e.relation_category === 'community'), [graph])
 
   // 선택 노드에 붙은 관계(양방향) — 텍스트 요약용.
   const selectedRelations = useMemo(() => {
@@ -66,23 +98,35 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
       const cytoscape = (await import('cytoscape')).default
       if (destroyed || !containerRef.current) return
 
+      // #5 지역사회(community) manual 엣지의 상대 노드 id — 노드 링 강조용.
+      const communityNodeIds = new Set(
+        graph.edges.filter((e) => e.relation_category === 'community').map((e) => e.to_id),
+      )
+
       const elements: Cy.ElementDefinition[] = [
         ...graph.nodes.map((n) => ({
           data: { id: n.id, label: n.label, group: n.group, depth: n.depth, ntype: n.node_type },
+          // #5 지역사회 관계망 노드 = 청록 링(활동 관계 부각).
+          classes: communityNodeIds.has(n.id) ? 'community-node' : undefined,
         })),
-        ...graph.edges.map((e) => ({
-          // data.source/target 는 cytoscape 예약키(엣지 양끝 노드) — provenance 는 별도 키로 싣는다.
-          data: {
-            id: `${e.from_id}>${e.to_id}:${e.edge_type}`,
-            source: e.from_id,
-            target: e.to_id,
-            label: e.edge_label,
-            direction: e.direction,
-            provenance: e.source ?? 'derived',
-          },
-          // 수동 큐레이션(직접 입력한 사회 관계) 엣지 = 점선(.curated). 파생 엣지와 시각 구분.
-          classes: e.source === 'manual' ? 'curated' : undefined,
-        })),
+        ...graph.edges.map((e) => {
+          // 수동 큐레이션(.curated)=직접 얹은 관계(실선·보라·승격). 지역사회(.community)=청록 부각.
+          const cls: string[] = []
+          if (e.source === 'manual') cls.push('curated')
+          if (e.relation_category === 'community') cls.push('community')
+          return {
+            // data.source/target 는 cytoscape 예약키(엣지 양끝 노드) — provenance 는 별도 키로 싣는다.
+            data: {
+              id: `${e.from_id}>${e.to_id}:${e.edge_type}`,
+              source: e.from_id,
+              target: e.to_id,
+              label: e.edge_label,
+              direction: e.direction,
+              provenance: e.source ?? 'derived',
+            },
+            classes: cls.length ? cls.join(' ') : undefined,
+          }
+        }),
       ]
 
       const style = [
@@ -122,13 +166,23 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
             'arrow-scale': 0.9,
           },
         },
-        // 큐레이션(수동 입력) 엣지 — 점선 + 보라: 파생(FK) 관계와 구분되는 '직접 입력한 사회 관계'.
+        // #5 provenance 승격: 수동 큐레이션(직접 얹은 관계) 엣지 = 실선·굵게(width 3)·보라.
+        // 파생(회색 얇은) 대비 '핵심'으로 읽히게. (기존 점선 → 실선 승격.)
         {
           selector: 'edge.curated',
           style: {
-            'line-style': 'dashed',
-            'line-color': '#8b5cf6',
-            'target-arrow-color': '#8b5cf6',
+            'line-style': 'solid',
+            'line-color': MANUAL_COLOR,
+            'target-arrow-color': MANUAL_COLOR,
+            width: 3,
+          },
+        },
+        // #5 지역사회(community) manual 엣지 = 청록: 활동·지역사회 관계를 전면 부각(curated 뒤라 색 우선).
+        {
+          selector: 'edge.community',
+          style: {
+            'line-color': COMMUNITY_COLOR,
+            'target-arrow-color': COMMUNITY_COLOR,
           },
         },
         {
@@ -145,6 +199,8 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
         },
         { selector: 'edge.diron[direction="by"]', style: { 'line-color': '#16a34a', 'target-arrow-color': '#16a34a', width: 3 } },
         { selector: 'edge.diron[direction="for"]', style: { 'line-color': '#e11d48', 'target-arrow-color': '#e11d48', 'line-style': 'dashed', width: 3 } },
+        // #5 지역사회 관계망 노드 = 청록 링(활동 관계 부각). node:selected 가 뒤라 선택 시 검정 링이 우선.
+        { selector: 'node.community-node', style: { 'border-color': COMMUNITY_COLOR, 'border-width': 4 } },
         { selector: 'node:selected', style: { 'border-color': '#18181b', 'border-width': 4 } },
         { selector: '.dimmed', style: { opacity: 0.12 } },
       ] as Cy.StylesheetStyle[]
@@ -200,17 +256,21 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
     else cy.edges().removeClass('diron')
   }, [showDirection, ready])
 
-  // ── 토글: 순환 고리만 강조(나머지 디밍) ───────────────────────────────
+  // ── 토글: 디밍 오버레이(순환 고리만 · 관계·활동 중심) ─────────────────
+  // 두 토글은 독립 오버레이 — 둘 다 켜지면 각자 디밍 집합의 합집합(삭제 아님, opacity 0.12).
   useEffect(() => {
     const cy = cyRef.current
     if (!cy) return
     cy.elements().removeClass('dimmed')
-    if (cycleOnly) {
-      const nonCore = cy.nodes().filter((n: Cy.NodeSingular) => !CYCLE_CORE.has(n.data('group') as NodeGroup))
+    const dimByCore = (core: ReadonlySet<NodeGroup>) => {
+      const nonCore = cy.nodes().filter((n: Cy.NodeSingular) => !core.has(n.data('group') as NodeGroup))
       nonCore.addClass('dimmed')
       nonCore.connectedEdges().addClass('dimmed')
     }
-  }, [cycleOnly, ready])
+    if (cycleOnly) dimByCore(CYCLE_CORE)
+    // 관계·활동 중심: 제도 절차(cycle·eval·for) 디밍, 사람·활동처·활동(person·asset·money) 유지.
+    if (activityFocus) dimByCore(ACTIVITY_CORE)
+  }, [cycleOnly, activityFocus, ready])
 
   // 키보드 접근(§8 ⑤) — cy 'tap' 은 마우스/터치 전용이라, 노드 목록 버튼이 이 함수로 tap 과 동일한
   // 선택을 수행한다: 상세 패널 설정 + 그래프에서 해당 노드 선택·연결 엣지 라벨·센터링(시각 동기화).
@@ -237,6 +297,9 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
     <div className="flex flex-col gap-4">
       {/* 토글 */}
       <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={() => setActivityFocus((v) => !v)} className={toggleBtn(activityFocus)} aria-pressed={activityFocus}>
+          🫂 관계·활동 중심
+        </button>
         <button type="button" onClick={() => setCycleOnly((v) => !v)} className={toggleBtn(cycleOnly)} aria-pressed={cycleOnly}>
           🔄 순환 고리만
         </button>
@@ -250,6 +313,33 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
         >
           가운데 맞추기
         </button>
+      </div>
+
+      {activityFocus && (
+        <p className="text-xs text-muted-foreground leading-relaxed px-1 -mt-1">
+          제도 절차(신청·심의·대리)는 흐리게, 사람의 관계·활동을 앞으로 보여줘요. 노드는 지우지 않아요.
+        </p>
+      )}
+
+      {/* #5 provenance 요약(항상 표시 — 텍스트 대안 겸). aria-live 밖: 매 렌더 재낭독 방지. */}
+      <div className="flex flex-col gap-2 p-4 rounded-2xl bg-card ring-1 ring-border">
+        <p className="text-sm font-bold text-foreground leading-relaxed">
+          실무자가 직접 얹은 관계 {manualCount}개 · 자동 연결 {derivedCount}개
+        </p>
+        {manualCount > 0 && categoryCounts.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {categoryCounts.map(({ category, count }) => (
+              <span
+                key={category}
+                className={`inline-flex items-center min-h-[32px] px-3 rounded-full text-xs font-bold ring-1 ${
+                  category === 'community' ? 'bg-info-bg text-info-fg ring-info-fg/20' : 'bg-card text-muted-foreground ring-border'
+                }`}
+              >
+                {CATEGORY_LABEL[category]} {count}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 그래프 */}
@@ -281,7 +371,12 @@ export default function NetworkGraphClient({ graph, participantName }: { graph: 
         )}
         {hasCurated && (
           <span className="inline-flex items-center gap-1.5">
-            <span className="w-4 border-t-2 border-dashed" style={{ borderColor: '#8b5cf6' }} />점선 = 직접 입력한 관계
+            <span className="w-4 h-0.5" style={{ backgroundColor: MANUAL_COLOR }} />실선 = 직접 얹은 사회 관계
+          </span>
+        )}
+        {hasCommunity && (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-4 h-0.5" style={{ backgroundColor: COMMUNITY_COLOR }} />지역사회
           </span>
         )}
       </div>

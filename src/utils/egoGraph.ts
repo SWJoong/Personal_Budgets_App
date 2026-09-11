@@ -19,6 +19,9 @@ export interface GraphNode {
   label: string
 }
 
+/** 관계망 4분면(수동 큐레이션 사회 관계 분류). 큐레이션 뷰(14)의 manual 엣지에만 실린다. */
+export type RelationCategory = 'family' | 'friend' | 'paid_support' | 'community'
+
 /** v_seoul_graph_edges 행(edge_label 은 한글 관계명). */
 export interface GraphEdge {
   from_type: string
@@ -29,6 +32,10 @@ export interface GraphEdge {
   to_id: string
   /** provenance — 큐레이션 뷰(14)의 파생/수동 구분. 미지정이면 기존 파생 그래프 호출부(선택적). */
   source?: 'derived' | 'manual'
+  /** #5 4분면(가족/친구/유급지원/지역사회) — manual 엣지에만. 파생 엣지는 뷰에서 NULL→undefined. */
+  relation_category?: RelationCategory
+  /** #5 친밀도 1~4(동심원 거리) — manual 엣지에만(nullable). */
+  closeness?: number
 }
 
 /** 색 그룹. */

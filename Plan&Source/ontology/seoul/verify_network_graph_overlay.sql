@@ -13,6 +13,9 @@
 --   S2. 담당 실무자: 파생 엣지(대리인 등)가 source='derived' 로 뜬다
 --   S3. 담당 실무자: 관계망 노드(NetworkEntity)가 큐레이션 노드뷰에 뜬다
 --   S4. ★유출 차단: 남(다른 참여자)은 A 의 수동 관계 엣지를 못 본다(network_entities staff-only)
+--   S5. [#5] manual 엣지에 relation_category(4분면)·closeness(친밀도) 가 노출된다(가족·1)
+--   S6. [#5] manual 지역사회 엣지가 relation_category='community' 로 뜬다(지역사회 위주 필터 근거)
+--   S7. [#5] ★provenance 청결: derived 엣지엔 relation_category·closeness 가 NULL(수동 메타 오염 없음)
 --
 -- ID 접두: 'fa' (hex·다른 verify 와 충돌 회피).
 -- 실행 순서: verify_00_auth_stub → supabase/seoul/00,01,02,03,04,05,13,14 → 이 파일.
@@ -46,12 +49,15 @@ INSERT INTO public.participants (id, name, auth_user_id, assigned_supporter_id) 
      'fabbbbbb-0000-0000-0000-0000000000b1','fa000000-0000-0000-0000-0000000000ff')
 ON CONFLICT (id) DO NOTHING;
 
--- A 의 수동 관계 1명(가족) — 소유자/superuser 권한(RLS 우회).
+-- A 의 수동 관계 2명(가족·지역사회) — 소유자/superuser 권한(RLS 우회).
+-- #5: 가족(closeness 1)·지역사회(closeness 3) → S5/S6 분면·친밀도 노출, S7 파생 청결 대조.
 INSERT INTO public.seoul_network_entities
-  (id, participant_id, relation_category, entity_name, relation_type, created_by)
+  (id, participant_id, relation_category, entity_name, relation_type, closeness, created_by)
 VALUES
   ('fa700000-0000-0000-0000-0000000000a1','fa111111-1111-1111-1111-111111111111',
-   'family','김엄마','엄마','fa000000-0000-0000-0000-0000000000ff')
+   'family','김엄마','엄마',1,'fa000000-0000-0000-0000-0000000000ff'),
+  ('fa700000-0000-0000-0000-0000000000c1','fa111111-1111-1111-1111-111111111111',
+   'community','동네 주민센터','복지사',3,'fa000000-0000-0000-0000-0000000000ff')
 ON CONFLICT (id) DO NOTHING;
 
 -- A 의 대리인 1명 — 파생 엣지(Proxy actsFor Participant) 생성용.
@@ -97,6 +103,29 @@ SELECT '   B 가 본 A manual 엣지: ' || count(*) ||
        CASE WHEN count(*)=0 THEN '  ✅ 방어됨' ELSE '  ❌ 유출' END
   FROM public.v_seoul_graph_edges_curated
  WHERE s_id='fa111111-1111-1111-1111-111111111111' AND source='manual';
+RESET ROLE;
+
+\echo ''
+\echo '=== [#5] provenance 메타(4분면·친밀도) — 담당 실무자 ==='
+SET ROLE alice;
+SET request.jwt.claim.sub = 'fa000000-0000-0000-0000-0000000000ff';
+\echo '── S5. manual 가족 엣지에 relation_category=family·closeness=1 노출'
+SELECT '   가족 엣지 category·closeness: ' || count(*) ||
+       CASE WHEN count(*)=1 THEN '  ✅' ELSE '  ❌ 분면/친밀도 누락(구현 대기)' END
+  FROM public.v_seoul_graph_edges_curated
+ WHERE o_id='fa700000-0000-0000-0000-0000000000a1' AND source='manual'
+   AND relation_category='family' AND closeness=1;
+\echo '── S6. manual 지역사회 엣지가 relation_category=community(지역사회 위주 필터 근거)'
+SELECT '   지역사회 엣지 category: ' || count(*) ||
+       CASE WHEN count(*)=1 THEN '  ✅' ELSE '  ❌ community 미노출(구현 대기)' END
+  FROM public.v_seoul_graph_edges_curated
+ WHERE o_id='fa700000-0000-0000-0000-0000000000c1' AND source='manual'
+   AND relation_category='community' AND closeness=3;
+\echo '── S7. ★provenance 청결: derived 엣지엔 분면·친밀도 NULL(수동 메타 오염 없음)'
+SELECT '   분면/친밀도 붙은 derived 엣지(있으면 오염): ' || count(*) ||
+       CASE WHEN count(*)=0 THEN '  ✅ 청결' ELSE '  ❌ 파생에 수동 메타 오염' END
+  FROM public.v_seoul_graph_edges_curated
+ WHERE source='derived' AND (relation_category IS NOT NULL OR closeness IS NOT NULL);
 RESET ROLE;
 
 \echo ''

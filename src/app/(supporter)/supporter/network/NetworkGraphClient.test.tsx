@@ -193,3 +193,62 @@ describe('NetworkGraphClient — 키보드 노드 선택(§8 ⑤)', () => {
     await flush()
   })
 })
+
+/**
+ * #5 관계·활동 중심 뷰 + provenance 강조 계약 (W 저작).
+ * 설계출처: Plan&Source/goala_relationship_network_focus_W.md §3.
+ *
+ * 배경: 제도 워크플로가 그래프를 지배 → 실무자가 얹은 사회관계(provenance=manual)와 지역사회/활동을 전면으로.
+ *   ① "관계·활동 중심" 토글(제도 절차 디밍, 삭제 아님) ② provenance 요약(직접 얹은 N·자동 M) ③ 4분면 칩.
+ * cy 스타일(디밍·승격·링)은 스텁이 삼켜 단위불가 → 라이브 QA. 여기선 DOM(토글·요약·칩)만 계약한다.
+ *
+ * RED 사유: 토글·요약·칩 미구현 + EgoEdge 의 relation_category 필드 부재로 fixture 타입에러(contract-tsc-gate).
+ */
+// 큐레이션 포함 그래프: 수동 관계 3개(가족·친구·지역사회) + 파생 2개(예산·신청).
+const GRAPH_CURATED: EgoGraph = {
+  rootId: 'p1',
+  nodes: [
+    { node_type: 'Participant', id: 'p1', label: '김지수', depth: 0, group: 'person' },
+    { node_type: 'NetworkEntity', id: 'nf', label: '김엄마', depth: 1, group: 'person' },
+    { node_type: 'NetworkEntity', id: 'nr', label: '이수민', depth: 1, group: 'person' },
+    { node_type: 'NetworkEntity', id: 'nc', label: '햇살복지관 그림교실', depth: 1, group: 'person' },
+    { node_type: 'BudgetAllocation', id: 'b1', label: '올해 예산', depth: 1, group: 'money' },
+    { node_type: 'Application', id: 'a1', label: '신청서', depth: 1, group: 'cycle' },
+  ],
+  edges: [
+    { from_type: 'Participant', from_id: 'p1', edge_type: 'hasNetworkEntity', edge_label: '엄마', to_type: 'NetworkEntity', to_id: 'nf', direction: 'neutral', source: 'manual', relation_category: 'family', closeness: 1 },
+    { from_type: 'Participant', from_id: 'p1', edge_type: 'hasNetworkEntity', edge_label: '미술 친구', to_type: 'NetworkEntity', to_id: 'nr', direction: 'neutral', source: 'manual', relation_category: 'friend', closeness: 2 },
+    { from_type: 'Participant', from_id: 'p1', edge_type: 'hasNetworkEntity', edge_label: '강사', to_type: 'NetworkEntity', to_id: 'nc', direction: 'neutral', source: 'manual', relation_category: 'community', closeness: 3 },
+    { from_type: 'Participant', from_id: 'p1', edge_type: 'grants', edge_label: '배정받음', to_type: 'BudgetAllocation', to_id: 'b1', direction: 'by', source: 'derived' },
+    { from_type: 'Participant', from_id: 'p1', edge_type: 'submits', edge_label: '신청함', to_type: 'Application', to_id: 'a1', direction: 'by', source: 'derived' },
+  ],
+}
+
+describe('NetworkGraphClient — 관계·활동 중심 + provenance(#5)', () => {
+  it('"관계·활동 중심" 토글이 있다(aria-pressed, 켜고 끔)', async () => {
+    render(<NetworkGraphClient graph={GRAPH_CURATED} participantName="김지수" />)
+    const btn = screen.getByRole('button', { name: /관계·활동 중심/ })
+    expect(btn).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(btn)
+    expect(btn).toHaveAttribute('aria-pressed', 'true')
+    await flush()
+  })
+
+  it('provenance 요약: 직접 얹은 관계 수(3) · 자동 연결 수(2)', async () => {
+    render(<NetworkGraphClient graph={GRAPH_CURATED} participantName="김지수" />)
+    // 한 요약 문장에 두 수가 함께 — manual 3(가족·친구·지역사회), derived 2(예산·신청).
+    const summary = screen.getByText(/직접 얹은 관계/)
+    expect(summary.textContent).toMatch(/직접 얹은 관계\s*3/)
+    expect(summary.textContent).toMatch(/자동 연결\s*2/)
+    await flush()
+  })
+
+  it('4분면 칩: 존재하는 분면별 개수(지역사회 포함)', async () => {
+    render(<NetworkGraphClient graph={GRAPH_CURATED} participantName="김지수" />)
+    // 라벨 고정 매핑: family→가족·friend→친구·community→지역사회. 각 1개.
+    expect(screen.getByText(/가족 1/)).toBeInTheDocument()
+    expect(screen.getByText(/친구 1/)).toBeInTheDocument()
+    expect(screen.getByText(/지역사회 1/)).toBeInTheDocument()
+    await flush()
+  })
+})
