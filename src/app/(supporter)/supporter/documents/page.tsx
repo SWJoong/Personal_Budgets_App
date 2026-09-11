@@ -12,9 +12,15 @@ export const metadata = { title: '서류 보관함' }
  * ★나열은 getDocumentShelf()=RLS(seoul_can_access) 스코프. 열람 URL 은 인가 후 admin 서명.
  */
 export default async function SupporterDocumentsPage() {
-  await requireStaff()
+  const { supabase } = await requireStaff()
   const { rows, error } = await getDocumentShelf()
   const shelf = buildDocumentShelf(rows)
+
+  // 업로드 당사자 picker 옵션 — RLS(seoul_can_access)가 담당/접근 가능한 당사자만 돌려준다.
+  const { data: parts } = await supabase.from('participants').select('id, name').order('name')
+  const assignableParticipants = (parts ?? [])
+    .filter((p) => p.id)
+    .map((p) => ({ id: p.id, name: p.name ?? '이름 없음' }))
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
@@ -35,7 +41,7 @@ export default async function SupporterDocumentsPage() {
             {error}
           </div>
         ) : (
-          <DocumentShelfClient shelf={shelf} />
+          <DocumentShelfClient shelf={shelf} assignableParticipants={assignableParticipants} />
         )}
       </main>
     </div>
