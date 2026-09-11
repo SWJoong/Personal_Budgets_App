@@ -35,4 +35,30 @@ describe('egoGraph 오버레이 (B4)', () => {
     expect(manual?.source).toBe('manual')
     expect(derived?.source).toBe('derived')
   })
+
+  // #5: 큐레이션 뷰(14 확장)가 manual 엣지에 실은 4분면(relation_category)·친밀도(closeness)를
+  //   ego-그래프가 EgoEdge 로 그대로 전파해야 클라이언트가 '지역사회 위주' 강조·분면 칩을 그린다.
+  //   RED 사유: GraphEdge 에 relation_category/closeness 필드가 없어 tsc 에러(contract-tsc-gate).
+  it('GraphEdge 의 relation_category·closeness 가 EgoEdge 로 전파된다(4분면·친밀도)', () => {
+    const nodes: GraphNode[] = [
+      { node_type: 'Participant', id: 'p-1', label: '당사자' },
+      { node_type: 'NetworkEntity', id: 'ne-c', label: '동네 주민센터' },
+      { node_type: 'Proxy', id: 'px-1', label: '대리인' },
+    ]
+    const edges: GraphEdge[] = [
+      {
+        from_type: 'Participant', from_id: 'p-1', edge_type: 'hasNetworkEntity', edge_label: '복지사',
+        to_type: 'NetworkEntity', to_id: 'ne-c', source: 'manual', relation_category: 'community', closeness: 3,
+      },
+      { from_type: 'Proxy', from_id: 'px-1', edge_type: 'actsFor', edge_label: '대리한다', to_type: 'Participant', to_id: 'p-1', source: 'derived' },
+    ]
+    const ego = buildEgoGraph(nodes, edges, 'p-1')
+    const community = ego.edges.find((e) => e.to_id === 'ne-c')
+    const derived = ego.edges.find((e) => e.from_id === 'px-1')
+    expect(community?.relation_category).toBe('community')
+    expect(community?.closeness).toBe(3)
+    // 파생 엣지엔 분면·친밀도 없음(뷰 NULL → undefined).
+    expect(derived?.relation_category).toBeUndefined()
+    expect(derived?.closeness).toBeUndefined()
+  })
 })
