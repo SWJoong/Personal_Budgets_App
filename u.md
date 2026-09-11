@@ -1254,3 +1254,6 @@ G2 완료: PR #147(participant_feedback 복구) CI green(db-verify 52s·quality-
 ## [2026-09-11T05:11Z] U
 G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재게이트 tsc0·lint0·vitest823/823(계약6포함·회귀0)·build0 + 라이브QA 카운트 3종 워크리스트 parity 전부 일치(검토2·심사1·심의2). 신선서브 구현·W재게이트. 순수프론트. G2(#147)+G1(#148) 둘다 CI대기·머지대기. G2만 Manual-Ops(대시보드 17). 관리자 QA 1차 발견 2건 모두 수정 PR화 완료.
 
+## [2026-09-11T08:46Z] U
+관리자 QA 종결: 7 PR(#142~#148) 전부 머지+2 Manual-Ops(16 데모서류·17 피드백테이블) 대시보드 실행·라이브 검증 완료. ★함정: 첫 17 실행이 실제로는 미적용이었는데 PostgREST PGRST205 'schema cache' 문구가 없는테이블도 동일표현→캐시로 오판. COMMENT의 Postgres 42P01로 진짜없음 판명·재실행으로 해결. 검증법=앱화면(dev 라우터캐시) 말고 anon키로 PostgREST 직접 curl(200 vs PGRST205). 메모 reference_manual-ops-verify 신설. 현재 G1(대시보드)·G2(피드백)·데모서류 전부 라이브. 다음=사용자 결정(추가 관리자 발견 or 마무리).
+
