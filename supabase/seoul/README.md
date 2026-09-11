@@ -30,6 +30,7 @@
 13_network_entities.sql  관계망 CRUD 테이블·RLS staff-only (Track B) — 사회 관계망 4분면
 14_network_graph_overlay.sql  관계망 그래프 오버레이 큐레이션 뷰 (Track B) — 파생 그래프 ∪ 수동 관계(provenance)
 15_seed_network_demo.sql      (선택·데모) 데모 당사자 관계망 4분면 샘플 시드 — QA 데이터용. 08·13 이후 실행. 멱등
+16_seed_documents_demo.sql    (선택·데모) 데모 당사자 서류 메타데이터 시드 — 서류함 QA용. 08 이후 실행. 멱등. ★파일없음(열기 미동작)
 ```
 
 여기까지가 **운영 환경에도 그대로 실행하는 부분**입니다. 이어서 데모 계정이 필요하면:

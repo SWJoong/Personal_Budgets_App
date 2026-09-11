@@ -40,6 +40,13 @@ export default async function NetworkPage({ params }: { params: Promise<{ partic
           </Link>
           <h1 className="text-xl font-bold tracking-tight truncate">{participant.name ?? '이름 없음'}님의 관계망</h1>
         </div>
+        <Link
+          href={`/supporter/network?participant=${participantId}`}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center gap-1 shrink-0 ml-3"
+        >
+          <span aria-hidden="true">🕸️</span>
+          관계망 그래프
+        </Link>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
