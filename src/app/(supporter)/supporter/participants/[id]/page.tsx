@@ -87,6 +87,7 @@ export default async function ParticipantHubPage({ params }: { params: Promise<{
     { href: `/supporter/${pid}/report`, icon: '📊', label: '월간보고서', desc: '리포트' },
     { href: `/supporter/network?participant=${pid}`, icon: '🕸️', label: '관계망', desc: '지원 관계' },
     { href: `/supporter/map?participant=${pid}`, icon: '🗺️', label: '활동 지도', desc: '지출 위치' },
+    { href: `/supporter/${pid}/checkup`, icon: '🩺', label: 'AI 점검 제안', desc: '우선순위 점검' },
   ]
 
   return (
