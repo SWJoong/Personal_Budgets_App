@@ -52,7 +52,9 @@ export default function AssessmentClient({
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState('')
-  const [program, setProgram] = useState<Program>('seoul')
+  // 관리자 QA #1: 서울형 개인예산제 전용 앱 — 제도는 '서울형'으로 고정(제도 토글 UI 제거).
+  // DB 분류축(09 온톨로지)·서버 액션의 program 파라미터는 그대로 유지한다(리포팅·교차매핑용).
+  const [program] = useState<Program>('seoul')
   const [domainId, setDomainId] = useState('')
   const [subdomainId, setSubdomainId] = useState('')
   const [limitation, setLimitation] = useState('')
@@ -65,12 +67,6 @@ export default function AssessmentClient({
   const domainsForProgram = domains.filter((d) => d.program === program)
   const subdomainsForDomain = subdomains.filter((s) => s.domain_id === domainId)
   const hasSubdomains = program === 'mohw' && subdomainsForDomain.length > 0
-
-  function selectProgram(p: Program) {
-    setProgram(p)
-    setDomainId('')
-    setSubdomainId('')
-  }
 
   function selectDomain(id: string) {
     setDomainId(id)
@@ -184,29 +180,7 @@ export default function AssessmentClient({
       <section className="flex flex-col gap-4 border-t border-border pt-6">
         <h2 className="text-sm font-bold text-muted-foreground">새 욕구 적기</h2>
 
-        {/* 제도 토글 */}
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-muted-foreground font-medium">제도</span>
-          <div className="flex gap-2" role="group" aria-label="제도 선택">
-            {(['seoul', 'mohw'] as Program[]).map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => selectProgram(p)}
-                aria-pressed={program === p}
-                className={`flex-1 p-3 rounded-xl font-bold text-sm transition-colors min-h-[44px] ${
-                  program === p
-                    ? 'bg-hero text-hero-foreground'
-                    : 'bg-muted ring-1 ring-border text-muted-foreground hover:ring-foreground'
-                }`}
-              >
-                {PROGRAM_LABEL[p]}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 대분류 */}
+        {/* 대분류 — 서울형 대분류만 노출(제도 고정) */}
         <div className="flex flex-col gap-1">
           <label htmlFor="assessment-domain" className="text-xs text-muted-foreground font-medium">
             도움이 필요한 영역 *

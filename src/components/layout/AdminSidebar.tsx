@@ -34,36 +34,63 @@ interface MenuItem {
 
 // soon: true 인 항목은 화면은 있으나 서울형 데이터 모델로 아직 다시 만들지 않은 라우트
 // (ComingSoon 플레이스홀더로 이어짐). 사이드바에 "준비중" 표시로 미리 알린다.
-const menuItems: MenuItem[] = [
-  { name: '관리자 대시보드', href: '/admin', icon: '📊', adminOnly: true },
+
+// 상단 고정(단독): 관리자 대시보드 — 어떤 세트에도 속하지 않고 맨 위에 둔다.
+const dashboardItem: MenuItem = { name: '관리자 대시보드', href: '/admin', icon: '📊', adminOnly: true }
+
+// 하단 고정(단독): 시스템 설정 — 어떤 세트에도 속하지 않고 맨 아래에 둔다.
+const settingsItem: MenuItem = { name: '시스템 설정', href: '/admin/settings', icon: '⚙️', adminOnly: true }
+
+interface MenuGroup {
+  label: string
+  items: MenuItem[]
+}
+
+// 가운데 메뉴를 3개 세트로 묶어 논리적 그룹으로 읽히게 한다(관리자 QA #8).
+// 각 세트 앞에 비대화형 캡션(헤더)을 렌더. 링크의 name·href·sub 는 전부 그대로 유지한다.
+const menuGroups: MenuGroup[] = [
   {
-    name: '당사자 관리',
-    href: '/admin/participants',
-    icon: '👥',
-    adminOnly: true, // /admin/participants = requireAdmin. 실무자는 아래 supporterParticipantItem 로 대체.
-    sub: [
-      { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
-      { name: '📋 전체 목록',      href: '/admin/participants' },
-      { name: '📊 당사자 현황',    href: '/supporter/participants' },
+    label: '당사자 지원',
+    items: [
+      {
+        name: '당사자 관리',
+        href: '/admin/participants',
+        icon: '👥',
+        adminOnly: true, // /admin/participants = requireAdmin. 실무자는 아래 supporterParticipantItem 로 대체.
+        sub: [
+          { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
+          { name: '📋 전체 목록',      href: '/admin/participants' },
+          { name: '📊 당사자 현황',    href: '/supporter/participants' },
+        ],
+      },
+      {
+        name: '신청 · 선정',
+        href: '/supporter/applications',
+        icon: '📝',
+        sub: [
+          { name: '➕ 신청서 접수', href: '/supporter/applications/new' },
+          { name: '📋 전체 목록',   href: '/supporter/applications' },
+        ],
+      },
+      { name: '이용계획 · 심의', href: '/supporter/plans', icon: '🎯' },
     ],
   },
   {
-    name: '신청 · 선정',
-    href: '/supporter/applications',
-    icon: '📝',
-    sub: [
-      { name: '➕ 신청서 접수', href: '/supporter/applications/new' },
-      { name: '📋 전체 목록',   href: '/supporter/applications' },
+    label: '정산·회계',
+    items: [
+      { name: '영수증 검토 대기', href: '/supporter/review',       icon: '🧾' },
+      { name: '회계/거래장부',    href: '/supporter/transactions', icon: '📒' },
+      { name: '정산 원장',        href: '/supporter/settlements',  icon: '💰' },
     ],
   },
-  { name: '이용계획 · 심의', href: '/supporter/plans',        icon: '🎯' },
-  { name: '영수증 검토 대기', href: '/supporter/review',       icon: '🧾' },
-  { name: '회계/거래장부',    href: '/supporter/transactions', icon: '📒' },
-  { name: '정산 원장',        href: '/supporter/settlements',  icon: '💰' },
-  { name: '증빙/서류 보관함', href: '/supporter/documents',    icon: '📁' },
-  { name: '계획과 평가',      href: '/supporter/evaluations',  icon: '📋' },
-  { name: '활동 지도',        href: '/supporter/map',          icon: '🗺️' },
-  { name: '시스템 설정',      href: '/admin/settings',         icon: '⚙️', adminOnly: true },
+  {
+    label: '증빙·활동',
+    items: [
+      { name: '증빙/서류 보관함', href: '/supporter/documents',   icon: '📁' },
+      { name: '계획과 평가',      href: '/supporter/evaluations', icon: '📋' },
+      { name: '활동 지도',        href: '/supporter/map',         icon: '🗺️' },
+    ],
+  },
 ]
 
 // 실무자용 당사자 항목 — 관리자의 '당사자 관리'(/admin/participants, admin 전용) 대체.
@@ -110,9 +137,17 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
   // 死링크만 제거 — 08 QA finding, 사용자 결정 A). role 불명(로딩/미인증)·관리자면 전체 메뉴 유지
   // → 관리자 뷰와 단위테스트(useAuth user=null)는 그대로다.
   const isSupporter = role === 'supporter'
-  const visibleItems = isSupporter
-    ? [supporterParticipantItem, ...menuItems.filter((i) => !i.adminOnly)]
-    : menuItems
+  // adminOnly 필터를 세트(그룹)·단독 항목 단위로 적용한다. '당사자 관리'(admin 전용)를 담은 그룹은
+  // 접근 가능한 '당사자 현황'(supporterParticipantItem)으로 대체 — 필터 후 비면 그 세트는 헤더도 안 그린다.
+  const filterItems = (items: MenuItem[]): MenuItem[] => {
+    if (!isSupporter) return items
+    const kept = items.filter((i) => !i.adminOnly)
+    return items.some((i) => i.href === '/admin/participants')
+      ? [supporterParticipantItem, ...kept]
+      : kept
+  }
+  const topItems = filterItems([dashboardItem])
+  const bottomItems = filterItems([settingsItem])
   const visibleQuick = isSupporter ? quickItems.filter((q) => !q.adminOnly) : quickItems
   const roleLabel = role === 'supporter' ? '담당자' : role === 'participant' ? '당사자' : '관리자'
 
@@ -122,6 +157,79 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
   const handleLogout = async () => {
     await supabase.auth.signOut()
     window.location.href = '/login'
+  }
+
+  // 단일 메뉴 항목 렌더 — 상단 단독·세트·하단 단독에서 공용(그룹핑 이전 로직·JSX 그대로).
+  const renderItem = (item: MenuItem) => {
+    const isActive =
+      pathname === item.href ||
+      (item.href !== '/supporter' && item.href !== '/admin' && pathname.startsWith(item.href))
+    // 실무자(supporter)면 서브항목도 adminOnly 를 거른다 — 지금은 admin 서브가 adminOnly
+    // 부모('당사자 관리') 아래라 누수 0 이지만, 비-adminOnly 부모에 admin 서브가 추가되면
+    // 死링크가 새는 잠재 위험을 선제 차단한다(08 §8 ⑧). role 불명/관리자는 그대로.
+    const subItems = isSupporter ? item.sub?.filter((s) => !s.adminOnly) : item.sub
+    const hasSub = !collapsed && !!subItems && subItems.length > 0
+    const isSubOpen = openSubs[item.href] ?? isActive
+
+    return (
+      <div key={item.name}>
+        <div className="flex items-center">
+          <Link
+            href={item.href}
+            title={collapsed ? item.name : undefined}
+            aria-current={pathname === item.href ? 'page' : undefined}
+            className={`flex items-center gap-3 rounded-xl transition-all duration-150 flex-1 ${
+              collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
+            } ${isActive ? 'bg-sidebar-active text-sidebar-strong font-semibold shadow-sm outline outline-2 outline-sidebar-active-outline' : 'hover:bg-sidebar-hover hover:text-sidebar-strong'}`}
+          >
+            <span aria-hidden="true" className={`text-xl shrink-0 transition-transform ${isActive ? 'scale-110' : ''}`}>
+              {item.icon}
+            </span>
+            {!collapsed && (
+              <>
+                <span className="text-sm truncate flex-1">{item.name}</span>
+                {item.soon && <SoonBadge />}
+                {isActive && (
+                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-sidebar-marker animate-pulse-gentle shrink-0" />
+                )}
+              </>
+            )}
+          </Link>
+          {/* 서브메뉴 토글 버튼 */}
+          {hasSub && (
+            <button
+              onClick={() => toggleSub(item.href)}
+              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-strong transition-all shrink-0 mr-1"
+              aria-label={isSubOpen ? '접기' : '펼치기'}
+              aria-expanded={isSubOpen}
+            >
+              <span className="text-xs">{isSubOpen ? '▲' : '▼'}</span>
+            </button>
+          )}
+        </div>
+
+        {/* 서브메뉴 */}
+        {hasSub && isSubOpen && (
+          <div className="ml-8 mt-0.5 flex flex-col gap-0.5">
+            {subItems!.map(sub => (
+              <Link
+                key={sub.href}
+                href={sub.href}
+                aria-current={pathname === sub.href ? 'page' : undefined}
+                className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg transition-all ${
+                  pathname === sub.href
+                    ? 'bg-sidebar-active text-sidebar-strong font-bold outline outline-2 outline-sidebar-active-outline'
+                    : 'text-sidebar-muted-foreground hover:bg-sidebar-hover hover:text-sidebar-strong'
+                }`}
+              >
+                <span className="truncate">{sub.name}</span>
+                {sub.soon && <SoonBadge />}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -151,79 +259,31 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
 
       <div className="h-px bg-sidebar-border mx-3 mb-3 shrink-0" />
 
-      {/* 메인 메뉴 */}
+      {/* 메인 메뉴 — 상단 단독(대시보드) · 3개 세트 · 하단 단독(설정) */}
       <nav aria-label="주요 메뉴" className="flex-1 px-2 space-y-0.5">
-        {visibleItems.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== '/supporter' && item.href !== '/admin' && pathname.startsWith(item.href))
-          // 실무자(supporter)면 서브항목도 adminOnly 를 거른다 — 지금은 admin 서브가 adminOnly
-          // 부모('당사자 관리') 아래라 누수 0 이지만, 비-adminOnly 부모에 admin 서브가 추가되면
-          // 死링크가 새는 잠재 위험을 선제 차단한다(08 §8 ⑧). role 불명/관리자는 그대로.
-          const subItems = isSupporter ? item.sub?.filter((s) => !s.adminOnly) : item.sub
-          const hasSub = !collapsed && !!subItems && subItems.length > 0
-          const isSubOpen = openSubs[item.href] ?? isActive
+        {/* 상단 단독: 관리자 대시보드 (세트 밖) */}
+        {topItems.map(renderItem)}
 
+        {/* 3개 세트 — 각 세트 앞 캡션 헤더(접힘 모드에선 구분선). 필터로 비면 통째로 생략. */}
+        {menuGroups.map((group) => {
+          const items = filterItems(group.items)
+          if (items.length === 0) return null
           return (
-            <div key={item.name}>
-              <div className="flex items-center">
-                <Link
-                  href={item.href}
-                  title={collapsed ? item.name : undefined}
-                  aria-current={pathname === item.href ? 'page' : undefined}
-                  className={`flex items-center gap-3 rounded-xl transition-all duration-150 flex-1 ${
-                    collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
-                  } ${isActive ? 'bg-sidebar-active text-sidebar-strong font-semibold shadow-sm outline outline-2 outline-sidebar-active-outline' : 'hover:bg-sidebar-hover hover:text-sidebar-strong'}`}
-                >
-                  <span aria-hidden="true" className={`text-xl shrink-0 transition-transform ${isActive ? 'scale-110' : ''}`}>
-                    {item.icon}
-                  </span>
-                  {!collapsed && (
-                    <>
-                      <span className="text-sm truncate flex-1">{item.name}</span>
-                      {item.soon && <SoonBadge />}
-                      {isActive && (
-                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-sidebar-marker animate-pulse-gentle shrink-0" />
-                      )}
-                    </>
-                  )}
-                </Link>
-                {/* 서브메뉴 토글 버튼 */}
-                {hasSub && (
-                  <button
-                    onClick={() => toggleSub(item.href)}
-                    className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-strong transition-all shrink-0 mr-1"
-                    aria-label={isSubOpen ? '접기' : '펼치기'}
-                    aria-expanded={isSubOpen}
-                  >
-                    <span className="text-xs">{isSubOpen ? '▲' : '▼'}</span>
-                  </button>
-                )}
-              </div>
-
-              {/* 서브메뉴 */}
-              {hasSub && isSubOpen && (
-                <div className="ml-8 mt-0.5 flex flex-col gap-0.5">
-                  {subItems!.map(sub => (
-                    <Link
-                      key={sub.href}
-                      href={sub.href}
-                      aria-current={pathname === sub.href ? 'page' : undefined}
-                      className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg transition-all ${
-                        pathname === sub.href
-                          ? 'bg-sidebar-active text-sidebar-strong font-bold outline outline-2 outline-sidebar-active-outline'
-                          : 'text-sidebar-muted-foreground hover:bg-sidebar-hover hover:text-sidebar-strong'
-                      }`}
-                    >
-                      <span className="truncate">{sub.name}</span>
-                      {sub.soon && <SoonBadge />}
-                    </Link>
-                  ))}
-                </div>
+            <div key={group.label} className="space-y-0.5">
+              {collapsed ? (
+                <div aria-hidden="true" className="h-px bg-sidebar-border mx-2 my-1.5" />
+              ) : (
+                <p className="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-sidebar-muted-foreground select-none">
+                  {group.label}
+                </p>
               )}
+              {items.map(renderItem)}
             </div>
           )
         })}
+
+        {/* 하단 단독: 시스템 설정 (세트 밖) */}
+        {bottomItems.map(renderItem)}
       </nav>
 
       {/* 빠른 설정 섹션 */}
