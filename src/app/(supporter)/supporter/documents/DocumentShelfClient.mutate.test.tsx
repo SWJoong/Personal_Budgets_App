@@ -5,15 +5,16 @@ import { deleteShelfDocument, uploadShelfDocument } from '@/app/actions/document
 import type { DocumentShelf } from '@/utils/documentShelf'
 
 /**
- * A3 서류 보강 — 서류함 업로드/삭제 어포던스 (RED 계약, W 레인).
- * 설계출처: Plan&Source/goala_supporter_accounting_W.md §2 A3.
+ * 서류함 삭제 + 당사자 선택 업로드 계약 (A3 + F1 후속, W 레인).
+ * 설계출처: Plan&Source/goala_supporter_accounting_W.md §2 A3(+F1 후속).
  * 구현 대상: src/app/(supporter)/supporter/documents/DocumentShelfClient.tsx.
  *
- * 배경: 셸프는 그동안 열람 전용([열기])이었다. 문서별 삭제 + 참여자 그룹별 서류 추가(업로드)를 붙인다.
- *   pending 같은 상태 가드는 없고(서류엔 정산상태 없음), 업로드는 그룹의 participantId 컨텍스트를 쓴다.
+ * F1 변경: 업로드를 "참여자 그룹 안"에서만 하던 것(서류 0건이면 진입점 부재)을, **상단 당사자-선택
+ *   업로드**로 통일한다 — 서류가 하나도 없어도(빈 셸프) 담당 당사자를 골라 첫 서류를 올릴 수 있다.
+ *   삭제(문서별)는 그대로. 업로드는 이제 그룹 컨텍스트가 아니라 선택한 당사자(participantId)를 쓴다.
  *
- * RED 사유: deleteShelfDocument·uploadShelfDocument 가 아직 없고 셸프에 삭제/추가 컨트롤이 없다.
- * 단언 범위: 노출·배선만(배치·토큰·문구 정확표기 제외). 그룹을 펼쳐야 문서·컨트롤이 렌더된다.
+ * RED 사유: 빈 셸프에 업로드 폼이 없고(getByLabelText('당사자') throw), assignableParticipants prop 부재.
+ * 단언 범위: 노출·배선만.
  */
 
 vi.mock('next/navigation', () => ({
@@ -28,6 +29,11 @@ vi.mock('@/app/actions/document', () => ({
   uploadShelfDocument: vi.fn(async () => ({ success: true, documentId: 'new-doc' })),
 }))
 
+const assignable = [
+  { id: 'p-1', name: '김지수' },
+  { id: 'p-2', name: '박준호' },
+]
+
 const shelf: DocumentShelf = {
   totalDocuments: 1,
   participants: [
@@ -37,62 +43,50 @@ const shelf: DocumentShelf = {
       count: 1,
       latestDate: '2026-09-01',
       docs: [
-        {
-          id: 'doc-1',
-          docType: 'other',
-          docTypeLabel: '기타',
-          fileName: '영수증묶음.pdf',
-          note: null,
-          createdAt: '2026-09-01',
-        },
+        { id: 'doc-1', docType: 'other', docTypeLabel: '기타', fileName: '영수증묶음.pdf', note: null, createdAt: '2026-09-01' },
       ],
     },
   ],
 }
 
-function renderAndExpand() {
-  const view = render(<DocumentShelfClient shelf={shelf} />)
-  // 그룹을 펼쳐야 문서·컨트롤이 렌더된다(참여자 이름 토글).
-  fireEvent.click(screen.getByRole('button', { name: /김지수/ }))
-  return view
-}
+const emptyShelf: DocumentShelf = { totalDocuments: 0, participants: [] }
 
 beforeEach(() => {
   vi.clearAllMocks()
 })
 
-describe('A3 — DocumentShelfClient 삭제/업로드 어포던스', () => {
+describe('DocumentShelfClient — 삭제 + 당사자 선택 업로드 (A3·F1)', () => {
   it('펼친 그룹의 문서에 삭제 컨트롤이 있다', () => {
-    renderAndExpand()
+    render(<DocumentShelfClient shelf={shelf} assignableParticipants={assignable} />)
+    fireEvent.click(screen.getByRole('button', { name: /김지수/ }))
     expect(screen.getByRole('button', { name: '삭제' })).toBeInTheDocument()
   })
 
   it('삭제를 확인하면 deleteShelfDocument 가 문서 id 로 호출된다', async () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
-    renderAndExpand()
+    render(<DocumentShelfClient shelf={shelf} assignableParticipants={assignable} />)
+    fireEvent.click(screen.getByRole('button', { name: /김지수/ }))
     fireEvent.click(screen.getByRole('button', { name: '삭제' }))
     await waitFor(() => expect(deleteShelfDocument).toHaveBeenCalledWith('doc-1'))
     confirmSpy.mockRestore()
   })
 
-  it('그룹에 "서류 추가" 어포던스가 있고, 누르면 파일 입력이 나타난다', () => {
-    const { container } = renderAndExpand()
-    fireEvent.click(screen.getByRole('button', { name: /서류 추가/ }))
+  it('★서류가 하나도 없어도(빈 셸프) 당사자 선택 + 파일 업로드 폼이 있다', () => {
+    const { container } = render(<DocumentShelfClient shelf={emptyShelf} assignableParticipants={assignable} />)
+    expect(screen.getByLabelText('당사자')).toBeInTheDocument() // 참여자 picker
     expect(container.querySelector('input[type="file"]')).not.toBeNull()
+    expect(screen.getByRole('button', { name: '올리기' })).toBeInTheDocument()
   })
 
-  it('파일을 고르고 올리면 uploadShelfDocument 가 그룹 participantId 로 호출된다', async () => {
-    const { container } = renderAndExpand()
-    fireEvent.click(screen.getByRole('button', { name: /서류 추가/ }))
+  it('당사자를 고르고 올리면 그 participantId 로 uploadShelfDocument 가 호출된다', async () => {
+    const { container } = render(<DocumentShelfClient shelf={emptyShelf} assignableParticipants={assignable} />)
+    fireEvent.change(screen.getByLabelText('당사자'), { target: { value: 'p-2' } })
     const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement
-    const file = new File(['hello'], '동의서.pdf', { type: 'application/pdf' })
-    fireEvent.change(fileInput, { target: { files: [file] } })
-    // 업로드 폼 안의 제출 버튼(올리기).
+    fireEvent.change(fileInput, { target: { files: [new File(['x'], '동의서.pdf', { type: 'application/pdf' })] } })
     fireEvent.click(screen.getByRole('button', { name: '올리기' }))
-    await waitFor(() =>
-      expect(uploadShelfDocument).toHaveBeenCalledWith(
-        expect.objectContaining({ participantId: 'p-1', fileName: '동의서.pdf' }),
-      ),
+    await waitFor(() => expect(uploadShelfDocument).toHaveBeenCalledTimes(1))
+    expect(uploadShelfDocument).toHaveBeenCalledWith(
+      expect.objectContaining({ participantId: 'p-2', fileName: '동의서.pdf' }),
     )
   })
 })
