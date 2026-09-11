@@ -1278,3 +1278,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-11T13:39Z] U
 #5 관계망 관계·활동 중심 뷰+provenance 강조 완료=PR #153(B4 오버레이 확장). W계약(verify S5~S7·egoGraph 전파·NetworkGraphClient 토글/요약/칩)→greenability(docker+프로토)→신선서브 구현→독립재게이트: tsc0·lint0·vitest841·build0+docker verify S1~S7 GREEN. 14 뷰에 relation_category/closeness 말미추가(manual만·derived NULL·역호환). 토글=제도절차 디밍(삭제아님)+요약(직접얹은 N·자동 M)+4분면칩(지역사회 강조)+청록 승격. ★Manual-Ops: 대시보드 14 재실행(추가·역호환·멱등)—권장순서 14먼저→머지. 관리자QA 8/9(#5 완료). 남은 #6 챗봇=범위결정필요.
 
+## [2026-09-11T14:25Z] U
+#5 머지+14 실행 완료·라이브 QA 통과: PostgREST 200(relation_category/closeness 라이브)·관계망 화면 실검증(김지수 직접얹은 13·자동 318·4분면칩 지역사회2 강조 info토큰·관계활동중심 토글 제도워크플로 디밍 실동작). main=df85c3f. 관리자QA 8/9 완료·라이브(#1~#5·#7·#8·#9). 남은 #6 챗봇=범위·대상·비용·프롬프트안전 결정 필요=다음.
+
