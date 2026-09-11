@@ -52,20 +52,36 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [domain, setDomain] = useState('')
+  const [participant, setParticipant] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
 
   // 영역 드롭다운 옵션 — rows 의 distinct domainLabel(있는 것만), 이름순.
   const domains = [...new Set(rows.map((r) => r.domainLabel).filter((d): d is string => !!d))].sort()
 
-  // 정산상태 + 기간(usageDate) + 영역 필터. usageDate·입력값 모두 'YYYY-MM-DD' 라 문자열 비교로 충분.
+  // 당사자 드롭다운 옵션 — rows 의 distinct participant(id→name), 이름순. (관리자 QA #2)
+  const participantOptions = [...new Map(rows.map((r) => [r.participantId, r.participantName] as const))]
+    .map(([id, name]) => ({ id, name }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+
+  // 정산상태 + 기간(usageDate) + 영역 + 당사자 필터. usageDate·입력값 모두 'YYYY-MM-DD' 라 문자열 비교로 충분.
   const filtered = rows.filter(
     (r) =>
       (status === 'all' || r.settlementStatus === status) &&
       (!from || r.usageDate >= from) &&
       (!to || r.usageDate <= to) &&
-      (!domain || r.domainLabel === domain),
+      (!domain || r.domainLabel === domain) &&
+      (participant === '' || r.participantId === participant),
   )
   const ledger = buildOrgLedger(filtered)
+
+  // CSV export href — 활성 필터만 쿼리스트링으로 실어 Route Handler 로 넘긴다(기본값이면 파라미터 없음).
+  const exportParams = new URLSearchParams()
+  if (participant) exportParams.set('participant', participant)
+  if (status !== 'all') exportParams.set('status', status)
+  if (from) exportParams.set('from', from)
+  if (to) exportParams.set('to', to)
+  const exportQs = exportParams.toString()
+  const exportHref = exportQs ? `/api/export/transactions?${exportQs}` : '/api/export/transactions'
 
   // 펼침용 — 당사자별 최근 지출(원본 순서 = usage_date 내림차순).
   const byParticipant = new Map<string, LedgerRow[]>()
@@ -77,8 +93,23 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* ⓪ 도구모음 — 영역 필터 + CSV 내려받기(브라우저 attachment 다운로드, plain <a>) */}
+      {/* ⓪ 도구모음 — 당사자·영역 필터 + CSV 내려받기(브라우저 attachment 다운로드, plain <a>) */}
       <div className="flex flex-wrap items-center gap-2">
+        <select
+          aria-label="당사자"
+          value={participant}
+          onChange={(e) => setParticipant(e.target.value)}
+          className="p-2 rounded-lg bg-card ring-1 ring-border text-sm"
+        >
+          <option value="">전체</option>
+          {/* 옵션 라벨엔 존칭 '님' 을 붙인다 — 당사자 존중이자, 참여자 그룹 헤딩(이름 그대로)과
+              텍스트가 겹쳐 스크린리더·테스트에서 중복 매칭되는 것을 막는다. value 는 participantId. */}
+          {participantOptions.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}님
+            </option>
+          ))}
+        </select>
         <select
           aria-label="영역"
           value={domain}
@@ -93,7 +124,7 @@ export default function OrgLedgerClient({ rows }: { rows: LedgerRow[] }) {
           ))}
         </select>
         <a
-          href="/api/export/transactions"
+          href={exportHref}
           className="inline-flex items-center justify-center min-h-[44px] px-4 rounded-lg bg-card ring-1 ring-border text-sm font-medium text-foreground hover:bg-muted-hover transition-colors"
         >
           CSV 내려받기

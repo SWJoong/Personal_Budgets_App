@@ -4,6 +4,7 @@ import { getProviders } from '@/app/actions/serviceProvider'
 import { buildProviderAssets, type UsageRow } from '@/utils/assetMap'
 import { scopeMarkersToUsed } from '@/utils/participantScope'
 import SupporterMapClient from './MapClient'
+import MapParticipantFilter from './MapParticipantFilter'
 
 /**
  * 지원자 자산 지도 — 예산 쓸 수 있는 장소(제공기관)를 영역별로. 설계: goala_asset_map_ux_W.md §6.
@@ -18,10 +19,12 @@ export default async function SupporterMapPage({ searchParams }: { searchParams:
   // 당사자 허브에서 ?participant=pid 로 오면 그 당사자가 '쓴 곳'만(허브 컨텍스트 유지, 08 §8 ④).
   // 사이드바 '지도'는 파라미터 없이 = 전체 자산지도(쓸 수 있는 곳). RLS 가 담당범위로 스코프.
   const usageQuery = supabase.from('seoul_service_usages').select('provider_id, domain_id, amount')
-  const [{ providers, error }, { data: usages }, { data: domains }] = await Promise.all([
+  const [{ providers, error }, { data: usages }, { data: domains }, { data: participantList }] = await Promise.all([
     getProviders(),
     participant ? usageQuery.eq('participant_id', participant) : usageQuery,
     supabase.from('seoul_service_domains').select('id, label, sort_order').eq('program', 'seoul'),
+    // 필터 UI 채우기 — RLS 가 담당 배정된 당사자로만 스코프(참여자 목록 페이지와 동일 패턴).
+    supabase.from('participants').select('id, name').order('name', { ascending: true }),
   ])
 
   let scopedName: string | null = null
@@ -59,7 +62,8 @@ export default async function SupporterMapPage({ searchParams }: { searchParams:
         )}
       </header>
 
-      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-4">
+        <MapParticipantFilter participants={participantList ?? []} selected={participant} />
         {error ? (
           <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm">
             장소를 불러오지 못했어요: {error}

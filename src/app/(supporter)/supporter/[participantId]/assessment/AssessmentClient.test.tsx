@@ -100,40 +100,16 @@ describe('AssessmentClient — 욕구사정 화면(실무자)', () => {
     expect(refreshMock).toHaveBeenCalled()
   })
 
-  it('제도 토글: 서울형↔보건복지부 전환 시 대분류 선택지가 바뀐다', async () => {
-    const user = userEvent.setup()
+  // 관리자 QA #1: 서울형 대상이라 욕구사정 UI에서 제도 토글(보건복지부)을 숨기고 서울형으로 고정한다.
+  // (DB 분류축[09 온톨로지 서울6↔복지부8]은 리포팅·교차매핑용으로 보존 — UI 노출만 제거.)
+  it('제도 토글(보건복지부)이 없고 서울형 대분류만 노출된다 — UI 전용 숨김, DB 분류축 보존', () => {
     render(<AssessmentClient participantId="p-1" assessments={[]} domains={domains} subdomains={subdomains} />)
 
-    // 기본 서울형: 서울 도메인만 옵션에
+    // 제도 선택(보건복지부) 버튼이 없다.
+    expect(screen.queryByRole('button', { name: '보건복지부' })).not.toBeInTheDocument()
+    // 서울형 대분류만 옵션에 — 복지부 대분류(신체적건강)는 노출되지 않는다.
     expect(screen.getByRole('option', { name: '일상생활' })).toBeInTheDocument()
     expect(screen.queryByRole('option', { name: '신체적건강' })).not.toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: '보건복지부' }))
-
-    expect(screen.getByRole('option', { name: '신체적건강' })).toBeInTheDocument()
-    expect(screen.queryByRole('option', { name: '일상생활' })).not.toBeInTheDocument()
-  })
-
-  it('생성(복지부): 중분류 있는 대분류 선택 시 세부 영역(중분류)이 나오고 subdomainId 로 저장', async () => {
-    createMock.mockResolvedValue({ success: true })
-    const user = userEvent.setup()
-    render(<AssessmentClient participantId="p-1" assessments={[]} domains={domains} subdomains={subdomains} />)
-
-    await user.click(screen.getByRole('button', { name: '보건복지부' }))
-    await user.selectOptions(screen.getByLabelText(/도움이 필요한 영역/), 'dom-mohw-health')
-    // 중분류 select 등장(복지부 + 해당 대분류에 중분류 존재)
-    await user.selectOptions(screen.getByLabelText(/세부 영역/), 'sub-rehab')
-    await user.click(screen.getByRole('button', { name: '욕구 추가하기' }))
-
-    await waitFor(() =>
-      expect(createMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          program: 'mohw',
-          domainId: 'dom-mohw-health',
-          subdomainId: 'sub-rehab',
-        })
-      )
-    )
   })
 
   it('생성 에러: 액션이 error 를 돌려주면 화면에 보여주고 새로고침하지 않는다', async () => {

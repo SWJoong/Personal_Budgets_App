@@ -52,9 +52,27 @@ describe('OrgLedgerClient — 영역 필터 + CSV export (A5)', () => {
     expect(screen.getByText('건강이')).toBeInTheDocument()
   })
 
-  it('CSV 내려받기 링크가 /api/export/transactions 로 존재한다', () => {
+  it('CSV 내려받기 링크가 /api/export/transactions 로 존재한다(필터 없으면 파라미터 없음)', () => {
     render(<OrgLedgerClient rows={rows} />)
     const link = screen.getByRole('link', { name: /CSV|내려받기|내보내기/ })
     expect(link).toHaveAttribute('href', '/api/export/transactions')
+  })
+
+  // 관리자 QA #2: 거래장부 CSV 내려받기를 당사자별로도 거를 수 있어야 한다.
+  it('당사자를 고르면 그 당사자가 아닌 행이 사라진다', () => {
+    render(<OrgLedgerClient rows={rows} />)
+    expect(screen.getByText('일상이')).toBeInTheDocument()
+    expect(screen.getByText('건강이')).toBeInTheDocument()
+    // 당사자 필터 select(옵션 value = participantId).
+    fireEvent.change(screen.getByLabelText('당사자'), { target: { value: 'p-b' } })
+    expect(screen.queryByText('일상이')).toBeNull()
+    expect(screen.getByText('건강이')).toBeInTheDocument()
+  })
+
+  it('당사자를 고르면 CSV 내려받기 링크가 그 당사자로 필터된다', () => {
+    render(<OrgLedgerClient rows={rows} />)
+    fireEvent.change(screen.getByLabelText('당사자'), { target: { value: 'p-b' } })
+    const link = screen.getByRole('link', { name: /CSV|내려받기|내보내기/ })
+    expect(link.getAttribute('href')).toContain('participant=p-b')
   })
 })
