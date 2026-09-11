@@ -1251,3 +1251,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-11T05:00Z] U
 G2 완료: PR #147(participant_feedback 복구) CI green(db-verify 52s·quality-check pass)·독립재게이트 계약10/10✅. 머지+Manual-Ops(대시보드 17) 대기. G1 착수(사용자=상태카운트+그리드): W설계 goala_admin_dashboard_G1_W.md + RED계약 AdminDashboardCards.test.tsx(greenability 프로토 6/6 GREEN 후 폐기·RED복귀). 카운트=검토대기(rule_checks pending distinct usage)·심사대기(applications received/screening)·심의대기(plans submitted/under_review), 워크리스트 필터 미러. 신선서브가 AdminDashboardCards.tsx+page.tsx 구현중. 다음=재게이트(tsc/lint/vitest/build)+라이브QA(카운트=워크리스트 일치)→PR.
 
+## [2026-09-11T05:11Z] U
+G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재게이트 tsc0·lint0·vitest823/823(계약6포함·회귀0)·build0 + 라이브QA 카운트 3종 워크리스트 parity 전부 일치(검토2·심사1·심의2). 신선서브 구현·W재게이트. 순수프론트. G2(#147)+G1(#148) 둘다 CI대기·머지대기. G2만 Manual-Ops(대시보드 17). 관리자 QA 1차 발견 2건 모두 수정 PR화 완료.
+
