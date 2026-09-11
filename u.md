@@ -1281,3 +1281,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-11T14:25Z] U
 #5 머지+14 실행 완료·라이브 QA 통과: PostgREST 200(relation_category/closeness 라이브)·관계망 화면 실검증(김지수 직접얹은 13·자동 318·4분면칩 지역사회2 강조 info토큰·관계활동중심 토글 제도워크플로 디밍 실동작). main=df85c3f. 관리자QA 8/9 완료·라이브(#1~#5·#7·#8·#9). 남은 #6 챗봇=범위·대상·비용·프롬프트안전 결정 필요=다음.
 
+## [2026-09-11T15:39Z] U
+#6 실무자용 AI 점검 제안 v1 완료=PR #154(앱전용·DB/Manual-Ops 없음). W계약(신호6종 golden·환각가드·PII·컴포넌트)→greenability(프로토 폐기)→신선서브 구현→독립재게이트 tsc0·lint0·vitest869·build0. 2층안전=결정론 신호층+가명처리 게이트(callAIDeidentified·aiGateBoundary 강제)+RLS담당만+viewAs차단+auditLog+과신고지. 온디맨드 허브카드 🩺→/checkup. sonnet-5 기본high·일100건 소량. ★copay신호 v1=0(정산완료 축 부재). ★AI합성 로컬검증불가(키부재)→Vercel프리뷰서 라이브QA예정. 관리자QA 9/9 구현완료(#6 머지·프리뷰QA 남음).
+
