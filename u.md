@@ -1248,3 +1248,6 @@ raw팔레트 매치수 상위: budgets/[id] 96 · plans/[id]PlanDetailClient 72 
 ## [2026-09-11T04:45Z] U
 관리자 QA 1차: G1(대시보드 희소·F3동형) + G2(당사자 피드백 死 — participant_feedback 서울빌드 미포팅, 쓰기/읽기 양측 깨짐·raw에러노출) 발견. 전수 코드스캔=레거시테이블 구멍은 participant_feedback 하나뿐. 사용자 결정: G2 되살리기·G2 먼저. W계약 verify_participant_feedback.sql(RED확정)+설계 goala_participant_feedback_revival_W.md 저작·docker greenability 증명(프로토17 GREEN·S2위조차단·S4유출차단·멱등). 신선서브 17_participant_feedback.sql+CI등록 구현중. 다음=독립재게이트→PR→Manual-Ops(대시보드 17). 이어서 G1.
 
+## [2026-09-11T05:00Z] U
+G2 완료: PR #147(participant_feedback 복구) CI green(db-verify 52s·quality-check pass)·독립재게이트 계약10/10✅. 머지+Manual-Ops(대시보드 17) 대기. G1 착수(사용자=상태카운트+그리드): W설계 goala_admin_dashboard_G1_W.md + RED계약 AdminDashboardCards.test.tsx(greenability 프로토 6/6 GREEN 후 폐기·RED복귀). 카운트=검토대기(rule_checks pending distinct usage)·심사대기(applications received/screening)·심의대기(plans submitted/under_review), 워크리스트 필터 미러. 신선서브가 AdminDashboardCards.tsx+page.tsx 구현중. 다음=재게이트(tsc/lint/vitest/build)+라이브QA(카운트=워크리스트 일치)→PR.
+
