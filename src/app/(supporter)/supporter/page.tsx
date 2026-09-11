@@ -1,5 +1,6 @@
 import { requireStaff } from '@/utils/supabase/staff'
 import Link from 'next/link'
+import SupporterQuickTasks from './SupporterQuickTasks'
 
 export const metadata = { title: '대시보드' }
 
@@ -28,20 +29,7 @@ export default async function SupporterPage() {
           <span className="text-xl">👥</span>
           당사자 목록 보기
         </Link>
-        <Link
-          href="/supporter/map"
-          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-card text-foreground ring-1 ring-border font-bold text-base hover:bg-muted-hover transition-all active:scale-[0.98]"
-        >
-          <span className="text-xl">🗺️</span>
-          지도 · 쓸 수 있는 곳
-        </Link>
-        <Link
-          href="/supporter/network"
-          className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-card text-foreground ring-1 ring-border font-bold text-base hover:bg-muted-hover transition-all active:scale-[0.98]"
-        >
-          <span className="text-xl">🕸️</span>
-          관계망 보기
-        </Link>
+        <SupporterQuickTasks />
       </main>
     </div>
   )
