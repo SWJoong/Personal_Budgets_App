@@ -1284,3 +1284,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-11T15:39Z] U
 #6 실무자용 AI 점검 제안 v1 완료=PR #154(앱전용·DB/Manual-Ops 없음). W계약(신호6종 golden·환각가드·PII·컴포넌트)→greenability(프로토 폐기)→신선서브 구현→독립재게이트 tsc0·lint0·vitest869·build0. 2층안전=결정론 신호층+가명처리 게이트(callAIDeidentified·aiGateBoundary 강제)+RLS담당만+viewAs차단+auditLog+과신고지. 온디맨드 허브카드 🩺→/checkup. sonnet-5 기본high·일100건 소량. ★copay신호 v1=0(정산완료 축 부재). ★AI합성 로컬검증불가(키부재)→Vercel프리뷰서 라이브QA예정. 관리자QA 9/9 구현완료(#6 머지·프리뷰QA 남음).
 
+## [2026-09-11T15:42Z] U
+#6 PR #154 CI 전부 green(db-verify·quality-check·Vercel). ★프리뷰 AI 라이브QA 불가=Vercel Deployment Protection 인증벽(사용자 계정 로그인 필요). AI 합성은 단위테스트+prod검증된 callAIDeidentified 게이트로 검증. 대안: 사용자가 프리뷰 직접확인 or 머지 후 prod(데모로그인+키)서 내가 라이브QA. 관리자QA 9/9 구현완료. #154 머지대기.
+
