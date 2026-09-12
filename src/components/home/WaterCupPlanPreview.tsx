@@ -13,19 +13,26 @@ interface WaterCupPlanPreviewProps {
   totalBudget: number
   options: PlanOption[]
   selectedIndex: number | null
+  /** 있으면 범례 항목이 눌러서 선택/해제되는 컨트롤이 된다(controlled). 없으면 표시 전용. */
+  onSelect?: (index: number | null) => void
 }
 
-const OPTION_COLORS = [
-  { water: '#3b82f6', dash: '#2563eb', bg: '#eff6ff', text: '#1d4ed8' },
-  { water: '#22c55e', dash: '#16a34a', bg: '#f0fdf4', text: '#15803d' },
-  { water: '#f97316', dash: '#ea580c', bg: '#fff7ed', text: '#c2410c' },
-]
+/**
+ * 옵션 3계열을 시맨틱 토큰(정보/성공/경고)으로 매핑 — raw hex 대신 CSS 변수라 다크·고대비·노랑 모드에서
+ * 자동 대응한다(고아 컴포넌트 복원 §2 토큰화). fg=선(점선)·글자·마커, bg=선택 배경·번호 배지 배경.
+ */
+const OPTION_TOKENS = [
+  { fg: 'var(--color-info-fg)', bg: 'var(--color-info-bg)' },
+  { fg: 'var(--color-success-fg)', bg: 'var(--color-success-bg)' },
+  { fg: 'var(--color-warning-fg)', bg: 'var(--color-warning-bg)' },
+] as const
 
 export default function WaterCupPlanPreview({
   currentBalance,
   totalBudget,
   options,
   selectedIndex,
+  onSelect,
 }: WaterCupPlanPreviewProps) {
   const budget = totalBudget || currentBalance
 
@@ -43,9 +50,12 @@ export default function WaterCupPlanPreview({
     : 0
 
   const isOver = displayBalance < 0
-  const waterColor = isOver ? '#ef4444' : selectedIndex !== null
-    ? OPTION_COLORS[selectedIndex % OPTION_COLORS.length].water
-    : '#3b82f6'
+  // 물색: 초과=위험 토큰, 선택시=그 옵션 계열, 선택 전=브랜드 토큰(내 돈). 전부 테마 대응 CSS 변수.
+  const waterColor = isOver
+    ? 'var(--color-danger-fg)'
+    : selectedIndex !== null
+      ? OPTION_TOKENS[selectedIndex % OPTION_TOKENS.length].fg
+      : 'var(--color-primary)'
 
   return (
     <div className="bg-card rounded-[2rem] p-6 ring-1 ring-border shadow-sm">
@@ -85,7 +95,7 @@ export default function WaterCupPlanPreview({
               {options.map((option, i) => {
                 const remaining = currentBalance - option.cost
                 const ratio = budget > 0 ? Math.max(0, Math.min(100, (remaining / budget) * 100)) : 0
-                const color = OPTION_COLORS[i % OPTION_COLORS.length]
+                const token = OPTION_TOKENS[i % OPTION_TOKENS.length]
                 const isSelected = selectedIndex === i
                 return (
                   <div
@@ -93,13 +103,13 @@ export default function WaterCupPlanPreview({
                     className="absolute w-full transition-all duration-300"
                     style={{
                       bottom: `${ratio}%`,
-                      borderTop: `2px dashed ${color.dash}`,
+                      borderTop: `2px dashed ${token.fg}`,
                       opacity: isSelected ? 1 : 0.5,
                     }}
                   >
                     <span
                       className="absolute -right-1 -top-3 text-[9px] font-black px-1 rounded"
-                      style={{ color: color.dash, backgroundColor: color.bg }}
+                      style={{ color: token.fg, backgroundColor: token.bg }}
                     >
                       {i + 1}
                     </span>
@@ -122,43 +132,47 @@ export default function WaterCupPlanPreview({
           <span className="text-[10px] font-bold text-muted-foreground">남은 돈</span>
         </div>
 
-        {/* 옵션별 범례 */}
+        {/* 옵션별 범례 — onSelect 가 있으면 누를 수 있는 컨트롤(선택/해제·aria-pressed·44px) */}
         <div className="flex-1 flex flex-col gap-3">
           {options.map((option, i) => {
             const remaining = currentBalance - option.cost
-            const color = OPTION_COLORS[i % OPTION_COLORS.length]
+            const token = OPTION_TOKENS[i % OPTION_TOKENS.length]
             const isSelected = selectedIndex === i
             const isOptionOver = remaining < 0
 
             return (
-              <div
+              <button
                 key={i}
-                className={`flex items-center gap-2 p-3 rounded-xl transition-all duration-300 ${
-                  isSelected ? 'ring-2 shadow-sm' : 'opacity-50'
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => onSelect?.(isSelected ? null : i)}
+                className={`w-full text-left flex items-center gap-2 p-3 rounded-xl border-2 min-h-[44px] transition-all duration-300 ${
+                  isSelected ? 'shadow-sm' : 'opacity-70'
                 }`}
                 style={{
-                  backgroundColor: isSelected ? color.bg : undefined,
-                  borderColor: isSelected ? color.dash : undefined,
+                  backgroundColor: isSelected ? token.bg : undefined,
+                  borderColor: isSelected ? token.fg : 'transparent',
                 }}
               >
                 {/* 점선 색상 마커 */}
-                <div
-                  className="w-4 h-4 rounded-sm shrink-0 border-2"
+                <span
+                  aria-hidden="true"
+                  className="block w-4 h-4 rounded-sm shrink-0 border-2"
                   style={{
-                    borderColor: color.dash,
-                    background: `repeating-linear-gradient(90deg, ${color.water}66 0px, ${color.water}66 3px, transparent 3px, transparent 6px)`,
+                    borderColor: token.fg,
+                    background: `repeating-linear-gradient(90deg, color-mix(in srgb, ${token.fg} 40%, transparent) 0 3px, transparent 3px 6px)`,
                   }}
                 />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black text-muted-foreground truncate">{option.name}</p>
-                  <p className="text-[10px] font-bold text-muted-foreground">쓸 돈 {formatCurrency(option.cost)}원</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className={`text-xs font-black ${isOptionOver ? 'text-danger-fg' : isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
+                <span className="flex-1 min-w-0 block">
+                  <span className="block text-xs font-black text-muted-foreground truncate">{option.name}</span>
+                  <span className="block text-[10px] font-bold text-muted-foreground">쓸 돈 {formatCurrency(option.cost)}원</span>
+                </span>
+                <span className="text-right shrink-0 block">
+                  <span className={`block text-xs font-black ${isOptionOver ? 'text-danger-fg' : isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
                     {isOptionOver ? '돈이 모자라요' : formatCurrency(remaining) + '원'}
-                  </p>
-                </div>
-              </div>
+                  </span>
+                </span>
+              </button>
             )
           })}
         </div>
