@@ -1296,3 +1296,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-12T10:19Z] U
 당사자 잔액 시각위젯 복원 + 슈퍼관리자 역할전환기=PR #157(앱전용). F12 분석 중 F0 발견=balance_widget_style(5스타일) 설정 살아있는데 홈 리빌드때 렌더 누락(인지 회귀)→BalanceWidget 복원(role=img+aria-label·텍스트 병행·5스타일 SVG·토큰·설정피커). 역할전환기=superAdminSwitch(assertAdmin·view-as 재사용·권한확장아님)+우측상단 스위처+2레이아웃 마운트(supporter=서버판정·participant=동기골든유지 클라게이트 BUILTIN cheese0318). W계약 신선서브2 병행구현·독립재게이트 tsc0·lint0·vitest(회귀0·partialfail flake 단독통과)·build0. ★브라우저 pane 이세션 내비 불안정→시각 라이브QA는 배포본. 전환기는 cheese0318 실계정서 노출.
 
+## [2026-09-12T11:23Z] U
+고아 패턴 스캔+복원=PR #158(앱전용). 스캔: uiPreferences 소비+utils export 소비처0+내부헬퍼 거짓양성 필터→진짜 고아만. 복원3: ①이모지선택기(EmojiPicker+화면설정 배선→잔액위젯 emoji 완성) ②예산변동·소비속도 알림(BudgetAlerts+홈배선 전월배정/경과일) ③활동자동이모지(최근목록). 정리: getBudgetVisualInfo+VisualInfo+BudgetStatus 삭제(#157 위젯이 대체·소비처0). W계약(EmojiPicker·activityEmoji·budget-visuals golden)→신선서브 구현→독립재게이트 tsc0·lint0·vitest907·build0. ★브랜치 실수: #157 머지된 브랜치서 작업→fresh 브랜치로 이동 완료. #157 머지됨(main e507f50). 접근성 회귀클래스(리빌드 유실 기능) 복원중.
+
