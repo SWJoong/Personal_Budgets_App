@@ -47,8 +47,8 @@ export default async function MorePage({
       <HelpAutoTrigger sectionKey="more" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-card/80 backdrop-blur-md border-b border-border">
         <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-            <span className="text-xl">←</span>
+          <Link href="/" aria-label="홈으로 가기" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+            <span aria-hidden="true" className="text-xl">←</span>
             <span className="text-sm font-bold">서울형 개인예산제</span>
           </Link>
           <span className="text-muted-foreground">·</span>

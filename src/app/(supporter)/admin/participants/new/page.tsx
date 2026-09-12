@@ -92,7 +92,7 @@ export default function NewParticipantPage() {
     return (
       <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
         <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
-          <Link href="/admin/participants" className="text-muted-foreground hover:text-foreground transition-colors mr-3">←</Link>
+          <Link href="/admin/participants" aria-label="당사자 관리로 가기" className="text-muted-foreground hover:text-foreground transition-colors mr-3"><span aria-hidden="true">←</span></Link>
           <h1 className="text-xl font-bold tracking-tight">새 당사자 등록</h1>
         </header>
         <main id="main-content" tabIndex={-1} className="flex-1 flex items-center justify-center">
@@ -105,7 +105,7 @@ export default function NewParticipantPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
       <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
-        <Link href="/admin/participants" className="text-muted-foreground hover:text-foreground transition-colors mr-3">←</Link>
+        <Link href="/admin/participants" aria-label="당사자 관리로 가기" className="text-muted-foreground hover:text-foreground transition-colors mr-3"><span aria-hidden="true">←</span></Link>
         <h1 className="text-xl font-bold tracking-tight">새 당사자 등록</h1>
       </header>
 

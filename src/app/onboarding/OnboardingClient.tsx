@@ -215,6 +215,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                   <input
                     {...field}
                     type="text"
+                    autoComplete="name"
                     value={name}
                     onChange={(e) => {
                       setName(e.target.value)

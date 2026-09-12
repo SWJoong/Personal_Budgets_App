@@ -270,6 +270,7 @@ export default function MoreMenuClient({
                     href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={`${file.title} (새 창으로 열림)`}
                     className="flex items-center justify-between p-4 rounded-2xl bg-muted hover:bg-muted-hover transition-colors group"
                   >
                     <div className="flex items-center gap-3">
@@ -279,7 +280,7 @@ export default function MoreMenuClient({
                         <span className="text-[10px] font-bold text-muted-foreground uppercase">{file.file_type}</span>
                       </div>
                     </div>
-                    <span className="text-muted-foreground group-hover:text-foreground transition-colors">→</span>
+                    <span aria-hidden="true" className="text-muted-foreground group-hover:text-foreground transition-colors">→</span>
                   </a>
                 ))}
               </div>

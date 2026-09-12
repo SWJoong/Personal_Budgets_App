@@ -156,22 +156,6 @@ button, [role="button"], a {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Status indicators */
-.status-safe {
-  color: var(--color-positive);
-  background: hsl(130 55% 35% / 0.12);
-}
-
-.status-caution {
-  color: var(--color-warning);
-  background: hsl(32 90% 48% / 0.12);
-}
-
-.status-danger {
-  color: var(--color-danger);
-  background: hsl(0 72% 50% / 0.12);
-}
-
 /* ─── Animations ─── */
 @layer utilities {
   @keyframes bounce-slow {

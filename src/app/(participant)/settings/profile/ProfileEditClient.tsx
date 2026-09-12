@@ -74,6 +74,7 @@ export default function ProfileEditClient({ profile, userEmail, isAdminEmail }: 
             {...field}
             name="name"
             type="text"
+            autoComplete="name"
             defaultValue={profile.name || ''}
             className="w-full p-4 rounded-2xl bg-card ring-1 ring-border focus-visible:ring-2 focus-visible:ring-primary outline-none text-lg font-bold transition-all"
             required
