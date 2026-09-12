@@ -1287,3 +1287,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-11T15:42Z] U
 #6 PR #154 CI 전부 green(db-verify·quality-check·Vercel). ★프리뷰 AI 라이브QA 불가=Vercel Deployment Protection 인증벽(사용자 계정 로그인 필요). AI 합성은 단위테스트+prod검증된 callAIDeidentified 게이트로 검증. 대안: 사용자가 프리뷰 직접확인 or 머지 후 prod(데모로그인+키)서 내가 라이브QA. 관리자QA 9/9 구현완료. #154 머지대기.
 
+## [2026-09-12T06:03Z] U
+접근성 3역할 적용=PR #155(feat/a11y-remediation). 07 감사 토대 위 정밀스캔→실결함만 수정+회귀가드3종. 슬라이스1(탐색·맥락): 화살표 접근명 5곳·새창예고 2곳·죽은CSS. 슬라이스2(키보드): 실결함0(백드롭 전부 aria-hidden)·가드 a11yKeyboardClickable·WAI-ARIA상태 확증(aria-pressed/current/expanded 3역할). 슬라이스3(인지): autoComplete 본인이름 2폼. 가드=a11yArrowGlyphs·a11yExternalLinks·a11yKeyboardClickable(소스스캔·aiGateBoundary패턴). tsc0·vitest874·build0. 라이브: skip-link 첫포커스·back접근명 실측. 앱전용. ★남은것=장애인 사용자평가(자동/에이전트 대체불가·docs/release/08 §4). W easy-read·전문가 검증 대상.
+
