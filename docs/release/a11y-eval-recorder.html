@@ -1,0 +1,378 @@
+<title>접근성 심사 기록지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;800&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --ground:#eef2f4; --surface:#ffffff; --surface-2:#f4f7f8; --raise:#ffffff;
+    --ink:#152029; --ink-2:#4d5f6b;
+    --line:#d3dde2; --line-2:#e3eaee;
+    --accent:#0e7490; --accent-ink:#ffffff; --accent-soft:#0e749014;
+    --ok:#15803d; --ok-bg:#dcfce7; --partial:#b45309; --partial-bg:#fdf0d5;
+    --fail:#b91c1c; --fail-bg:#fde3e3; --none:#5b6b77; --none-bg:#e7edf0;
+    --font-d:"Gothic A1",system-ui,sans-serif;
+    --font-b:"IBM Plex Sans KR",system-ui,sans-serif;
+    --font-m:"IBM Plex Mono","IBM Plex Sans KR",monospace;
+    --shadow:0 1px 2px #1520290f,0 6px 20px -12px #15202924;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --ground:#0f1418; --surface:#182028; --surface-2:#1f2a32; --raise:#1c262e;
+    --ink:#e7eef3; --ink-2:#a2b2be; --line:#2b3944; --line-2:#232f38;
+    --accent:#2fb6cc; --accent-ink:#04222a; --accent-soft:#2fb6cc1f;
+    --ok:#4ade80; --ok-bg:#0f3d24; --partial:#fbbf24; --partial-bg:#3d2f0c;
+    --fail:#f87171; --fail-bg:#42191a; --none:#93a4b0; --none-bg:#232f38;
+    --shadow:0 1px 2px #0006,0 8px 24px -14px #000a;
+  }}
+  :root[data-theme="dark"]{
+    --ground:#0f1418; --surface:#182028; --surface-2:#1f2a32; --raise:#1c262e;
+    --ink:#e7eef3; --ink-2:#a2b2be; --line:#2b3944; --line-2:#232f38;
+    --accent:#2fb6cc; --accent-ink:#04222a; --accent-soft:#2fb6cc1f;
+    --ok:#4ade80; --ok-bg:#0f3d24; --partial:#fbbf24; --partial-bg:#3d2f0c;
+    --fail:#f87171; --fail-bg:#42191a; --none:#93a4b0; --none-bg:#232f38;
+    --shadow:0 1px 2px #0006,0 8px 24px -14px #000a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font-b);
+    line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:clamp(16px,3vw,36px) clamp(14px,3vw,28px) 80px}
+  a{color:var(--accent)}
+  h1,h2,h3{font-family:var(--font-d);text-wrap:balance;margin:0}
+  .mono{font-family:var(--font-m);font-variant-numeric:tabular-nums}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  /* ── header ── */
+  header.top{margin-bottom:22px}
+  .eyebrow{font-family:var(--font-m);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;margin-bottom:8px}
+  h1{font-size:clamp(25px,4.4vw,36px);font-weight:800;letter-spacing:-.01em;line-height:1.12}
+  .lede{color:var(--ink-2);margin-top:10px;max-width:60ch;font-size:15px}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+
+  /* ── session meta ── */
+  .meta{padding:16px 18px;margin-bottom:16px;display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px 18px;align-items:end}
+  .field{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .field label{font-size:12px;font-weight:600;color:var(--ink-2);letter-spacing:.01em}
+  .field .hint{font-size:11px;color:var(--ink-2);font-weight:400}
+  input,select,textarea{font-family:inherit;font-size:14px;color:var(--ink);background:var(--surface-2);
+    border:1px solid var(--line);border-radius:9px;padding:9px 11px;width:100%}
+  input::placeholder,textarea::placeholder{color:var(--ink-2);opacity:.7}
+  select{cursor:pointer;appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--ink-2) 50%),linear-gradient(135deg,var(--ink-2) 50%,transparent 50%);
+    background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:30px}
+  .chk{display:flex;align-items:center;gap:8px}
+  .chk input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
+  .chk label{font-size:13px;font-weight:500;color:var(--ink);cursor:pointer}
+
+  /* ── tally ── */
+  .tally{position:sticky;top:0;z-index:5;background:var(--raise);border:1px solid var(--line);
+    border-radius:14px;box-shadow:var(--shadow);padding:14px 18px;margin-bottom:24px;
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px}
+  .rate{display:flex;align-items:baseline;gap:9px;margin-right:auto}
+  .rate .num{font-family:var(--font-m);font-size:34px;font-weight:600;letter-spacing:-.02em;line-height:1}
+  .rate .lbl{font-size:12px;color:var(--ink-2);font-weight:600}
+  .rate .den{font-family:var(--font-m);font-size:13px;color:var(--ink-2)}
+  .counts{display:flex;flex-wrap:wrap;gap:8px}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
+    padding:5px 11px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+  .pill .n{font-family:var(--font-m);font-weight:600}
+  .pill .ic{width:14px;text-align:center;font-weight:700}
+  .pill.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+  .pill.partial{background:var(--partial-bg);color:var(--partial);border-color:var(--partial)}
+  .pill.fail{background:var(--fail-bg);color:var(--fail);border-color:var(--fail)}
+  .pill.none{background:var(--none-bg);color:var(--none);border-color:var(--none)}
+  .track{flex-basis:100%;height:8px;border-radius:999px;overflow:hidden;display:flex;background:var(--none-bg)}
+  .track i{display:block;height:100%}
+  .track .s-ok{background:var(--ok)}.track .s-partial{background:var(--partial)}.track .s-fail{background:var(--fail)}
+
+  /* ── role sections ── */
+  .role{margin-bottom:30px}
+  .role-head{display:flex;align-items:center;gap:11px;margin:0 2px 12px}
+  .role-head h2{font-size:18px;font-weight:700}
+  .role-head .tag{font-family:var(--font-m);font-size:11px;color:var(--ink-2);
+    border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+  .role-head .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:none}
+
+  /* ── task ── */
+  .task{border:none;margin:0 0 12px;padding:16px 18px}
+  .task>.hd{display:flex;gap:12px;align-items:flex-start;margin-bottom:13px}
+  .tid{font-family:var(--font-m);font-size:12.5px;font-weight:600;color:var(--accent-ink);
+    background:var(--accent);border-radius:7px;padding:3px 8px;flex:none;letter-spacing:.02em}
+  .task .q{font-size:14.5px;font-weight:500;color:var(--ink);margin:1px 0 0}
+  .task .metaline{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .focus{font-size:11px;font-weight:600;color:var(--ink-2);background:var(--surface-2);
+    border:1px solid var(--line-2);border-radius:999px;padding:2px 9px}
+  .kw{font-family:var(--font-m);font-size:11px;font-weight:600;color:var(--accent);
+    background:var(--accent-soft);border-radius:6px;padding:2px 7px}
+
+  /* status radio group as pills */
+  .status{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+  .opt{position:relative}
+  .opt input{position:absolute;opacity:0;width:1px;height:1px}
+  .opt label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;
+    font-size:13px;font-weight:600;color:var(--ink-2);background:var(--surface-2);
+    border:1.5px solid var(--line);border-radius:9px;padding:7px 13px;transition:.12s}
+  .opt label .ic{font-weight:700}
+  .opt label:hover{border-color:var(--ink-2)}
+  .opt input:focus-visible+label{outline:3px solid var(--accent);outline-offset:2px}
+  .opt input:checked+label.c-ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+  .opt input:checked+label.c-partial{background:var(--partial-bg);color:var(--partial);border-color:var(--partial)}
+  .opt input:checked+label.c-fail{background:var(--fail-bg);color:var(--fail);border-color:var(--fail)}
+  .opt input:checked+label.c-none{background:var(--none-bg);color:var(--ink);border-color:var(--none)}
+
+  .detail{margin-top:13px;display:grid;grid-template-columns:auto 1fr;gap:10px 12px;align-items:start}
+  .detail.hidden{display:none}
+  .detail .sev{display:flex;flex-direction:column;gap:5px}
+  .detail .sev label,.detail .note label{font-size:11.5px;font-weight:600;color:var(--ink-2)}
+  .detail .sev select{width:auto;min-width:120px}
+  .detail .note{display:flex;flex-direction:column;gap:5px;grid-column:1/-1}
+  .detail textarea{min-height:52px;resize:vertical;line-height:1.5}
+
+  /* ── actions ── */
+  .actions{position:sticky;bottom:0;background:linear-gradient(transparent,var(--ground) 34%);
+    padding:16px 0 6px;margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  button.btn{font-family:var(--font-b);font-size:13.5px;font-weight:600;cursor:pointer;
+    border-radius:10px;padding:11px 18px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);
+    display:inline-flex;align-items:center;gap:8px;transition:.12s}
+  button.btn:hover{border-color:var(--ink-2)}
+  button.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  button.btn.primary:hover{filter:brightness(1.06)}
+  button.btn.ghost{background:transparent;color:var(--ink-2)}
+  .saved{font-size:12px;color:var(--ink-2);margin-left:auto}
+  .saved b{color:var(--ok);font-weight:600}
+
+  footer.foot{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--ink-2);line-height:1.7}
+  footer.foot b{color:var(--ink);font-weight:600}
+
+  @media (max-width:560px){
+    .tally{gap:10px 14px}.rate .num{font-size:28px}
+    .task>.hd{flex-wrap:wrap}
+  }
+  @media print{
+    body{background:#fff}.tally{position:static;box-shadow:none}.actions{display:none}
+    .opt input:not(:checked)+label{display:none}.task,.tally,.meta{break-inside:avoid}
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">서울형 개인예산제 · KWCAG 2.2</div>
+    <h1>접근성 실사용자 심사 기록지</h1>
+    <p class="lede">장애 당사자가 실제 과업을 수행하는 세션을 진행하며 결과를 기록합니다. 자동·전문가 검사가
+      대체할 수 없는 <b>사용자 심사</b>용. 한 세션 = 한 평가자. 계획서 <span class="mono">docs/release/09</span> 기반.</p>
+  </header>
+
+  <section class="card meta" aria-label="세션 정보">
+    <div class="field">
+      <label for="evType">평가자 장애 유형</label>
+      <select id="evType" aria-describedby="evHint">
+        <option value="">선택하세요</option>
+        <option>지적·발달장애</option>
+        <option>시각(전맹)</option>
+        <option>저시력</option>
+        <option>청각</option>
+        <option>뇌병변·지체</option>
+        <option>기타</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="evDate">심사 날짜</label>
+      <input type="date" id="evDate">
+    </div>
+    <div class="field">
+      <label for="evDevice">기기 · 보조수단</label>
+      <input type="text" id="evDevice" placeholder="예: 아이폰 VoiceOver / 데스크톱 키보드">
+    </div>
+    <div class="field">
+      <div class="chk">
+        <input type="checkbox" id="onlyRel">
+        <label for="onlyRel">이 유형에 맞는 과업만 보기</label>
+      </div>
+      <span class="hint" id="evHint">유형을 고르면 관련 과업만 추릴 수 있어요.</span>
+    </div>
+  </section>
+
+  <section class="tally" aria-label="진행 요약" aria-live="polite">
+    <div class="rate">
+      <span class="num mono" id="rateNum">—</span>
+      <div><div class="lbl">성공률</div><div class="den mono" id="rateDen">0 / 0 완료</div></div>
+    </div>
+    <div class="counts" id="counts"></div>
+    <div class="track" id="track" aria-hidden="true"></div>
+  </section>
+
+  <main id="tasks"></main>
+
+  <div class="actions">
+    <button class="btn primary" id="btnCopy" type="button"><span aria-hidden="true">⧉</span> 결과 요약 복사</button>
+    <button class="btn" id="btnPrint" type="button"><span aria-hidden="true">🖶</span> 인쇄 / PDF</button>
+    <button class="btn ghost" id="btnReset" type="button">모두 지우기</button>
+    <span class="saved" id="saved" role="status"></span>
+  </div>
+
+  <footer class="foot">
+    <b>기록 원칙</b> — 실패는 앱의 문제이지 사람의 문제가 아닙니다. 성공/부분/실패와 함께 <b>어디서 막혔는지</b>를
+    구체적으로 적어 주세요(재현 경로 포함). 정서 반응(망설임·재시도·포기)도 중요한 신호입니다.<br>
+    결과는 이 기기에 자동 저장됩니다. <b>결과 요약 복사</b>로 팀·개발에 전달하면 심각도순으로 수정 슬라이스가 됩니다.
+  </footer>
+</div>
+
+<script>
+const TASKS=[
+ {id:"P1",role:"당사자",q:"로그인해 홈에서 ‘내 남은 예산’을 찾아 말하기",focus:["전체"],kw:["6.4.2","7.3.2"]},
+ {id:"P2",role:"당사자",q:"지출 기록: 영수증 사진·금액·항목 입력해 저장",focus:["지적·발달장애","뇌병변·지체"],kw:["7.3.2","6.1.3","7.3.1"]},
+ {id:"P3",role:"당사자",q:"금액을 비우고 제출 → 오류 메시지 보고 고쳐 완료",focus:["지적·발달장애"],kw:["7.3.1"]},
+ {id:"P4",role:"당사자",q:"활동사진 갤러리에서 사진 열어 내용 파악(대체텍스트)",focus:["시각(전맹)"],kw:["5.1.1"]},
+ {id:"P5",role:"당사자",q:"달력에서 특정 날짜 일정 확인",focus:["지적·발달장애","뇌병변·지체"],kw:["6.1.1","6.5.1"]},
+ {id:"P6",role:"당사자",q:"더보기→화면에서 고대비/글자확대 테마로 바꾸고 홈 재확인",focus:["저시력"],kw:["5.4.3"]},
+ {id:"P7",role:"당사자",q:"스크린리더만으로 P1~P2 재수행(반복영역 건너뛰기)",focus:["시각(전맹)"],kw:["6.4.1","6.1.2"]},
+ {id:"P8",role:"당사자",q:"화면 200% 확대로 지출 기록 완주(가로 스크롤·잘림 확인)",focus:["저시력"],kw:["5.4.3"]},
+ {id:"S1",role:"실무자",q:"키보드만으로 로그인→대시보드→거래장부 이동(마우스 금지)",focus:["뇌병변·지체"],kw:["6.1.1","6.1.2"]},
+ {id:"S2",role:"실무자",q:"거래장부 당사자별 필터 + CSV 내려받기(키보드)",focus:["뇌병변·지체"],kw:["6.1.1"]},
+ {id:"S3",role:"실무자",q:"영수증 검토에서 1건 승인/반려 결정(키보드·초점 확인)",focus:["뇌병변·지체","시각(전맹)"],kw:["6.1.2","8.2.1"]},
+ {id:"S4",role:"실무자",q:"AI 점검 제안(🩺) 열어 제안 읽고 근거 이해",focus:["지적·발달장애","시각(전맹)"],kw:["7.3.1","8.2.1"]},
+ {id:"S5",role:"실무자",q:"관계망 그래프에서 노드 골라 관계 확인(키보드 노드선택)",focus:["뇌병변·지체","시각(전맹)"],kw:["6.1.1"]},
+ {id:"S6",role:"실무자",q:"스크린리더로 대시보드 랜드마크·목록 훑기",focus:["시각(전맹)"],kw:["5.3.1","6.4.1"]},
+ {id:"A1",role:"관리자",q:"키보드만으로 당사자 등록 폼 작성·제출(초점·오류)",focus:["뇌병변·지체"],kw:["6.1.1","7.3.1"]},
+ {id:"A2",role:"관리자",q:"대시보드 상태 카운트(검토·심사·심의) 스크린리더로 파악",focus:["시각(전맹)"],kw:["5.4.1","6.4.2"]},
+ {id:"A3",role:"관리자",q:"사이드바 그룹 네비로 시스템 설정 이동(현재 위치 인지)",focus:["지적·발달장애","시각(전맹)"],kw:["6.4.1"]},
+ {id:"A4",role:"관리자",q:"이용계획 심의 목록에서 1건 열어 결정",focus:["뇌병변·지체"],kw:["6.1.1","8.2.1"]},
+];
+const ROLES=[["당사자","모바일 우선 · 핵심 대상"],["실무자","데스크톱 · 키보드 강조"],["관리자","데스크톱"]];
+const STATUS=[["ok","성공","✓"],["partial","부분","◐"],["fail","실패","✕"],["none","미수행","—"]];
+const SEV=["","치명","높음","보통","낮음"];
+const KEY="a11y-eval-record-v1";
+let state=load();
+
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||fresh()}catch{return fresh()}}
+function fresh(){return{meta:{evType:"",date:"",device:"",onlyRel:false},r:{}}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch{}
+  const s=document.getElementById("saved");s.innerHTML='<b>저장됨</b> · 이 기기에 보관';
+  clearTimeout(save._t);save._t=setTimeout(()=>{s.textContent=""},2200)}
+
+// ── meta binding
+const evType=document.getElementById("evType"),evDate=document.getElementById("evDate"),
+  evDevice=document.getElementById("evDevice"),onlyRel=document.getElementById("onlyRel");
+evType.value=state.meta.evType;evDate.value=state.meta.date;evDevice.value=state.meta.device;onlyRel.checked=state.meta.onlyRel;
+if(!evDate.value){evDate.value=new Date().toISOString().slice(0,10);state.meta.date=evDate.value}
+evType.onchange=()=>{state.meta.evType=evType.value;save();render()};
+evDate.onchange=()=>{state.meta.date=evDate.value;save()};
+evDevice.oninput=()=>{state.meta.device=evDevice.value;save()};
+onlyRel.onchange=()=>{state.meta.onlyRel=onlyRel.checked;save();render()};
+
+function visibleTasks(){
+  if(state.meta.onlyRel&&state.meta.evType){
+    return TASKS.filter(t=>t.focus.includes(state.meta.evType)||t.focus.includes("전체"));
+  }
+  return TASKS;
+}
+
+function render(){
+  const host=document.getElementById("tasks");host.innerHTML="";
+  const vis=visibleTasks();
+  ROLES.forEach(([role,tag])=>{
+    const rt=vis.filter(t=>t.role===role);if(!rt.length)return;
+    const sec=document.createElement("section");sec.className="role";
+    sec.innerHTML=`<div class="role-head"><span class="dot" aria-hidden="true"></span>
+      <h2>${role}</h2><span class="tag">${tag}</span></div>`;
+    rt.forEach(t=>sec.appendChild(taskEl(t)));
+    host.appendChild(sec);
+  });
+  updateTally();
+}
+
+function taskEl(t){
+  const cur=state.r[t.id]||{};
+  const f=document.createElement("fieldset");f.className="card task";
+  f.innerHTML=`
+    <div class="hd">
+      <span class="tid">${t.id}</span>
+      <div><p class="q">${t.q}</p>
+        <div class="metaline">
+          ${t.focus.map(x=>`<span class="focus">${x}</span>`).join("")}
+          ${t.kw.map(k=>`<span class="kw">${k}</span>`).join("")}
+        </div>
+      </div>
+    </div>
+    <div class="status" role="radiogroup" aria-label="${t.id} 결과"></div>
+    <div class="detail ${cur.status==="partial"||cur.status==="fail"?"":"hidden"}">
+      <div class="sev"><label for="sev-${t.id}">심각도</label>
+        <select id="sev-${t.id}">${SEV.map(s=>`<option ${cur.sev===s?"selected":""}>${s||"—"}</option>`).join("")}</select>
+      </div>
+      <div class="note"><label for="note-${t.id}">막힌 지점 · 장벽 · 재현 경로</label>
+        <textarea id="note-${t.id}" placeholder="어디서 어떻게 막혔는지 구체적으로">${cur.note||""}</textarea>
+      </div>
+    </div>`;
+  const sg=f.querySelector(".status");
+  STATUS.forEach(([val,lbl,ic])=>{
+    const o=document.createElement("span");o.className="opt";
+    const id=`st-${t.id}-${val}`;
+    o.innerHTML=`<input type="radio" name="st-${t.id}" id="${id}" value="${val}" ${cur.status===val?"checked":""}>
+      <label for="${id}" class="c-${val}"><span class="ic" aria-hidden="true">${ic}</span>${lbl}</label>`;
+    o.querySelector("input").onchange=()=>{
+      state.r[t.id]={...state.r[t.id],status:val};
+      const d=f.querySelector(".detail");d.classList.toggle("hidden",!(val==="partial"||val==="fail"));
+      save();updateTally();
+    };
+    sg.appendChild(o);
+  });
+  f.querySelector(`#sev-${t.id}`).onchange=e=>{state.r[t.id]={...state.r[t.id],sev:e.target.value==="—"?"":e.target.value};save()};
+  f.querySelector(`#note-${t.id}`).oninput=e=>{state.r[t.id]={...state.r[t.id],note:e.target.value};save()};
+  return f;
+}
+
+function updateTally(){
+  const vis=visibleTasks();
+  const c={ok:0,partial:0,fail:0,none:0};
+  vis.forEach(t=>{const s=(state.r[t.id]||{}).status;if(s&&c[s]!=null)c[s]++;else c.none++});
+  const done=c.ok+c.partial+c.fail;
+  const rate=done?Math.round((c.ok/done)*100):null;
+  document.getElementById("rateNum").textContent=rate==null?"—":rate+"%";
+  document.getElementById("rateDen").textContent=`${c.ok} / ${done} 성공 · ${vis.length}과업`;
+  document.getElementById("counts").innerHTML=STATUS.map(([v,l,ic])=>
+    `<span class="pill ${v}"><span class="ic" aria-hidden="true">${ic}</span>${l} <span class="n">${c[v]}</span></span>`).join("");
+  const tot=vis.length||1;
+  document.getElementById("track").innerHTML=
+    `<i class="s-ok" style="width:${c.ok/tot*100}%"></i><i class="s-partial" style="width:${c.partial/tot*100}%"></i><i class="s-fail" style="width:${c.fail/tot*100}%"></i>`;
+}
+
+// ── copy summary (plain text to paste back to team/Claude)
+document.getElementById("btnCopy").onclick=async()=>{
+  const vis=visibleTasks();const c={ok:0,partial:0,fail:0,none:0};
+  vis.forEach(t=>{const s=(state.r[t.id]||{}).status;if(s&&c[s]!=null)c[s]++;else c.none++});
+  const done=c.ok+c.partial+c.fail;const rate=done?Math.round(c.ok/done*100):0;
+  const L=[];
+  L.push(`# 접근성 실사용자 심사 결과`);
+  L.push(`평가자 유형: ${state.meta.evType||"(미기재)"} · 날짜: ${state.meta.date} · 기기: ${state.meta.device||"(미기재)"}`);
+  L.push(`성공률 ${rate}% (성공 ${c.ok}/${done} 완료) · 부분 ${c.partial} · 실패 ${c.fail} · 미수행 ${c.none} / 총 ${vis.length}`);
+  L.push("");
+  ROLES.forEach(([role])=>{
+    const rt=vis.filter(t=>t.role===role);if(!rt.length)return;
+    L.push(`## ${role}`);
+    rt.forEach(t=>{const r=state.r[t.id]||{};const st=(STATUS.find(s=>s[0]===r.status)||[,"미수행"])[1];
+      let line=`- [${t.id}] ${st} — ${t.q} (KWCAG ${t.kw.join(",")})`;
+      if(r.sev)line+=` · 심각도:${r.sev}`;
+      if(r.note)line+=`\n    · 장벽: ${r.note.replace(/\n/g," ")}`;
+      L.push(line);});
+    L.push("");
+  });
+  const text=L.join("\n");
+  try{await navigator.clipboard.writeText(text);flash("결과 요약이 복사됐어요 — 팀·개발에 붙여넣기 하세요")}
+  catch{ // fallback: show in a prompt-friendly textarea
+    const ta=document.createElement("textarea");ta.value=text;ta.style.cssText="position:fixed;inset:8% 6%;width:88%;height:80%;z-index:99;font-family:monospace";
+    document.body.appendChild(ta);ta.select();flash("복사가 막혀 있으면 상자의 내용을 직접 복사하세요");
+    ta.onblur=()=>ta.remove()}
+};
+document.getElementById("btnPrint").onclick=()=>window.print();
+document.getElementById("btnReset").onclick=()=>{
+  if(confirm("이 세션의 기록을 모두 지울까요? 되돌릴 수 없어요.")){state=fresh();
+    evType.value="";evDevice.value="";onlyRel.checked=false;evDate.value=new Date().toISOString().slice(0,10);
+    state.meta.date=evDate.value;save();render()}
+};
+function flash(msg){const s=document.getElementById("saved");s.innerHTML=`<b>${msg}</b>`;clearTimeout(flash._t);flash._t=setTimeout(()=>s.textContent="",4000)}
+
+render();
+</script>
