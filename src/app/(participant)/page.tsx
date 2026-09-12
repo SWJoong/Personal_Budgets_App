@@ -16,6 +16,9 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 import { MoneyText } from '@/components/ui/MoneyText'
 import BalanceWidget from '@/components/home/BalanceWidget'
+import BudgetAlerts from '@/components/home/BudgetAlerts'
+import { getBudgetChangeInfo, getSpendingPaceAlert } from '@/utils/budget-visuals'
+import { getActivityEmoji } from '@/utils/activityEmoji'
 
 export const metadata = { title: '홈' }
 
@@ -47,6 +50,24 @@ const DOMAIN_ICON: Record<string, string> = {
   자기개발: '📚',
   '건강·안전': '🩺',
   주거환경개선: '🏠',
+}
+
+/**
+ * 현재 배정 기간(starts_on~ends_on)의 경과일·총일수 — 소비속도 알림용(§2).
+ * 서버 컴포넌트는 요청당 1회 렌더라 현재 시각 사용이 안정적이며, 순수 헬퍼로 분리해
+ * 컴포넌트 렌더의 purity 린트(react-hooks/purity)를 만족한다. 날짜가 없으면 경과일0(경고 없음).
+ */
+function paceWindow(
+  startsOn: string | null,
+  endsOn: string | null,
+): { daysPassed: number; totalDays: number } {
+  if (!startsOn || !endsOn) return { daysPassed: 0, totalDays: 0 }
+  const MS_PER_DAY = 86_400_000
+  const start = new Date(startsOn).getTime()
+  const end = new Date(endsOn).getTime()
+  const daysPassed = Math.max(0, Math.floor((Date.now() - start) / MS_PER_DAY))
+  const totalDays = Math.max(0, Math.round((end - start) / MS_PER_DAY))
+  return { daysPassed, totalDays }
 }
 
 export default async function Home() {
@@ -109,6 +130,32 @@ export default async function Home() {
         .limit(5)
     : { data: [] as { id: string; usage_date: string; amount: number; description: string | null }[] }
 
+  // 예산 변동·소비속도 알림(고아 기능 복원 §2) — 순수 함수 재사용, 색은 BudgetAlerts 가 토큰으로.
+  // 조회 실패가 홈을 깨지 않도록 방어(기본값 = 알림 없음).
+  let changeInfo = getBudgetChangeInfo(null, 0)
+  let paceAlert = getSpendingPaceAlert(0, 0, 0, 0)
+  if (balance) {
+    try {
+      // 전월 대비 변동: 종료일 내림차순 2건 → 이전(더 오래된) 승인금액이 previousBudget.
+      const { data: allocs } = await supabase
+        .from('seoul_budget_allocations')
+        .select('allocated_amount, ends_on')
+        .eq('participant_id', participant.id)
+        .order('ends_on', { ascending: false })
+        .limit(2)
+      const previousBudget = allocs && allocs.length > 1 ? Number(allocs[1].allocated_amount) : null
+      changeInfo = getBudgetChangeInfo(previousBudget, Number(balance.allocated_amount))
+
+      // 소비속도: 현재 배정 기간(starts_on~ends_on)의 경과일/총일수. 날짜 없으면 경과일0 → 경고 없음.
+      const { daysPassed, totalDays } = paceWindow(balance.starts_on, balance.ends_on)
+      const paceBudget = Number(balance.monthly_ceiling || balance.allocated_amount)
+      paceAlert = getSpendingPaceAlert(Number(balance.spent), daysPassed, totalDays, paceBudget)
+    } catch {
+      changeInfo = getBudgetChangeInfo(null, 0)
+      paceAlert = getSpendingPaceAlert(0, 0, 0, 0)
+    }
+  }
+
   // 어디에 썼는지(§6) — 히어로와 같은 배정 기준. 계획합계는 requested_services 그레인(§8-5),
   // 집행은 v_seoul_domain_flow, 둘 다 domain_id 로 스파인에 귀속(라벨 조인 금지 §8-4).
   let budgetRows: ReturnType<typeof buildBudgetByDomain> = []
@@ -162,6 +209,9 @@ export default async function Home() {
               style={prefs.balance_widget_style}
               emoji={prefs.balance_emoji ?? '🍎'}
             />
+
+            {/* 예산 변동·소비속도 알림 — 활성인 것만 카드로(둘 다 없으면 렌더 안 됨). */}
+            <BudgetAlerts changeInfo={changeInfo} paceAlert={paceAlert} />
 
             {(() => {
               const copay = describeCopay(balance.copay_status, Number(balance.copay_amount))
@@ -257,7 +307,12 @@ export default async function Home() {
                 {recentUsages.map((u) => (
                   <li key={u.id} className="p-4 rounded-2xl bg-card ring-1 ring-border flex items-center justify-between">
                     <div className="flex flex-col">
-                      <span className="font-bold leading-relaxed">{u.description ?? '활동'}</span>
+                      <span className="font-bold leading-relaxed">
+                        <span aria-hidden="true" className="mr-1.5">
+                          {getActivityEmoji(u.description ?? '활동')}
+                        </span>
+                        {u.description ?? '활동'}
+                      </span>
                       <span className="text-xs text-muted-foreground">{u.usage_date}</span>
                     </div>
                     <span className="font-bold"><MoneyText value={Number(u.amount)} emphasis="body" /></span>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { saveUIPreferences } from '@/app/actions/preferences'
+import EmojiPicker from '@/components/ui/EmojiPicker'
 import {
   OPTIONAL_BLOCKS,
   BLOCK_METADATA,
@@ -34,17 +35,23 @@ export default function DisplaySettingsClient({
 }) {
   const [enabled, setEnabled] = useState<Set<BlockId>>(new Set(initial.enabled_blocks))
   const [style, setStyle] = useState<BalanceWidgetStyle>(initial.balance_widget_style)
+  const [emoji, setEmoji] = useState<string>(initial.balance_emoji ?? '🍎')
+  const [pickerOpen, setPickerOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // 현재 상태 전체를 저장한다 — 블록·스타일을 서로 덮어쓰지 않도록 항상 최신값으로 보낸다.
-  async function persist(nextEnabled: Set<BlockId>, nextStyle: BalanceWidgetStyle) {
+  // 현재 상태 전체를 저장한다 — 블록·스타일·이모지를 서로 덮어쓰지 않도록 항상 최신값으로 보낸다.
+  async function persist(
+    nextEnabled: Set<BlockId>,
+    nextStyle: BalanceWidgetStyle,
+    nextEmoji: string,
+  ) {
     setSaving(true)
     setError(null)
     const res = await saveUIPreferences(participantId, {
       enabled_blocks: OPTIONAL_BLOCKS.filter((b) => nextEnabled.has(b)),
       balance_widget_style: nextStyle,
-      balance_emoji: initial.balance_emoji,
+      balance_emoji: nextEmoji,
     })
     setSaving(false)
     return res
@@ -56,7 +63,7 @@ export default function DisplaySettingsClient({
     if (next.has(block)) next.delete(block)
     else next.add(block)
     setEnabled(next) // 낙관적 반영
-    const res = await persist(next, style)
+    const res = await persist(next, style, emoji)
     if (res?.error) {
       setError(res.error)
       setEnabled(new Set(prev)) // 실패 시 되돌림
@@ -67,10 +74,20 @@ export default function DisplaySettingsClient({
     if (next === style) return
     const prev = style
     setStyle(next) // 낙관적 반영
-    const res = await persist(enabled, next)
+    const res = await persist(enabled, next, emoji)
     if (res?.error) {
       setError(res.error)
       setStyle(prev) // 실패 시 되돌림
+    }
+  }
+
+  async function chooseEmoji(next: string) {
+    const prev = emoji
+    setEmoji(next) // 낙관적 반영
+    const res = await persist(enabled, style, next)
+    if (res?.error) {
+      setError(res.error)
+      setEmoji(prev) // 실패 시 되돌림
     }
   }
 
@@ -113,6 +130,33 @@ export default function DisplaySettingsClient({
             )
           })}
         </div>
+      </section>
+
+      {/* 잔액 이모지 — 위에서 '이모지' 모양을 고르면 홈에 보일 그림. */}
+      <section className="flex flex-col gap-2">
+        <h3 className="text-sm font-black text-foreground">잔액 이모지를 골라요</h3>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          위에서 <strong className="font-bold">이모지</strong> 모양을 고르면, 홈에 이 그림이 보여요.
+        </p>
+        <div className="flex items-center gap-3">
+          <span aria-hidden="true" className="text-4xl leading-none">
+            {emoji}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPickerOpen((v) => !v)}
+            aria-expanded={pickerOpen}
+            disabled={saving}
+            className="min-h-[44px] px-4 rounded-xl bg-card text-foreground ring-1 ring-border font-bold hover:bg-muted-hover disabled:opacity-60 transition-colors"
+          >
+            {pickerOpen ? '닫기' : '이모지 고르기'}
+          </button>
+        </div>
+        {pickerOpen && (
+          <div className="mt-2 p-3 rounded-2xl bg-muted ring-1 ring-border">
+            <EmojiPicker value={emoji} onSelect={chooseEmoji} />
+          </div>
+        )}
       </section>
 
       {/* 홈에 무엇을 볼지 — 블록 토글. */}
