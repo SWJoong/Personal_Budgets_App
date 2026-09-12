@@ -15,7 +15,7 @@ import { BLOCK_METADATA, type BlockId } from '@/utils/uiPreferences'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 import { MoneyText } from '@/components/ui/MoneyText'
-import { formatCurrency } from '@/utils/budget-visuals'
+import BalanceWidget from '@/components/home/BalanceWidget'
 
 export const metadata = { title: '홈' }
 
@@ -153,15 +153,15 @@ export default async function Home() {
           <EmptyState title="아직 정해진 예산이 없어요." description="선생님들이 확인하면 여기에 나와요." />
         ) : (
           <>
-            <section className="p-8 rounded-3xl bg-hero text-hero-foreground flex flex-col gap-2">
-              <span className="text-sm font-bold text-hero-foreground/70">지금 쓸 수 있는 돈</span>
-              <span className="text-4xl font-black tracking-tight"><MoneyText value={Number(balance.remaining)} emphasis="hero" onHero /></span>
-              <span className="text-xs font-medium text-hero-foreground/70 leading-relaxed">
-                {/* 기준은 차수 상한이 아니라 이 사람에게 승인된 금액이다 — remaining 과 같은 축이어야
-                    "전체 240만인데 왜 150만만 남았지?" 같은 혼란이 생기지 않는다. */}
-                전체 {formatCurrency(Math.round(Number(balance.allocated_amount)))}원 중 {formatCurrency(Math.round(Number(balance.spent)))}원 사용했어요
-              </span>
-            </section>
+            {/* 시각 잔액 위젯(F0) — 당사자가 고른 모양(pie·water·cash·emoji·text)으로 렌더.
+                기준은 이 사람에게 승인된 금액(allocated_amount)이라 remaining 과 같은 축이다. */}
+            <BalanceWidget
+              remaining={Number(balance.remaining)}
+              total={Number(balance.allocated_amount)}
+              spent={Number(balance.spent)}
+              style={prefs.balance_widget_style}
+              emoji={prefs.balance_emoji ?? '🍎'}
+            />
 
             {(() => {
               const copay = describeCopay(balance.copay_status, Number(balance.copay_amount))
