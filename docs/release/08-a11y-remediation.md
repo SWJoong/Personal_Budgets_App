@@ -42,6 +42,8 @@ FormField·`:focus-visible`·aria-current/pressed/expanded 3역할 배치). 남�
 - 게이트: tsc0 · lint 0 errors · **vitest 874 통과**(가드 3종 포함·회귀 0) · build0.
 - 라이브(관리자 로그인, 브라우저): skip-link "본문 바로가기"=첫 포커스 · 수정한 back-링크 접근명
   "대시보드로 가기"+← aria-hidden 실측 · aria-current 등 상태 라이브 확인.
+- **인지(당사자 카피 정량, easyread MCP `analyze_readability`)**: 당사자 홈 대표 문구 = 평균
+  **3.7어절/문장**(쉬운 정보 기준 ≤10)·최장 5어절·**어려운 낱말 0** → 쉬운 말 원칙 수치 충족(P1~P7 성과 확증).
 
 ## 4. 남은 것 — 장애인 사용자 평가 (자동·에이전트가 대체 못 함, 07 §6-2)
 아래는 코드·자동검사·에이전트 관찰로 대체 불가하며 **실제 당사자·전문가 심사**가 필요하다:
