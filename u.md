@@ -1290,3 +1290,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-12T06:03Z] U
 접근성 3역할 적용=PR #155(feat/a11y-remediation). 07 감사 토대 위 정밀스캔→실결함만 수정+회귀가드3종. 슬라이스1(탐색·맥락): 화살표 접근명 5곳·새창예고 2곳·죽은CSS. 슬라이스2(키보드): 실결함0(백드롭 전부 aria-hidden)·가드 a11yKeyboardClickable·WAI-ARIA상태 확증(aria-pressed/current/expanded 3역할). 슬라이스3(인지): autoComplete 본인이름 2폼. 가드=a11yArrowGlyphs·a11yExternalLinks·a11yKeyboardClickable(소스스캔·aiGateBoundary패턴). tsc0·vitest874·build0. 라이브: skip-link 첫포커스·back접근명 실측. 앱전용. ★남은것=장애인 사용자평가(자동/에이전트 대체불가·docs/release/08 §4). W easy-read·전문가 검증 대상.
 
+## [2026-09-12T06:38Z] U
+실사용자 심사 준비 완료=PR #156(docs). 09 계획서(지적·발달/시각/저시력/청각/뇌병변 × 3역할 × 앱실제과업 18개 P1~A4 + KWCAG태그 + 환경·테스트계정 + 기록·판정 + 환류(findings→W계약→수정슬라이스) + 윤리·동의) + 진행자 인터랙티브 기록도구(a11y-eval-recorder.html·게시 claude.ai/code/artifact/c75c8083, 성공률집계·결과요약복사·인쇄, 도구자체 a11y모범). 앱코드무변경. #155(remediation) 머지완료. 접근성 목표: 자동화범위 적용·검증·가드 완료 + 사용자심사 준비완료. 남은=사람이 세션수행→결과요약 전달시 내가 결과보고서+수정슬라이스 착수.
+
