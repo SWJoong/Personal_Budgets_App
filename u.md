@@ -1308,3 +1308,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-12T13:27Z] U
 욕구사정·이용계획 수정=PR #161(부분유실 액션 updateNeedsAssessment/updateUtilizationPlan 배선·액션 무변경). ①AssessmentClient 인라인 편집(각 항목 수정→프리필폼→update→refresh·한번에 한항목·취소) ②신규 PlanMetaEditor(기간·작성방식·조력자 프리필→update)+plans/[id] '계획정보' 섹션. 작성방식 self/with_support/by_supporter DB CHECK 일치확인. W계약(AssessmentClient.edit·PlanMetaEditor)→신선서브→독립재게이트 tsc0·lint0·vitest921·build0·hover가드. 앱전용. 백로그 남음: 역할관리·사용자목록·동의(미구축 신규화면). 열린 PR #161.
 
+## [2026-09-12T15:58Z] U
+관리자 역할 관리 화면=PR #162(고아 액션 getAllUsers/updateUserRole 배선·admin.ts 무변경). 신규 /admin/users: 서버 page(requireAdmin→getAllUsers)+UserRoleManagementClient(사용자 카드목록·비본인=역할select+인라인확인→updateUserRole·본인=변경불가'나'+안내 락아웃이중방어)+대시보드 '역할관리' 타일. W계약(UserRoleManagementClient 6)→신선서브 구현→독립재게이트 tsc0·vitest921(계약6·회귀0)·eslint0·build0·뱃지/hover토큰정의확인. 앱전용. 백로그 남음: 동의관리(withdrawConsent/getBenefitStatus/getConsentRecords)·선정/영역조회(미구축). 열린 PR #161(사정·계획수정)·#162.
+
