@@ -1293,3 +1293,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-12T06:38Z] U
 실사용자 심사 준비 완료=PR #156(docs). 09 계획서(지적·발달/시각/저시력/청각/뇌병변 × 3역할 × 앱실제과업 18개 P1~A4 + KWCAG태그 + 환경·테스트계정 + 기록·판정 + 환류(findings→W계약→수정슬라이스) + 윤리·동의) + 진행자 인터랙티브 기록도구(a11y-eval-recorder.html·게시 claude.ai/code/artifact/c75c8083, 성공률집계·결과요약복사·인쇄, 도구자체 a11y모범). 앱코드무변경. #155(remediation) 머지완료. 접근성 목표: 자동화범위 적용·검증·가드 완료 + 사용자심사 준비완료. 남은=사람이 세션수행→결과요약 전달시 내가 결과보고서+수정슬라이스 착수.
 
+## [2026-09-12T10:19Z] U
+당사자 잔액 시각위젯 복원 + 슈퍼관리자 역할전환기=PR #157(앱전용). F12 분석 중 F0 발견=balance_widget_style(5스타일) 설정 살아있는데 홈 리빌드때 렌더 누락(인지 회귀)→BalanceWidget 복원(role=img+aria-label·텍스트 병행·5스타일 SVG·토큰·설정피커). 역할전환기=superAdminSwitch(assertAdmin·view-as 재사용·권한확장아님)+우측상단 스위처+2레이아웃 마운트(supporter=서버판정·participant=동기골든유지 클라게이트 BUILTIN cheese0318). W계약 신선서브2 병행구현·독립재게이트 tsc0·lint0·vitest(회귀0·partialfail flake 단독통과)·build0. ★브라우저 pane 이세션 내비 불안정→시각 라이브QA는 배포본. 전환기는 cheese0318 실계정서 노출.
+
