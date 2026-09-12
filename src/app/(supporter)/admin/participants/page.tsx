@@ -47,7 +47,7 @@ export default async function AdminParticipantsPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
       <header className="flex h-16 items-center justify-between px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="flex items-center gap-3">
-          <Link href="/admin" className="text-muted-foreground hover:text-foreground transition-colors">←</Link>
+          <Link href="/admin" aria-label="대시보드로 가기" className="text-muted-foreground hover:text-foreground transition-colors"><span aria-hidden="true">←</span></Link>
           <h1 className="text-xl font-bold tracking-tight">당사자 관리</h1>
         </div>
         <div className="flex items-center gap-2">
