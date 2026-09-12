@@ -1305,3 +1305,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-12T13:03Z] U
 관리자 당사자 수정·삭제 UI=PR #160(고아 액션 updateParticipant/deleteParticipant 배선·admin.ts 무변경). 신규 /admin/participants/[id]/edit(등록폼 미러·프리필·검증→update→상세복귀)+삭제 danger구역 인라인 2단계 확인(role=alert→확인시만 delete→목록)+상세헤더 '✏️정보수정' 링크. W계약(ParticipantEditClient 5)→신선서브→독립재게이트 tsc0·lint0·vitest915·build0(P7 hover 가드 hover:bg-muted→muted-hover 수정). 앱전용. 백로그 남음: 역할관리·사용자목록·사정수정·계획수정·동의철회 등(미구축). 열린 PR #160.
 
+## [2026-09-12T13:27Z] U
+욕구사정·이용계획 수정=PR #161(부분유실 액션 updateNeedsAssessment/updateUtilizationPlan 배선·액션 무변경). ①AssessmentClient 인라인 편집(각 항목 수정→프리필폼→update→refresh·한번에 한항목·취소) ②신규 PlanMetaEditor(기간·작성방식·조력자 프리필→update)+plans/[id] '계획정보' 섹션. 작성방식 self/with_support/by_supporter DB CHECK 일치확인. W계약(AssessmentClient.edit·PlanMetaEditor)→신선서브→독립재게이트 tsc0·lint0·vitest921·build0·hover가드. 앱전용. 백로그 남음: 역할관리·사용자목록·동의(미구축 신규화면). 열린 PR #161.
+
