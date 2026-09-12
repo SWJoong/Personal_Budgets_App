@@ -1302,3 +1302,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-12T12:04Z] U
 고아 컴포넌트 복원=PR #159(#158 유틸복원과 독립). ①ImageLightbox→PhotoGallery(클라전환·button·클릭확대·저시력) ②WaterCupPlanPreview 토큰화(raw hex 제거)+PlanAffordability 래퍼+/plan 배선(요청서비스=옵션·balance). W계약(PhotoGallery·WaterCup)→신선서브→독립재게이트 tsc0·lint0·vitest895·build0(P7 hover가드 위반 1건 잡아 수정). ★액션 고아 12개=조사결과 대부분 미구축(신규 UI 필요)—당사자수정/삭제·역할관리·동의·사정수정·계획수정 등, 접근성과 별개 기능완성도라 백로그(우선순위 사용자결정). 열린 PR: #158(유틸)·#159(컴포넌트). 브랜치 실수(머지브랜치 재사용) 2회 있었으나 fresh 브랜치로 정리 완료.
 
+## [2026-09-12T13:03Z] U
+관리자 당사자 수정·삭제 UI=PR #160(고아 액션 updateParticipant/deleteParticipant 배선·admin.ts 무변경). 신규 /admin/participants/[id]/edit(등록폼 미러·프리필·검증→update→상세복귀)+삭제 danger구역 인라인 2단계 확인(role=alert→확인시만 delete→목록)+상세헤더 '✏️정보수정' 링크. W계약(ParticipantEditClient 5)→신선서브→독립재게이트 tsc0·lint0·vitest915·build0(P7 hover 가드 hover:bg-muted→muted-hover 수정). 앱전용. 백로그 남음: 역할관리·사용자목록·사정수정·계획수정·동의철회 등(미구축). 열린 PR #160.
+
