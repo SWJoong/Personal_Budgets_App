@@ -1299,3 +1299,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-12T11:23Z] U
 고아 패턴 스캔+복원=PR #158(앱전용). 스캔: uiPreferences 소비+utils export 소비처0+내부헬퍼 거짓양성 필터→진짜 고아만. 복원3: ①이모지선택기(EmojiPicker+화면설정 배선→잔액위젯 emoji 완성) ②예산변동·소비속도 알림(BudgetAlerts+홈배선 전월배정/경과일) ③활동자동이모지(최근목록). 정리: getBudgetVisualInfo+VisualInfo+BudgetStatus 삭제(#157 위젯이 대체·소비처0). W계약(EmojiPicker·activityEmoji·budget-visuals golden)→신선서브 구현→독립재게이트 tsc0·lint0·vitest907·build0. ★브랜치 실수: #157 머지된 브랜치서 작업→fresh 브랜치로 이동 완료. #157 머지됨(main e507f50). 접근성 회귀클래스(리빌드 유실 기능) 복원중.
 
+## [2026-09-12T12:04Z] U
+고아 컴포넌트 복원=PR #159(#158 유틸복원과 독립). ①ImageLightbox→PhotoGallery(클라전환·button·클릭확대·저시력) ②WaterCupPlanPreview 토큰화(raw hex 제거)+PlanAffordability 래퍼+/plan 배선(요청서비스=옵션·balance). W계약(PhotoGallery·WaterCup)→신선서브→독립재게이트 tsc0·lint0·vitest895·build0(P7 hover가드 위반 1건 잡아 수정). ★액션 고아 12개=조사결과 대부분 미구축(신규 UI 필요)—당사자수정/삭제·역할관리·동의·사정수정·계획수정 등, 접근성과 별개 기능완성도라 백로그(우선순위 사용자결정). 열린 PR: #158(유틸)·#159(컴포넌트). 브랜치 실수(머지브랜치 재사용) 2회 있었으나 fresh 브랜치로 정리 완료.
+
