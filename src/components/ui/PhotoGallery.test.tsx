@@ -1,40 +1,41 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import { PhotoGallery } from '@/components/ui/PhotoGallery'
+import { describe, it, expect, afterEach } from 'vitest'
+import { render, screen, cleanup, fireEvent } from '@testing-library/react'
+import { PhotoGallery } from './PhotoGallery'
 import type { GalleryPhoto } from '@/utils/gallery'
 
 /**
- * 활동사진 Wave C — 공용 PhotoGallery 렌더 골든 (RED: src/components/ui/PhotoGallery.tsx 미생성)
- * 설계출처: Plan&Source/goala_activity_photos_waveC_W.md §3
+ * 활동 사진 갤러리 — 사진 확대(라이트박스) 복원 계약 (W 레인). 고아 컴포넌트 ImageLightbox 복원.
+ * 설계: Plan&Source/goala_orphan_components_restore_W.md §1.
  *
- * 당사자·실무자 갤러리 공용 프레젠테이셔널. 순서는 호출측 mergeGalleryPhotos 가 정하고,
- * 이 컴포넌트는 프롭 순서대로 렌더한다(순수 = Supabase mock 불필요).
+ * 배경: ImageLightbox(Modal 기반 확대뷰)는 만들어졌으나 소비처 0 — 갤러리 사진을 크게 볼 수 없었다.
+ *   저시력·인지 사용자에게 확대는 중요. 사진을 누르면 확대 다이얼로그가 열린다.
+ *
+ * RED 사유: 현재 PhotoGallery 는 <img> 만 렌더(클릭 불가). 사진이 버튼/클릭가능 + 라이트박스 필요.
  */
-const p = (usageId: string, label: string, kind: GalleryPhoto['kind'] = 'activity'): GalleryPhoto => ({
-  usageId,
-  url: `https://s/${usageId}`,
-  label,
-  date: '2026-01-01',
-  kind,
-})
 
-describe('PhotoGallery — 공용 사진 그리드', () => {
-  it('photos 를 프롭 순서대로 listitem 으로 렌더', () => {
-    render(<PhotoGallery photos={[p('a', '첫사진'), p('b', '둘째사진', 'receipt')]} />)
-    const items = screen.getAllByRole('listitem')
-    expect(items).toHaveLength(2)
-    expect(items[0].textContent).toContain('첫사진')
-    expect(items[1].textContent).toContain('둘째사진')
+const PHOTOS: GalleryPhoto[] = [
+  { kind: 'activity', usageId: 'u1', url: 'https://x/a.jpg', label: '미술 활동' } as GalleryPhoto,
+  { kind: 'receipt', usageId: 'u2', url: 'https://x/b.jpg', label: '커피' } as GalleryPhoto,
+]
+
+afterEach(() => cleanup())
+
+describe('PhotoGallery — 사진 확대(라이트박스)', () => {
+  it('사진이 눌러서 열 수 있는 컨트롤(button)로 렌더된다', () => {
+    render(<PhotoGallery photos={PHOTOS} />)
+    expect(screen.getByRole('button', { name: /미술 활동/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /커피/ })).toBeInTheDocument()
   })
 
-  it('빈 배열 → EmptyState(사진 없음), listitem 0', () => {
+  it('사진을 누르면 확대 다이얼로그(role=dialog)가 열린다', () => {
+    render(<PhotoGallery photos={PHOTOS} />)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /미술 활동/ }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('빈 배열이면 빈 상태를 그대로 보여준다(회귀)', () => {
     render(<PhotoGallery photos={[]} />)
-    expect(screen.queryAllByRole('listitem')).toHaveLength(0)
-    expect(screen.getByText(/사진이 없어요/)).toBeInTheDocument()
-  })
-
-  it('각 사진에 img(alt=label) 이 있다', () => {
-    render(<PhotoGallery photos={[p('a', '활동사진A')]} />)
-    expect(screen.getByRole('img', { name: '활동사진A' })).toBeInTheDocument()
+    expect(screen.getByText(/아직 사진이 없어요/)).toBeInTheDocument()
   })
 })
