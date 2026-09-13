@@ -1317,3 +1317,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-13T07:32Z] U
 당사자 '선생님의 편지'→'선생님이 남긴 기록' 문구 통일=PR #164(순수 표시 문구·기능/데이터/동작 무변경). 사용자 지적('편지 표현 어색'). /evaluations는 실제 모니터링(관찰+내 목소리)+정산 열람 창구인데 진입점(더보기·내비·홈설정·가이드)만 '편지'로 목적지화면('선생님이 남긴 기록')과 불일치→통일. evaluation_letter 블록키는 저장ID라 유지·label/description만 변경. 💌 아이콘 유지. '편지' 단언 테스트 없음 확인. tsc0·vitest927·eslint0·build0. ★기능 삭제 아님(당사자 자기기록 열람권 유지)—이름만 조정. 열린 PR #163(동의관리)·#164(문구).
 
+## [2026-09-13T08:38Z] U
+하단 탭바 활성 대비 강화=PR #165(당사자). 사용자 지적(현재화면 강조 대비 필요). 기존=색+굵기+아이콘확대만→WCAG1.4.1 색단독 우려. 활성탭: 틴트pill(bg-primary/10)+실선링(ring-1 ring-primary)+text-primary+굵게+scale110 다중큐(형태단서 추가·고대비테마 견고). 활성/비활성 동일footprint(레이아웃 안흔들림). 앱 기존 선택됨 어휘(onboarding ring-primary bg-primary/N) 계승. 4탭 고정은 유지(인지접근성 자산). TabBar tokenFoundation 락 대상=시맨틱토큰만. 계약(aria-current·4탭)은 시각대비 미단언→회귀0. tsc0·vitest927(TabBar2종·tokenFoundation·layout)·eslint0·build0. 열린 PR #165.
+
