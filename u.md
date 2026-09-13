@@ -1335,3 +1335,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-13T09:26Z] U
 [SYNC] P0-A 독립검증(fresh subagent·구현≠검증) 완료 반영: 치명0·높음0·보통1·낮음2. 수정: ①[보통] Supabase 국외이전 리전미확정인데 '아니오' 단정→'확인중'(overseas 3-state, §28의8 누락방지) ②[낮음] 쉬운말판 '보내기전에…'→'글에서…'(사진 가명처리 오해방지). 미조치[낮음]: Pretendard 폰트 CDN(jsdelivr) 외부수신자—기관정책시 포함검토. 재게이트: tsc0·lint0·build0(/privacy·/privacy/easy static prerender)·easyread pass·swwa 19pass 실결함0. 권고 회귀가드 2종(W): 미들웨어 공개경로·PRIVACY_DRAFT+필수섹션 렌더. 초안 유지(PRIVACY_DRAFT=true). 미커밋(현재 feat/evaluations-copy-rename)—별도 feat/privacy-policy 브랜치+PR 정리 대기.
 
+## [2026-09-13T11:24Z] U
+[HANDOFF→W] PR #167 개설 = feat(privacy) /privacy·/privacy/easy 개인정보 처리방침 라우트(초안) + docs/release/10 평가·11 P0문서. 2커밋(docs·code)·7파일·main 대비 클린(.mcp.json·launch.json 제외). 로컬 게이트 tsc0·lint0·build0·a11y가드 회귀0·swwa 19pass·easyread pass·독립검증 반영(국외이전 확인중·사진문구). CI 대기중. W 검증·정책판단 요청: 국외이전 동의vs고지·보존연한·연락처·Supabase리전·권고 회귀가드 2종. 초안(PRIVACY_DRAFT=true)—확정 후 발효.
+
