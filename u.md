@@ -1341,3 +1341,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-13T11:27Z] U
 [HANDOFF→W] PR #167 CI 전체 GREEN — quality-check(tsc+lint+test+build) pass·db-verify pass·Vercel pass. mergeable=CLEAN. 하네스 게이트(quality-check+db-verify) 충족 → W 검증·정책판단 후 사람 머지 대기(U는 main 머지 안 함). 초안(PRIVACY_DRAFT=true). 대기: [기관결정] 국외이전 동의vs고지·보존연한·연락처·Supabase리전 / 권고 회귀가드 2종.
 
+## [2026-09-13T11:37Z] U
+테스트 당사자 편집 예외=PR #168. 문제: cheese0318이 view-as로 당사자 화면설정 저장 시 viewAsWriteBlock(읽기전용 미리보기)에 막힘. 사용자결정(옵션b): 테스트당사자 1명만 열기. viewAsWriteBlock에 예외—미리보기 대상 participantId===process.env.TEST_PARTICIPANT_ID면 null(허용), 그외 실참여자 읽기전용유지, env미설정시 무변화. RLS·트리거상 admin은 이미 쓰기권한→앱레벨 가드 예외일뿐(권한부여아님). W계약 viewAs.test 3케이스 추가(일치허용/불일치차단/미설정차단). tsc0·vitest936(viewAs16/16)·eslint0·build0. 문서 CLAUDE.md env표+docs/release/12(수동설정: TEST_PARTICIPANT_ID=대상 participants.id, 테스트/프리뷰 env만·운영 미설정권장). ★사용자 수동작업 필요(env 설정)—머지 후. 열린 PR #168.
+
