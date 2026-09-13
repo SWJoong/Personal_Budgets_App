@@ -35,7 +35,7 @@ export const BLOCK_METADATA: Record<BlockId, { icon: string; label: string; desc
   recent_transactions: { icon: '🕐', label: '최근에 쓴 돈',    description: '최근 3번 쓴 돈 목록' },
   plan_shortcut:       { icon: '🤔', label: '나의 계획',       description: '나의 활동 계획 세우기' },
   calendar_shortcut:   { icon: '📅', label: '달력 바로가기',   description: '이번 달 활동을 달력에서 확인' },
-  evaluation_letter:   { icon: '💌', label: '선생님 편지',     description: '선생님이 이번 달에 써준 편지' },
+  evaluation_letter:   { icon: '💌', label: '선생님 기록',     description: '선생님이 남긴 기록을 봐요' },
   weekly_chart:        { icon: '📉', label: '이번 주 쓴 돈',   description: '최근 7일 하루마다 쓴 돈' },
   source_view:         { icon: '💳', label: '돈 종류별 보기',  description: '돈 종류별 남은 돈' },
   map_widget:          { icon: '🗺️', label: '활동 지도',       description: '돈을 쓴 곳을 지도에서 봐요' },

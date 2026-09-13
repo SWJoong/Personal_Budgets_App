@@ -84,7 +84,7 @@ export default function MoreMenuClient({
               <div className="flex items-center gap-4">
                 <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">💌</span>
                 <div className="flex flex-col">
-                  <span className="text-lg font-black">지원자 선생님의 편지</span>
+                  <span className="text-lg font-black">선생님이 남긴 기록</span>
                   <span className="text-xs font-bold text-hero-foreground">나의 한 달 활동 이야기 보기</span>
                 </div>
               </div>
