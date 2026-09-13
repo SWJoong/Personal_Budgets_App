@@ -1311,3 +1311,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-12T15:58Z] U
 관리자 역할 관리 화면=PR #162(고아 액션 getAllUsers/updateUserRole 배선·admin.ts 무변경). 신규 /admin/users: 서버 page(requireAdmin→getAllUsers)+UserRoleManagementClient(사용자 카드목록·비본인=역할select+인라인확인→updateUserRole·본인=변경불가'나'+안내 락아웃이중방어)+대시보드 '역할관리' 타일. W계약(UserRoleManagementClient 6)→신선서브 구현→독립재게이트 tsc0·vitest921(계약6·회귀0)·eslint0·build0·뱃지/hover토큰정의확인. 앱전용. 백로그 남음: 동의관리(withdrawConsent/getBenefitStatus/getConsentRecords)·선정/영역조회(미구축). 열린 PR #161(사정·계획수정)·#162.
 
+## [2026-09-13T03:39Z] U
+신청서 동의 철회·수급현황=PR #163(부분유실 액션 배선·application.ts 무변경). recordConsent는 기배선, 철회/수급현황/이력조회 3종 공백을 배선. ApplicationDetailClient: '동의 이력'섹션(상태표시+활성동의 철회→인라인확인 role=alert→withdrawConsent 개인정보보호법 철회권)+'수급현황'섹션(getBenefitStatus 읽기전용, initialBenefitStatus optional=기존계약무영향). page: 인라인쿼리→getConsentRecords/getBenefitStatus 소비처부여. W계약(consent 6·기존 선정계약 무수정)→신선서브 구현→독립재게이트 tsc0·vitest933(신규6·회귀0)·eslint0·build0. 앱전용. ★고아/부분유실 액션 스윕 사실상 완료(#158~#163). 남은 미구축: 선정결정 조회(getSelectionDecision)·영역조회(getServiceDomains/Subdomains) 정도. 열린 PR #163.
+
