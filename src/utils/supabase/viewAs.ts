@@ -68,8 +68,16 @@ export async function resolveViewAs(): Promise<ViewAsContext> {
  * 액션 첫머리(로그인 확인 직후)에서 `const blocked = await viewAsWriteBlock(); if (blocked) return { error: blocked }`.
  */
 export async function viewAsWriteBlock(): Promise<string | null> {
-  const { active } = await resolveViewAs()
-  return active
-    ? '지금은 관리자 미리보기 중이에요. 저장하려면 먼저 “미리보기 나가기”를 눌러 주세요.'
-    : null
+  const { active, participantId } = await resolveViewAs()
+  if (!active) return null
+
+  // 테스트 목적 예외: TEST_PARTICIPANT_ID 로 지정한 '테스트용 당사자 1명'을 미리보기 중이면
+  // 저장을 허용한다(관리자 계정으로 당사자 편집 흐름을 실제로 테스트하기 위함, 사용자 결정 2026-09-13).
+  // ★안전: 지정된 그 당사자에게만 열린다 — 다른 실참여자는 그대로 읽기전용. env 미설정이면
+  //   이 분기는 없는 것과 같아 동작이 전혀 바뀌지 않는다. (RLS·트리거상 admin 은 이미 쓰기 권한이
+  //   있으므로 이건 '권한 부여'가 아니라 앱 레벨 읽기전용 가드의 테스트 예외일 뿐이다.)
+  const testId = process.env.TEST_PARTICIPANT_ID
+  if (testId && participantId === testId) return null
+
+  return '지금은 관리자 미리보기 중이에요. 저장하려면 먼저 “미리보기 나가기”를 눌러 주세요.'
 }
