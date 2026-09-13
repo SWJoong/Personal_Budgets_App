@@ -1314,3 +1314,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-13T03:39Z] U
 신청서 동의 철회·수급현황=PR #163(부분유실 액션 배선·application.ts 무변경). recordConsent는 기배선, 철회/수급현황/이력조회 3종 공백을 배선. ApplicationDetailClient: '동의 이력'섹션(상태표시+활성동의 철회→인라인확인 role=alert→withdrawConsent 개인정보보호법 철회권)+'수급현황'섹션(getBenefitStatus 읽기전용, initialBenefitStatus optional=기존계약무영향). page: 인라인쿼리→getConsentRecords/getBenefitStatus 소비처부여. W계약(consent 6·기존 선정계약 무수정)→신선서브 구현→독립재게이트 tsc0·vitest933(신규6·회귀0)·eslint0·build0. 앱전용. ★고아/부분유실 액션 스윕 사실상 완료(#158~#163). 남은 미구축: 선정결정 조회(getSelectionDecision)·영역조회(getServiceDomains/Subdomains) 정도. 열린 PR #163.
 
+## [2026-09-13T07:32Z] U
+당사자 '선생님의 편지'→'선생님이 남긴 기록' 문구 통일=PR #164(순수 표시 문구·기능/데이터/동작 무변경). 사용자 지적('편지 표현 어색'). /evaluations는 실제 모니터링(관찰+내 목소리)+정산 열람 창구인데 진입점(더보기·내비·홈설정·가이드)만 '편지'로 목적지화면('선생님이 남긴 기록')과 불일치→통일. evaluation_letter 블록키는 저장ID라 유지·label/description만 변경. 💌 아이콘 유지. '편지' 단언 테스트 없음 확인. tsc0·vitest927·eslint0·build0. ★기능 삭제 아님(당사자 자기기록 열람권 유지)—이름만 조정. 열린 PR #163(동의관리)·#164(문구).
+
