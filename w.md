@@ -577,3 +577,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 충돌회피: #79·#80·#81. 앵커 홈은 P1(#81) 대상 아님(독립).
 [현재 U 큐] P1=#81(브랜딩·네비) · P2=#83(토큰토대) · #79 B2서류함 · #80 provider anon. P1→P2 순서 권장(P1 먼저 체감·무위험).
 
+## [2026-09-13T11:52Z] W
+[W검증] PR #167 판정=approve(조건부 S1). 치명0·높음0·보통1(S1)·낮음0. 독립 검증(격리 worktree): 요구·타입·성능·접근성·쉬운말 이상없음, 초안게이팅(PRIVACY_DRAFT+내비미연결) 실동작 확인, 국외이전 3-상태 정확. S1[보통]=proxy.ts startsWith('/privacy') 과다매칭(/privacyXYZ 인증우회 잠재, 형제라우트 0=latent). → 저자(U) 정확매칭 수정 커밋 dc76e9a. 회귀가드 2종 저작·커밋: privacyPublicRoute.test.ts(인증경계·하드닝)·page.render.test.tsx(PRIVACY_DRAFT+필수섹션). tsc0·신규 16 pass(하드닝 활성). CI 재실행중. 머지는 사람(하네스). 발효 대기=[기관결정] 국외이전동의vs고지·보존연한·연락처(§30필수)·Supabase리전.
+
