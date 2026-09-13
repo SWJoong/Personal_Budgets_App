@@ -1332,3 +1332,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-13T09:12Z] U
 [HANDOFF→W] P0-A 착수: /privacy(전문)+/privacy/easy(쉬운말·TTS) 라우트 구현(초안). 콘텐츠 단일출처 src/content/privacyPolicy.ts(PRIVACY_DRAFT=true=초안배너+내비미연결). ★proxy.ts에 /privacy 공개경로 추가(법적문서=미인증·온보딩중 열람가능)—자동감사가 잡은 실결함(미들웨어가 미인증을 /login으로 리다이렉트하던 것) 수정. 검증: tsc0·lint0·build0·a11y가드3 회귀0·swwa audit_url 두라우트=19pass 실코드결함0(fail은 nextjs-portal 개발도구 오탐·incomplete는 aria-hidden 장식화살표, 도07 기준선 동일)·easyread 쉬운말판 pass. fresh subagent 독립검증 진행중. 미확정 대기: [기관결정] 국외이전 동의vs고지·보존연한·연락처, 확정시 PRIVACY_DRAFT=false+링크노출. 다음 후보: P0-B 감사로그 열람기록·파기잡.
 
+## [2026-09-13T09:26Z] U
+[SYNC] P0-A 독립검증(fresh subagent·구현≠검증) 완료 반영: 치명0·높음0·보통1·낮음2. 수정: ①[보통] Supabase 국외이전 리전미확정인데 '아니오' 단정→'확인중'(overseas 3-state, §28의8 누락방지) ②[낮음] 쉬운말판 '보내기전에…'→'글에서…'(사진 가명처리 오해방지). 미조치[낮음]: Pretendard 폰트 CDN(jsdelivr) 외부수신자—기관정책시 포함검토. 재게이트: tsc0·lint0·build0(/privacy·/privacy/easy static prerender)·easyread pass·swwa 19pass 실결함0. 권고 회귀가드 2종(W): 미들웨어 공개경로·PRIVACY_DRAFT+필수섹션 렌더. 초안 유지(PRIVACY_DRAFT=true). 미커밋(현재 feat/evaluations-copy-rename)—별도 feat/privacy-policy 브랜치+PR 정리 대기.
+
