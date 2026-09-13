@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   recordConsent,
+  withdrawConsent,
   updateApplicationStatus,
   uploadApplicationDocument,
   getApplicationDocumentUrl,
@@ -18,6 +19,13 @@ interface ConsentRecord {
   consent_type: 'general' | 'unique_id'
   is_agreed: boolean
   withdrawn_at: string | null
+}
+
+interface BenefitStatus {
+  public_assistance: string | null
+  uses_activity_support: boolean
+  uses_seoul_additional_support: boolean
+  participates_in_mohw_pilot: boolean
 }
 
 interface SelectionDecision {
@@ -37,6 +45,14 @@ const STATUS_LABEL: Record<ApplicationStatus, string> = {
 const CONSENT_LABEL: Record<'general' | 'unique_id', string> = {
   general: '개인정보 수집·이용 동의',
   unique_id: '고유식별정보(주민등록번호 등) 처리 동의',
+}
+
+/** 공공부조 수급현황 라벨 — 빈 값/null 은 '아직 확인 못함'(아직 안 받은 상태와 'none' 을 구분) */
+const PA_LABEL: Record<string, string> = {
+  '': '아직 확인 못함',
+  basic_livelihood: '기초생활수급',
+  near_poor: '차상위(조건부수급)',
+  none: '해당없음',
 }
 
 const DOC_TYPE_LABEL: Record<string, string> = {
@@ -65,6 +81,7 @@ export default function ApplicationDetailClient({
   initialDecision,
   documents,
   participatesInMohwPilot,
+  initialBenefitStatus = null,
 }: {
   applicationId: string
   participantId: string
@@ -76,6 +93,7 @@ export default function ApplicationDetailClient({
   initialDecision: SelectionDecision | null
   documents: ApplicationDocumentRow[]
   participatesInMohwPilot: boolean
+  initialBenefitStatus?: BenefitStatus | null
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -122,6 +140,23 @@ export default function ApplicationDetailClient({
   })
 
   const [reason, setReason] = useState('')
+
+  /** 철회 확인은 한 번에 한 건만 연다(인라인 확인) */
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
+
+  /** 동의 철회(개인정보보호법 철회권) — 확인 단계를 거친 뒤에만 실행한다 */
+  function handleWithdrawConsent(consentId: string) {
+    setError('')
+    startTransition(async () => {
+      const result = await withdrawConsent(consentId)
+      setWithdrawingId(null)
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+      router.refresh()
+    })
+  }
 
   function handleSaveConsents() {
     setError('')
@@ -191,6 +226,41 @@ export default function ApplicationDetailClient({
         </span>
       </section>
 
+      {/* 수급현황 — 읽기전용 참고(본인부담금·자격 판단 재료). 값 입력은 별도 화면(recordBenefitStatus). */}
+      <section className="p-5 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-4">
+        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">수급현황</span>
+        {initialBenefitStatus === null ? (
+          <p className="text-sm text-muted-foreground leading-relaxed">아직 입력된 수급현황이 없어요.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-3 min-h-[44px]">
+              <span className="text-sm font-medium text-muted-foreground">공공부조 수급현황</span>
+              <span className="text-sm font-bold text-foreground text-right">
+                {PA_LABEL[initialBenefitStatus.public_assistance ?? ''] ?? '아직 확인 못함'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 min-h-[44px]">
+              <span className="text-sm font-medium text-muted-foreground">장애인 활동지원서비스</span>
+              <span className="text-sm font-bold text-foreground text-right">
+                {initialBenefitStatus.uses_activity_support ? '이용 중' : '이용 안 함'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 min-h-[44px]">
+              <span className="text-sm font-medium text-muted-foreground">서울형 추가지원</span>
+              <span className="text-sm font-bold text-foreground text-right">
+                {initialBenefitStatus.uses_seoul_additional_support ? '이용 중' : '이용 안 함'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 min-h-[44px]">
+              <span className="text-sm font-medium text-muted-foreground">보건복지부 시범사업</span>
+              <span className="text-sm font-bold text-foreground text-right">
+                {initialBenefitStatus.participates_in_mohw_pilot ? '참여 중' : '참여 안 함'}
+              </span>
+            </div>
+          </div>
+        )}
+      </section>
+
       <section className="p-5 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-4">
         <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">동의 확인</span>
         {(['general', 'unique_id'] as const).map((type) => (
@@ -211,6 +281,67 @@ export default function ApplicationDetailClient({
         >
           동의 내용 저장
         </button>
+      </section>
+
+      {/* 동의 이력 — 기록된 동의를 상태와 함께 보여주고, 활성 동의는 철회(개인정보보호법 철회권)할 수 있다. */}
+      <section className="p-5 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-4">
+        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">동의 이력</span>
+        {initialConsents.length === 0 ? (
+          <p className="text-sm text-muted-foreground leading-relaxed">아직 기록된 동의가 없어요.</p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-border">
+            {initialConsents.map((consent) => (
+              <li key={consent.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
+                <span className="text-sm font-bold text-foreground">{CONSENT_LABEL[consent.consent_type]}</span>
+                {consent.withdrawn_at ? (
+                  <span className="text-sm text-muted-foreground">철회됨 · {consent.withdrawn_at.slice(0, 10)}</span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">{consent.is_agreed ? '동의함' : '동의 안 함'}</span>
+                )}
+
+                {consent.is_agreed && !consent.withdrawn_at && (
+                  withdrawingId === consent.id ? (
+                    <div className="flex flex-col gap-2">
+                      <p role="alert" className="text-sm font-bold text-danger-fg leading-relaxed">
+                        이 동의를 철회할까요?
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        개인정보보호법에 따른 철회권이에요. 철회해도 이미 처리된 내용은 남아요.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setWithdrawingId(null)}
+                          disabled={pending}
+                          className="flex-1 p-3 rounded-xl bg-muted text-muted-foreground font-bold text-sm hover:bg-muted-hover hover:text-foreground transition-colors disabled:bg-disabled-bg disabled:text-disabled-fg min-h-[44px]"
+                        >
+                          그대로 두기
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleWithdrawConsent(consent.id)}
+                          disabled={pending}
+                          className="flex-1 p-3 rounded-xl bg-danger-bg text-danger-fg font-bold text-sm hover:bg-danger-bg-hover transition-colors disabled:opacity-50 min-h-[44px]"
+                        >
+                          철회하기
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setWithdrawingId(consent.id)}
+                      aria-label={`${CONSENT_LABEL[consent.consent_type]} 철회`}
+                      className="self-start px-4 py-2 rounded-lg bg-muted text-muted-foreground font-bold text-sm hover:bg-muted-hover hover:text-foreground transition-colors min-h-[44px]"
+                    >
+                      동의 철회
+                    </button>
+                  )
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {isAdmin && (
