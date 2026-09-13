@@ -85,8 +85,10 @@ export function TabBar() {
               key={tab.name}
               href={tab.href}
               aria-current={isActive ? "page" : undefined}
-              className={`relative flex flex-col items-center justify-center gap-1 min-w-[64px] min-h-[44px] transition-colors ${
-                isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+              className={`relative flex flex-col items-center justify-center gap-1 min-w-[64px] min-h-[44px] rounded-2xl px-2 py-1.5 transition-colors ${
+                isActive
+                  ? 'bg-primary/10 text-primary ring-1 ring-primary'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <span aria-hidden="true" className={`text-xl sm:text-2xl transition-transform ${isActive ? 'scale-110' : ''}`}>{tab.icon}</span>
