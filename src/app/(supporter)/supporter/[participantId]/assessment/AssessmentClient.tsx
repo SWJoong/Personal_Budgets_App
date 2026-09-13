@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { createNeedsAssessment, deleteNeedsAssessment } from '@/app/actions/needsAssessment'
+import { createNeedsAssessment, deleteNeedsAssessment, updateNeedsAssessment } from '@/app/actions/needsAssessment'
 
 type Program = 'seoul' | 'mohw'
 
@@ -37,6 +37,9 @@ const PROGRAM_LABEL: Record<Program, string> = { seoul: '서울형', mohw: '보�
 
 const inputClass =
   'p-3 rounded-xl bg-muted ring-1 ring-border text-foreground leading-relaxed'
+// 편집 폼은 bg-muted 카드 안이라, 입력칸은 bg-card 로 대비를 준다(쉬운 말: 고칠 칸이 또렷하게).
+const editInputClass =
+  'p-3 rounded-xl bg-card ring-1 ring-border text-foreground leading-relaxed'
 
 export default function AssessmentClient({
   participantId,
@@ -60,6 +63,13 @@ export default function AssessmentClient({
   const [limitation, setLimitation] = useState('')
   const [needHope, setNeedHope] = useState('')
   const [supportExample, setSupportExample] = useState('')
+
+  // 인라인 수정 — 한 번에 한 항목만(editingId). 각 칸은 현재 값으로 프리필한다.
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editDomainId, setEditDomainId] = useState('')
+  const [editLimitation, setEditLimitation] = useState('')
+  const [editNeedHope, setEditNeedHope] = useState('')
+  const [editSupportExample, setEditSupportExample] = useState('')
 
   const domainLabelById = new Map(domains.map((d) => [d.id, d.label]))
   const subdomainLabelById = new Map(subdomains.map((s) => [s.id, s.label]))
@@ -114,6 +124,42 @@ export default function AssessmentClient({
     })
   }
 
+  function startEdit(a: Assessment) {
+    setError('')
+    setEditingId(a.id)
+    setEditDomainId(a.domain_id)
+    setEditLimitation(a.limitation ?? '')
+    setEditNeedHope(a.need_hope ?? '')
+    setEditSupportExample(a.support_example ?? '')
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+  }
+
+  function handleUpdate(id: string) {
+    if (!editDomainId) {
+      setError('지원 영역을 골라 주세요.')
+      return
+    }
+    setError('')
+    startTransition(async () => {
+      const result = await updateNeedsAssessment(id, {
+        domainId: editDomainId,
+        subdomainId: null, // 서울형은 중분류 없음(flat)
+        limitation: editLimitation.trim(),
+        needHope: editNeedHope.trim(),
+        supportExample: editSupportExample.trim(),
+      })
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+      setEditingId(null)
+      router.refresh()
+    })
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {error && (
@@ -130,49 +176,139 @@ export default function AssessmentClient({
             아래에서 도움이 필요한 영역을 골라 적어 주세요.
           </p>
         ) : (
-          assessments.map((a) => (
-            <div key={a.id} className="p-4 rounded-2xl bg-muted ring-1 ring-border flex flex-col gap-1.5">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-border text-muted-foreground shrink-0">
-                    {PROGRAM_LABEL[a.program as Program] ?? a.program}
-                  </span>
-                  <span className="text-sm font-bold text-foreground truncate">
-                    {domainLabelById.get(a.domain_id) ?? '지원 영역'}
-                    {a.subdomain_id && subdomainLabelById.get(a.subdomain_id)
-                      ? ` · ${subdomainLabelById.get(a.subdomain_id)}`
-                      : ''}
-                  </span>
+          assessments.map((a) =>
+            editingId === a.id ? (
+              <div key={a.id} className="p-4 rounded-2xl bg-muted ring-1 ring-border flex flex-col gap-3">
+                <h3 className="text-sm font-bold text-foreground">욕구 고치기</h3>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="edit-assessment-domain" className="text-xs text-muted-foreground font-medium">
+                    도움이 필요한 영역 *
+                  </label>
+                  <select
+                    id="edit-assessment-domain"
+                    value={editDomainId}
+                    onChange={(e) => setEditDomainId(e.target.value)}
+                    className="p-3 rounded-xl bg-card ring-1 ring-border text-foreground font-medium"
+                  >
+                    <option value="">골라 주세요</option>
+                    {domainsForProgram.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <button
-                  onClick={() => handleDelete(a.id)}
-                  disabled={pending}
-                  aria-label={`${domainLabelById.get(a.domain_id) ?? '이 항목'} 욕구 지우기`}
-                  className="text-muted-foreground hover:text-danger-fg transition-colors text-sm font-medium min-w-[44px] min-h-[44px] flex items-center justify-end disabled:opacity-50"
-                >
-                  지우기
-                </button>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="edit-assessment-limitation" className="text-xs text-muted-foreground font-medium">
+                    어떤 점이 어려운가요?
+                  </label>
+                  <textarea
+                    id="edit-assessment-limitation"
+                    value={editLimitation}
+                    onChange={(e) => setEditLimitation(e.target.value)}
+                    rows={2}
+                    className={editInputClass}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="edit-assessment-need" className="text-xs text-muted-foreground font-medium">
+                    무엇을 바라나요?
+                  </label>
+                  <textarea
+                    id="edit-assessment-need"
+                    value={editNeedHope}
+                    onChange={(e) => setEditNeedHope(e.target.value)}
+                    rows={2}
+                    className={editInputClass}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="edit-assessment-example" className="text-xs text-muted-foreground font-medium">
+                    도움이 될 만한 것 (안 적어도 돼요)
+                  </label>
+                  <input
+                    id="edit-assessment-example"
+                    value={editSupportExample}
+                    onChange={(e) => setEditSupportExample(e.target.value)}
+                    className={editInputClass}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleUpdate(a.id)}
+                    disabled={pending}
+                    className="flex-1 p-3 rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:bg-hero-hover transition-colors disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
+                  >
+                    {pending ? '저장하고 있어요...' : '저장'}
+                  </button>
+                  <button
+                    onClick={cancelEdit}
+                    disabled={pending}
+                    className="flex-1 p-3 rounded-xl bg-card ring-1 ring-border text-foreground font-medium text-sm hover:bg-muted-hover transition-colors disabled:opacity-50 min-h-[44px]"
+                  >
+                    취소
+                  </button>
+                </div>
               </div>
-              {a.limitation && (
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  <span className="text-muted-foreground">어려운 점: </span>
-                  {a.limitation}
-                </p>
-              )}
-              {a.need_hope && (
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  <span className="text-muted-foreground">바라는 것: </span>
-                  {a.need_hope}
-                </p>
-              )}
-              {a.support_example && (
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  <span className="text-muted-foreground">도움이 될 것: </span>
-                  {a.support_example}
-                </p>
-              )}
-            </div>
-          ))
+            ) : (
+              <div key={a.id} className="p-4 rounded-2xl bg-muted ring-1 ring-border flex flex-col gap-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-border text-muted-foreground shrink-0">
+                      {PROGRAM_LABEL[a.program as Program] ?? a.program}
+                    </span>
+                    <span className="text-sm font-bold text-foreground truncate">
+                      {domainLabelById.get(a.domain_id) ?? '지원 영역'}
+                      {a.subdomain_id && subdomainLabelById.get(a.subdomain_id)
+                        ? ` · ${subdomainLabelById.get(a.subdomain_id)}`
+                        : ''}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => startEdit(a)}
+                      disabled={pending}
+                      aria-label={`${domainLabelById.get(a.domain_id) ?? '이 항목'} 욕구 수정`}
+                      className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium min-w-[44px] min-h-[44px] flex items-center justify-center disabled:opacity-50"
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={() => handleDelete(a.id)}
+                      disabled={pending}
+                      aria-label={`${domainLabelById.get(a.domain_id) ?? '이 항목'} 욕구 지우기`}
+                      className="text-muted-foreground hover:text-danger-fg transition-colors text-sm font-medium min-w-[44px] min-h-[44px] flex items-center justify-center disabled:opacity-50"
+                    >
+                      지우기
+                    </button>
+                  </div>
+                </div>
+                {a.limitation && (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    <span className="text-muted-foreground">어려운 점: </span>
+                    {a.limitation}
+                  </p>
+                )}
+                {a.need_hope && (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    <span className="text-muted-foreground">바라는 것: </span>
+                    {a.need_hope}
+                  </p>
+                )}
+                {a.support_example && (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    <span className="text-muted-foreground">도움이 될 것: </span>
+                    {a.support_example}
+                  </p>
+                )}
+              </div>
+            ),
+          )
         )}
       </section>
 

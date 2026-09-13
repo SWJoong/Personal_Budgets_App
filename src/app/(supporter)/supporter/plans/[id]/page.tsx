@@ -18,11 +18,12 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
 
   if (!plan) notFound()
 
-  const [{ data: participant }, { data: narrative }, { data: requestedServices }, { data: reviews }] = await Promise.all([
+  const [{ data: participant }, { data: narrative }, { data: requestedServices }, { data: reviews }, { data: supporters }] = await Promise.all([
     supabase.from('participants').select('id, name').eq('id', plan.participant_id).maybeSingle(),
     supabase.from('seoul_self_narratives').select('*').eq('plan_id', id).maybeSingle(),
     supabase.from('seoul_requested_services').select('*').eq('plan_id', id).order('priority'),
     supabase.from('seoul_plan_reviews').select('*').eq('plan_id', id).order('review_date', { ascending: false }).limit(1),
+    supabase.from('profiles').select('id, name').eq('role', 'supporter'),
   ])
 
   const latestReview = reviews?.[0] ?? null
@@ -51,6 +52,11 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
           latestReview={latestReview}
           notification={notification}
           committees={committees}
+          authoredWithSupport={plan.authored_with_support}
+          assistedById={plan.assisted_by_id}
+          planPeriodStart={plan.plan_period_start}
+          planPeriodEnd={plan.plan_period_end}
+          supporters={supporters ?? []}
         />
       </main>
     </div>

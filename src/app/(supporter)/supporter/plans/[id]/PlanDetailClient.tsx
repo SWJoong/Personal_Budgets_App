@@ -16,6 +16,7 @@ import {
   type ReviewCommitteeRow,
 } from '@/app/actions/planReview'
 import EasyReadSummary from './EasyReadSummary'
+import PlanMetaEditor from './PlanMetaEditor'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { StatusPill, type Intent } from '@/components/ui/StatusPill'
@@ -90,6 +91,11 @@ export default function PlanDetailClient({
   latestReview,
   notification,
   committees,
+  authoredWithSupport,
+  assistedById,
+  planPeriodStart,
+  planPeriodEnd,
+  supporters,
 }: {
   planId: string
   participantId: string
@@ -100,6 +106,11 @@ export default function PlanDetailClient({
   latestReview: PlanReview | null
   notification: NotificationRecord | null
   committees: ReviewCommitteeRow[]
+  authoredWithSupport: string
+  assistedById: string | null
+  planPeriodStart: string | null
+  planPeriodEnd: string | null
+  supporters: { id: string; name: string | null }[]
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -275,6 +286,19 @@ export default function PlanDetailClient({
         <div className="mt-1">
           <StatusPill label={STATUS_LABEL[status] ?? status} intent={STATUS_INTENT[status] ?? 'neutral'} />
         </div>
+      </Card>
+
+      {/* 계획 정보 수정 — 작성 방식·조력자·계획 기간(메타). 상태와 무관하게 담당자가 고칠 수 있다. */}
+      <Card className="flex flex-col gap-3">
+        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">계획 정보</span>
+        <PlanMetaEditor
+          planId={planId}
+          authoredWithSupport={authoredWithSupport}
+          assistedById={assistedById}
+          planPeriodStart={planPeriodStart}
+          planPeriodEnd={planPeriodEnd}
+          supporters={supporters}
+        />
       </Card>
 
       {/* 작성 중(draft)이면 담당자가 여기서 나의 상황·요청 서비스를 채운다.
