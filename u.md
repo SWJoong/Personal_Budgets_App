@@ -1326,3 +1326,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-13T08:57Z] U
 [SYNC] P0 개인정보 문서화 착수 = docs/release/11-p0-privacy-compliance.md (도10 P0 2건). 개인정보 항목 인벤토리(민감정보=장애유형·정도·자기서술, 제3자=proxy_name, 고유식별정보 동의는 있으나 DB 컬럼 미발견[확인필요]) + 수탁자 확정(Supabase[리전확인필요]·Anthropic 미국·Vercel 미국·Kakao 국내) + 개인정보처리방침 초안 + AI 국외이전 고지문(일반판+쉬운말판 easyread pass) + 감사 보관정책(민감정보 처리→접속기록 2년↑ 권고). ★W/기관 결정대기 4건 §6: 국외이전 동의vs고지 / 보존연한 / 당사자 권리행사 참여범위 / 고유식별정보 실제수집. Manual-Ops: Supabase 리전·12_audit_log 적용·DPA 확인. + korean-law-mcp 연결=.mcp.json 생성(로컬 stdio npx, 키 ${LAW_OC} 환경변수·git미노출). 사용자 잔여: 법제처 OC키 발급·env설정·재시작 승인. 문서 조문번호는 연결후 교차검증 예정.
 
+## [2026-09-13T08:58Z] U
+머지전 감사(클릭강조·로딩화면)=PR #166. A(클릭·활성강조): 이미 시스템화—Button 프리미티브 프레스 active:scale+variant hover토큰+hoverPressTokens 가드 전역강제+내비 aria-current(TabBar·NavDropdown·AdminSidebar·Fab·SuperAdminSwitcher). 수정불필요, 확인만. B(로딩): Next loading.tsx 계층상속으로 대부분 커버됐고 진짜 미커버는 supporter/ 세그먼트 loading 부재분뿐(실무자대시보드·supporter/[participantId]/* 8종·budgets/[id]·map)→supporter/loading.tsx 1개로 상속커버(15중복 불필요)+참여자레이아웃 NavigationProgress 마운트(파리티·초기null이라 layout.test 회귀0). tsc0·vitest933·eslint0·build0. 열린 PR #165(탭바)·#166(로딩). 참고: #163~#164 머지반영됨. untracked docs/release/10·11·.mcp.json 은 내것아님(안건드림).
+
