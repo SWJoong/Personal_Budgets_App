@@ -187,6 +187,7 @@ export async function myAction(formData: FormData) {
 | `ALLOWED_EMAIL_DOMAINS` | 실무자로 자동 인식할 이메일 도메인(쉼표 구분). 미설정 시 아무도 자동 허용 안 됨 |
 | `NEXT_PUBLIC_DEMO_MODE` | `"true"` = 데모 모드 활성화 (서울형 리빌딩 브랜치에서는 미사용) |
 | `NEXT_PUBLIC_DEMO_LOGIN_ENABLED` | `"true"` = `/login`에 데모 계정 버튼 노출 (서울형 리빌딩 브랜치) |
+| `TEST_PARTICIPANT_ID` | (선택·테스트용) 이 `participants.id` 를 관리자 둘러보기(view-as)로 볼 때만 화면설정 등 저장을 허용한다(읽기전용 예외). 지정한 그 당사자 1명에게만 열리고 나머지 실참여자는 계속 읽기전용. 미설정 시 모든 view-as 는 읽기전용. **테스트/프리뷰 환경에만 설정**(운영 미설정 권장). `src/utils/supabase/viewAs.ts` |
 | `ANTHROPIC_API_KEY` | Claude (영수증 OCR·AI 요약, 서버 전용). `src/utils/ai.ts` callAI 진입점 |
 | `AI_MODEL_OCR` | (선택) OCR 모델 오버라이드. 기본 `claude-haiku-4-5` |
 | `AI_MODEL_SUMMARY` · `AI_MODEL_SUGGEST` | (선택) 요약·활동제안 모델. 기본 `claude-sonnet-5` |

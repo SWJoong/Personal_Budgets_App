@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 /**
  * ★view-as 보안 가드 계약 (W 작성 · 독립 계약 테스트). 구현: src/utils/supabase/viewAs.ts
@@ -187,5 +187,37 @@ describe('viewAsWriteBlock — 미리보기 중 뮤테이션 읽기전용 가드
   it('쿠키가 없으면 → null (일반 세션은 자유롭게 쓴다)', async () => {
     h.cfg.cookieId = null
     expect(await viewAsWriteBlock()).toBeNull()
+  })
+})
+
+/**
+ * 테스트 당사자 예외 — TEST_PARTICIPANT_ID 로 지정한 '테스트용 당사자 1명'을 미리보기 중이면
+ * 저장을 허용한다(관리자 계정으로 당사자 편집 흐름을 실제로 테스트하기 위함, 사용자 결정 2026-09-13).
+ * ★안전 불변식: (1) 지정된 당사자에게만 열린다 (2) 다른 실참여자는 여전히 읽기전용
+ *   (3) env 미설정이면 예외가 없는 것과 같아 기존 동작이 그대로다.
+ */
+describe('viewAsWriteBlock — 테스트 당사자 예외(TEST_PARTICIPANT_ID)', () => {
+  const OLD = process.env.TEST_PARTICIPANT_ID
+  afterEach(() => {
+    if (OLD === undefined) delete process.env.TEST_PARTICIPANT_ID
+    else process.env.TEST_PARTICIPANT_ID = OLD
+  })
+
+  it('미리보기 대상이 TEST_PARTICIPANT_ID 와 같으면 차단하지 않는다 → null (테스트 편집 허용)', async () => {
+    baseline() // admin + 쿠키(TARGET) → active
+    process.env.TEST_PARTICIPANT_ID = TARGET
+    expect(await viewAsWriteBlock()).toBeNull()
+  })
+
+  it('미리보기 대상이 TEST_PARTICIPANT_ID 와 다르면 여전히 차단한다(실참여자 보호)', async () => {
+    baseline()
+    process.env.TEST_PARTICIPANT_ID = '99999999-9999-9999-9999-999999999999'
+    expect(await viewAsWriteBlock()).toMatch(/미리보기/)
+  })
+
+  it('TEST_PARTICIPANT_ID 미설정이면 기존대로 차단한다(기본 안전)', async () => {
+    baseline()
+    delete process.env.TEST_PARTICIPANT_ID
+    expect(await viewAsWriteBlock()).toMatch(/미리보기/)
   })
 })
