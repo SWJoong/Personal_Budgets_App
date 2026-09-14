@@ -580,3 +580,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-13T11:52Z] W
 [W검증] PR #167 판정=approve(조건부 S1). 치명0·높음0·보통1(S1)·낮음0. 독립 검증(격리 worktree): 요구·타입·성능·접근성·쉬운말 이상없음, 초안게이팅(PRIVACY_DRAFT+내비미연결) 실동작 확인, 국외이전 3-상태 정확. S1[보통]=proxy.ts startsWith('/privacy') 과다매칭(/privacyXYZ 인증우회 잠재, 형제라우트 0=latent). → 저자(U) 정확매칭 수정 커밋 dc76e9a. 회귀가드 2종 저작·커밋: privacyPublicRoute.test.ts(인증경계·하드닝)·page.render.test.tsx(PRIVACY_DRAFT+필수섹션). tsc0·신규 16 pass(하드닝 활성). CI 재실행중. 머지는 사람(하네스). 발효 대기=[기관결정] 국외이전동의vs고지·보존연한·연락처(§30필수)·Supabase리전.
 
+## [2026-09-14T14:17Z] W
+[W검증] PR #169 P0-B 판정=changes-requested→반영완료. 읽기감사·purge 자체는 요구·타입·보안 통과(PG15 실측 green: 안전레일 365/NULL·service_role전용·append-only 유일DELETE). ★막는항목[높음]=CI db-verify RED(service_role 롤 부재)—12_audit_log.sql은 프로덕션정본이라 불변, 테스트하네스 verify_00_auth_stub.sql에 anon·service_role 추가로 해소(커밋 b3ce456). W산출물 통합: auditReadAccess.test.ts(8)·verify_audit_log P9~P12. 판단반영[보통 검토큐 로그증폭·낮음 receipt 스코프]=docs/release/12 §6 백로그(fast-follow). CI 재실행중.
+
