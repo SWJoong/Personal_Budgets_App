@@ -27,9 +27,13 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
                       request.nextUrl.pathname.startsWith('/auth')
   const isOnboardingRoute = request.nextUrl.pathname.startsWith('/onboarding')
+  // 공개 경로 — 개인정보 처리방침은 법적 문서라 로그인 전·온보딩 중에도 열람 가능해야 한다.
+  // 정확 매칭(/privacy·/privacy/*)만 공개 — startsWith('/privacy')는 /privacyXYZ 까지 열어 인증 우회 위험(S1).
+  const isPublicRoute =
+    request.nextUrl.pathname === '/privacy' || request.nextUrl.pathname.startsWith('/privacy/')
 
-  // Not logged in → redirect to login (except auth routes)
-  if (!user && !isAuthRoute) {
+  // Not logged in → redirect to login (except auth·public routes)
+  if (!user && !isAuthRoute && !isPublicRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
@@ -43,7 +47,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Logged in → check if onboarding completed
-  if (user && !isAuthRoute && !isOnboardingRoute) {
+  if (user && !isAuthRoute && !isOnboardingRoute && !isPublicRoute) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('onboarding_completed')
