@@ -3,6 +3,7 @@
 import { createClient, createAdminClient } from '@/utils/supabase/server'
 import { assertStaff } from '@/utils/supabase/staff'
 import { friendlyDbError } from '@/utils/supabase/errors'
+import { auditLog } from '@/utils/audit'
 import { revalidatePath } from 'next/cache'
 
 export interface ApplicationInput {
@@ -344,7 +345,7 @@ export async function getApplicationDocumentUrl(documentId: string): Promise<{ e
   // RLS 가 볼 수 있는 행만 돌려주므로, 여기서 조회되면 열람 권한이 있는 것이다.
   const { data: doc } = await supabase
     .from('seoul_application_documents')
-    .select('storage_path')
+    .select('storage_path, participant_id')
     .eq('id', documentId)
     .maybeSingle()
 
@@ -353,5 +354,12 @@ export async function getApplicationDocumentUrl(documentId: string): Promise<{ e
   const admin = createAdminClient()
   const { data, error } = await admin.storage.from('documents').createSignedUrl(doc.storage_path, 3600)
   if (error) return { error: error.message, url: null }
+  // 접속기록(개인정보보호법 §29) — 신청 서류(민감 개인정보) 파일 접근을 당사자 스코프로 기록.
+  await auditLog(supabase, 'document.view', {
+    targetType: 'application_document',
+    targetId: documentId,
+    participantId: doc.participant_id,
+    metadata: { bucket: 'documents' },
+  })
   return { url: data.signedUrl }
 }

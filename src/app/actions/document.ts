@@ -75,16 +75,24 @@ export async function getDocumentSignedUrl(
 
   const { data: doc } = await supabase
     .from('seoul_application_documents')
-    .select('storage_path')
+    .select('storage_path, participant_id')
     .eq('id', documentId)
     .maybeSingle()
   if (!doc) return { error: '볼 수 없는 서류예요.', url: null }
+  const d = doc as { storage_path: string; participant_id: string }
 
   const admin = createAdminClient()
   const { data, error } = await admin.storage
     .from('documents')
-    .createSignedUrl((doc as { storage_path: string }).storage_path, 3600)
+    .createSignedUrl(d.storage_path, 3600)
   if (error) return { error: error.message, url: null }
+  // 접속기록(개인정보보호법 §29) — 서류(민감 개인정보) 파일 접근을 당사자 스코프로 기록.
+  await auditLog(supabase, 'document.view', {
+    targetType: 'application_document',
+    targetId: documentId,
+    participantId: d.participant_id,
+    metadata: { bucket: 'documents' },
+  })
   return { url: data.signedUrl }
 }
 
