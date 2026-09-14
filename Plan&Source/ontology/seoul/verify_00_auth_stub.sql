@@ -41,9 +41,25 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+-- Supabase 가 항상 제공하는 나머지 두 내장 롤(anon·service_role)도 흉내 낸다.
+-- 로컬/CI 의 stock PostgreSQL 에는 이 롤들이 없어, 이들에게 GRANT 하는 빌드 SQL
+-- (예: 12_audit_log.sql 의 GRANT EXECUTE ... TO service_role)이 ON_ERROR_STOP=1 에서
+-- "role does not exist" 로 빌드를 깨뜨린다. 여기서 존재만 보장한다(멱등).
+DO $$ BEGIN
+  CREATE ROLE anon;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+DO $$ BEGIN
+  CREATE ROLE service_role;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
 GRANT USAGE ON SCHEMA auth   TO authenticated;
 GRANT USAGE ON SCHEMA public TO authenticated;
 GRANT SELECT ON auth.users   TO authenticated;
+-- service_role 은 클라우드에서 RLS 를 우회하는 운영 롤 — 로컬에선 스키마 USAGE 만 흉내(파기 함수 EXECUTE 검증용).
+GRANT USAGE ON SCHEMA auth   TO service_role;
+GRANT USAGE ON SCHEMA public TO service_role;
 
 -- ── storage 스키마 최소 흉내 ────────────────────────────────────────────
 -- Supabase 의 storage 스키마는 로컬 PostgreSQL 에 없다. 06_storage.sql 의

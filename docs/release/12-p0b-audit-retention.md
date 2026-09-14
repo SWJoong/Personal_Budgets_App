@@ -47,6 +47,14 @@ CI 계약 green 확인 후:
 - (도11 §6의 다른 [기관결정] 4건과 별개 — 이건 감사 보관 전용.)
 
 ## 6. 후속(백로그)
+- **[보통·W발견] 검토큐 열람 로그 증폭** — `src/app/(supporter)/supporter/review/page.tsx` 가 서버 렌더마다
+  대기 영수증 수만큼 `receipt.view` 를 남긴다(새로고침·재진입 중복). 접속기록이 렌더 트래픽으로 희석됨.
+  → 페이지당 1회 이벤트화 또는 실제 확대(열람) 시점 로깅으로 좁히기(갤러리 `gallery.view` 와 동일 논점).
+  보안결함 아님("전부 로깅=완전성" 현 결정) — fast-follow.
+- **[낮음·W발견] `receipt.view` 참여자 스코프 부재** — `getReceiptSignedUrl` 은 `participantId` 미전달
+  (`target_participant_id=NULL`) → 당사자중심 "내 정보 열람자" 리포트에서 usageId→participant 조인 필요.
 - 당사자 **상세/민감기록 열람**(서버 컴포넌트) 감사 — 중복로그 방지 설계 후.
 - 갤러리 **페이지당 1회** `gallery.view` 감사.
-- W: `Plan&Source/ontology/seoul/verify_audit_log.sql` 에 purge 권한·안전레일 계약 추가(로컬 PG15 실측).
+- ✅ **완료(W)**: `Plan&Source/ontology/seoul/verify_audit_log.sql` P9~P12(purge 존재·DEFINER·search_path /
+  service_role 전용·authenticated·PUBLIC 회수 / 365·NULL 안전레일 / 삭제·보존 동작) — 로컬 PG15 실측 green.
+  `verify_00_auth_stub.sql` 에 `anon`·`service_role` 롤 추가(CI db-verify 의 service_role GRANT 빌드깨짐 해소).
