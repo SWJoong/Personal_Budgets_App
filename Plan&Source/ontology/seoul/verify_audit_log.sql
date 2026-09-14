@@ -154,6 +154,21 @@ SELECT '   식별정보 원문 컬럼 없음(name/full_name/description/narrativ
                            AND column_name ~* '(name|full_name|description|narrative|voice|content)')
        THEN '✅ (id·코드·jsonb 만)' ELSE '❌ (원문 PII 컬럼 발견 — 제거, metadata 규율은 앱계약)' END;
 
+-- ── 하네스 보정 (P9~P12 전제) ────────────────────────────────────────────────
+-- 다수의 형제 verify_*.sql(verify_02_rls·verify_08_records 등)이 setup 에서
+--   GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
+-- 를 실행한다(RPC 접근 흉내). db-verify 는 각 verify 를 같은 DB 에 순차 적용하므로, 그 광역 GRANT 가
+-- 12_audit_log.sql 이 purge 에서 회수한 authenticated 실행권한을 되살려 P10 을 무너뜨린다(공유 상태 오염).
+-- → 정본(12)의 grant 블록을 그대로 재적용해 오염을 상쇄한다(멱등·프로덕션과 동일 문장). service_role 부여는
+--   이미 살아있어 재부여 불필요. anon 은 plain-PG 에 없을 수 있어 DO 가드.
+REVOKE ALL     ON FUNCTION public.seoul_audit_purge(INT) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.seoul_audit_purge(INT) FROM authenticated;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    REVOKE EXECUTE ON FUNCTION public.seoul_audit_purge(INT) FROM anon;
+  END IF;
+END $$;
+
 \echo ''
 \echo '════════════════════════════════════════════════════════════════'
 \echo ' P9. 파기 함수 seoul_audit_purge — 존재 + DEFINER + search_path 고정'
