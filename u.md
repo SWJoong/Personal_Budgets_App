@@ -1347,3 +1347,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-14T07:19Z] U
 [MERGED] PR #167 → main (squash ec88c9d, 2026-09-14). 개인정보 처리방침 /privacy·/privacy/easy(초안) + 미들웨어 공개경로(S1 정확매칭) + 회귀가드 2종 + docs/release/10 평가·11 P0문서. W approve(조건부 S1)→반영 포함. CI green·strict·update-branch(#168 병합)·수동 머지(사용자 지시). ★실노출 0 — PRIVACY_DRAFT=true(초안배너+내비 미연결). 발효 대기=[기관결정] 국외이전 동의vs고지·보존연한·연락처(§30)·Supabase리전. 미착수: P0-B 감사로그·korean-law-mcp 조문검증.
 
+## [2026-09-14T13:52Z] U
+[HANDOFF→W] P0-B PR #169 = 감사로그 열람(read) 기록 + 보관·파기. 열람감사 3액션(receipt.view·document.view, signed URL 발급=민감파일 열람, 성공후·행위자스탬프·PII미기록·실패격리). purge=seoul_audit_purge(p_retain_days) DEFINER·service_role전용·365미만거부(1년 최소레일)·정책값은 스케줄러인자(권고730=2년). 검증 tsc0·lint0·vitest952(회귀0), build는 CI(worktree symlink+Turbopack 비호환). fresh subagent 독립검증+가드저작 진행중. Manual-Ops: 12 대시보드 재실행(라이브적용 해소)·파기 스케줄. [기관결정]: 보관연한. 미착수 후속: 당사자상세/갤러리 열람감사.
+
