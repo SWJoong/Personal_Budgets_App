@@ -154,5 +154,106 @@ SELECT '   식별정보 원문 컬럼 없음(name/full_name/description/narrativ
                            AND column_name ~* '(name|full_name|description|narrative|voice|content)')
        THEN '✅ (id·코드·jsonb 만)' ELSE '❌ (원문 PII 컬럼 발견 — 제거, metadata 규율은 앱계약)' END;
 
+-- ── 하네스 보정 (P9~P12 전제) ────────────────────────────────────────────────
+-- 다수의 형제 verify_*.sql(verify_02_rls·verify_08_records 등)이 setup 에서
+--   GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
+-- 를 실행한다(RPC 접근 흉내). db-verify 는 각 verify 를 같은 DB 에 순차 적용하므로, 그 광역 GRANT 가
+-- 12_audit_log.sql 이 purge 에서 회수한 authenticated 실행권한을 되살려 P10 을 무너뜨린다(공유 상태 오염).
+-- → 정본(12)의 grant 블록을 그대로 재적용해 오염을 상쇄한다(멱등·프로덕션과 동일 문장). service_role 부여는
+--   이미 살아있어 재부여 불필요. anon 은 plain-PG 에 없을 수 있어 DO 가드.
+REVOKE ALL     ON FUNCTION public.seoul_audit_purge(INT) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.seoul_audit_purge(INT) FROM authenticated;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    REVOKE EXECUTE ON FUNCTION public.seoul_audit_purge(INT) FROM anon;
+  END IF;
+END $$;
+
+\echo ''
+\echo '════════════════════════════════════════════════════════════════'
+\echo ' P9. 파기 함수 seoul_audit_purge — 존재 + DEFINER + search_path 고정'
+\echo '════════════════════════════════════════════════════════════════'
+-- 스펙: docs/release/12-p0b-audit-retention.md §3. append-only 테이블의 유일한 DELETE 경로(DEFINER).
+SELECT '   seoul_audit_purge(int) 함수: ' ||
+  CASE WHEN to_regprocedure('public.seoul_audit_purge(int)') IS NOT NULL
+       THEN '있음 ✅' ELSE '없음 ❌ (U 미구현 — 보관·파기 메커니즘 부재)' END;
+SELECT '   SECURITY DEFINER(prosecdef): ' ||
+  CASE WHEN COALESCE((SELECT prosecdef FROM pg_proc
+                       WHERE oid = to_regprocedure('public.seoul_audit_purge(int)')), FALSE)
+       THEN 'true ✅' ELSE 'false ❌ (DEFINER 아니면 직접 DELETE 회수와 모순 — 파기 불가)' END;
+SELECT '   search_path 고정: ' ||
+  CASE WHEN EXISTS (SELECT 1 FROM pg_proc
+                     WHERE oid = to_regprocedure('public.seoul_audit_purge(int)')
+                       AND array_to_string(proconfig,',') LIKE '%search_path%')
+       THEN '고정됨 ✅' ELSE '미고정 ❌ (DEFINER 는 search_path 고정 필수 — 권한상승 방지)' END;
+
+\echo ''
+\echo '════════════════════════════════════════════════════════════════'
+\echo ' P10. 파기 실행권한 — service_role 전용, authenticated·PUBLIC 회수'
+\echo '════════════════════════════════════════════════════════════════'
+-- 파기는 운영 스케줄러(service_role)만. 일반 로그인 사용자가 접속기록을 지울 수 있으면 은폐 가능.
+SELECT '   service_role EXECUTE 허용: ' ||
+  CASE WHEN to_regprocedure('public.seoul_audit_purge(int)') IS NOT NULL
+        AND has_function_privilege('service_role','public.seoul_audit_purge(int)','EXECUTE')
+       THEN '허용 ✅' ELSE '없음 ❌ (스케줄러가 파기 실행 불가)' END;
+SELECT '   authenticated EXECUTE 회수: ' ||
+  CASE WHEN to_regprocedure('public.seoul_audit_purge(int)') IS NULL THEN '함수 없음 ❌ (U 미구현)'
+       WHEN NOT has_function_privilege('authenticated','public.seoul_audit_purge(int)','EXECUTE')
+       THEN '회수됨 ✅' ELSE '남음 ❌ (일반 사용자가 접속기록 파기 가능 — REVOKE 필요)' END;
+SELECT '   PUBLIC EXECUTE 회수: ' ||
+  CASE WHEN (SELECT proacl FROM pg_proc
+              WHERE oid = to_regprocedure('public.seoul_audit_purge(int)')) IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM pg_proc p, aclexplode(p.proacl) a
+                         WHERE p.oid = to_regprocedure('public.seoul_audit_purge(int)')
+                           AND a.grantee=0 AND a.privilege_type='EXECUTE')
+       THEN '회수됨 ✅' ELSE '남음 ❌ (PUBLIC 실행권한 남음)' END;
+
+\echo ''
+\echo '════════════════════════════════════════════════════════════════'
+\echo ' P11. 안전레일 — 법정 최소 보관(365일) 미만·NULL 은 파기 거부(RAISE)'
+\echo '════════════════════════════════════════════════════════════════'
+-- 접속기록 최소 1년(개인정보보호법 「안전성 확보조치 기준」). 짧은 보관연한으로 조기파기 방지.
+DROP TABLE IF EXISTS _purge_rail;
+CREATE TEMP TABLE _purge_rail(k text, rejected boolean);
+DO $$
+BEGIN
+  IF to_regprocedure('public.seoul_audit_purge(int)') IS NULL THEN RETURN; END IF;
+  BEGIN PERFORM public.seoul_audit_purge(100);  INSERT INTO _purge_rail VALUES('d100', false);
+  EXCEPTION WHEN OTHERS THEN INSERT INTO _purge_rail VALUES('d100', true); END;
+  BEGIN PERFORM public.seoul_audit_purge(364);  INSERT INTO _purge_rail VALUES('d364', false);
+  EXCEPTION WHEN OTHERS THEN INSERT INTO _purge_rail VALUES('d364', true); END;
+  BEGIN PERFORM public.seoul_audit_purge(NULL); INSERT INTO _purge_rail VALUES('dnull', false);
+  EXCEPTION WHEN OTHERS THEN INSERT INTO _purge_rail VALUES('dnull', true); END;
+END $$;
+SELECT '   purge(100) 거부: '  || CASE WHEN COALESCE((SELECT rejected FROM _purge_rail WHERE k='d100'),  false) THEN '거부됨 ✅' ELSE '통과됨 ❌ (365 미만 안전레일 실패 — 조기파기 위험)' END;
+SELECT '   purge(364) 거부: '  || CASE WHEN COALESCE((SELECT rejected FROM _purge_rail WHERE k='d364'),  false) THEN '거부됨 ✅' ELSE '통과됨 ❌ (경계값 364 가 통과 — <365 검사 오류)' END;
+SELECT '   purge(NULL) 거부: ' || CASE WHEN COALESCE((SELECT rejected FROM _purge_rail WHERE k='dnull'), false) THEN '거부됨 ✅' ELSE '통과됨 ❌ (NULL 미방어)' END;
+
+\echo ''
+\echo '════════════════════════════════════════════════════════════════'
+\echo ' P12. 파기 동작 — 보관연한 초과 행만 삭제, 최근 행은 보존'
+\echo '════════════════════════════════════════════════════════════════'
+-- 자기 시드(pv.* 프리픽스)로 격리. 400일 전 3행 + 10일 전 2행 → purge(365) 후 old 만 사라진다.
+DELETE FROM public.seoul_audit_log WHERE action IN ('pv.old','pv.new');  -- 재실행 멱등
+INSERT INTO public.seoul_audit_log (action, created_at) SELECT 'pv.old', NOW() - INTERVAL '400 days' FROM generate_series(1,3);
+INSERT INTO public.seoul_audit_log (action, created_at) SELECT 'pv.new', NOW() - INTERVAL '10 days'  FROM generate_series(1,2);
+DROP TABLE IF EXISTS _purge_run;
+CREATE TEMP TABLE _purge_run(deleted int);
+DO $$
+BEGIN
+  IF to_regprocedure('public.seoul_audit_purge(int)') IS NULL THEN INSERT INTO _purge_run VALUES(-1); RETURN; END IF;
+  INSERT INTO _purge_run VALUES(public.seoul_audit_purge(365));
+END $$;
+SELECT '   purge(365) 반환 삭제건수(≥3): ' ||
+  CASE WHEN COALESCE((SELECT deleted FROM _purge_run), -1) >= 3 THEN '✅ ('||(SELECT deleted FROM _purge_run)||')'
+       ELSE '❌ (삭제 미동작 — 반환 '||COALESCE((SELECT deleted FROM _purge_run), -1)||')' END;
+SELECT '   보관연한 초과(pv.old) 전량 삭제(0): ' ||
+  CASE WHEN (SELECT count(*) FROM public.seoul_audit_log WHERE action='pv.old') = 0
+       THEN '삭제됨 ✅' ELSE '남음 ❌ (오래된 접속기록 미파기)' END;
+SELECT '   최근(pv.new) 보존(2): ' ||
+  CASE WHEN (SELECT count(*) FROM public.seoul_audit_log WHERE action='pv.new') = 2
+       THEN '보존됨 ✅' ELSE '유실 ❌ (보관연한 내 기록을 파기 — 과잉삭제)' END;
+DELETE FROM public.seoul_audit_log WHERE action IN ('pv.old','pv.new');  -- 뒷정리
+
 \echo ''
 \echo '=== 검증 종료: 위 결과라인에 ❌ 가 하나도 없어야 계약 통과 ==='

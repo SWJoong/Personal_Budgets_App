@@ -67,3 +67,32 @@ CREATE POLICY seoul_audit_log_select ON public.seoul_audit_log
 -- 테이블 직접 DML 권한 회수: 삽입은 definer 함수로만, 수정·삭제는 아무도 못 함(append-only).
 REVOKE INSERT, UPDATE, DELETE ON public.seoul_audit_log FROM authenticated;
 GRANT  SELECT                 ON public.seoul_audit_log TO authenticated;  -- RLS 가 관리자로 좁힘
+
+-- ── 보관기간 파기(purge) — 접속기록 보관 후 파기 (개인정보보호법 §29 + 「안전성 확보조치 기준」) ─────────
+-- 접속기록은 최소 1년(민감정보·고유식별정보 처리 시스템은 2년 이상) 보관 후 파기해야 한다.
+-- 보관 연한(일)은 인자로 받는다 — 정확 연한은 기관 정책([기관결정]). 이 시스템은 민감정보(장애) 처리 →
+--   ★권고 730일(2년) 이상. 값을 스키마에 박지 않고 스케줄러가 전달(정책과 메커니즘 분리).
+-- 스케줄(Manual-Ops): pg_cron 또는 Supabase Scheduled/외부 cron → RPC. 실행노트 docs/release/12 참조.
+-- append-only 예외 경로 — DELETE 는 이 DEFINER 함수로만(테이블 직접 DELETE 는 위에서 회수). service_role 전용.
+CREATE OR REPLACE FUNCTION public.seoul_audit_purge(p_retain_days INT)
+RETURNS INTEGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_deleted INT;
+BEGIN
+  -- 법정 최소(1년) 미만 파기 방지 안전레일. 민감정보 시스템의 2년 정책은 스케줄러 인자·실행노트로 강제.
+  IF p_retain_days IS NULL OR p_retain_days < 365 THEN
+    RAISE EXCEPTION 'seoul_audit_purge: 보관 연한은 365일 이상이어야 합니다(접속기록 최소 1년). 받은 값: %', p_retain_days;
+  END IF;
+  DELETE FROM public.seoul_audit_log
+    WHERE created_at < NOW() - make_interval(days => p_retain_days);
+  GET DIAGNOSTICS v_deleted = ROW_COUNT;
+  RETURN v_deleted;
+END $$;
+
+REVOKE ALL     ON FUNCTION public.seoul_audit_purge(INT) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.seoul_audit_purge(INT) FROM authenticated;  -- 일반 사용자 불가
+GRANT  EXECUTE ON FUNCTION public.seoul_audit_purge(INT) TO service_role;     -- 스케줄러(서비스롤)만

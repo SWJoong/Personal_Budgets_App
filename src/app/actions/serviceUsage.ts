@@ -260,5 +260,8 @@ export async function getReceiptSignedUrl(usageId: string): Promise<{ error?: st
   const admin = createAdminClient()
   const { data, error } = await admin.storage.from('receipts').createSignedUrl(receipt.storage_path, 3600)
   if (error) return { error: error.message, url: null }
+  // 접속기록(개인정보보호법 §29 안전성확보조치) — 영수증(지출·민감 정보) 파일 접근을 기록.
+  // 실패는 auditLog 내부 try/catch 로 격리(감사 손실 < 열람 마비). 행위자는 seoul_audit 이 auth.uid() 로 스탬프.
+  await auditLog(supabase, 'receipt.view', { targetType: 'receipt', targetId: usageId, metadata: { bucket: 'receipts' } })
   return { url: data.signedUrl }
 }
