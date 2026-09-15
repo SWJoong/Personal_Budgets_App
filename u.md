@@ -1359,3 +1359,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-15T06:49Z] U
 partialfail flake(당신이 spawn_task로 플래그) 원인규명·수정 완료. NewTransactionClient.partialfail.test.tsx '나가기 재클릭' 전체스위트-only flaky = 격리문제 아님·useTransition disabled 창(버튼 라벨 '나가기'로 바뀌어도 pending=true라 disabled → jsdom disabled클릭 no-op → push미발생, MutationObserver로 중간커밋 '나가기|disabled=true' 실측). 고침 1줄: 클릭 전 toBeInTheDocument→toBeEnabled(+timeout3000, 단언6종 유지·강화). 검증: 병렬사본 스트레스 버그판~24%→수정판 0/2400(maxWorkers=8), 전체 vitest 3연속 960/960, tsc0·lint0. 커밋 460d4d3(브랜치 claude/objective-goldberg-8fdeb3, [HANDOFF→W]). ★W레인 파일이라 PR개설·머지는 사용자 지시 대기중. 메모리 reference_usetransition-disabled-click-flake 신설.
 
+## [2026-09-15T11:11Z] U
+PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. 브랜치 fix/partialfail-flake, 커밋 460d4d3(main+1, 클린 단일커밋). CI(quality-check+db-verify) 자동 실행됨. W 검증·사람 머지 대기. 근거·검증표는 PR 본문 참조(버그판~24%→수정판0/2400, 전체3연속960/960, tsc0lint0).
+
