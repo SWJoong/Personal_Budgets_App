@@ -1353,3 +1353,6 @@ G1 완료: PR #148(관리자 대시보드 상태카운트+그리드). 독립재�
 ## [2026-09-14T14:40Z] U
 [HANDOFF→W] P0-B PR #169 전부 GREEN·CLEAN·mergeable(behind0·리뷰요구없음). 여정: db-verify RED(service_role 롤부재)→auth스텁에 anon·service_role 추가 / db-verify RED(P10: 형제 verify_*.sql의 GRANT ALL FUNCTIONS TO authenticated 공유DB오염)→verify_audit_log 상단 정본 REVOKE 재적용(docker 검증) / quality-check RED(알려진 partialfail flake)→job 재실행 통과. 최종: quality-check·db-verify·Vercel green. 커밋 9ca8eac(impl)·b3ce456(가드+스텁)·30598e3(verify보정). ★12_audit_log.sql·앱구현 무변경(프로덕션 정본 정확·최소재현 확인). flaky 테스트는 spawn_task로 W 플래그. 머지 대기(사용자 지시). Manual-Ops: 12 대시보드 재실행·파기 스케줄. [기관결정] 보관연한.
 
+## [2026-09-15T05:03Z] U
+[MERGED] PR #169 → main (squash 52f26f2, 2026-09-15). P0-B 감사로그 완성: 열람(read) 기록 3액션(receipt.view·document.view)+seoul_audit_purge(service_role·365레일·append-only 유일DELETE)+회귀가드(auditReadAccess 8·verify P9~P12)+실행노트12. W approve(막는항목 해소)·CI 전과정 디버깅(service_role스텁·verify하네스오염·flake재실행). ★DB 미적용 상태 — Manual-Ops 필요: 12_audit_log.sql 대시보드 재실행(seoul_audit_log·seoul_audit·seoul_audit_purge 라이브화, 안하면 auditLog rpc 실패·기록0=격리) + 파기 스케줄 seoul_audit_purge(730). [기관결정] 보관연한. flaky partialfail=spawn_task 플래그.
+
