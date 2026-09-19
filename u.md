@@ -1368,3 +1368,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-19T09:22Z] U
 [MERGED] 관계망(Track B) 제거 → main (squash 7ce7c72, PR #171, 사용자 머지 2026-09-19). main 에 network 파일 0 확인. 검증 3겹 만장일치: 로컬게이트(tsc0·lint0·vitest·build0) + 독립검증 서브에이전트(4/4 PASS) + 12에이전트 완전성감사 워크플로(real_residuals=0·complete=true). 유지: 05 v_seoul_graph 코어뷰·실무자AI점검(isolation만 제거). ★Manual-Ops 사용자 실행 대기: supabase/seoul/_drops/2026-09-19_drop_network.sql (라이브 seoul_network_entities+큐레이션뷰 드롭). 후속 PR #172=loading.tsx 주석 잔재 tidy(trivial·주석전용). W후속: Plan&Source 관계망 설계문서+고아 verify_network_*.sql(CI서 이미 제거·방치무해) 정리 판단.
 
+## [2026-09-19T10:18Z] U
+[MERGED] PR #172 → main (squash f7a6717) — loading.tsx 주석 잔재 tidy. 관계망 제거 이제 main 에 코드·주석까지 완전 0. 남은 것: ①사용자 Manual-Ops(_drops/2026-09-19_drop_network.sql 라이브 드롭) ②W: Plan&Source 관계망 설계문서+고아 verify_network_*.sql 정리. 참고: 구 브랜치 chore/remove-relationship-network 원격에 잔존(내용 전부 main 반영·redundant).
+
