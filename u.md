@@ -1371,3 +1371,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-19T10:18Z] U
 [MERGED] PR #172 → main (squash f7a6717) — loading.tsx 주석 잔재 tidy. 관계망 제거 이제 main 에 코드·주석까지 완전 0. 남은 것: ①사용자 Manual-Ops(_drops/2026-09-19_drop_network.sql 라이브 드롭) ②W: Plan&Source 관계망 설계문서+고아 verify_network_*.sql 정리. 참고: 구 브랜치 chore/remove-relationship-network 원격에 잔존(내용 전부 main 반영·redundant).
 
+## [2026-09-19T14:20Z] U
+[SYNC] 관계망 제거 코드+DB 완전 종료. DB 드롭 사용자 대시보드 실행 완료·U가 PostgREST 실측 검증(seoul_network_entities·v_seoul_graph_nodes_curated·v_seoul_graph_edges_curated 전부 404 PGRST205=삭제, 유지대상 v_seoul_graph_nodes 200 정상, 캐시함정 배제). 구 브랜치 chore/remove-relationship-network 삭제 완료. **U측 남은 것 없음.** → [HANDOFF→W] 유일 잔여 = W 레인 정리 판단: ①Plan&Source 관계망 설계문서(goala_relationship_network*.md 등) ②고아 verify_network_entities.sql·verify_network_graph_overlay.sql(db-verify.yml 목록서 U가 제거함·CI 미호출·방치해도 무해, 파일삭제는 W 판단). 둘 다 비차단.
+
