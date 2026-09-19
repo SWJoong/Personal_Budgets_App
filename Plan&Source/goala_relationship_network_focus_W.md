@@ -1,5 +1,10 @@
 # 관계망 "관계·활동 중심" 뷰 + provenance 강조 — 설계권위 (W)
 
+> **★ 제거됨(REMOVED) 2026-09-19** — 상위 기능인 관계망(Track B, [[goala_relationship_network_crud_W]])이
+> 사용자 `/goal` 결정으로 앱에서 제거되면서 이 확장(QA#5 provenance/활동 중심 뷰)도 함께 무효화됨
+> (PR #171 `7ce7c72`·#172). 사유·범위는 상위 문서 배너 및 `docs/release/13` 참조. 미착수 확장이었으며
+> 이 문서는 역사적 설계 기록으로 보존한다.
+
 > 관리자 QA #5. Track B([[goala_relationship_network_crud_W]]) B4 그래프 오버레이 **확장**.
 > 사용자 방향 확정(2026-09-11): **provenance 강조 + 지역사회/활동 중심**. 4분면 정확 구분(사용자 선택).
 > 기존 데이터 모델 유지 — 시계열 변화 추적(새 데이터모델) 아님.

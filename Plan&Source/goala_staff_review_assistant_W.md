@@ -33,7 +33,11 @@
 | `unplanned_spending` | `unplannedCount > 0` | medium(≥3 high) |
 | `rulecheck_pending` | `ruleChecksPending > 0` | high(≥3)/medium |
 | `plan_delayed` | `planStatus ∈ {submitted, under_review}` | medium |
-| `isolation` | `communityCount===0 && (lastContactDaysAgo≥60 or totalRelations≤1)` | medium |
+| ~~`isolation`~~ | ~~`communityCount===0 && (lastContactDaysAgo≥60 or totalRelations≤1)`~~ | ~~medium~~ |
+
+> **★ `isolation` 신호 제거됨(2026-09-19)** — 유일 데이터 소스인 관계망(`seoul_network_entities`)이 삭제되면서
+> 함께 제거(PR #171 · `docs/release/13`). 현재 **5종 신호**(표 첫 5행)만 동작하며 `ReviewInput.network` 필드·
+> 규칙6 도 제거됨. 나머지 5종·2층 가명처리(신호→가명→AI) 구조는 그대로 유효. 이 기능(실무자 AI 점검)은 **유지**.
 
 - `ReviewSignal = { kind, severity: 'high'|'medium'|'info', label, detail }`. label/detail 은 한글 실무 문장.
 - 신호 없음 → `[]`(전부 정상). 결정적 정렬(severity desc → kind).
