@@ -54,8 +54,17 @@
 4. **데이터 영향**: 관계망 입력 데이터(있다면) 소멸. 데모/QA 시드 성격이라 운영 실데이터 영향은 없을 것으로
    예상하나, 실행 전 대상 프로젝트에서 `SELECT count(*) FROM public.seoul_network_entities;` 로 확인 권장.
 
+## CI (U 레인 · 본 PR 포함)
+
+`.github/workflows/db-verify.yml` 에서 관계망 항목 제거: seoul 빌드 목록 13/14 (초기·멱등 재적용 양쪽) +
+검증 목록 `verify_network_entities`·`verify_network_graph_overlay`. 안 하면 삭제된 13/14 를 `psql -f` 하다
+빌드 실패. 유지한 `verify_03_graph`·`verify_graph_mask` 등은 05 코어 그래프만 봐서 무영향.
+
 ## W 레인 후속 (본 PR 밖)
 
+- **고아 verify 파일**: `Plan&Source/ontology/seoul/verify_network_entities.sql`·
+  `verify_network_graph_overlay.sql` 은 이제 CI 에서 호출되지 않음(워크플로 목록에서 제거). 파일 자체
+  삭제는 W 판단(방치해도 CI 무영향 — 실행 목록에 없음).
 - `Plan&Source/` 의 관계망 설계 문서(예: `goala_relationship_network_W.md`,
   `goala_staff_review_assistant_W.md` §고립신호, verify_*.sql 중 관계망/오버레이 계약)는 U 레인이 아니라
   건드리지 않음 — **W 가 정리/보존 판단**. 이 PR 은 구현·빌드 SQL·동반 테스트만 다룸.
