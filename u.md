@@ -1365,3 +1365,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-19T08:24Z] U
 [HANDOFF→W] PR #171 = 관계망(사회관계망·Track B) 기능 제거. 사용자 /goal 지시(온톨로지 미성숙+서울형 특수성 → 3축[당사자 자기주도·실무자 행정간소화/계획공유·관리자 파악/슈퍼비전] 집중). 제거: /supporter/network·/supporter/[pid]/network UI, networkEntities 액션, egoGraph·networkEntity 유틸, seoul 13/14/15 빌드SQL, 내비 링크, 동반테스트. 유지: 05 v_seoul_graph 코어뷰(11 의존)·실무자 AI점검(checkup) — 단 관계망 유일의존 isolation 신호만 함께 제거(나머지 5신호 동작). CI: db-verify.yml 에서 13/14 빌드·verify_network_* 제거(U레인). 게이트 로컬 all green: tsc0·lint0·vitest(사전존재 flake #170 무관·격리6/6)·build0. ★Manual-Ops(사용자): _drops/2026-09-19_drop_network.sql 대시보드 실행(라이브 seoul_network_entities+큐레이션뷰 드롭). ★W후속: Plan&Source 관계망 설계문서+고아 verify_network_*.sql(CI 목록서 제거됨·방치무해) 정리 판단. staffReviewSignals/loading.p7c/tokenFoundation 테스트는 삭제정합 위해 U가 불가피 수정.
 
+## [2026-09-19T09:22Z] U
+[MERGED] 관계망(Track B) 제거 → main (squash 7ce7c72, PR #171, 사용자 머지 2026-09-19). main 에 network 파일 0 확인. 검증 3겹 만장일치: 로컬게이트(tsc0·lint0·vitest·build0) + 독립검증 서브에이전트(4/4 PASS) + 12에이전트 완전성감사 워크플로(real_residuals=0·complete=true). 유지: 05 v_seoul_graph 코어뷰·실무자AI점검(isolation만 제거). ★Manual-Ops 사용자 실행 대기: supabase/seoul/_drops/2026-09-19_drop_network.sql (라이브 seoul_network_entities+큐레이션뷰 드롭). 후속 PR #172=loading.tsx 주석 잔재 tidy(trivial·주석전용). W후속: Plan&Source 관계망 설계문서+고아 verify_network_*.sql(CI서 이미 제거·방치무해) 정리 판단.
+
