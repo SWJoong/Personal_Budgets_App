@@ -16,7 +16,7 @@ export const metadata = { title: '당사자 통합 현황' }
  * 당사자 통합 현황 허브 (GOAL축 B, B1) — ComingSoon 대체. 설계 §4-3
  * (Plan&Source/goala_comingsoon_stubs_triage_W.md). 한 당사자의 모든 축 진입점을 한 화면에.
  * ★허브 = 집계 요약 + 링크(각 화면은 전부 구현됨). 신규 백엔드 최소. RLS(seoul_can_access)가 담당범위로 스코프.
- * 라우트 규약: budgets/[id]=participant_id · network?participant=pid · evaluations/[pid] · [pid]/{transactions,assessment,report}.
+ * 라우트 규약: budgets/[id]=participant_id · evaluations/[pid] · [pid]/{transactions,assessment,report}.
  */
 
 type Balance = {
@@ -83,9 +83,7 @@ export default async function ParticipantHubPage({ params }: { params: Promise<{
     { href: `/supporter/evaluations/${pid}`, icon: '📋', label: '정산·평가', desc: '월별 평가' },
     { href: `/supporter/${pid}/assessment`, icon: '🧭', label: '욕구사정', desc: '영역별 욕구' },
     { href: `/supporter/${pid}/sis`, icon: '📊', label: 'SIS-A 척도', desc: '지원요구 점수' },
-    { href: `/supporter/${pid}/network`, icon: '🫂', label: '관계망 편집', desc: '가족·친구 등' },
     { href: `/supporter/${pid}/report`, icon: '📊', label: '월간보고서', desc: '리포트' },
-    { href: `/supporter/network?participant=${pid}`, icon: '🕸️', label: '관계망', desc: '지원 관계' },
     { href: `/supporter/map?participant=${pid}`, icon: '🗺️', label: '활동 지도', desc: '지출 위치' },
     { href: `/supporter/${pid}/checkup`, icon: '🩺', label: 'AI 점검 제안', desc: '우선순위 점검' },
   ]

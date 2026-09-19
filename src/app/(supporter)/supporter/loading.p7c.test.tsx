@@ -27,7 +27,6 @@ const ROUTES = [
   'plans',
   'applications',
   'evaluations',
-  'network',
   'documents',
 ]
 
