@@ -77,7 +77,12 @@ describe('NewTransactionClient — 활동사진 부분실패(실무자) §8 ⑦'
     fireEvent.change(screen.getByLabelText(/활동 사진/), { target: { files: twoSmallFiles() } })
     await waitFor(() => expect(screen.getByText('활동 사진 2장')).toBeInTheDocument())
     fireEvent.click(screen.getByRole('button', { name: '지출 기록하기' }))
-    await waitFor(() => expect(screen.getByRole('button', { name: '나가기' })).toBeInTheDocument())
+    // useTransition 의 pending 창(窓): setSavedUsageId 커밋 시점엔 아직 pending=true 라
+    // 버튼이 '나가기'로 바뀌지만 disabled 상태다. toBeInTheDocument 로만 기다리면 이 창에서
+    // 클릭이 잡혀 disabled 버튼 클릭=no-op → router.push 미호출로 간헐 실패한다(전체 스위트 부하 시
+    // 스케줄러가 두 커밋 사이에서 양보하며 창이 넓어짐). 클릭 가능(enabled)해질 때까지 기다린다.
+    // timeout 여유: 부하 큰 CI 에서 전이가 기본 1000ms 안에 안 끝나 생기는 오탐 방지(테스트 예산 5000ms 내).
+    await waitFor(() => expect(screen.getByRole('button', { name: '나가기' })).toBeEnabled(), { timeout: 3000 })
 
     fireEvent.click(screen.getByRole('button', { name: '나가기' }))
 
