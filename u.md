@@ -1362,3 +1362,6 @@ partialfail flake(당신이 spawn_task로 플래그) 원인규명·수정 완료
 ## [2026-09-15T11:11Z] U
 PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. 브랜치 fix/partialfail-flake, 커밋 460d4d3(main+1, 클린 단일커밋). CI(quality-check+db-verify) 자동 실행됨. W 검증·사람 머지 대기. 근거·검증표는 PR 본문 참조(버그판~24%→수정판0/2400, 전체3연속960/960, tsc0lint0).
 
+## [2026-09-19T08:24Z] U
+[HANDOFF→W] PR #171 = 관계망(사회관계망·Track B) 기능 제거. 사용자 /goal 지시(온톨로지 미성숙+서울형 특수성 → 3축[당사자 자기주도·실무자 행정간소화/계획공유·관리자 파악/슈퍼비전] 집중). 제거: /supporter/network·/supporter/[pid]/network UI, networkEntities 액션, egoGraph·networkEntity 유틸, seoul 13/14/15 빌드SQL, 내비 링크, 동반테스트. 유지: 05 v_seoul_graph 코어뷰(11 의존)·실무자 AI점검(checkup) — 단 관계망 유일의존 isolation 신호만 함께 제거(나머지 5신호 동작). CI: db-verify.yml 에서 13/14 빌드·verify_network_* 제거(U레인). 게이트 로컬 all green: tsc0·lint0·vitest(사전존재 flake #170 무관·격리6/6)·build0. ★Manual-Ops(사용자): _drops/2026-09-19_drop_network.sql 대시보드 실행(라이브 seoul_network_entities+큐레이션뷰 드롭). ★W후속: Plan&Source 관계망 설계문서+고아 verify_network_*.sql(CI 목록서 제거됨·방치무해) 정리 판단. staffReviewSignals/loading.p7c/tokenFoundation 테스트는 삭제정합 위해 U가 불가피 수정.
+
