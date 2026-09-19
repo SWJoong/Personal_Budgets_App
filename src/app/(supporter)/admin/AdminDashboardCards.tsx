@@ -30,7 +30,6 @@ const QUICK_LINKS = [
   { href: '/supporter/transactions', emoji: '📒', label: '거래장부' },
   { href: '/supporter/settlements', emoji: '🧮', label: '정산 원장' },
   { href: '/supporter/documents', emoji: '📁', label: '서류 보관함' },
-  { href: '/supporter/network', emoji: '🕸️', label: '관계망' },
   { href: '/admin/invitations', emoji: '✉️', label: '사용자 초대' },
   { href: '/admin/users', emoji: '🧑‍⚖️', label: '역할 관리' },
   { href: '/admin/settings', emoji: '⚙️', label: '시스템 설정' },

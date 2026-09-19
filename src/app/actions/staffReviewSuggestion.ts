@@ -100,21 +100,6 @@ export async function generateStaffReviewSuggestions(
       .maybeSingle()
     const planStatus: string | null = plan?.status ?? null
 
-    // 관계망: 지역사회 연결 수·전체 관계 수·마지막 접촉 경과일.
-    const { data: entities } = await supabase
-      .from('seoul_network_entities')
-      .select('relation_category, last_contact_date')
-      .eq('participant_id', participantId)
-    const netRows = entities ?? []
-    const totalRelations = netRows.length
-    const communityCount = netRows.filter((r) => r.relation_category === 'community').length
-    const contactTimes = netRows
-      .map((r) => (r.last_contact_date ? new Date(r.last_contact_date).getTime() : NaN))
-      .filter((t) => !Number.isNaN(t))
-    const lastContactDaysAgo = contactTimes.length
-      ? Math.floor((Date.now() - Math.max(...contactTimes)) / 86_400_000)
-      : null
-
     const input: ReviewInput = {
       budget: { monthSpent, monthlyCeiling, exceedsMonthlyCeiling },
       // 자부담 미정산은 현재 스키마에 '납부/정산 완료' 축이 없어 깨끗이 도출 불가 → 0(허위 신호 방지·설계 지침).
@@ -122,7 +107,6 @@ export async function generateStaffReviewSuggestions(
       unplannedCount,
       ruleChecksPending,
       planStatus,
-      network: { communityCount, lastContactDaysAgo, totalRelations },
     }
 
     const signals = computeReviewSignals(input)

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 // 담당자 대시보드의 "자주 쓰는 기능" 바로가기. 일상 핵심 작업(영수증 검토·거래장부·정산·서류함·
-// 이용계획·평가·지도·관계망)이 그동안 햄버거 메뉴에만 있던 것을 대시보드에 노출한다(F3 QA 발견).
+// 이용계획·평가·지도)이 그동안 햄버거 메뉴에만 있던 것을 대시보드에 노출한다(F3 QA 발견).
 // 라벨·href 는 AdminSidebar 메뉴와 동일 라우트를 가리키되, 대시보드 카드용 짧은 라벨로 정리했다.
 // 표현 전용 컴포넌트('use client'·훅 없음) — 서버 컴포넌트 page.tsx 가 그대로 렌더한다.
 type QuickTask = {
@@ -19,7 +19,6 @@ const tasks: QuickTask[] = [
   { href: '/supporter/plans',        emoji: '🎯', label: '이용계획·심의', desc: '이용계획을 세우고 심의해요' },
   { href: '/supporter/evaluations',  emoji: '📋', label: '계획·평가',     desc: '계획과 평가를 기록해요' },
   { href: '/supporter/map',          emoji: '🗺️', label: '지도',         desc: '쓸 수 있는 곳을 찾아요' },
-  { href: '/supporter/network',      emoji: '🕸️', label: '관계망',       desc: '당사자 관계망을 봐요' },
 ]
 
 export default function SupporterQuickTasks() {

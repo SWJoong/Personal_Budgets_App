@@ -160,8 +160,6 @@ const TOKENIZED_FILES = [
   'src/app/(supporter)/supporter/[participantId]/assessment/AssessmentClient.tsx',
   'src/app/(supporter)/supporter/[participantId]/assessment/page.tsx',
   'src/app/(supporter)/supporter/[participantId]/report/page.tsx',
-  'src/app/(supporter)/supporter/network/NetworkGraphClient.tsx',
-  'src/app/(supporter)/supporter/network/page.tsx',
   'src/app/(supporter)/supporter/page.tsx',
   'src/app/(supporter)/admin/page.tsx',
   'src/app/(supporter)/admin/participants/new/page.tsx',

@@ -27,9 +27,7 @@
 10_fk_ization.sql      GOAL축B FK-ization — 사정→목표→예산→지출→평가를 단일 분류축 FK 로 연결
 11_provider_domains.sql  자산지도 "쓸 수 있는 곳" — 전역 제공기관→지원영역 발견 함수
 12_audit_log.sql       통합 감사 로그 seoul_audit_log (append-only·행위자 스탬프·관리자 열람)
-13_network_entities.sql  관계망 CRUD 테이블·RLS staff-only (Track B) — 사회 관계망 4분면
-14_network_graph_overlay.sql  관계망 그래프 오버레이 큐레이션 뷰 (Track B) — 파생 그래프 ∪ 수동 관계(provenance)
-15_seed_network_demo.sql      (선택·데모) 데모 당사자 관계망 4분면 샘플 시드 — QA 데이터용. 08·13 이후 실행. 멱등
+                       (13~15 = 관계망(Track B) 제거됨 — 번호 결번. 라이브 DB 드롭은 _drops/2026-09-19_drop_network.sql)
 16_seed_documents_demo.sql    (선택·데모) 데모 당사자 서류 메타데이터 시드 — 서류함 QA용. 08 이후 실행. 멱등. ★파일없음(열기 미동작)
 ```
 

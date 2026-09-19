@@ -13,7 +13,6 @@ export type ReviewSignalKind =
   | 'unplanned_spending'
   | 'rulecheck_pending'
   | 'plan_delayed'
-  | 'isolation'
 
 export type ReviewSeverity = 'high' | 'medium' | 'info'
 
@@ -37,16 +36,13 @@ export interface ReviewInput {
   ruleChecksPending: number
   /** 최신 이용계획의 상태(없으면 null). */
   planStatus?: string | null
-  /** 사회 관계망 요약. */
-  network: { communityCount: number; lastContactDaysAgo: number | null; totalRelations: number }
 }
 
 const SEV_RANK: Record<ReviewSeverity, number> = { high: 3, medium: 2, info: 1 }
 
-/** 월 한도 임박 기준(90%) · 계획외/점검대기 high 승격 기준(3건) · 마지막 접촉 고립 기준(60일). */
+/** 월 한도 임박 기준(90%) · 계획외/점검대기 high 승격 기준(3건). */
 const CEILING_WARN_RATIO = 0.9
 const HIGH_COUNT = 3
-const ISOLATION_DAYS = 60
 
 /**
  * 원시값 → 점검 신호. 각 규칙은 서로 독립(한 축만 본다). 모두 정상이면 [].
@@ -110,18 +106,6 @@ export function computeReviewSignals(input: ReviewInput): ReviewSignal[] {
       severity: 'medium',
       label: '이용계획 심의 대기',
       detail: '이용계획이 아직 심의 중이에요. 진행 상황을 확인해 주세요.',
-    })
-  }
-
-  // 6) 고립 위험 — 지역사회 연결이 없고, 접촉이 오래됐거나 관계가 1개 이하.
-  const { communityCount, lastContactDaysAgo, totalRelations } = input.network
-  const staleContact = lastContactDaysAgo != null && lastContactDaysAgo >= ISOLATION_DAYS
-  if (communityCount === 0 && (staleContact || totalRelations <= 1)) {
-    signals.push({
-      kind: 'isolation',
-      severity: 'medium',
-      label: '지역사회 연결 부족',
-      detail: '지역사회와 이어진 관계가 없어요. 사회 관계망을 함께 살펴 주세요.',
     })
   }
 

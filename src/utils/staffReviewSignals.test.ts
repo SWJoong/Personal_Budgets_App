@@ -30,7 +30,6 @@ const CLEAR: ReviewInput = {
   unplannedCount: 0,
   ruleChecksPending: 0,
   planStatus: 'approved',
-  network: { communityCount: 2, lastContactDaysAgo: 7, totalRelations: 5 },
 }
 
 describe('computeReviewSignals — 신호층(#6)', () => {
@@ -72,21 +71,6 @@ describe('computeReviewSignals — 신호층(#6)', () => {
     expect(byKind(computeReviewSignals({ ...CLEAR, planStatus: 'under_review' }), 'plan_delayed')).toBeDefined()
     expect(byKind(computeReviewSignals({ ...CLEAR, planStatus: 'submitted' }), 'plan_delayed')).toBeDefined()
     expect(byKind(computeReviewSignals({ ...CLEAR, planStatus: 'approved' }), 'plan_delayed')).toBeUndefined()
-  })
-
-  it('지역사회 연결 0 + 접촉 60일 이상 → isolation', () => {
-    const s = computeReviewSignals({ ...CLEAR, network: { communityCount: 0, lastContactDaysAgo: 90, totalRelations: 3 } })
-    expect(byKind(s, 'isolation')).toBeDefined()
-  })
-
-  it('지역사회 연결 0 + 관계 1개 이하 → isolation(접촉일 없어도)', () => {
-    const s = computeReviewSignals({ ...CLEAR, network: { communityCount: 0, lastContactDaysAgo: null, totalRelations: 1 } })
-    expect(byKind(s, 'isolation')).toBeDefined()
-  })
-
-  it('지역사회 연결이 있으면 고립 신호 없음', () => {
-    const s = computeReviewSignals({ ...CLEAR, network: { communityCount: 1, lastContactDaysAgo: 200, totalRelations: 1 } })
-    expect(byKind(s, 'isolation')).toBeUndefined()
   })
 
   it('여러 신호는 severity 내림차순으로 정렬된다(high가 medium보다 앞)', () => {
