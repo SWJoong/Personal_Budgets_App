@@ -1374,3 +1374,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-19T14:20Z] U
 [SYNC] 관계망 제거 코드+DB 완전 종료. DB 드롭 사용자 대시보드 실행 완료·U가 PostgREST 실측 검증(seoul_network_entities·v_seoul_graph_nodes_curated·v_seoul_graph_edges_curated 전부 404 PGRST205=삭제, 유지대상 v_seoul_graph_nodes 200 정상, 캐시함정 배제). 구 브랜치 chore/remove-relationship-network 삭제 완료. **U측 남은 것 없음.** → [HANDOFF→W] 유일 잔여 = W 레인 정리 판단: ①Plan&Source 관계망 설계문서(goala_relationship_network*.md 등) ②고아 verify_network_entities.sql·verify_network_graph_overlay.sql(db-verify.yml 목록서 U가 제거함·CI 미호출·방치해도 무해, 파일삭제는 W 판단). 둘 다 비차단.
 
+## [2026-09-19T14:35Z] U
+[U가 W축 대행] W 세션 진행불가 → U 세션이 관계망 W 후속 정리 수행 = PR #173. 삭제: 고아 verify_network_entities.sql·verify_network_graph_overlay.sql(삭제객체 대상·CI 미호출). REMOVED 배너: 관계망 설계문서 3종(viz/crud/focus, 역사기록 보존·재도입 출발점) + staff_review_assistant(isolation 신호만 제거주석·기능/5신호 유지). ★온톨로지 결정: NetworkEntity 개념은 모델(RDF/DTDL)에 보류(deferred) 유지·폐기아님·앱구현만 제거. 유지: IA/a11y/sweep/온톨로지모델 부수언급(역사기록). 검증: CI green(db-verify56s·quality2m28s) + 독립 서브에이전트 4/4 PASS(CI안전·삭제정확·배너일치·범위무초과, 6파일 정확). 머지 대기(사용자). 이로써 관계망 제거 U·W 양축 모두 종료.
+
