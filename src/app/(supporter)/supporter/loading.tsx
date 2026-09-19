@@ -3,7 +3,7 @@
  *
  * Next.js loading.tsx 는 계층 상속된다 — 이 파일은 supporter/ 세그먼트 아래에서 자체 loading.tsx 가
  * 없는 모든 라우트의 로딩 화면이 된다: 실무자 대시보드(supporter/), 당사자별 상세 화면
- * (supporter/[participantId]/{assessment,budget-execution,checkup,network,report,sis,transactions,gallery}),
+ * (supporter/[participantId]/{assessment,budget-execution,checkup,report,sis,transactions,gallery}),
  * budgets/[id], map 등. (applications·plans·participants·evaluations·transactions 등은 각자
  * 더 가까운 loading.tsx 가 우선한다.)
  *
