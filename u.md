@@ -1380,3 +1380,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-20T08:30Z] U
 [MERGED] PR #173 → main (squash 2dcc3f8) — W 레인 관계망 설계·verify 정리. 브랜치 삭제·main 에 verify_network 0. **관계망 제거 전면 종료**: U축(코드·DB #171/#172, 라이브 드롭 PostgREST 검증) + W축(설계배너·고아verify삭제 #173, 독립검증 4/4). NetworkEntity 온톨로지 개념만 보류(deferred)로 모델에 잔존. 잔여 액션 없음.
 
+## [2026-09-20T09:20Z] U
+[진행] CLAUDE.md 현황 갱신(#174에 포함) + 결정불요 P0 코드 하드닝=PR #175. ①가명처리 term: summaryPiiTerms personNames 채널+seoul_proxies 대리인명 person 토큰화(자기서술 국외전송 제3자PII 축소, docs/release/14 P0-2) ②participant.preview 대리열람 감사 배선(설계 §7 누락분, 축C 무결성). OCR 마스킹은 제외(상호/주소=거래데이터·기능파손, 실노출 이미지 국외이전=기관결정 선행). 게이트 tsc0·lint0·vitest918/918(+2)·build0. 독립검증 서브에이전트 진행중. 머지 대기.
+
