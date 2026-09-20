@@ -68,8 +68,10 @@ export default async function AdminAuditPage({
     .limit(ROW_LIMIT)
   if (action) query = query.eq('action', action)
   if (participant) query = query.eq('target_participant_id', participant)
-  if (days !== 'all') {
-    query = query.gte('created_at', cutoffISO(Number(days)))
+  // days 는 searchParams(사용자 조작 가능) — 유효 양수만 기간 필터 적용, 그 외(비수치·'all')는 전체(크래시 방지).
+  const daysNum = Number(days)
+  if (days !== 'all' && Number.isFinite(daysNum) && daysNum > 0) {
+    query = query.gte('created_at', cutoffISO(daysNum))
   }
 
   const { data: rowsRaw } = await query
