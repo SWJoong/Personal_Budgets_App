@@ -80,7 +80,7 @@ export default async function AdminInsightsPage() {
     supabase
       .from('v_seoul_pipeline')
       .select(
-        'participant_id, application_status, is_selected, plan_id, plan_status, review_decision, notified_on, allocation_id'
+        'participant_id, application_id, application_status, is_selected, plan_id, plan_status, review_decision, notified_on, allocation_id'
       ),
     supabase.from('v_seoul_budget_balance').select('allocated_amount, spent, remaining'),
     supabase

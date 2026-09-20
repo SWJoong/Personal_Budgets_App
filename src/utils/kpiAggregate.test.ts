@@ -15,10 +15,10 @@ import {
 describe('aggregateFunnel (A)', () => {
   it('단계별 인원·선정률·심의분포를 센다', () => {
     const r = aggregateFunnel([
-      { application_status: 'selected', is_selected: true, plan_id: 'p1', plan_status: 'approved', review_decision: 'approved', notified_on: '2026-01-01', allocation_id: 'a1' },
-      { application_status: 'not_selected', is_selected: false, plan_id: null, plan_status: null, review_decision: null, notified_on: null, allocation_id: null },
-      { application_status: 'screening', is_selected: null, plan_id: null, plan_status: null, review_decision: null, notified_on: null, allocation_id: null },
-      { application_status: 'draft', is_selected: null, plan_id: null, plan_status: null, review_decision: null, notified_on: null, allocation_id: null },
+      { application_id: 'app1', application_status: 'selected', is_selected: true, plan_id: 'p1', plan_status: 'approved', review_decision: 'approved', notified_on: '2026-01-01', allocation_id: 'a1' },
+      { application_id: 'app2', application_status: 'not_selected', is_selected: false, plan_id: null, plan_status: null, review_decision: null, notified_on: null, allocation_id: null },
+      { application_id: 'app3', application_status: 'screening', is_selected: null, plan_id: null, plan_status: null, review_decision: null, notified_on: null, allocation_id: null },
+      { application_id: 'app4', application_status: 'draft', is_selected: null, plan_id: null, plan_status: null, review_decision: null, notified_on: null, allocation_id: null },
     ])
     expect(r.applied).toBe(3) // draft 제외
     expect(r.selected).toBe(1)
@@ -28,6 +28,21 @@ describe('aggregateFunnel (A)', () => {
     expect(r.notified).toBe(1)
     expect(r.selectionRatePct).toBe(50) // 1 / (1 selected + 1 not_selected)
     expect(r.planStatusCounts).toEqual({ approved: 1 })
+  })
+
+  it('★fan-out dedup: 한 신청이 재심의(review 2행)로 여러 행이어도 1건으로 센다', () => {
+    // 계획 p1 이 conditional→approved 로 review 2건 → 파이프라인 뷰가 2행 fan-out
+    const r = aggregateFunnel([
+      { application_id: 'app1', application_status: 'selected', is_selected: true, plan_id: 'p1', plan_status: 'approved', review_decision: 'conditional', notified_on: null, allocation_id: 'a1' },
+      { application_id: 'app1', application_status: 'selected', is_selected: true, plan_id: 'p1', plan_status: 'approved', review_decision: 'approved', notified_on: '2026-02-01', allocation_id: 'a1' },
+    ])
+    expect(r.applied).toBe(1) // 신청 1건(중복 아님)
+    expect(r.selected).toBe(1)
+    expect(r.planned).toBe(1) // 계획 1개
+    expect(r.approved).toBe(1) // 승인 1개(review 2건이어도)
+    expect(r.allocated).toBe(1) // 배정 1개
+    expect(r.notified).toBe(1)
+    expect(r.planStatusCounts).toEqual({ approved: 1 }) // 계획 단위 분포(2행 아님)
   })
 
   it('빈 입력·선정 결정 없음 → 0·선정률 null', () => {

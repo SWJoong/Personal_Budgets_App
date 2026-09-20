@@ -15,6 +15,7 @@ function num(v: unknown): number {
 // ── A. 신청→선정→심의→배정 퍼널 (v_seoul_pipeline) ──────────────────────────────
 export interface PipelineRow {
   participant_id?: string | null
+  application_id?: string | null
   application_status?: string | null
   is_selected?: boolean | null
   plan_id?: string | null
@@ -37,31 +38,61 @@ export interface FunnelResult {
 
 const APPLIED_STATUSES = new Set(['received', 'screening', 'selected', 'not_selected', 'withdrawn'])
 
+/**
+ * ★dedup 필수: v_seoul_pipeline 은 plan→review→notification 을 LEFT JOIN 하는데 이 조인들은 1:1 이 아니다
+ * (계획 재심의 conditional→approved = review 2행, 재작성 계획 등 → 한 신청이 여러 행으로 fan-out).
+ * 스키마상 UNIQUE 는 selection_decisions.application_id·budget_allocations.plan_id 뿐. 따라서 행 단위로
+ * 세면 applied/selected/planned/approved/allocated 가 부풀 수 있다. → 애플리케이션/계획/배정 id 로 중복 제거해 센다.
+ */
 export function aggregateFunnel(rows: PipelineRow[]): FunnelResult {
+  const apps = new Map<string, { status: string | null; selected: boolean }>() // 신청 단위
+  const plans = new Set<string>()
+  const approvedPlans = new Set<string>()
+  const notifiedPlans = new Set<string>()
+  const allocations = new Set<string>()
+  const planStatusByPlan = new Map<string, string>() // 계획별 상태(계획 단위 분포용)
+
+  for (const r of rows) {
+    if (r.application_id) {
+      const selected = r.is_selected === true || r.application_status === 'selected'
+      const prev = apps.get(r.application_id)
+      if (!prev) apps.set(r.application_id, { status: r.application_status ?? null, selected })
+      else if (selected) prev.selected = true
+    }
+    if (r.plan_id) {
+      plans.add(r.plan_id)
+      if (r.plan_status) planStatusByPlan.set(r.plan_id, r.plan_status)
+      if (r.review_decision === 'approved' || r.plan_status === 'approved') approvedPlans.add(r.plan_id)
+      if (r.notified_on) notifiedPlans.add(r.plan_id)
+    }
+    if (r.allocation_id) allocations.add(r.allocation_id)
+  }
+
   let applied = 0
   let selected = 0
   let notSelected = 0
-  let planned = 0
-  let approved = 0
-  let allocated = 0
-  let notified = 0
-  const planStatusCounts: Record<string, number> = {}
-
-  for (const r of rows) {
-    if (r.application_status && APPLIED_STATUSES.has(r.application_status)) applied += 1
-    if (r.is_selected === true || r.application_status === 'selected') selected += 1
-    if (r.application_status === 'not_selected') notSelected += 1
-    if (r.plan_id) planned += 1
-    if (r.review_decision === 'approved' || r.plan_status === 'approved') approved += 1
-    if (r.allocation_id) allocated += 1
-    if (r.notified_on) notified += 1
-    if (r.plan_status) planStatusCounts[r.plan_status] = (planStatusCounts[r.plan_status] ?? 0) + 1
+  for (const a of apps.values()) {
+    if (a.status && APPLIED_STATUSES.has(a.status)) applied += 1
+    if (a.selected) selected += 1
+    if (a.status === 'not_selected') notSelected += 1
   }
+
+  const planStatusCounts: Record<string, number> = {}
+  for (const s of planStatusByPlan.values()) planStatusCounts[s] = (planStatusCounts[s] ?? 0) + 1
 
   const decided = selected + notSelected
   const selectionRatePct = decided > 0 ? Math.round((1000 * selected) / decided) / 10 : null
 
-  return { applied, selected, planned, approved, allocated, notified, selectionRatePct, planStatusCounts }
+  return {
+    applied,
+    selected,
+    planned: plans.size,
+    approved: approvedPlans.size,
+    allocated: allocations.size,
+    notified: notifiedPlans.size,
+    selectionRatePct,
+    planStatusCounts,
+  }
 }
 
 // ── B. 예산 집행 (v_seoul_budget_balance) ──────────────────────────────────────
