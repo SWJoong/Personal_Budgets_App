@@ -5,6 +5,7 @@ import { useAccessibility } from '@/hooks/useAccessibility'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Term } from '@/components/ui/Term'
 
 interface FileLink {
   id: string
@@ -71,7 +72,7 @@ export default function MoreMenuClient({
               <div className="flex items-center gap-4">
                 <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">🎯</span>
                 <div className="flex flex-col">
-                  <span className="text-lg font-black">내 이용계획</span>
+                  <span className="text-lg font-black">내 <Term formal="이용계획" /></span>
                   <span className="text-xs font-bold text-primary-foreground">계획과 결과를 봐요</span>
                 </div>
               </div>

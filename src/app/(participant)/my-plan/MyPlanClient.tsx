@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Term } from '@/components/ui/Term'
 import { markNotificationRead } from '@/app/actions/planReview'
 import { fileAppeal } from '@/app/actions/appeal'
 import ActivitySuggestions from './ActivitySuggestions'
@@ -157,7 +158,7 @@ export default function MyPlanClient({
         <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="홈으로 가기">
           ←
         </Link>
-        <h1 className="text-sm font-black text-foreground">내 이용계획</h1>
+        <h1 className="text-sm font-black text-foreground">내 <Term formal="이용계획" /></h1>
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 p-6 flex flex-col gap-4 max-w-sm mx-auto w-full">
