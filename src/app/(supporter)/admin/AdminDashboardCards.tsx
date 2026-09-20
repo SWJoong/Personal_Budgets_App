@@ -23,7 +23,7 @@ const TODO_CARDS = [
   { key: 'planReview', href: '/supporter/plans', emoji: '📋', label: '심의 대기', hint: '이용계획을 살펴봐요' },
 ] as const
 
-// 빠른 실행 8타일 — 무쿼리 링크만(설계 §빠른 실행 그리드).
+// 빠른 실행 9타일 — 무쿼리 링크만(설계 §빠른 실행 그리드).
 const QUICK_LINKS = [
   { href: '/admin/participants/new', emoji: '➕', label: '당사자 등록' },
   { href: '/admin/participants', emoji: '👥', label: '당사자 관리' },
@@ -32,6 +32,7 @@ const QUICK_LINKS = [
   { href: '/supporter/documents', emoji: '📁', label: '서류 보관함' },
   { href: '/admin/invitations', emoji: '✉️', label: '사용자 초대' },
   { href: '/admin/users', emoji: '🧑‍⚖️', label: '역할 관리' },
+  { href: '/admin/audit', emoji: '🕵️', label: '감사 기록' },
   { href: '/admin/settings', emoji: '⚙️', label: '시스템 설정' },
 ] as const
 
