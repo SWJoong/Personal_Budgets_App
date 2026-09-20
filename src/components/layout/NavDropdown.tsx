@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Modal } from '@/components/ui/Modal'
+import { Term } from '@/components/ui/Term'
 
 type NavItem = {
   href: string
   icon: string
   label: string
   soon?: boolean
-  subs?: { href: string; icon: string; label: string; soon?: boolean }[]
+  subs?: { href: string; icon: string; label: ReactNode; soon?: boolean }[]
 }
 
 // soon: true 인 항목은 아직 서울형 데이터로 다시 만들지 않아 ComingSoon 화면으로 이어진다.
@@ -26,7 +27,7 @@ const NAV_ITEMS: NavItem[] = [
     icon: '⚙️',
     label: '더보기',
     subs: [
-      { href: '/my-plan',              icon: '🎯', label: '내 이용계획' },
+      { href: '/my-plan',              icon: '🎯', label: <>내 <Term formal="이용계획" /></> },
       { href: '/evaluations',          icon: '💌', label: '선생님이 남긴 기록' },
       { href: '/more?open=display',    icon: '🌗', label: '화면 설정' },
       { href: '/more?open=files',      icon: '📁', label: '내 서류함' },
