@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { requireAdmin } from '@/utils/supabase/staff'
+import { auditLog } from '@/utils/audit'
 import { getUIPreferences } from '@/app/actions/preferences'
 import { describeCopay } from '@/utils/copay'
 import { buildBudgetByDomain, type PlannedServiceRow } from '@/utils/budgetByDomain'
@@ -34,6 +35,14 @@ export default async function ParticipantPreviewPage({
     .maybeSingle()
 
   if (!participant) notFound()
+
+  // 대리열람 감사 — 관리자가 당사자 화면을 대리로 여는 가장 민감한 행위를 1회 기록한다
+  // (설계 goala_audit_log_W.md §7·B4). 행위자는 DB 함수가 auth.uid() 로 스탬프. 실패는 격리(auditLog 내부).
+  await auditLog(supabase, 'participant.preview', {
+    targetType: 'participant',
+    targetId: id,
+    participantId: id,
+  })
 
   const { data: allParticipantsRaw } = await supabase
     .from('participants')

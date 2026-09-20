@@ -99,11 +99,16 @@ export function buildSummarySource(input: SummarySourceInput): string {
 }
 
 /**
- * 가명처리 terms — 참여자 이름(person) · 관련 기관명(agency). deidentify 는 텍스트에 실제 나타나는
- * 값만 토큰화하므로(no-op safe) 등장 여부와 무관하게 넘겨도 안전하다. 빈·공백·중복 값은 걸러 넘긴다.
+ * 가명처리 terms — 참여자 이름·관련 제3자 이름(person) · 관련 기관명(agency). deidentify 는 텍스트에 실제
+ * 나타나는 값만 토큰화하므로(no-op safe) 등장 여부와 무관하게 넘겨도 안전하다. 빈·공백·중복 값은 걸러 넘긴다.
+ *
+ * ★personNames = 자기서술 자유텍스트에 임베드될 수 있는 제3자 사람 이름(대리인·보호자 등, seoul_proxies).
+ *   참여자 본인만 토큰화하면 자기서술에 언급된 가족/대리인 실명이 무마스킹으로 AI(국외)에 전송된다
+ *   (docs/release/14 P0-2). 구조화된 이름 소스만 넣는다 — 자유텍스트 NER 스캐닝은 별도 정책 결정.
  */
 export function summaryPiiTerms(input: {
   participantName?: string | null
+  personNames?: (string | null | undefined)[]
   agencyNames?: (string | null | undefined)[]
 }): PiiTerm[] {
   const terms: PiiTerm[] = []
@@ -115,6 +120,7 @@ export function summaryPiiTerms(input: {
     terms.push({ value: v, kind })
   }
   push(input.participantName, 'person')
+  for (const p of input.personNames ?? []) push(p, 'person')
   for (const a of input.agencyNames ?? []) push(a, 'agency')
   return terms
 }

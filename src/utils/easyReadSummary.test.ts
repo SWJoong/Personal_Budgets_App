@@ -80,6 +80,30 @@ describe('summaryPiiTerms — 가명처리 terms', () => {
     expect(terms).toContainEqual({ value: '햇살복지관', kind: 'agency' })
   })
 
+  it('대리인·보호자 등 제3자 이름(personNames)은 person 으로 만든다(자기서술 임베드 대비, P0-2)', () => {
+    const terms = summaryPiiTerms({
+      participantName: '김지수',
+      personNames: ['박보호', '이대리'],
+      agencyNames: ['햇살복지관'],
+    })
+    expect(terms).toContainEqual({ value: '김지수', kind: 'person' })
+    expect(terms).toContainEqual({ value: '박보호', kind: 'person' })
+    expect(terms).toContainEqual({ value: '이대리', kind: 'person' })
+    expect(terms).toContainEqual({ value: '햇살복지관', kind: 'agency' })
+  })
+
+  it('personNames 도 참여자 이름과 중복·빈값을 걸러낸다', () => {
+    const terms = summaryPiiTerms({
+      participantName: '김지수',
+      personNames: ['김지수', '박보호', '박보호', null, '  '],
+    })
+    // 김지수는 participantName 으로 이미 1회, 중복 박보호는 1회만
+    expect(terms).toEqual([
+      { value: '김지수', kind: 'person' },
+      { value: '박보호', kind: 'person' },
+    ])
+  })
+
   it('빈 값·공백·중복은 걸러낸다', () => {
     const terms = summaryPiiTerms({
       participantName: '  ',

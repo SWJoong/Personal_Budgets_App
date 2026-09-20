@@ -34,18 +34,21 @@ export async function generateEasyReadSummary(
     if (planErr) return { error: '계획을 불러오지 못했어요.' }
     if (!plan) return { error: '이 계획을 볼 권한이 없거나 존재하지 않아요.' }
 
-    const [{ data: narrative }, { data: services }, { data: participant }] = await Promise.all([
-      supabase
-        .from('seoul_self_narratives')
-        .select('strengths_talents, social_barriers, desired_change, desired_life, goal_to_try')
-        .eq('plan_id', planId)
-        .maybeSingle(),
-      supabase
-        .from('seoul_requested_services')
-        .select('service_name, priority, estimated_cost')
-        .eq('plan_id', planId),
-      supabase.from('profiles').select('name, full_name').eq('id', plan.participant_id).maybeSingle(),
-    ])
+    const [{ data: narrative }, { data: services }, { data: participant }, { data: proxies }] =
+      await Promise.all([
+        supabase
+          .from('seoul_self_narratives')
+          .select('strengths_talents, social_barriers, desired_change, desired_life, goal_to_try')
+          .eq('plan_id', planId)
+          .maybeSingle(),
+        supabase
+          .from('seoul_requested_services')
+          .select('service_name, priority, estimated_cost')
+          .eq('plan_id', planId),
+        supabase.from('profiles').select('name, full_name').eq('id', plan.participant_id).maybeSingle(),
+        // 대리인·보호자 실명(제3자 PII) — 자기서술 자유텍스트에 언급될 수 있어 가명처리 term 에 포함(P0-2).
+        supabase.from('seoul_proxies').select('proxy_name').eq('participant_id', plan.participant_id),
+      ])
 
     const requestedServices: SummaryRequestedService[] = (services ?? []).map((s) => ({
       serviceName: s.service_name,
@@ -73,7 +76,8 @@ export async function generateEasyReadSummary(
     }
 
     const participantName = participant?.name ?? participant?.full_name ?? null
-    const terms = summaryPiiTerms({ participantName })
+    const proxyNames = (proxies ?? []).map((p) => p.proxy_name)
+    const terms = summaryPiiTerms({ participantName, personNames: proxyNames })
 
     const summary = await callAIDeidentified(source, terms, {
       system: EASY_READ_SYSTEM,
