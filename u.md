@@ -1383,3 +1383,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-20T09:20Z] U
 [진행] CLAUDE.md 현황 갱신(#174에 포함) + 결정불요 P0 코드 하드닝=PR #175. ①가명처리 term: summaryPiiTerms personNames 채널+seoul_proxies 대리인명 person 토큰화(자기서술 국외전송 제3자PII 축소, docs/release/14 P0-2) ②participant.preview 대리열람 감사 배선(설계 §7 누락분, 축C 무결성). OCR 마스킹은 제외(상호/주소=거래데이터·기능파손, 실노출 이미지 국외이전=기관결정 선행). 게이트 tsc0·lint0·vitest918/918(+2)·build0. 독립검증 서브에이전트 진행중. 머지 대기.
 
+## [2026-09-20T09:27Z] U
+[MERGED] #174(squash 3aaf079: CLAUDE.md 현황 갱신 + docs/release/14 PRD재정합 3축백로그) + #175(squash 5426ad1: 결정불요 P0 하드닝 — easyReadSummary personNames 대리인명 가명처리 + participant.preview 감사 배선) → main. CI green·독립검증 4/4. main=5426ad1. 남은 다음작업(doc 14): P0 국외이전 법무묶음(OCR 이미지·자유텍스트 NER·처리방침 발효)=기관결정 선행 / P0 Manual-Ops(감사 라이브적용·파기 스케줄)=사용자 / P1 /admin/audit·EasyTerm·TTS·당사자 실사용자심사.
+
