@@ -1386,3 +1386,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-20T09:27Z] U
 [MERGED] #174(squash 3aaf079: CLAUDE.md 현황 갱신 + docs/release/14 PRD재정합 3축백로그) + #175(squash 5426ad1: 결정불요 P0 하드닝 — easyReadSummary personNames 대리인명 가명처리 + participant.preview 감사 배선) → main. CI green·독립검증 4/4. main=5426ad1. 남은 다음작업(doc 14): P0 국외이전 법무묶음(OCR 이미지·자유텍스트 NER·처리방침 발효)=기관결정 선행 / P0 Manual-Ops(감사 라이브적용·파기 스케줄)=사용자 / P1 /admin/audit·EasyTerm·TTS·당사자 실사용자심사.
 
+## [2026-09-20T10:01Z] U
+[진행] P1 결정불요 코드 3건 = 3 PR. #176 감사대시보드 /admin/audit(축C·auditLabels·필터·독립검증4/4+days NaN가드 eebc7b3) · #177 TTS 읽어주기(축A·SpeakButton·홈잔액/이용계획·검증4/4) · #178 쉬운용어 사전+<Term>(축A·이용계획 토글 실동작화·검증중). 각 게이트 tsc0·lint0·vitest(922~924)·build0. 파일겹침 회피(plan/page.tsx=#177만). 머지 대기.
+
