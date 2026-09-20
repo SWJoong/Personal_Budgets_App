@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
 import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
+import { Term } from '@/components/ui/Term'
 import MyPlanClient from './MyPlanClient'
 
 export const metadata = { title: '내 계획' }
@@ -17,7 +18,7 @@ export default async function MyPlanPage() {
     return (
       <div className="flex flex-col min-h-dvh bg-background text-foreground pb-10">
         <header className="flex h-14 items-center px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
-          <h1 className="text-sm font-black text-foreground">내 이용계획</h1>
+          <h1 className="text-sm font-black text-foreground">내 <Term formal="이용계획" /></h1>
         </header>
         <NoBudgetGate title="아직 예산 정보가 없어요." emoji="🎯" variant="page" />
       </div>
