@@ -16,6 +16,8 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 import { MoneyText } from '@/components/ui/MoneyText'
 import BalanceWidget from '@/components/home/BalanceWidget'
+import SpeakButton from '@/components/ui/SpeakButton'
+import { won } from '@/utils/won'
 import BudgetAlerts from '@/components/home/BudgetAlerts'
 import { getBudgetChangeInfo, getSpendingPaceAlert } from '@/utils/budget-visuals'
 import { getActivityEmoji } from '@/utils/activityEmoji'
@@ -209,6 +211,13 @@ export default async function Home() {
               style={prefs.balance_widget_style}
               emoji={prefs.balance_emoji ?? '🍎'}
             />
+            {/* 읽어주기 — 남은 돈을 느린 한국어로(발달장애인법 §10 의사소통지원). */}
+            <div className="flex justify-center -mt-2">
+              <SpeakButton
+                text={`모두 ${won(Number(balance.allocated_amount))} 중에서 ${won(Number(balance.spent))}을 썼어요. ${won(Number(balance.remaining))}이 남았어요.`}
+                label="남은 돈 읽어주기"
+              />
+            </div>
 
             {/* 예산 변동·소비속도 알림 — 활성인 것만 카드로(둘 다 없으면 렌더 안 됨). */}
             <BudgetAlerts changeInfo={changeInfo} paceAlert={paceAlert} />
