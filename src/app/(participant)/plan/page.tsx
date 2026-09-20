@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import SpeakButton from '@/components/ui/SpeakButton'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
@@ -94,7 +95,10 @@ export default async function PlanPage() {
           <div className="flex flex-col gap-4">
             {goalToTry && (
               <div className="p-5 rounded-3xl bg-card ring-1 ring-border shadow-sm">
-                <p className="text-sm text-muted-foreground mb-1">이용계획에 적은 일이에요.</p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm text-muted-foreground mb-1">이용계획에 적은 일이에요.</p>
+                  <SpeakButton text={`이용계획에 적은 일이에요. ${goalToTry}`} label="이용계획 읽어주기" />
+                </div>
                 <p className="text-lg font-bold text-foreground leading-relaxed whitespace-pre-wrap">{goalToTry}</p>
               </div>
             )}
@@ -105,7 +109,10 @@ export default async function PlanPage() {
           </div>
         ) : goalToTry ? (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-muted-foreground leading-relaxed">이용계획에 적은 일이에요.</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm text-muted-foreground leading-relaxed">이용계획에 적은 일이에요.</p>
+              <SpeakButton text={`이용계획에 적은 일이에요. ${goalToTry}`} label="이용계획 읽어주기" />
+            </div>
             <div className="p-6 rounded-3xl bg-card ring-1 ring-border shadow-sm">
               <p className="text-xl font-bold text-foreground leading-relaxed whitespace-pre-wrap">{goalToTry}</p>
             </div>
