@@ -1392,3 +1392,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-20T10:38Z] U
 [MERGED] P1 결정불요 코드 3건 전부 → main. #177 TTS(a2565ac) · #176 감사대시보드(3f08e8f) · #178 쉬운용어+Term+NavDropdown(b2a97cc). 순차 update-branch·CI green·저자≠검증 4/4 각. main=b2a97cc. docs/release/14 P1 중 결정불요분 완료 — 남은 P1='당사자 실사용자 심사'(사용자), P0='국외이전 법무묶음·Manual-Ops'(기관결정 선행).
 
+## [2026-09-20T12:07Z] U
+[진행] 축C KPI 대시보드 /admin/insights = PR #179 (docs/release/14 P2#12). 지표 사용자확정 A·B·C(D 자기주도성 보류). kpiAggregate.ts 순수집계(funnel/execution/monthly/unplanned/settlement/monitoring)+insights 서버페이지(8쿼리병렬·requireAdmin)+대시보드 타일. 소스 v_seoul_pipeline·budget_balance·monthly_usage·unplanned·rule_checks·usages(settlement_status)·monitoring_records. 게이트 tsc0·lint0·vitest942/942(+9)·build0. 독립검증중. 머지대기. 모니터링=v1 최근30일(기대주기 기관결정 전).
+
