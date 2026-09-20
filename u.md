@@ -1377,3 +1377,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-19T14:35Z] U
 [U가 W축 대행] W 세션 진행불가 → U 세션이 관계망 W 후속 정리 수행 = PR #173. 삭제: 고아 verify_network_entities.sql·verify_network_graph_overlay.sql(삭제객체 대상·CI 미호출). REMOVED 배너: 관계망 설계문서 3종(viz/crud/focus, 역사기록 보존·재도입 출발점) + staff_review_assistant(isolation 신호만 제거주석·기능/5신호 유지). ★온톨로지 결정: NetworkEntity 개념은 모델(RDF/DTDL)에 보류(deferred) 유지·폐기아님·앱구현만 제거. 유지: IA/a11y/sweep/온톨로지모델 부수언급(역사기록). 검증: CI green(db-verify56s·quality2m28s) + 독립 서브에이전트 4/4 PASS(CI안전·삭제정확·배너일치·범위무초과, 6파일 정확). 머지 대기(사용자). 이로써 관계망 제거 U·W 양축 모두 종료.
 
+## [2026-09-20T08:30Z] U
+[MERGED] PR #173 → main (squash 2dcc3f8) — W 레인 관계망 설계·verify 정리. 브랜치 삭제·main 에 verify_network 0. **관계망 제거 전면 종료**: U축(코드·DB #171/#172, 라이브 드롭 PostgREST 검증) + W축(설계배너·고아verify삭제 #173, 독립검증 4/4). NetworkEntity 온톨로지 개념만 보류(deferred)로 모델에 잔존. 잔여 액션 없음.
+
