@@ -1389,3 +1389,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-20T10:01Z] U
 [진행] P1 결정불요 코드 3건 = 3 PR. #176 감사대시보드 /admin/audit(축C·auditLabels·필터·독립검증4/4+days NaN가드 eebc7b3) · #177 TTS 읽어주기(축A·SpeakButton·홈잔액/이용계획·검증4/4) · #178 쉬운용어 사전+<Term>(축A·이용계획 토글 실동작화·검증중). 각 게이트 tsc0·lint0·vitest(922~924)·build0. 파일겹침 회피(plan/page.tsx=#177만). 머지 대기.
 
+## [2026-09-20T10:38Z] U
+[MERGED] P1 결정불요 코드 3건 전부 → main. #177 TTS(a2565ac) · #176 감사대시보드(3f08e8f) · #178 쉬운용어+Term+NavDropdown(b2a97cc). 순차 update-branch·CI green·저자≠검증 4/4 각. main=b2a97cc. docs/release/14 P1 중 결정불요분 완료 — 남은 P1='당사자 실사용자 심사'(사용자), P0='국외이전 법무묶음·Manual-Ops'(기관결정 선행).
+
