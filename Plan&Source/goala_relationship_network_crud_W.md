@@ -1,5 +1,14 @@
 # Track B — 당사자 사회 관계망 CRUD (설계·계약 authority, W 레인)
 
+> **★ 제거됨(REMOVED) 2026-09-19** — 사용자 `/goal` 결정으로 관계망(Track B) 전체가 앱에서 제거됨
+> (PR #171 `7ce7c72`·#172). **사유**: 온톨로지 미성숙 + 서울형 특수성 → 3축(당사자 자기주도 · 실무자
+> 행정간소화/계획공유 · 관리자 파악/슈퍼비전) 집중. B1~B4 구현(`seoul_network_entities` 13 · 오버레이 14 ·
+> 시드 15 · `networkEntities.ts` · `egoGraph.ts` · 편집 UI)·verify 계약(`verify_network_entities.sql`·
+> `verify_network_graph_overlay.sql`, 삭제됨)·라이브 DB 객체 모두 제거·드롭 검증 완료(`docs/release/13`).
+> **온톨로지 결정**: `NetworkEntity` 개념은 ontology 모델(`pcp_ontology.rdf` 등)에 **보류(deferred)** 상태로
+> 남긴다 — 폐기가 아니라 "구현 시기 이름"이므로 개념 모델은 유지, 앱 구현만 제거. 재도입 시 이 문서가 출발점.
+> 아래 본문은 제거 이전 시점 설계 기록이다.
+
 > 사용자 방향(2026-09-10): "당사자의 관계망을 편집하고 추가 — OWL 추론 후 사회복지사가 직접 CRUD."
 > 참조앱: Microsoft Ontology-Playground(Cytoscape + 비주얼 에디터). **확정 모델(사용자 승인)**:
 > "파생그래프 + 수동 큐레이션" — 실제 OWL reasoner 도입 아님. 기존 FK-파생 그래프를 '후보'로 두고
