@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentParticipant } from '@/utils/supabase/participant'
 import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 import { Term } from '@/components/ui/Term'
+import { getPlanFeedback } from '@/app/actions/planFeedback'
 import MyPlanClient from './MyPlanClient'
 
 export const metadata = { title: '내 계획' }
@@ -68,6 +69,8 @@ export default async function MyPlanPage() {
     }
   }
 
+  const feedback = await getPlanFeedback(participant.id)
+
   return (
     <MyPlanClient
       participantId={participant.id}
@@ -77,6 +80,7 @@ export default async function MyPlanPage() {
       latestReview={latestReview}
       notification={notification}
       appeal={appeal}
+      feedback={feedback}
     />
   )
 }
