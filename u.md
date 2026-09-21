@@ -1410,3 +1410,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-21T13:40Z] U
 [MERGED] P2 배치 완료 → main(a8dc108): ①#180 모니터링수정삭제 ②#181 슈퍼비전 ③#182 월간보고서 ④#183 계획피드백. 4건 전부 독립검증 4/4·CI green. ★Manual-Ops 대기(사용자): 19_plan_feedback.sql 대시보드 실행(④ 동작 전제). 남음: D 자기주도성 지표 판단 + P0/P1 기관결정(국외이전·감사Manual-Ops·실사용자심사).
 
+## [2026-09-21T14:08Z] U
+[진행] 전체편집 테스트계정 = PR #184. viewAsWriteBlock 에 TEST_USER_EMAIL 예외(그 이메일 관리자 계정이면 view-as 전 당사자 편집 허용 — 영수증/활동사진 추가 등 단일관문). TEST_PARTICIPANT_ID 계정단위 버전. 정확매칭·대소문자무관·env미설정무변화·운영미설정권장. viewAs.test +4(20/20). CLAUDE env표. 셋업=사용자(계정생성+admin부여+env). 독립 보안검증중.
+
