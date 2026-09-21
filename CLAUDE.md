@@ -188,6 +188,7 @@ export async function myAction(formData: FormData) {
 | `NEXT_PUBLIC_DEMO_MODE` | `"true"` = 데모 모드 활성화 (서울형 리빌딩 브랜치에서는 미사용) |
 | `NEXT_PUBLIC_DEMO_LOGIN_ENABLED` | `"true"` = `/login`에 데모 계정 버튼 노출 (서울형 리빌딩 브랜치) |
 | `TEST_PARTICIPANT_ID` | (선택·테스트용) 이 `participants.id` 를 관리자 둘러보기(view-as)로 볼 때만 화면설정 등 저장을 허용한다(읽기전용 예외). 지정한 그 당사자 1명에게만 열리고 나머지 실참여자는 계속 읽기전용. 미설정 시 모든 view-as 는 읽기전용. **테스트/프리뷰 환경에만 설정**(운영 미설정 권장). `src/utils/supabase/viewAs.ts` |
+| `TEST_USER_EMAIL` | (선택·테스트용) **전체 편집 테스트 계정** 지정. 이 이메일 계정(★관리자 role 이어야 view-as 가능)으로 로그인 중이면 관리자 둘러보기(view-as)에서 **어느 당사자든** 저장/편집이 허용된다 — 영수증·활동사진 추가·화면설정 등 당사자 뮤테이션 전반. `TEST_PARTICIPANT_ID`(당사자 1명 예외)의 **계정 단위** 버전. 오직 그 이메일 1개만 열리고 다른 관리자·실참여자는 그대로 읽기전용. 미설정 시 무변화. 셋업: ①그 이메일로 회원가입 ②관리자 role 부여(`SUPER_ADMIN_EMAIL` 또는 `/admin/users`) ③이 env 설정. **테스트/프리뷰 전용**(운영 미설정 강력 권장 — 전체 편집 우회 계정). `src/utils/supabase/viewAs.ts` |
 | `ANTHROPIC_API_KEY` | Claude (영수증 OCR·AI 요약, 서버 전용). `src/utils/ai.ts` callAI 진입점 |
 | `AI_MODEL_OCR` | (선택) OCR 모델 오버라이드. 기본 `claude-haiku-4-5` |
 | `AI_MODEL_SUMMARY` · `AI_MODEL_SUGGEST` | (선택) 요약·활동제안 모델. 기본 `claude-sonnet-5` |
