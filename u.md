@@ -1401,3 +1401,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-21T07:15Z] U
 [진행] P2 배치 시작. ① 모니터링 수정·삭제=PR #180(축B, updateMonitoring 실무자·deleteMonitoring 관리자전용 RLS정합, EvaluationClient 인라인폼+2단계삭제확인, monitoringHasContent 순수검증). tsc0·lint0·vitest945·build0. 독립검증중. 다음 ②축C 슈퍼비전뷰 ③월간보고서 ④계획공유(정책확인 후).
 
+## [2026-09-21T09:04Z] U
+[MERGED] ① 모니터링 수정·삭제 #180(1b8bc3e) + ② 슈퍼비전 실무자현황 #181 → main. 둘 다 독립검증 4/4·CI green. 다음 ③월간보고서(기본양식 착수), ④계획공유(범위 미정 대기).
+
