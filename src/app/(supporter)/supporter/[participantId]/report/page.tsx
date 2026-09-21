@@ -55,6 +55,15 @@ export default async function DomainAxisReportPage({ params }: { params: Promise
       </header>
 
       <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-4">
+        <Link
+          href={`/supporter/${participantId}/report/print`}
+          className="flex items-center justify-between gap-2 p-4 rounded-2xl bg-card ring-1 ring-border hover:ring-foreground hover:bg-muted-hover transition-all min-h-[44px]"
+        >
+          <span className="flex items-center gap-2 font-bold text-foreground">
+            <span aria-hidden="true">🖨️</span> 월간 실적 보고서 (인쇄 · 제출용)
+          </span>
+          <span aria-hidden="true" className="text-muted-foreground">→</span>
+        </Link>
         <p className="text-sm text-muted-foreground leading-relaxed">
           지원영역별로 <b className="text-muted-foreground">사정한 욕구</b>와 <b className="text-muted-foreground">실제 지출</b>을 나란히 봅니다.
           욕구는 있는데 아직 안 쓴 영역(⚠️)이나 사정 없이 지출된 영역(📌)을 살펴보세요.
