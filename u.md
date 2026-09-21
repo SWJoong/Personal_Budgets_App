@@ -1404,3 +1404,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-21T09:04Z] U
 [MERGED] ① 모니터링 수정·삭제 #180(1b8bc3e) + ② 슈퍼비전 실무자현황 #181 → main. 둘 다 독립검증 4/4·CI green. 다음 ③월간보고서(기본양식 착수), ④계획공유(범위 미정 대기).
 
+## [2026-09-21T12:19Z] U
+[진행] P2 배치 완료도: ①#180 모니터링수정삭제(merged) ②#181 슈퍼비전(merged) ③#182 월간보고서(merged) ④#183 계획 가벼운피드백(축A/B, 신규 seoul_plan_feedback 19+RLS self작성/can_access열람/append-only, my-plan 폼+plans/[id] 표시). ④ tsc0·lint0·vitest952·build0. ★Manual-Ops: 19_plan_feedback.sql 대시보드 실행 필요. 독립검증중.
+
