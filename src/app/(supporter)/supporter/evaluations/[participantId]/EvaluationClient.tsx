@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { recordMonitoring } from '@/app/actions/monitoring'
+import { recordMonitoring, updateMonitoring, deleteMonitoring } from '@/app/actions/monitoring'
+import { monitoringHasContent } from '@/utils/monitoring'
 import { unusedContext, type MonitoringRow, type TimelineEntry } from '@/utils/evaluationTimeline'
 import { FormField } from '@/components/ui/FormField'
 import { useToast } from '@/components/ui/LiveRegion'
@@ -24,25 +25,85 @@ const DECISION_LABEL: Record<string, string> = {
   rejected: '반려',
 }
 
+type MethodValue = 'visit' | 'phone' | 'app' | 'document'
+
 export default function EvaluationClient({
   participantId,
   allocationId,
   timeline,
   monitoring,
+  isAdmin = false,
 }: {
   participantId: string
   allocationId: string | null
   timeline: TimelineEntry[]
   monitoring: MonitoringRow[]
+  isAdmin?: boolean
 }) {
   const router = useRouter()
   const { announce } = useToast()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState('')
 
-  const [method, setMethod] = useState<'visit' | 'phone' | 'app' | 'document' | null>(null)
+  const [method, setMethod] = useState<MethodValue | null>(null)
   const [observedChange, setObservedChange] = useState('')
   const [participantVoice, setParticipantVoice] = useState('')
+
+  // 수정 — 편집 중인 기록 id 와 편집 필드(내용 통째 교체). 삭제 — 확인 대기 id(2단계 확인).
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editMethod, setEditMethod] = useState<MethodValue | null>(null)
+  const [editObserved, setEditObserved] = useState('')
+  const [editVoice, setEditVoice] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
+  function startEdit(m: MonitoringRow) {
+    setConfirmDeleteId(null)
+    setError('')
+    setEditingId(m.id)
+    setEditMethod((m.method as MethodValue) ?? null)
+    setEditObserved(m.observedChange ?? '')
+    setEditVoice(m.participantVoice ?? '')
+  }
+
+  function saveEdit(id: string) {
+    if (!monitoringHasContent(editObserved, editVoice)) {
+      const msg = '관찰한 내용이나 당사자의 말 중 하나는 적어 주세요.'
+      setError(msg)
+      announce(msg, 'assertive')
+      return
+    }
+    setError('')
+    startTransition(async () => {
+      const result = await updateMonitoring(id, {
+        method: editMethod,
+        observedChange: editObserved,
+        participantVoice: editVoice,
+      })
+      if (result.error) {
+        setError(result.error)
+        announce(result.error, 'assertive')
+        return
+      }
+      setEditingId(null)
+      announce('모니터링 기록을 고쳤어요.')
+      router.refresh()
+    })
+  }
+
+  function handleDelete(id: string) {
+    setError('')
+    startTransition(async () => {
+      const result = await deleteMonitoring(id)
+      if (result.error) {
+        setError(result.error)
+        announce(result.error, 'assertive')
+        return
+      }
+      setConfirmDeleteId(null)
+      announce('모니터링 기록을 지웠어요.')
+      router.refresh()
+    })
+  }
 
   function handleRecord() {
     if (!observedChange.trim() && !participantVoice.trim()) {
@@ -157,29 +218,138 @@ export default function EvaluationClient({
             {timeline.map((entry) => (
               <li key={`${entry.kind}-${entry.id}`}>
                 {entry.kind === 'monitoring' && entry.monitoring && (
-                  <div className="p-4 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-muted-foreground">
-                        {entry.monitoring.method ? METHOD_LABEL[entry.monitoring.method] ?? '기록' : '기록'}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{formatDate(entry.monitoring.monitoringDate)}</span>
+                  editingId === entry.monitoring.id ? (
+                    /* ── 인라인 수정 폼 ── */
+                    <div className="p-4 rounded-2xl bg-card ring-2 ring-primary flex flex-col gap-3">
+                      <span className="text-xs font-black text-primary uppercase tracking-widest">기록 고치기</span>
+                      <div className="grid grid-cols-4 gap-2" role="group" aria-label="확인 방법">
+                        {METHODS.map((m) => (
+                          <button
+                            key={m.value}
+                            type="button"
+                            aria-pressed={editMethod === m.value}
+                            onClick={() => setEditMethod(editMethod === m.value ? null : m.value)}
+                            className={`flex flex-col items-center gap-1 p-2 rounded-xl ring-2 transition-all min-h-[44px] ${
+                              editMethod === m.value
+                                ? 'ring-foreground bg-muted font-black'
+                                : 'ring-border text-muted-foreground hover:ring-foreground'
+                            }`}
+                          >
+                            <span className="text-lg" aria-hidden="true">{m.icon}</span>
+                            <span className="text-[11px] font-bold">{m.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <FormField id={`edit-observed-${entry.monitoring.id}`} label="실무자 관찰 (내가 본 변화)">
+                        {(field) => (
+                          <textarea
+                            {...field}
+                            value={editObserved}
+                            onChange={(e) => setEditObserved(e.target.value)}
+                            rows={3}
+                            className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm resize-y"
+                          />
+                        )}
+                      </FormField>
+                      <FormField id={`edit-voice-${entry.monitoring.id}`} label="당사자의 말 (본인이 한 말 그대로)">
+                        {(field) => (
+                          <textarea
+                            {...field}
+                            value={editVoice}
+                            onChange={(e) => setEditVoice(e.target.value)}
+                            rows={3}
+                            className="p-3 rounded-xl bg-muted ring-1 ring-border text-sm resize-y"
+                          />
+                        )}
+                      </FormField>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => saveEdit(entry.monitoring!.id)}
+                          disabled={pending}
+                          className="flex-1 p-2.5 rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:bg-hero-hover transition-colors disabled:opacity-50 min-h-[44px]"
+                        >
+                          {pending ? '저장하고 있어요...' : '저장'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingId(null)}
+                          disabled={pending}
+                          className="px-4 rounded-xl bg-muted text-muted-foreground font-bold text-sm hover:text-foreground transition-colors min-h-[44px]"
+                        >
+                          취소
+                        </button>
+                      </div>
                     </div>
-                    {entry.monitoring.observedChange && (
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        <span className="font-bold text-muted-foreground">관찰 </span>
-                        {entry.monitoring.observedChange}
-                      </p>
-                    )}
-                    {entry.monitoring.participantVoice && (
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        <span className="font-bold text-muted-foreground">당사자 말 </span>
-                        {entry.monitoring.participantVoice}
-                      </p>
-                    )}
-                    {!entry.monitoring.allocationId && (
-                      <span className="text-[11px] text-muted-foreground">배정 전 기록</span>
-                    )}
-                  </div>
+                  ) : (
+                    /* ── 표시 + 수정·삭제 ── */
+                    <div className="p-4 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-muted-foreground">
+                          {entry.monitoring.method ? METHOD_LABEL[entry.monitoring.method] ?? '기록' : '기록'}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{formatDate(entry.monitoring.monitoringDate)}</span>
+                      </div>
+                      {entry.monitoring.observedChange && (
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          <span className="font-bold text-muted-foreground">관찰 </span>
+                          {entry.monitoring.observedChange}
+                        </p>
+                      )}
+                      {entry.monitoring.participantVoice && (
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          <span className="font-bold text-muted-foreground">당사자 말 </span>
+                          {entry.monitoring.participantVoice}
+                        </p>
+                      )}
+                      {!entry.monitoring.allocationId && (
+                        <span className="text-[11px] text-muted-foreground">배정 전 기록</span>
+                      )}
+                      {confirmDeleteId === entry.monitoring.id ? (
+                        <div className="flex items-center gap-2 pt-2 mt-1 border-t border-border">
+                          <span className="text-xs text-danger-fg font-bold flex-1">이 기록을 지울까요? 되돌릴 수 없어요.</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(entry.monitoring!.id)}
+                            disabled={pending}
+                            className="px-3 min-h-[44px] rounded-lg bg-danger-bg text-danger-fg text-xs font-black hover:bg-danger-bg-hover transition-colors disabled:opacity-50"
+                          >
+                            지우기
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteId(null)}
+                            disabled={pending}
+                            className="px-3 min-h-[44px] rounded-lg bg-muted text-muted-foreground text-xs font-bold hover:text-foreground"
+                          >
+                            취소
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(entry.monitoring!)}
+                            className="text-xs font-bold text-muted-foreground hover:text-foreground transition-colors min-h-[44px] px-2"
+                          >
+                            고치기
+                          </button>
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingId(null)
+                                setConfirmDeleteId(entry.monitoring!.id)
+                              }}
+                              className="text-xs font-bold text-muted-foreground hover:text-danger-fg transition-colors min-h-[44px] px-2"
+                            >
+                              지우기
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
                 )}
 
                 {entry.kind === 'settlement' && entry.settlement && (
