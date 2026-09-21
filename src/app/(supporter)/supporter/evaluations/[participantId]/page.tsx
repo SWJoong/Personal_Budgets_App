@@ -22,7 +22,8 @@ export default async function EvaluationDetailPage({
   params: Promise<{ participantId: string }>
 }) {
   const { participantId } = await params
-  const { supabase } = await requireStaff()
+  const { supabase, profile } = await requireStaff()
+  const isAdmin = profile?.role === 'admin'
 
   const { data: participant } = await supabase
     .from('participants')
@@ -92,6 +93,7 @@ export default async function EvaluationDetailPage({
           allocationId={allocation?.id ?? null}
           timeline={timeline}
           monitoring={monitoring}
+          isAdmin={isAdmin}
         />
       </main>
     </div>
