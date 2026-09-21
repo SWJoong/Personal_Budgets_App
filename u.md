@@ -1398,3 +1398,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-20T12:20Z] U
 [MERGED] 축C KPI 대시보드 /admin/insights → main (squash 10b06f6). A·B·C 지표(신청퍼널·집행률/구간/미집행/한도/계획외·점검/정산/환수/모니터링). kpiAggregate 순수집계+테스트10. 독립검증 4/4 PASS + 지적(v_seoul_pipeline fan-out 중복) 즉시 수정(신청/계획/배정 id dedup·6c95bb4). D(자기주도성) 보류. main=10b06f6. docs/release/14 P2 중 #12 완료.
 
+## [2026-09-21T07:15Z] U
+[진행] P2 배치 시작. ① 모니터링 수정·삭제=PR #180(축B, updateMonitoring 실무자·deleteMonitoring 관리자전용 RLS정합, EvaluationClient 인라인폼+2단계삭제확인, monitoringHasContent 순수검증). tsc0·lint0·vitest945·build0. 독립검증중. 다음 ②축C 슈퍼비전뷰 ③월간보고서 ④계획공유(정책확인 후).
+
