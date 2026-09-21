@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getReceiptSignedUrl } from '@/app/actions/serviceUsage'
@@ -8,6 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { StatusPill } from '@/components/ui/StatusPill'
 import { EmptyState } from '@/components/ui/EmptyState'
+import ActivityPhotoUploader from '@/components/ui/ActivityPhotoUploader'
 import TransactionEditClient from './TransactionEditClient'
 
 export const metadata = { title: '거래 상세' }
@@ -96,6 +98,20 @@ export default async function TransactionDetailPage({ params }: { params: Promis
           ) : (
             <EmptyState title="영수증이 없어요." variant="inline" />
           )}
+        </section>
+
+        {/* 활동 사진 — 이 지출에 활동 사진을 더한다(담당 실무자·관리자). 사진은 지출에 붙어 갤러리에 함께 보인다. */}
+        <section className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-xs font-black text-muted-foreground uppercase tracking-widest">활동 사진</h2>
+            <Link
+              href={`/supporter/${usage.participant_id}/gallery`}
+              className="text-xs font-bold text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center"
+            >
+              갤러리 보기 →
+            </Link>
+          </div>
+          <ActivityPhotoUploader usageId={usage.id} />
         </section>
       </main>
     </div>
