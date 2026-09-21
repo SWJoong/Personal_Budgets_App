@@ -22,8 +22,8 @@ const h = vi.hoisted(() => ({
     cookieId: null as string | null,
     /** true 면 cookies() 가 throw(요청 스코프 밖) — getViewAsParticipantId try/catch 검증용. */
     cookiesThrows: false,
-    /** auth.getUser() 결과. null = 미로그인. */
-    user: null as { id: string } | null,
+    /** auth.getUser() 결과. null = 미로그인. email 은 TEST_USER_EMAIL 예외 판정용(선택). */
+    user: null as { id: string; email?: string } | null,
     /** profiles.role. null 이면서 profileMissing=false 면 role 컬럼 null 행. */
     role: null as string | null,
     /** true 면 profiles 행 자체가 없음(maybeSingle → null). */
@@ -217,6 +217,57 @@ describe('viewAsWriteBlock — 테스트 당사자 예외(TEST_PARTICIPANT_ID)',
 
   it('TEST_PARTICIPANT_ID 미설정이면 기존대로 차단한다(기본 안전)', async () => {
     baseline()
+    delete process.env.TEST_PARTICIPANT_ID
+    expect(await viewAsWriteBlock()).toMatch(/미리보기/)
+  })
+})
+
+/**
+ * 테스트 계정 예외 — TEST_USER_EMAIL 로 지정한 '전체 편집 테스트 계정'으로 로그인 중이면 어느 당사자를
+ * 미리보기하든 저장을 허용한다(관리자 계정으로 실무자·당사자 기능 전반 테스트, 사용자 결정 2026-09-21).
+ * ★안전 불변식: (1) 그 이메일 계정 1개만 열린다 (2) 다른 관리자·실참여자는 여전히 읽기전용
+ *   (3) env 미설정이면 예외가 없는 것과 같다 (4) 대상 당사자와 무관(계정 단위 — TEST_PARTICIPANT_ID 와 다름).
+ */
+describe('viewAsWriteBlock — 테스트 계정 예외(TEST_USER_EMAIL)', () => {
+  const OLD_EMAIL = process.env.TEST_USER_EMAIL
+  const OLD_ID = process.env.TEST_PARTICIPANT_ID
+  const TESTMAIL = 'tester@example.kr'
+  afterEach(() => {
+    if (OLD_EMAIL === undefined) delete process.env.TEST_USER_EMAIL
+    else process.env.TEST_USER_EMAIL = OLD_EMAIL
+    if (OLD_ID === undefined) delete process.env.TEST_PARTICIPANT_ID
+    else process.env.TEST_PARTICIPANT_ID = OLD_ID
+  })
+
+  it('로그인 이메일이 TEST_USER_EMAIL 과 같으면 어느 당사자든 차단하지 않는다 → null (계정 단위 전체 편집)', async () => {
+    baseline()
+    h.cfg.user = { id: ADMIN.id, email: TESTMAIL }
+    process.env.TEST_USER_EMAIL = TESTMAIL
+    delete process.env.TEST_PARTICIPANT_ID // 당사자 예외가 아니라 계정 예외로 열려야 함
+    // 대상은 임의의 당사자(TARGET) — TEST_PARTICIPANT_ID 로 지정되지 않아도 허용되어야 한다.
+    expect(await viewAsWriteBlock()).toBeNull()
+  })
+
+  it('이메일 대소문자가 달라도 같은 계정으로 본다 → null', async () => {
+    baseline()
+    h.cfg.user = { id: ADMIN.id, email: 'Tester@Example.KR' }
+    process.env.TEST_USER_EMAIL = TESTMAIL
+    delete process.env.TEST_PARTICIPANT_ID
+    expect(await viewAsWriteBlock()).toBeNull()
+  })
+
+  it('로그인 이메일이 TEST_USER_EMAIL 과 다르면 여전히 차단한다(다른 관리자 보호)', async () => {
+    baseline()
+    h.cfg.user = { id: ADMIN.id, email: 'someone-else@example.kr' }
+    process.env.TEST_USER_EMAIL = TESTMAIL
+    delete process.env.TEST_PARTICIPANT_ID
+    expect(await viewAsWriteBlock()).toMatch(/미리보기/)
+  })
+
+  it('TEST_USER_EMAIL 미설정이면 기존대로 차단한다(기본 안전)', async () => {
+    baseline()
+    h.cfg.user = { id: ADMIN.id, email: TESTMAIL }
+    delete process.env.TEST_USER_EMAIL
     delete process.env.TEST_PARTICIPANT_ID
     expect(await viewAsWriteBlock()).toMatch(/미리보기/)
   })

@@ -71,6 +71,18 @@ export async function viewAsWriteBlock(): Promise<string | null> {
   const { active, participantId } = await resolveViewAs()
   if (!active) return null
 
+  // 테스트 계정 예외: TEST_USER_EMAIL 로 지정한 '전체 편집 테스트 계정'으로 로그인 중이면 어느 당사자를
+  // 미리보기하든 저장을 허용한다(관리자 계정으로 실무자·당사자 기능 전반을 실제로 테스트하기 위함,
+  // 사용자 결정 2026-09-21). ★안전: 오직 그 이메일 계정 1개만 열린다 — 다른 관리자·실참여자는 그대로
+  //   읽기전용. env 미설정이면 이 분기는 없는 것과 같다. (RLS·트리거상 admin 은 이미 쓰기 권한이 있어
+  //   이건 '권한 부여'가 아니라 앱 레벨 읽기전용 가드의 테스트 예외다.) ★운영에는 미설정 권장.
+  const testEmail = process.env.TEST_USER_EMAIL?.trim().toLowerCase()
+  if (testEmail) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user?.email && user.email.toLowerCase() === testEmail) return null
+  }
+
   // 테스트 목적 예외: TEST_PARTICIPANT_ID 로 지정한 '테스트용 당사자 1명'을 미리보기 중이면
   // 저장을 허용한다(관리자 계정으로 당사자 편집 흐름을 실제로 테스트하기 위함, 사용자 결정 2026-09-13).
   // ★안전: 지정된 그 당사자에게만 열린다 — 다른 실참여자는 그대로 읽기전용. env 미설정이면
