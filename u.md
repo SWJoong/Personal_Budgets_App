@@ -1416,3 +1416,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-21T14:11Z] U
 [MERGED] 전체편집 테스트계정 TEST_USER_EMAIL → main. 보안검증 4/4(boundary sound)·CI green. 셋업=사용자(테스트이메일 가입→admin부여→env). 일반 실무자 활동사진 업로드는 별도 대기.
 
+## [2026-09-21T14:26Z] U
+[진행] 실무자 활동사진 업로드 = PR #185. 실무자는 신규지출엔 이미 업로드 가능했고, 빠진 '기존 지출에 사진추가'를 거래상세(/supporter/transactions/[id])에 ActivityPhotoUploader로 붙임. addActivityPhotos(기존·무변경) 3중방어 재사용(참여자·경로 서버도출·RLS·트리거). tsc0·lint0·vitest·build0. 독립검증중.
+
