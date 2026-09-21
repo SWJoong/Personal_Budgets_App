@@ -1413,3 +1413,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-21T14:08Z] U
 [진행] 전체편집 테스트계정 = PR #184. viewAsWriteBlock 에 TEST_USER_EMAIL 예외(그 이메일 관리자 계정이면 view-as 전 당사자 편집 허용 — 영수증/활동사진 추가 등 단일관문). TEST_PARTICIPANT_ID 계정단위 버전. 정확매칭·대소문자무관·env미설정무변화·운영미설정권장. viewAs.test +4(20/20). CLAUDE env표. 셋업=사용자(계정생성+admin부여+env). 독립 보안검증중.
 
+## [2026-09-21T14:11Z] U
+[MERGED] 전체편집 테스트계정 TEST_USER_EMAIL → main. 보안검증 4/4(boundary sound)·CI green. 셋업=사용자(테스트이메일 가입→admin부여→env). 일반 실무자 활동사진 업로드는 별도 대기.
+
