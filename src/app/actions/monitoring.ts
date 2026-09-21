@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
-import { assertStaff } from '@/utils/supabase/staff'
+import { assertStaff, assertAdmin } from '@/utils/supabase/staff'
+import { monitoringHasContent } from '@/utils/monitoring'
 import { revalidatePath } from 'next/cache'
 
 export interface MonitoringInput {
@@ -42,6 +43,57 @@ export async function recordMonitoring(input: MonitoringInput) {
 
     revalidatePath('/supporter/monitoring')
     return { success: true, monitoringId: data.id as string }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : '오류가 발생했습니다.' }
+  }
+}
+
+export interface MonitoringEditInput {
+  method?: 'visit' | 'phone' | 'app' | 'document' | null
+  observedChange?: string
+  participantVoice?: string
+}
+
+/**
+ * 모니터링 기록 수정 — 담당 실무자·관리자(RLS update = seoul_is_staff_for). 내용(관찰/당사자말)은 통째 교체하되
+ * 등록과 같은 불변식(최소 하나) 강제. 방법(method)·날짜는 유지(내용 정정 용도). 실패는 { error } 로.
+ */
+export async function updateMonitoring(id: string, input: MonitoringEditInput) {
+  try {
+    const { supabase } = await assertStaff()
+
+    if (!monitoringHasContent(input.observedChange, input.participantVoice)) {
+      return { error: '관찰한 내용이나 당사자의 말 중 하나는 적어 주세요.' }
+    }
+
+    const { error } = await supabase
+      .from('seoul_monitoring_records')
+      .update({
+        method: input.method || null,
+        observed_change: input.observedChange?.trim() || null,
+        participant_voice: input.participantVoice?.trim() || null,
+      })
+      .eq('id', id)
+
+    if (error) return { error: `수정 실패: ${error.message}` }
+    revalidatePath('/supporter/evaluations')
+    return { success: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : '오류가 발생했습니다.' }
+  }
+}
+
+/**
+ * 모니터링 기록 삭제 — 관리자 전용(RLS delete = seoul_is_admin). 일반 실무자는 수정만 가능(그룹 A 정책).
+ * 잘못 남긴 기록 정리용이며, 되돌릴 수 없어 UI 에서 확인 절차를 둔다.
+ */
+export async function deleteMonitoring(id: string) {
+  try {
+    const { supabase } = await assertAdmin()
+    const { error } = await supabase.from('seoul_monitoring_records').delete().eq('id', id)
+    if (error) return { error: `삭제 실패: ${error.message}` }
+    revalidatePath('/supporter/evaluations')
+    return { success: true }
   } catch (e) {
     return { error: e instanceof Error ? e.message : '오류가 발생했습니다.' }
   }
