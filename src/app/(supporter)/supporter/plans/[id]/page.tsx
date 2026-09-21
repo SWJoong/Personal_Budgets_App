@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getReviewCommittees } from '@/app/actions/planReview'
+import { getPlanFeedback } from '@/app/actions/planFeedback'
+import PlanFeedbackList from '@/components/plan/PlanFeedbackList'
 import PlanDetailClient from './PlanDetailClient'
 
 export const metadata = { title: '계획 상세' }
@@ -34,6 +36,9 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
   // 심의 주체는 심사처가 전달한 구성을 기록해 둔 목록이다 — 앱이 유효성을 판단하지 않는다.
   const { committees } = await getReviewCommittees()
 
+  // 당사자가 계획에 남긴 가벼운 한마디(확인/궁금) — 읽기 전용 표시.
+  const planFeedback = await getPlanFeedback(plan.participant_id)
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
       <header className="flex h-16 items-center px-4 sm:px-6 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border">
@@ -58,6 +63,12 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
           planPeriodEnd={plan.plan_period_end}
           supporters={supporters ?? []}
         />
+
+        <section className="mt-6 flex flex-col gap-2 p-4 rounded-2xl bg-card ring-1 ring-border">
+          <h2 className="text-sm font-black text-foreground">당사자 한마디</h2>
+          <p className="text-xs text-muted-foreground leading-relaxed">당사자가 계획을 보고 남긴 확인·궁금한 점이에요.</p>
+          <PlanFeedbackList feedback={planFeedback} />
+        </section>
       </main>
     </div>
   )

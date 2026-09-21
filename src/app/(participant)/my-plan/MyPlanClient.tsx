@@ -7,6 +7,8 @@ import { Term } from '@/components/ui/Term'
 import { markNotificationRead } from '@/app/actions/planReview'
 import { fileAppeal } from '@/app/actions/appeal'
 import ActivitySuggestions from './ActivitySuggestions'
+import ParticipantPlanFeedback from '@/components/plan/ParticipantPlanFeedback'
+import type { PlanFeedbackRow } from '@/app/actions/planFeedback'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { MoneyText } from '@/components/ui/MoneyText'
 
@@ -90,6 +92,7 @@ export default function MyPlanClient({
   latestReview,
   notification,
   appeal,
+  feedback = [],
 }: {
   participantId: string
   plan: Plan | null
@@ -98,6 +101,7 @@ export default function MyPlanClient({
   latestReview: Review | null
   notification: Notification | null
   appeal: Appeal | null
+  feedback?: PlanFeedbackRow[]
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -272,6 +276,8 @@ export default function MyPlanClient({
             </section>
 
             <ActivitySuggestions />
+
+            <ParticipantPlanFeedback planId={plan.id} feedback={feedback} />
           </>
         )}
       </main>
