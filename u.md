@@ -1419,3 +1419,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-21T14:26Z] U
 [진행] 실무자 활동사진 업로드 = PR #185. 실무자는 신규지출엔 이미 업로드 가능했고, 빠진 '기존 지출에 사진추가'를 거래상세(/supporter/transactions/[id])에 ActivityPhotoUploader로 붙임. addActivityPhotos(기존·무변경) 3중방어 재사용(참여자·경로 서버도출·RLS·트리거). tsc0·lint0·vitest·build0. 독립검증중.
 
+## [2026-09-22T12:44Z] U
+[MERGED] 실무자 활동사진 업로드 #185 → main(22fae02). 거래상세에 ActivityPhotoUploader(기존 지출에 사진추가), addActivityPhotos 무변경 재사용. green·독립검증4/4. ★코드 백로그 사실상 소진 — 남은 것=기관/사용자 결정(국외이전 법무·감사파기 pg_cron·실사용자심사·정산실무자흐름·D자기주도지표).
+
