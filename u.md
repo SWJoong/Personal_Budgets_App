@@ -1422,3 +1422,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-22T12:44Z] U
 [MERGED] 실무자 활동사진 업로드 #185 → main(22fae02). 거래상세에 ActivityPhotoUploader(기존 지출에 사진추가), addActivityPhotos 무변경 재사용. green·독립검증4/4. ★코드 백로그 사실상 소진 — 남은 것=기관/사용자 결정(국외이전 법무·감사파기 pg_cron·실사용자심사·정산실무자흐름·D자기주도지표).
 
+## [2026-09-22T12:52Z] U
+[결정] 감사 접속기록 보존연한=730일(2년) 사용자 확정 → docs/release/14 열린결정#2 해소. P0-5 파기스케줄 등록 절차(pg_cron '0 18 * * *'=KST 3시, seoul_audit_purge(730)) 사용자에 런북 전달. 실제 대시보드 등록은 사용자 Manual-Op — 등록완료 확인 대기.
+
