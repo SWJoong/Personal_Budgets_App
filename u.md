@@ -1431,3 +1431,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-23T04:24Z] U
 [갱신] Supabase 리전=ap-northeast-2(서울) 사용자 확인 → 저장 국외이전 면제 확정. docs/release/15(PR #186) 갱신. 저장 남은조치=DPA서명+처리방침공개. 국외이전 쟁점은 이제 AI API(Anthropic) 하나로 좁혀짐(요약·제안=마스킹, OCR=동의/국내대안).
 
+## [2026-09-23T10:17Z] U
+[HANDOFF→W] 경로별 기능 QA 체크리스트 docs/release/16 = PR #187(문서전용). cheese0318@gmail.com(내장슈퍼관리자)+TEST_USER_EMAIL로 경로A(실무자 /supporter 직접)·경로B(둘러보기 view-as) 편집 QA. 대조/보안·접근성·발견사항표 포함.
+
