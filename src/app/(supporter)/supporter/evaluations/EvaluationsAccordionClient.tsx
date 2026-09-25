@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { getEvaluationContext, type EvaluationContext } from '@/app/actions/evaluation'
 import { periodLabel } from '@/utils/evaluation'
@@ -37,12 +37,18 @@ export default function EvaluationsAccordionClient({
   const [loaded, setLoaded] = useState<Record<string, LoadedContext>>({})
   const [loadingKey, setLoadingKey] = useState<string | null>(null)
   const [, startTransition] = useTransition()
+  // 당사자별 '가장 최근에 요청한' 키 — 최신 요청의 응답만 반영하는 방어 코드. 지금 UI 에선 저장 뒤 새로고침이
+  // 끝날 때까지 양식 버튼이 비활성(React 19 전이 얽힘)이라 서로 다른 달 요청이 겹치기 어렵지만, 그 동작에
+  // 기대지 않고 늦게 온 옛 응답이 새 달을 덮어 '불러오는 중'에 멈추는 일을 원천 차단한다.
+  const latestRequested = useRef<Record<string, string>>({})
 
   function load(participantId: string, period: string) {
     const key = `${participantId}:${period}`
+    latestRequested.current[participantId] = key
     setLoadingKey(key)
     startTransition(async () => {
       const result = await getEvaluationContext(participantId, period)
+      if (latestRequested.current[participantId] !== key) return // 옛 응답 — 버린다
       setLoaded((prev) => ({ ...prev, [participantId]: { key, context: result.context, error: result.error } }))
       setLoadingKey((current) => (current === key ? null : current))
     })
