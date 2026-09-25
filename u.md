@@ -1446,3 +1446,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-25T11:24Z] U
 [진행] #191 최종 재검증: 기존 지적 전부 FIXED(NEW-1 write skew·T1/I4·V2·N1·F1·N3·N2/N4·UI-3·UI-N1). 신규 보통 3건 수정 99709ac — UN-1 LiveRegion 같은 문구 재안내(key=seq 새 노드)·UN-2 저장오류 단일채널(인라인 alert)·ND-1 verify T1f/T1g 트리거 구조 계약(뮤테이션 3종 각각 RED 확인). tsc0·lint0·vitest 146/1003·로컬 DB 21종 green. 3차 독립검증 실행중. ★Manual-Ops(#191 머지 후): 20_evaluations.sql.
 
+## [2026-09-25T12:22Z] U
+[진행] #191 최종 — 3·4차 독립검증 신규 결함 0(보통+). 추가 수정: LiveRegion 같은문구 재안내·오류 단일채널(평가양식·거래장부·당사자수정·초대·영수증금액)·반복오류 무음방지·verify T1f/T1g. head ea80670 CI green. 머지 승인 대기. 별건: 영수증 기록 성공 무음(기존결함) 태스크 제안. ★Manual-Ops(머지 후): 20_evaluations.sql.
+
