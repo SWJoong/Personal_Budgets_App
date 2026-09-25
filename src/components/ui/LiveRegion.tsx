@@ -8,9 +8,14 @@ import { createContext, useCallback, useContext, useState, type ReactNode } from
  * - Provider 는 polite(role=status)·assertive(role=alert) 영역을 **비어 있어도 상시 마운트**한다
  *   (동적 삽입을 보조기기가 읽으려면 영역이 announce 이전부터 DOM 에 있어야 한다).
  * - useToast().announce(msg, politeness='polite'): polite→status, assertive→alert.
+ * - 같은 문구를 다시 알려도 읽힌다: 메시지를 매번 새 노드(key=seq)로 바꿔 넣는다. 문자열만 넣으면 같은 값일 때
+ *   DOM 이 바뀌지 않아 보조기기가 무시한다(예: 같은 불러오기 오류가 다른 당사자에서 반복될 때).
  */
 
 type Politeness = 'polite' | 'assertive'
+type Message = { text: string; seq: number }
+
+const EMPTY: Message = { text: '', seq: 0 }
 
 interface ToastContextValue {
   announce: (message: string, politeness?: Politeness) => void
@@ -19,22 +24,22 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 export function LiveRegionProvider({ children }: { children: ReactNode }) {
-  const [politeMsg, setPoliteMsg] = useState('')
-  const [assertiveMsg, setAssertiveMsg] = useState('')
+  const [politeMsg, setPoliteMsg] = useState<Message>(EMPTY)
+  const [assertiveMsg, setAssertiveMsg] = useState<Message>(EMPTY)
 
   const announce = useCallback((message: string, politeness: Politeness = 'polite') => {
-    if (politeness === 'assertive') setAssertiveMsg(message)
-    else setPoliteMsg(message)
+    const set = politeness === 'assertive' ? setAssertiveMsg : setPoliteMsg
+    set((prev) => ({ text: message, seq: prev.seq + 1 }))
   }, [])
 
   return (
     <ToastContext.Provider value={{ announce }}>
       {children}
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-        {politeMsg}
+        {politeMsg.text && <span key={politeMsg.seq}>{politeMsg.text}</span>}
       </div>
       <div role="alert" aria-live="assertive" aria-atomic="true" className="sr-only">
-        {assertiveMsg}
+        {assertiveMsg.text && <span key={assertiveMsg.seq}>{assertiveMsg.text}</span>}
       </div>
     </ToastContext.Provider>
   )

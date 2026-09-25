@@ -62,6 +62,23 @@ describe('LiveRegion / useToast — 라이브 영역 계약', () => {
     expect(within(screen.getByRole('alert')).getByText('문제가 있어요')).toBeInTheDocument()
   })
 
+  it('같은 문구를 다시 알리면 새 노드로 바꿔 넣는다(같은 값이라 DOM 이 안 바뀌어 보조기기가 무시하는 일 방지)', async () => {
+    const user = userEvent.setup()
+    render(
+      <LiveRegionProvider>
+        <Consumer />
+      </LiveRegionProvider>
+    )
+    await user.click(screen.getByRole('button', { name: '긴급 알림' }))
+    const first = within(screen.getByRole('alert')).getByText('문제가 있어요')
+    await user.click(screen.getByRole('button', { name: '긴급 알림' }))
+    const second = within(screen.getByRole('alert')).getByText('문제가 있어요')
+
+    expect(second).not.toBe(first)
+    expect(first).not.toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(/^문제가 있어요$/)
+  })
+
   it('polite 영역은 aria-live=polite 로 동작한다(role=status 암시값 또는 명시)', () => {
     render(
       <LiveRegionProvider>

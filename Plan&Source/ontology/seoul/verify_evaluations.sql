@@ -10,6 +10,7 @@
 -- 확인 항목
 --   T0.  두 테이블·핵심 컬럼 존재 (구현 전이면 RED)
 --   T1.  RLS 활성(두 테이블) · updated_at 트리거 · 무결성 트리거 존재
+--        T1f/T1g ★트리거 함수 구조 고정(DEFINER·search_path·FOR SHARE) — 동시 저장 write skew 방어의 회귀 잠금
 --   W1.  담당 실무자(S1)가 배정 당사자(P1) 평가 작성 → 성공
 --   W2.  ★미배정 실무자(S2)가 P1 평가 작성 → 차단
 --   W3.  ★당사자 본인(P1)이 자기 평가 작성 → 차단 (대필 결정: 쓰기=담당·관리자)
@@ -132,6 +133,18 @@ SELECT '   T1e. 부모 이동 잠금 트리거 2종(신청서비스·계획): ' 
        CASE WHEN (SELECT count(*) FROM pg_trigger
                    WHERE tgname IN ('trg_seoul_guard_evaluated_service_move','trg_seoul_guard_evaluated_plan_owner')
                      AND NOT tgisinternal) = 2 THEN '✅' ELSE '❌ 없음' END;
+-- 동시성(write skew) 방어는 단일 세션으로 재현할 수 없어 구조를 고정한다 — INVOKER 로 되돌리거나 FOR SHARE 를 빼면 RED.
+SELECT '   T1f. 무결성 트리거 = DEFINER + search_path 고정 + 부모 FOR SHARE: ' ||
+       CASE WHEN EXISTS (SELECT 1 FROM pg_proc
+                          WHERE proname='seoul_check_plan_item_eval_owner' AND prosecdef
+                            AND proconfig @> ARRAY['search_path=public, pg_temp']
+                            AND prosrc ~* 'FOR\s+SHARE\s+OF\s+rs\s*,\s*p')
+            THEN '✅' ELSE '❌ 구조 퇴행(동시 저장 교차 오염 가능)' END;
+SELECT '   T1g. 부모 이동 잠금 2종 = DEFINER + search_path 고정(안 보이면 통과하는 fail-open 방지): ' ||
+       CASE WHEN (SELECT count(*) FROM pg_proc
+                   WHERE proname IN ('seoul_guard_evaluated_service_move','seoul_guard_evaluated_plan_owner')
+                     AND prosecdef AND proconfig @> ARRAY['search_path=public, pg_temp']) = 2
+            THEN '✅' ELSE '❌ 구조 퇴행' END;
 SELECT '   V1a. 목록용 뷰 존재 + security_invoker: ' ||
        CASE WHEN EXISTS (SELECT 1 FROM pg_class c WHERE c.relname='v_seoul_latest_evaluation' AND c.relkind='v'
                           AND array_to_string(c.reloptions, ',') LIKE '%security_invoker=true%')

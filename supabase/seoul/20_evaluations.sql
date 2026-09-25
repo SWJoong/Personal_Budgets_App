@@ -100,6 +100,9 @@ CREATE TRIGGER trg_seoul_plan_item_eval_updated_at
 --   ★FOR SHARE: 부모(신청 서비스·계획) 행을 잠가, 동시에 실행되는 부모 이동(아래 가드)과의 write skew 를 막는다
 --   — 부모 이동 UPDATE 는 이 항목 트랜잭션이 끝날 때까지 기다린 뒤 새 스냅샷으로 방금 커밋된 평가를 보고 거부되고,
 --   반대 순서면 이 잠금 읽기가 최신 행(옮겨진 plan_id)을 다시 읽어 불일치로 거부된다.
+--   전제: 부모 이동 쪽이 READ COMMITTED(PostgREST·SQL Editor 기본값)여야 '새 스냅샷'으로 다시 읽는다 — 수동 SQL 에서
+--   REPEATABLE READ 이상으로 부모를 옮기면 이 보장이 없다(앱에는 부모 이동 흐름 자체가 없음).
+--   구조(DEFINER·search_path·FOR SHARE)는 verify_evaluations T1f 가 고정한다(경쟁 자체는 단일 세션으로 재현 불가).
 --   오류 문구에 id 를 넣지 않는다(권한 없는 호출자에게 존재 여부를 흘리지 않게).
 CREATE OR REPLACE FUNCTION public.seoul_check_plan_item_eval_owner()
 RETURNS TRIGGER

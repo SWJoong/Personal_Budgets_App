@@ -10,8 +10,9 @@ import { saveEvaluation, type EvaluationContext } from '@/app/actions/evaluation
  * 저장 중 입력 잠금, 저장/더티 알림, 오류, 다른 계획 항목 표시, 선택 라디오 포커스 링, 저장 후 포커스.
  */
 
+const { announce } = vi.hoisted(() => ({ announce: vi.fn() }))
 vi.mock('@/components/ui/LiveRegion', () => ({
-  useToast: () => ({ announce: vi.fn() }),
+  useToast: () => ({ announce }),
 }))
 vi.mock('@/app/actions/evaluation', () => ({
   saveEvaluation: vi.fn(async () => ({ success: true, evaluationId: 'ev-1' })),
@@ -58,6 +59,7 @@ const saved = (over: Partial<EvaluationContext> = {}) =>
   })
 
 beforeEach(() => {
+  announce.mockClear()
   vi.mocked(saveEvaluation).mockReset()
   vi.mocked(saveEvaluation).mockResolvedValue({ success: true, evaluationId: 'ev-1' })
 })
@@ -167,6 +169,8 @@ describe('EvaluationForm — 월별 평가 양식', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('적어도 한 칸은 채워 주세요.')
     expect(onSaved).not.toHaveBeenCalled()
     expect(onSavingChange).toHaveBeenLastCalledWith(false)
+    // 오류는 인라인 role=alert 한 채널로만 — 전역 announce 까지 부르면 스크린리더가 두 번 읽는다.
+    expect(announce).not.toHaveBeenCalled()
   })
 
   it('승인된 계획 항목이 없으면 안내만 보인다', () => {

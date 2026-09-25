@@ -59,7 +59,7 @@ export default function EvaluationsAccordionClient({
   const latestRequested = useRef<Record<string, string>>({})
   // 저장하지 않은 입력이 있는 당사자 id(한 번에 하나만 펼쳐지므로 하나면 충분). 렌더에 쓰지 않아 ref.
   const dirtyId = useRef<string | null>(null)
-  // 재시도 횟수 — 같은 오류로 다시 실패해도 안내 문구가 달라져 스크린리더가 매번 읽게(같은 문자열은 무시됨).
+  // 재시도 횟수 — 같은 오류로 다시 실패했을 때 '몇 번째 시도인지'도 알려 준다(같은 문구 재안내는 LiveRegion 이 보장).
   const retryCount = useRef<Record<string, number>>({})
 
   function load(
@@ -223,6 +223,7 @@ export default function EvaluationsAccordionClient({
                   <p className="text-sm text-muted-foreground">{periodLabel(period)} 평가를 불러오는 중이에요…</p>
                 ) : current.error ? (
                   // 오류 안내는 announce(전역 알림 영역)로 한 번만 읽는다 — 여기에 role=alert 를 겹치면 두 번 읽힌다.
+                  // 다시 펼치거나 다른 당사자에서 같은 오류가 나도 LiveRegion 이 새 노드로 넣어 다시 읽힌다.
                   <div className="flex flex-col items-start gap-2">
                     <p className="text-sm font-bold text-danger-fg">{current.error}</p>
                     <Button
