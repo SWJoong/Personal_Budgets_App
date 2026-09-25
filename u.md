@@ -1440,3 +1440,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-25T09:43Z] U
 [진행] #191 독립검증(4관점+반박, 10에이전트) 결과: 보통+ 8건 확인(반박 6/6 불가) — DB-1 부모이동 우회·T1 항목쓰기RLS 미검증·F1 기간없는 계획 기준고정·UI-1(높음) 선택라디오 포커스링·UI-2 오류캐시·UI-3 저장중 재마운트 대필 NULL덮어쓰기·UI-4 이탈확인 없음·UI-5 달이동 포커스 소실. 전부 수정(d98139c): 부모잠금 트리거(DEFINER)·T1/T2/I8-10/V1 단언(45, 돌연변이 RED 확인)·selectEvaluationPlan(배정→계획→차수 보강+anchor)·패널고정 nav+aria-disabled·재시도·저장잠금+updatedAt 재마운트·confirm·최신평가 뷰. vitest 146/996·tsc0·lint0·build0. 재검증 워크플로 실행중.
 
+## [2026-09-25T10:44Z] U
+[MERGED] #188 영수증검토 추가(92389b4) · #189 거래장부 표+인라인편집(cc31e71) · #190 정산원장 표+관리자 인라인편집(0f3d6e0) → main 0f3d6e0 (사용자 승인). [진행] #191 재검증 결과 9건 FIXED, PARTIAL 2(F1·UI-3)+신규 7(N1 데이터손실·UI-N1 재시도포커스 등) → 2차 수정 0b8d5d3: 조회오류 전면실패·보인항목만 지우기·새로고침까지 잠금유지·재시도 aria-disabled·같은차수 재계획 규칙·빈평가 비파괴 처리·항목트리거 DEFINER+FOR SHARE(write skew 재현 R1/R3 위반0). main 병합 b972e2b. 최종 재검증 실행중. ★Manual-Ops(#191 머지 후): 20_evaluations.sql.
+
