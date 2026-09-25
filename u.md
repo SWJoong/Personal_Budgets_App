@@ -1443,3 +1443,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-25T10:44Z] U
 [MERGED] #188 영수증검토 추가(92389b4) · #189 거래장부 표+인라인편집(cc31e71) · #190 정산원장 표+관리자 인라인편집(0f3d6e0) → main 0f3d6e0 (사용자 승인). [진행] #191 재검증 결과 9건 FIXED, PARTIAL 2(F1·UI-3)+신규 7(N1 데이터손실·UI-N1 재시도포커스 등) → 2차 수정 0b8d5d3: 조회오류 전면실패·보인항목만 지우기·새로고침까지 잠금유지·재시도 aria-disabled·같은차수 재계획 규칙·빈평가 비파괴 처리·항목트리거 DEFINER+FOR SHARE(write skew 재현 R1/R3 위반0). main 병합 b972e2b. 최종 재검증 실행중. ★Manual-Ops(#191 머지 후): 20_evaluations.sql.
 
+## [2026-09-25T11:24Z] U
+[진행] #191 최종 재검증: 기존 지적 전부 FIXED(NEW-1 write skew·T1/I4·V2·N1·F1·N3·N2/N4·UI-3·UI-N1). 신규 보통 3건 수정 99709ac — UN-1 LiveRegion 같은 문구 재안내(key=seq 새 노드)·UN-2 저장오류 단일채널(인라인 alert)·ND-1 verify T1f/T1g 트리거 구조 계약(뮤테이션 3종 각각 RED 확인). tsc0·lint0·vitest 146/1003·로컬 DB 21종 green. 3차 독립검증 실행중. ★Manual-Ops(#191 머지 후): 20_evaluations.sql.
+
