@@ -45,3 +45,12 @@ export function useToast(): ToastContextValue {
   if (!ctx) throw new Error('useToast 는 <LiveRegionProvider> 안에서만 사용할 수 있어요.')
   return ctx
 }
+
+/**
+ * Provider 밖(격리 렌더·단위 테스트)에서도 throw 하지 않는 안전 버전 — 없으면 no-op announce.
+ * 여러 화면에 재사용되는 프리미티브(예: 업로더)가 provider 유무와 무관하게 렌더되도록. 런타임
+ * (앱 레이아웃)에는 provider 가 있어 실제 announce 로 동작하고, provider 없는 테스트에선 조용히 no-op.
+ */
+export function useOptionalToast(): ToastContextValue {
+  return useContext(ToastContext) ?? { announce: () => {} }
+}
