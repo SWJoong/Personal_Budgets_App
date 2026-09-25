@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { addActivityPhotos } from '@/app/actions/activityPhoto'
-import { useToast } from '@/components/ui/LiveRegion'
+import { useOptionalToast } from '@/components/ui/LiveRegion'
 
 /**
  * 활동 사진 업로더 — 특정 지출(usageId)에 활동 사진을 추가한다. 실무자·당사자 공용(RLS: 담당 staff 또는 본인).
@@ -29,7 +29,7 @@ function fileToBase64(file: File): Promise<{ base64: string; mimeType: string }>
 
 export default function ActivityPhotoUploader({ usageId }: { usageId: string }) {
   const router = useRouter()
-  const { announce } = useToast()
+  const { announce } = useOptionalToast()
   const [pending, startTransition] = useTransition()
   const [photos, setPhotos] = useState<{ base64: string; mimeType: string; name: string }[]>([])
   const [error, setError] = useState('')
