@@ -127,9 +127,9 @@ function EditRow({
     onError('')
     startTransition(async () => {
       const result = await updateServiceUsage(row.id, { amount: amountNum, usageDate, description })
+      // 오류는 표 위 인라인 role=alert 한 채널로만 읽는다(전역 announce 까지 부르면 두 번 읽힌다).
       if (result.error) {
         onError(result.error)
-        announce(result.error, 'assertive')
         return
       }
       announce('지출을 수정했어요.')
@@ -144,7 +144,6 @@ function EditRow({
       const result = await deleteServiceUsage(row.id)
       if (result.error) {
         onError(result.error)
-        announce(result.error, 'assertive')
         return
       }
       announce('지출을 삭제했어요.')
