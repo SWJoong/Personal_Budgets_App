@@ -26,6 +26,9 @@
 --   I4.  ★S2(미배정)가 P1 평가에 항목 작성 → RLS 차단
 --   I5.  ★항목 UPDATE 로 남의 계획 항목으로 갈아끼우기 → 트리거 차단
 --   I6.  잘못된 achievement → CHECK 차단
+--   W6.  ★authored_by 를 다른 실무자로 위장 → RLS WITH CHECK 차단
+--   I7.  ★평가의 당사자 변경(관리자·superuser 포함) → 잠금 트리거 차단(부모 이동 우회로)
+--   D1.  ★평가가 달린 계획 항목 삭제 → FK RESTRICT 차단(평가 기록 보호)
 --   C1.  평가 삭제 시 항목 CASCADE
 --
 -- ID 접두: 'ec' (hex·다른 verify_*.sql 과 겹치지 않게).
@@ -140,6 +143,9 @@ INSERT INTO public.seoul_plan_item_evaluations (id, evaluation_id, requested_ser
 UPDATE public.seoul_plan_item_evaluations
    SET requested_service_id = 'ec400000-0000-0000-0000-000000000002'
  WHERE id = 'ec600000-0000-0000-0000-000000000001';
+\echo '── W6. ★authored_by 를 S2 로 위장해 작성 시도 → RLS WITH CHECK 차단'
+INSERT INTO public.seoul_evaluations (id, participant_id, period, overall_note, authored_by) VALUES
+  ('ec500000-0000-0000-0000-0000000000e6','ec100000-0000-0000-0000-000000000001','2026-06','위장','ec000000-0000-0000-0000-0000000000a2');
 \echo '── I6. ★잘못된 achievement → CHECK 차단'
 INSERT INTO public.seoul_plan_item_evaluations (id, evaluation_id, requested_service_id, achievement) VALUES
   ('ec600000-0000-0000-0000-0000000000e6','ec500000-0000-0000-0000-000000000001','ec400000-0000-0000-0000-000000000001','maybe');
@@ -171,6 +177,9 @@ SELECT '   I5 항목의 신청서비스 = 여전히 P1 항목: ' ||
        CASE WHEN (SELECT requested_service_id FROM public.seoul_plan_item_evaluations
                    WHERE id='ec600000-0000-0000-0000-000000000001') = 'ec400000-0000-0000-0000-000000000001'
             THEN '✅ 트리거 방어' ELSE '❌ 갈아끼우기 뚫림' END;
+SELECT '   W6 위장 작성 저장 건수: ' || count(*) ||
+       CASE WHEN count(*)=0 THEN '  ✅ authored_by 위장 방어' ELSE '  ❌ 위장 뚫림' END
+  FROM public.seoul_evaluations WHERE id='ec500000-0000-0000-0000-0000000000e6';
 SELECT '   I6 잘못된 achievement 저장 건수: ' || count(*) ||
        CASE WHEN count(*)=0 THEN '  ✅ CHECK 방어' ELSE '  ❌ 뚫림' END
   FROM public.seoul_plan_item_evaluations WHERE id='ec600000-0000-0000-0000-0000000000e6';
@@ -242,6 +251,9 @@ SET request.jwt.claim.sub = 'ec000000-0000-0000-0000-0000000000ad';
 SELECT '   R4. 관리자가 본 평가(P1·P2): ' || count(*) ||
        CASE WHEN count(*)=2 THEN '  ✅' ELSE '  ❌ 관리자가 못 봄' END
   FROM public.seoul_evaluations WHERE id IN ('ec500000-0000-0000-0000-000000000001','ec500000-0000-0000-0000-000000000002');
+\echo '── I7a. ★관리자(두 당사자 모두 담당 권한)가 P1 평가를 P2 로 옮기기 시도 → 잠금 트리거 차단'
+UPDATE public.seoul_evaluations SET participant_id = 'ec100000-0000-0000-0000-000000000002'
+ WHERE id = 'ec500000-0000-0000-0000-000000000001';
 RESET ROLE;
 
 \echo ''
@@ -252,6 +264,18 @@ INSERT INTO public.seoul_plan_item_evaluations (id, evaluation_id, requested_ser
 SELECT '   I3 superuser 교차 항목 저장 건수: ' || count(*) ||
        CASE WHEN count(*)=0 THEN '  ✅ 트리거 방어(역할 무관)' ELSE '  ❌ superuser 경로 뚫림' END
   FROM public.seoul_plan_item_evaluations WHERE id='ec600000-0000-0000-0000-0000000000e3';
+\echo '── I7b. ★superuser 도 평가의 당사자 변경 → 잠금 트리거 차단'
+UPDATE public.seoul_evaluations SET participant_id = 'ec100000-0000-0000-0000-000000000002'
+ WHERE id = 'ec500000-0000-0000-0000-000000000001';
+SELECT '   I7 P1 평가의 당사자 = 여전히 P1: ' ||
+       CASE WHEN (SELECT participant_id FROM public.seoul_evaluations WHERE id='ec500000-0000-0000-0000-000000000001')
+                 = 'ec100000-0000-0000-0000-000000000001'
+            THEN '✅ 잠금 트리거 방어(관리자·superuser)' ELSE '❌ 당사자 이동 뚫림(교차 오염 우회로)' END;
+\echo '── D1. ★평가가 달린 계획 항목(미술 활동) 삭제 → FK RESTRICT 차단'
+DELETE FROM public.seoul_requested_services WHERE id = 'ec400000-0000-0000-0000-000000000001';
+SELECT '   D1 평가 달린 계획 항목 잔존: ' || count(*) ||
+       CASE WHEN count(*)=1 THEN '  ✅ RESTRICT 로 평가 기록 보호' ELSE '  ❌ 항목 삭제로 평가가 사라짐' END
+  FROM public.seoul_requested_services WHERE id='ec400000-0000-0000-0000-000000000001';
 
 \echo ''
 \echo '── C1. 평가 삭제 시 항목 CASCADE'

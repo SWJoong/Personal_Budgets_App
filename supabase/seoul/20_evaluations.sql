@@ -22,7 +22,9 @@
 --   쓰기 = seoul_is_staff_for(참여자) — 담당 실무자·관리자만. 당사자 본인 작성 없음(대필 결정).
 --   항목 평가는 부모 평가의 참여자로 판정한다.
 -- 무결성(역할 무관 트리거): 항목의 신청 서비스가 '같은 당사자'의 계획 소속이어야 한다 — 남의 계획
---   항목에 평가를 붙이는 교차 오염을 DB 레벨에서 차단(service role·직접 SQL 포함).
+--   항목에 평가를 붙이는 교차 오염을 DB 레벨에서 차단(service role·직접 SQL 포함). 평가의 당사자 변경도
+--   금지(부모 이동으로 교차 오염이 생기는 우회로 차단). authored_by 는 본인 id 만(RLS WITH CHECK).
+-- 기록 보호: 평가가 달린 계획 항목은 삭제 불가(FK RESTRICT) — 과거 평가가 조용히 사라지지 않게.
 -- 멱등: CREATE TABLE/INDEX IF NOT EXISTS · CREATE OR REPLACE FUNCTION · DROP POLICY/TRIGGER IF EXISTS 후 재생성.
 -- 의존: participants·profiles·set_updated_at·seoul_can_access·seoul_is_staff_for(01) ·
 --       seoul_requested_services·seoul_utilization_plans(03). → 03 이후.
@@ -49,11 +51,31 @@ CREATE TRIGGER trg_seoul_evaluations_updated_at
   BEFORE UPDATE ON public.seoul_evaluations
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
+-- ★평가의 당사자는 바꿀 수 없다(역할 무관). 바꾸면 이미 붙은 항목 평가가 남의 계획 항목을 가리킨 채 남는다
+--   (항목 트리거는 부모 이동을 보지 못함). 두 당사자를 모두 담당하는 실무자·관리자·service role 도 차단.
+CREATE OR REPLACE FUNCTION public.seoul_lock_evaluation_participant()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.participant_id IS DISTINCT FROM OLD.participant_id THEN
+    RAISE EXCEPTION '평가의 당사자는 바꿀 수 없습니다(평가 %)', OLD.id;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS trg_seoul_lock_evaluation_participant ON public.seoul_evaluations;
+CREATE TRIGGER trg_seoul_lock_evaluation_participant
+  BEFORE UPDATE ON public.seoul_evaluations
+  FOR EACH ROW EXECUTE FUNCTION public.seoul_lock_evaluation_participant();
+
 -- ── §2. 계획 항목별 이행 정도 ─────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.seoul_plan_item_evaluations (
   id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   evaluation_id        UUID NOT NULL REFERENCES public.seoul_evaluations(id) ON DELETE CASCADE,
-  requested_service_id UUID NOT NULL REFERENCES public.seoul_requested_services(id) ON DELETE CASCADE,
+  -- RESTRICT: 평가가 작성된 계획 항목은 지울 수 없다 — CASCADE 면 deleteRequestedService 가 과거 평가를
+  --   조용히 지운다(평가 기록 보호). 앱은 23503 을 "이미 월별 평가가 작성된 항목" 으로 안내한다.
+  requested_service_id UUID NOT NULL REFERENCES public.seoul_requested_services(id) ON DELETE RESTRICT,
   achievement          TEXT NOT NULL
                          CHECK (achievement IN ('not_achieved', 'partial', 'achieved', 'exceeded')),
   note                 TEXT,
@@ -112,11 +134,13 @@ CREATE POLICY seoul_evaluations_select ON public.seoul_evaluations
   FOR SELECT TO authenticated
   USING (public.seoul_can_access(participant_id));
 
+-- WITH CHECK 의 authored_by: '누가 썼나'는 슈퍼비전(축C) 근거라 본인 id(또는 비움)만 허용 — 다른 실무자로 위장 차단.
 DROP POLICY IF EXISTS seoul_evaluations_write ON public.seoul_evaluations;
 CREATE POLICY seoul_evaluations_write ON public.seoul_evaluations
   FOR ALL TO authenticated
   USING (public.seoul_is_staff_for(participant_id))
-  WITH CHECK (public.seoul_is_staff_for(participant_id));
+  WITH CHECK (public.seoul_is_staff_for(participant_id)
+              AND (authored_by IS NULL OR authored_by = auth.uid()));
 
 -- 항목 평가: 부모 평가의 참여자로 판정.
 DROP POLICY IF EXISTS seoul_plan_item_eval_select ON public.seoul_plan_item_evaluations;
