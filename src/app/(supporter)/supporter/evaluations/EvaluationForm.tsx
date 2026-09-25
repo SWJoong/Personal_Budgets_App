@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useRef, useState, useTransition } from 'react'
+import { useId, useLayoutEffect, useRef, useState, useTransition } from 'react'
 import { saveEvaluation, type EvaluationContext } from '@/app/actions/evaluation'
 import { ACHIEVEMENT_LEVELS, periodLabel, formatKSTDateTime, type Achievement } from '@/utils/evaluation'
 import { formatDate } from '@/utils/formatDate'
@@ -27,19 +27,24 @@ export default function EvaluationForm({
   onSavingChange,
   onDirtyChange,
   focusStatusOnMount = false,
+  locked = false,
 }: {
   context: EvaluationContext
   onSaved: () => void
+  /** 저장 시작(true)·실패(false)를 알린다. 성공 시 잠금 해제는 부모가 새로고침을 마친 뒤 한다. */
   onSavingChange?: (saving: boolean) => void
   onDirtyChange?: (dirty: boolean) => void
   /** 저장 직후 다시 마운트될 때 '마지막 저장' 줄로 포커스(저장 버튼은 저장 중 잠겨 포커스를 잃는다). */
   focusStatusOnMount?: boolean
+  /** 부모 잠금(저장 뒤 새로고침이 끝날 때까지) — 그동안 적은 내용이 다시 마운트로 사라지지 않게 입력을 막는다. */
+  locked?: boolean
 }) {
   const uid = useId()
   const { announce } = useToast()
   const statusRef = useRef<HTMLParagraphElement>(null)
-  // 마운트 때 한 번만(의존성 없음) — 상태 변경 없는 DOM 포커스 이동이라 effect 로 둔다.
-  useEffect(() => {
+  // 마운트 때 한 번만(의존성 없음) — 상태 변경 없는 DOM 포커스 이동. layout effect 라 DOM 반영과 같은 커밋(그리기 전)에
+  // 옮겨 포커스가 body 에 머무는 틈이 없다. 이 양식은 펼친 뒤 클라이언트에서만 렌더돼 SSR 과 무관하다.
+  useLayoutEffect(() => {
     if (focusStatusOnMount) statusRef.current?.focus()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 마운트 시 1회만 의도(다시 마운트는 부모가 key 로 결정)
   }, [])
@@ -71,10 +76,11 @@ export default function EvaluationForm({
       const it = items[pi.id]
       return it?.achievement ? [{ requestedServiceId: pi.id, achievement: it.achievement, note: it.note }] : []
     })
-    // 저장돼 있던 이행도를 이번에 '평가 안 함'으로 되돌린 항목.
+    // 저장돼 있던 이행도를 이번에 '평가 안 함'으로 되돌린 항목 — 화면에 보인 항목만(안 보인 항목을 지우지 않게).
+    const visible = new Set(context.planItems.map((pi) => pi.id))
     const clearedItemIds = context.itemEvaluations
       .map((ie) => ie.requestedServiceId)
-      .filter((id) => !items[id]?.achievement)
+      .filter((id) => visible.has(id) && !items[id]?.achievement)
     setError('')
     onSavingChange?.(true)
     startTransition(async () => {
@@ -87,8 +93,8 @@ export default function EvaluationForm({
         items: payloadItems,
         clearedItemIds,
       })
-      onSavingChange?.(false)
       if (result.error) {
+        onSavingChange?.(false)
         setError(result.error)
         announce(result.error, 'assertive')
         return
@@ -111,7 +117,7 @@ export default function EvaluationForm({
       }}
     >
       {/* 저장 중에는 입력 전체 잠금 — disabled 가 안쪽 입력·버튼·항목 fieldset 에 모두 전파된다. */}
-      <fieldset disabled={pending} className="flex flex-col gap-5 min-w-0 border-0 p-0 m-0">
+      <fieldset disabled={pending || locked} className="flex flex-col gap-5 min-w-0 border-0 p-0 m-0">
         <legend className="sr-only">{periodLabel(context.period)} 평가 양식</legend>
         <p ref={statusRef} tabIndex={-1} className="text-xs text-muted-foreground">
           {context.evaluation
@@ -285,7 +291,7 @@ export default function EvaluationForm({
           </p>
         )}
         <div className="flex justify-end">
-          <Button type="submit" variant="primary" loading={pending}>
+          <Button type="submit" variant="primary" loading={pending || locked}>
             {context.evaluation ? '평가 고쳐서 저장' : '평가 저장'}
           </Button>
         </div>

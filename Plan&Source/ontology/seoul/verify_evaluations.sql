@@ -23,7 +23,7 @@
 --   I1.  S1 이 P1 평가에 P1 계획 항목 이행도 작성 → 성공
 --   I2.  ★S1 이 P1 평가에 P2 계획 항목을 붙이기 → 무결성 트리거 차단
 --   I3.  ★superuser(RLS 우회)라도 교차 항목 → 트리거 차단(역할 무관)
---   I4.  ★S2(미배정)가 P1 평가에 항목 작성 → 무결성 트리거 fail-closed 차단(S2 는 P1 평가를 못 봄 → NULL)
+--   I4.  ★S2(미배정)가 P1 평가에 항목 작성 → 항목 쓰기 RLS 차단(구조 트리거는 SECURITY DEFINER 라 통과)
 --   T1.  ★당사자 본인(P1)이 자기 평가에 항목 작성·수정·삭제 → 항목 쓰기 RLS 차단
 --        (P1 은 자기 평가·계획 항목을 볼 수 있어 트리거는 통과 — RLS 만 단독으로 검증되는 경로)
 --   I5.  ★항목 UPDATE 로 남의 계획 항목으로 갈아끼우기 → 트리거 차단
@@ -36,6 +36,7 @@
 --   I10. 평가가 없는 계획 항목 이동은 기존대로 허용(잠금은 평가가 달린 경우에만)
 --   T2.  담당 실무자의 재저장(ON CONFLICT DO UPDATE — 앱 upsert 경로) → 평가·항목 갱신 성공
 --   V1.  목록용 뷰 v_seoul_latest_evaluation 존재·security_invoker · S1 은 P1 만, P2 로그인은 P1 못 봄
+--   V2.  빈 평가(서술·항목 없음)는 뷰에서 제외 — 이행도를 모두 지운 달이 '최근 평가'로 보이지 않음
 --   C1.  평가 삭제 시 항목 CASCADE
 --
 -- ID 접두: 'ec' (hex·다른 verify_*.sql 과 겹치지 않게).
@@ -92,7 +93,8 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.seoul_requested_services (id, plan_id, priority, service_name, approved_for_service) VALUES
   ('ec400000-0000-0000-0000-000000000001','ec300000-0000-0000-0000-000000000001',1,'미술 활동',TRUE),   -- P1 계획 항목
   ('ec400000-0000-0000-0000-000000000002','ec300000-0000-0000-0000-000000000002',1,'수영 강습',TRUE),   -- P2 계획 항목
-  ('ec400000-0000-0000-0000-000000000003','ec300000-0000-0000-0000-000000000001',2,'공예 활동',TRUE)    -- P1 계획 항목(평가 없음 — T1·I10 용)
+  ('ec400000-0000-0000-0000-000000000003','ec300000-0000-0000-0000-000000000001',2,'공예 활동',TRUE),   -- P1 계획 항목(평가 없음 — I4·I10 용)
+  ('ec400000-0000-0000-0000-000000000004','ec300000-0000-0000-0000-000000000001',3,'음악 활동',TRUE)    -- P1 계획 항목(평가 없음 — T1a 용, I4 와 분리)
 ON CONFLICT (id) DO NOTHING;
 
 -- 기준선: P2 의 평가 1건(superuser, RLS 우회) — 격리 확인용.
@@ -207,9 +209,10 @@ SET request.jwt.claim.sub = 'ec000000-0000-0000-0000-0000000000a2';
 \echo '── W2. ★S2 가 미배정 P1 평가 작성 시도'
 INSERT INTO public.seoul_evaluations (id, participant_id, period) VALUES
   ('ec500000-0000-0000-0000-0000000000e2','ec100000-0000-0000-0000-000000000001','2026-10');
-\echo '── I4. ★S2 가 P1 평가에 항목 작성 시도'
+\echo '── I4. ★S2 가 P1 평가에 (아직 평가 안 된) P1 계획 항목(공예) 이행도 작성 시도 → 항목 쓰기 RLS 차단'
+\echo '        (UNIQUE 에 걸리지 않는 조합이라 RLS 만 단독으로 막는 경로 — 공허한 단언 방지)'
 INSERT INTO public.seoul_plan_item_evaluations (id, evaluation_id, requested_service_id, achievement) VALUES
-  ('ec600000-0000-0000-0000-0000000000e4','ec500000-0000-0000-0000-000000000001','ec400000-0000-0000-0000-000000000001','not_achieved');
+  ('ec600000-0000-0000-0000-0000000000e4','ec500000-0000-0000-0000-000000000001','ec400000-0000-0000-0000-000000000003','not_achieved');
 \echo '── U1a. ★S2 가 P1 평가 UPDATE 시도'
 UPDATE public.seoul_evaluations SET overall_note = 'S2 가 덮어씀'
  WHERE id = 'ec500000-0000-0000-0000-000000000001';
@@ -234,9 +237,9 @@ INSERT INTO public.seoul_evaluations (id, participant_id, period) VALUES
 \echo '── U1b. ★P1 본인이 자기 평가 UPDATE 시도'
 UPDATE public.seoul_evaluations SET overall_note = '본인이 고침'
  WHERE id = 'ec500000-0000-0000-0000-000000000001';
-\echo '── T1a. ★P1 본인이 자기 평가에 자기 계획 항목(공예) 이행도 작성 시도 → 트리거 통과·항목 쓰기 RLS 차단'
+\echo '── T1a. ★P1 본인이 자기 평가에 자기 계획 항목(음악) 이행도 작성 시도 → 트리거 통과·항목 쓰기 RLS 차단'
 INSERT INTO public.seoul_plan_item_evaluations (id, evaluation_id, requested_service_id, achievement) VALUES
-  ('ec600000-0000-0000-0000-0000000000f1','ec500000-0000-0000-0000-000000000001','ec400000-0000-0000-0000-000000000003','achieved');
+  ('ec600000-0000-0000-0000-0000000000f1','ec500000-0000-0000-0000-000000000001','ec400000-0000-0000-0000-000000000004','achieved');
 \echo '── T1b. ★P1 본인이 실무자가 쓴 항목 이행도를 UPDATE 시도'
 UPDATE public.seoul_plan_item_evaluations SET achievement = 'exceeded'
  WHERE id = 'ec600000-0000-0000-0000-000000000001';
@@ -349,6 +352,11 @@ SELECT '   I10 평가 없는 항목 이동: ' ||
                  = 'ec300000-0000-0000-0000-000000000002'
             THEN '✅ 허용(잠금은 평가 달린 경우만)' ELSE '❌ 평가 없는 항목까지 막힘' END;
 
+-- V2 픽스처: P1 의 빈 평가(2026-10, 서술·항목 없음, superuser) — 뷰에서 제외돼야 한다.
+INSERT INTO public.seoul_evaluations (id, participant_id, period) VALUES
+  ('ec500000-0000-0000-0000-0000000000a0','ec100000-0000-0000-0000-000000000001','2026-10')
+ON CONFLICT (id) DO NOTHING;
+
 \echo ''
 \echo '=== 담당 실무자 S1 — 재저장(앱 upsert 경로) ==='
 SET ROLE alice;
@@ -362,7 +370,7 @@ INSERT INTO public.seoul_plan_item_evaluations (evaluation_id, requested_service
   ('ec500000-0000-0000-0000-000000000001','ec400000-0000-0000-0000-000000000001','exceeded','목표보다 더 참여')
 ON CONFLICT (evaluation_id, requested_service_id) DO UPDATE
   SET achievement = EXCLUDED.achievement, note = EXCLUDED.note;
-\echo '── V1b. S1 이 목록용 뷰에서 보는 당사자 = P1 만'
+\echo '── V1b·V2. S1 이 목록용 뷰에서 보는 당사자 = P1 만, 최신 = 2026-09(빈 2026-10 은 제외)'
 SELECT '   V1b. 뷰 행 = P1 1건(최신 2026-09): ' || count(*) ||
        CASE WHEN count(*)=1 AND bool_and(participant_id='ec100000-0000-0000-0000-000000000001' AND period='2026-09')
             THEN '  ✅' ELSE '  ❌' END

@@ -119,13 +119,45 @@ describe('EvaluationsAccordionClient — 당사자별 펼쳐보기', () => {
     render(<EvaluationsAccordionClient participants={participants} defaultPeriod="2026-09" />)
     const jisu = screen.getByRole('button', { name: /김지수/ })
     fireEvent.click(jisu)
-    expect(await screen.findByRole('alert')).toHaveTextContent('네트워크')
+    expect(await screen.findByText('평가를 불러오지 못했어요: 네트워크')).toBeInTheDocument()
+    // 오류는 전역 알림(announce)으로 한 번만 읽는다 — 패널에 role=alert 를 겹치지 않는다(두 번 읽힘 방지).
+    expect(announce).toHaveBeenCalledWith('평가를 불러오지 못했어요: 네트워크', 'assertive')
+    expect(screen.queryByRole('alert')).toBeNull()
     fireEvent.click(jisu) // 접기
     fireEvent.click(jisu) // 다시 펼치기 → 재요청(두 번째도 실패)
     await waitFor(() => expect(getEvaluationContext).toHaveBeenCalledTimes(2))
     fireEvent.click(await screen.findByRole('button', { name: '다시 불러오기' }))
     await screen.findByRole('heading', { name: '① 월별 예산 사용 평가' })
     expect(getEvaluationContext).toHaveBeenCalledTimes(3)
+    // 재시도 성공 → 오류 블록이 양식으로 바뀌어도 포커스는 상태 줄로 옮겨진다.
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByText('아직 작성하지 않은 달이에요.')))
+  })
+
+  it('"다시 불러오기"는 불러오는 동안 native disabled 가 아니라 포커스를 지키고, 다시 실패하면 매번 다른 문구로 안내한다', async () => {
+    let finish: (v: { error: string }) => void = () => {}
+    vi.mocked(getEvaluationContext)
+      .mockResolvedValueOnce({ error: '평가를 불러오지 못했어요: 네트워크' })
+      .mockImplementationOnce(() => new Promise((res) => (finish = res)))
+      .mockResolvedValueOnce({ error: '평가를 불러오지 못했어요: 네트워크' })
+    render(<EvaluationsAccordionClient participants={participants} defaultPeriod="2026-09" />)
+    fireEvent.click(screen.getByRole('button', { name: /김지수/ }))
+    const retryBtn = await screen.findByRole('button', { name: '다시 불러오기' })
+    retryBtn.focus()
+    fireEvent.click(retryBtn)
+    const busyBtn = await screen.findByRole('button', { name: '다시 불러오는 중…' })
+    expect(busyBtn).not.toBeDisabled()
+    expect(busyBtn).toHaveAttribute('aria-disabled', 'true')
+    expect(document.activeElement).toBe(busyBtn)
+    fireEvent.click(busyBtn) // 불러오는 중 클릭은 무시
+    expect(getEvaluationContext).toHaveBeenCalledTimes(2)
+    await act(async () => finish({ error: '평가를 불러오지 못했어요: 네트워크' }))
+    expect(announce).toHaveBeenCalledWith('다시 불러오지 못했어요(2번째 시도): 평가를 불러오지 못했어요: 네트워크', 'assertive')
+    const again = await screen.findByRole('button', { name: '다시 불러오기' })
+    expect(document.activeElement).toBe(again)
+    fireEvent.click(again)
+    await waitFor(() =>
+      expect(announce).toHaveBeenCalledWith('다시 불러오지 못했어요(3번째 시도): 평가를 불러오지 못했어요: 네트워크', 'assertive'),
+    )
   })
 
   it('저장 중에는 헤더가 잠기고, 저장 뒤 서버값으로 양식이 다시 마운트된다', async () => {
@@ -151,7 +183,32 @@ describe('EvaluationsAccordionClient — 당사자별 펼쳐보기', () => {
     expect(await screen.findByText('마지막 저장 2026.09.25 14:03')).toBeInTheDocument()
     expect(screen.getByDisplayValue('새로 적은 말')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /김지수/ })).toBeEnabled()
-    expect(document.activeElement).toBe(screen.getByText('마지막 저장 2026.09.25 14:03'))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByText('마지막 저장 2026.09.25 14:03')))
+  })
+
+  it('저장 응답 뒤 새로고침이 끝날 때까지 헤더·입력 잠금을 유지한다(옛 양식 재마운트로 대필이 덮이지 않게)', async () => {
+    vi.mocked(saveEvaluation).mockResolvedValueOnce({ success: true, evaluationId: 'ev-1' })
+    await openJisu()
+    fireEvent.change(screen.getByLabelText(/그대로 적어 주세요/), { target: { value: '대필 원문' } })
+    let finishRefresh: (v: { context: EvaluationContext }) => void = () => {}
+    vi.mocked(getEvaluationContext).mockImplementationOnce(() => new Promise((res) => (finishRefresh = res)))
+    fireEvent.click(screen.getByRole('button', { name: '평가 저장' }))
+    await waitFor(() => expect(getEvaluationContext).toHaveBeenCalledTimes(2)) // 저장 성공 → 새로고침 요청(보류)
+    // 저장 응답은 왔지만 새로고침 전 — 잠금 유지
+    expect(screen.getByRole('button', { name: /김지수/ })).toBeDisabled()
+    expect(screen.getByLabelText(/그대로 적어 주세요/)).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: /김지수/ })) // 잠겨 있어 접히지 않음
+    expect(screen.getByRole('button', { name: /김지수/ })).toHaveAttribute('aria-expanded', 'true')
+    await act(async () =>
+      finishRefresh({
+        context: ctx('p-1', '2026-09', {
+          evaluation: { id: 'ev-1', budgetUsageNote: '', participantOpinion: '대필 원문', overallNote: '', updatedAt: '2026-09-25T06:00:00Z' },
+        }),
+      }),
+    )
+    expect(await screen.findByText('마지막 저장 2026.09.25 15:00')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /김지수/ })).toBeEnabled()
+    expect(screen.getByDisplayValue('대필 원문')).toBeEnabled()
   })
 
   it('저장하지 않은 입력이 있으면 달 이동 전에 확인하고, 취소하면 그대로 남는다', async () => {

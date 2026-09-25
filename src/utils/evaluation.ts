@@ -79,24 +79,21 @@ const APPROVED = new Set(['approved', 'conditional'])
 
 /**
  * 한 달 평가의 기준 이용계획을 고른다.
- *  ① anchor — 그 달 평가가 이미 참조하는 계획(쓸 때의 계획에 고정. 상태 무관).
- *  ② 승인(approved/conditional) 계획 중 유효 기간이 그 달과 겹치는 것 — 기간을 둘 다 아는 계획 우선,
- *     그다음 시작이 늦은 것, 그다음 최근 생성.
+ *  ① anchor — 그 달 평가가 이미 참조하는 계획(쓸 때의 계획에 고정. 상태 무관). 항목들이 여러 계획에 걸쳐
+ *     동률이면 anchor 후보들 안에서 아래 ② 규칙으로 가린다.
+ *  ② 승인(approved/conditional) 계획 중 유효 기간이 그 달과 겹치는 것. 순위:
+ *     그 달에 이미 있던 계획(생성일 < 다음 달 1일) → 기간을 둘 다 아는 계획 → 시작이 늦은 것 → 최근 생성.
+ *     (같은 차수 안에서 계획을 바꾸면 두 계획의 유효 기간이 같아진다 — 그때 지난 달엔 그 달에 있던 계획을 쓴다.)
  *  ③ 없으면 가장 최근 승인 계획(시작 늦은 순 → 생성 늦은 순).
  * 앱으로 만든 계획은 기간이 비어 있을 수 있어(NewPlanClient), 호출부가 배정·차수 기간으로 보강해 넘긴다.
  */
 export function selectEvaluationPlan(
   plans: PlanCandidate[],
   period: string,
-  anchorPlanId?: string | null,
+  anchorPlanIds?: string[] | string | null,
 ): PlanCandidate | null {
-  if (anchorPlanId) {
-    const anchor = plans.find((p) => p.id === anchorPlanId)
-    if (anchor) return anchor
-  }
   const monthStart = `${period}-01`
   const nextMonthStart = `${shiftPeriod(period, 1)}-01`
-  const approved = plans.filter((p) => APPROVED.has(p.status))
   const byRecency = (a: PlanCandidate, b: PlanCandidate) => {
     if (a.start !== b.start) {
       if (a.start == null) return 1
@@ -105,15 +102,26 @@ export function selectEvaluationPlan(
     }
     return a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0
   }
-  const covering = approved
-    .filter((p) => (p.start == null || p.start < nextMonthStart) && (p.end == null || p.end >= monthStart))
-    .sort((a, b) => {
-      const aKnown = a.start != null && a.end != null ? 0 : 1
-      const bKnown = b.start != null && b.end != null ? 0 : 1
-      return aKnown - bKnown || byRecency(a, b)
-    })
-  if (covering.length) return covering[0]
-  return [...approved].sort(byRecency)[0] ?? null
+  const covers = (p: PlanCandidate) =>
+    (p.start == null || p.start < nextMonthStart) && (p.end == null || p.end >= monthStart)
+  const rank = (a: PlanCandidate, b: PlanCandidate) => {
+    const aExisted = a.createdAt < nextMonthStart ? 0 : 1
+    const bExisted = b.createdAt < nextMonthStart ? 0 : 1
+    const aKnown = a.start != null && a.end != null ? 0 : 1
+    const bKnown = b.start != null && b.end != null ? 0 : 1
+    return aExisted - bExisted || aKnown - bKnown || byRecency(a, b)
+  }
+  const best = (list: PlanCandidate[]) => {
+    const covering = list.filter(covers).sort(rank)
+    return covering[0] ?? [...list].sort(byRecency)[0] ?? null
+  }
+
+  const anchors = anchorPlanIds == null ? [] : Array.isArray(anchorPlanIds) ? anchorPlanIds : [anchorPlanIds]
+  if (anchors.length) {
+    const anchorPlans = plans.filter((p) => anchors.includes(p.id))
+    if (anchorPlans.length) return best(anchorPlans)
+  }
+  return best(plans.filter((p) => APPROVED.has(p.status)))
 }
 
 export type SettlementStatusKey = 'pending' | 'accepted' | 'rejected' | 'recovered'

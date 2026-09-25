@@ -51,27 +51,54 @@ export default function EvaluationsAccordionClient({
   const [recent, setRecent] = useState<Record<string, string[]>>({})
   const [loadingKey, setLoadingKey] = useState<string | null>(null)
   const [savingId, setSavingId] = useState<string | null>(null)
-  // 저장 직후 다시 마운트되는 양식이 '마지막 저장' 줄로 포커스를 옮기도록(저장 버튼은 저장 중 잠겨 포커스를 잃는다).
-  const [focusAfterSaveId, setFocusAfterSaveId] = useState<string | null>(null)
+  // 다시 마운트되는 양식이 '마지막 저장' 줄로 포커스를 옮길 당사자 — 저장 직후(저장 버튼은 저장 중 잠겨 포커스를
+  // 잃는다)와 '다시 불러오기' 성공 직후(오류 블록이 양식으로 바뀌며 버튼이 사라진다).
+  const [focusStatusId, setFocusStatusId] = useState<string | null>(null)
   const [, startTransition] = useTransition()
   // 당사자별 '가장 최근에 요청한' 키 — 늦게 온 옛 응답이 새 달을 덮지 않게 최신 요청의 응답만 반영한다.
   const latestRequested = useRef<Record<string, string>>({})
   // 저장하지 않은 입력이 있는 당사자 id(한 번에 하나만 펼쳐지므로 하나면 충분). 렌더에 쓰지 않아 ref.
   const dirtyId = useRef<string | null>(null)
+  // 재시도 횟수 — 같은 오류로 다시 실패해도 안내 문구가 달라져 스크린리더가 매번 읽게(같은 문자열은 무시됨).
+  const retryCount = useRef<Record<string, number>>({})
 
-  function load(participantId: string, period: string, announceWhenDone = false) {
+  function load(
+    participantId: string,
+    period: string,
+    opts: { reason?: 'open' | 'change' | 'retry' | 'refresh'; releaseSaving?: boolean } = {},
+  ) {
     const key = `${participantId}:${period}`
     latestRequested.current[participantId] = key
     setLoadingKey(key)
     startTransition(async () => {
       const result = await getEvaluationContext(participantId, period)
+      // 저장 잠금은 새로고침이 끝나야 푼다(응답이 옛 것이어도) — 그 전에 풀면 캐시된 저장 전 양식이 다시 뜰 수 있다.
+      if (opts.releaseSaving) setSavingId(null)
       if (latestRequested.current[participantId] !== key) return // 옛 응답 — 버린다
       setLoaded((prev) => ({ ...prev, [participantId]: { key, context: result.context, error: result.error } }))
       if (result.context) setRecent((prev) => ({ ...prev, [participantId]: result.context!.recentPeriods }))
       setLoadingKey((current) => (current === key ? null : current))
-      if (result.error) announce(result.error, 'assertive')
-      else if (announceWhenDone) announce(`${periodLabel(period)} 평가를 불러왔어요.`)
+      if (result.error) {
+        if (opts.reason === 'retry') {
+          const n = (retryCount.current[participantId] ?? 1) + 1
+          retryCount.current[participantId] = n
+          announce(`다시 불러오지 못했어요(${n}번째 시도): ${result.error}`, 'assertive')
+        } else {
+          announce(result.error, 'assertive')
+        }
+      } else {
+        retryCount.current[participantId] = 1
+        if (opts.reason === 'change') announce(`${periodLabel(period)} 평가를 불러왔어요.`)
+        else if (opts.reason === 'retry') announce(`${periodLabel(period)} 평가를 불러왔어요.`)
+      }
     })
+  }
+
+  function retry(participantId: string) {
+    const period = periodOf(participantId)
+    if (loadingKey === `${participantId}:${period}`) return // 불러오는 중 — aria-disabled 라 포커스는 유지
+    setFocusStatusId(participantId)
+    load(participantId, period, { reason: 'retry' })
   }
 
   function periodOf(participantId: string) {
@@ -88,7 +115,7 @@ export default function EvaluationsAccordionClient({
   function toggle(participantId: string) {
     if (savingId) return
     if (!confirmDiscard()) return
-    setFocusAfterSaveId(null)
+    setFocusStatusId(null)
     if (expanded === participantId) {
       setExpanded(null)
       return
@@ -97,7 +124,7 @@ export default function EvaluationsAccordionClient({
     const period = periodOf(participantId)
     const cur = loaded[participantId]
     // 오류는 캐시하지 않는다 — 다시 펼치면 재요청.
-    if (cur?.key !== `${participantId}:${period}` || cur.error) load(participantId, period)
+    if (cur?.key !== `${participantId}:${period}` || cur.error) load(participantId, period, { reason: 'open' })
   }
 
   function changePeriod(participantId: string, period: string) {
@@ -106,9 +133,9 @@ export default function EvaluationsAccordionClient({
     if (savingId || loadingKey === `${participantId}:${currentPeriod}`) return
     if (period === currentPeriod || period > defaultPeriod) return
     if (!confirmDiscard()) return
-    setFocusAfterSaveId(null)
+    setFocusStatusId(null)
     setPeriods((prev) => ({ ...prev, [participantId]: period }))
-    load(participantId, period, true)
+    load(participantId, period, { reason: 'change' })
   }
 
   return (
@@ -195,26 +222,32 @@ export default function EvaluationsAccordionClient({
                 {!hasData ? (
                   <p className="text-sm text-muted-foreground">{periodLabel(period)} 평가를 불러오는 중이에요…</p>
                 ) : current.error ? (
+                  // 오류 안내는 announce(전역 알림 영역)로 한 번만 읽는다 — 여기에 role=alert 를 겹치면 두 번 읽힌다.
                   <div className="flex flex-col items-start gap-2">
-                    <p role="alert" className="text-sm font-bold text-danger-fg">
-                      {current.error}
-                    </p>
-                    <Button size="sm" variant="secondary" loading={busy} onClick={() => load(p.id, period)}>
-                      다시 불러오기
+                    <p className="text-sm font-bold text-danger-fg">{current.error}</p>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      aria-disabled={busy || undefined}
+                      onClick={() => retry(p.id)}
+                      className={NAV_LOCKED_CLASS}
+                    >
+                      {busy ? '다시 불러오는 중…' : '다시 불러오기'}
                     </Button>
                   </div>
                 ) : current.context ? (
                   <EvaluationForm
                     key={`${current.key}:${current.context.evaluation?.updatedAt ?? 'new'}`}
                     context={current.context}
-                    focusStatusOnMount={focusAfterSaveId === p.id}
+                    focusStatusOnMount={focusStatusId === p.id}
+                    locked={savingId === p.id}
                     onSavingChange={(saving) => setSavingId(saving ? p.id : null)}
                     onDirtyChange={(dirty) => {
                       dirtyId.current = dirty ? p.id : null
                     }}
                     onSaved={() => {
-                      setFocusAfterSaveId(p.id)
-                      load(p.id, period)
+                      setFocusStatusId(p.id)
+                      load(p.id, period, { reason: 'refresh', releaseSaving: true })
                     }}
                   />
                 ) : null}

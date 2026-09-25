@@ -107,9 +107,34 @@ describe('EvaluationForm — 월별 평가 양식', () => {
       items: [{ requestedServiceId: 'rs-swim', achievement: 'partial', note: '' }],
       clearedItemIds: [],
     })
-    expect(onSavingChange).toHaveBeenNthCalledWith(1, true)
-    expect(onSavingChange).toHaveBeenLastCalledWith(false)
+    // 성공 시 잠금 해제는 부모가 새로고침을 마친 뒤 한다 — 양식은 true 만 알린다.
+    expect(onSavingChange).toHaveBeenCalledTimes(1)
+    expect(onSavingChange).toHaveBeenCalledWith(true)
     expect(onDirtyChange).toHaveBeenLastCalledWith(false)
+  })
+
+  it('지우기는 화면에 보인 항목만 대상으로 한다(안 보인 기존 이행도는 건드리지 않음)', async () => {
+    render(
+      <EvaluationForm
+        context={saved({
+          itemEvaluations: [
+            { requestedServiceId: 'rs-art', achievement: 'achieved', note: null },
+            { requestedServiceId: 'rs-hidden', achievement: 'partial', note: null }, // planItems 에 없음
+          ],
+        })}
+        onSaved={vi.fn()}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '미술 활동 이행 정도 선택 지우기' }))
+    fireEvent.click(screen.getByRole('button', { name: '평가 고쳐서 저장' }))
+    await waitFor(() => expect(saveEvaluation).toHaveBeenCalledTimes(1))
+    expect(vi.mocked(saveEvaluation).mock.calls[0][0].clearedItemIds).toEqual(['rs-art'])
+  })
+
+  it('부모가 잠그면(locked) 입력과 저장 버튼이 막힌다', () => {
+    render(<EvaluationForm context={ctx()} onSaved={vi.fn()} locked />)
+    expect(screen.getByLabelText(/그대로 적어 주세요/)).toBeDisabled()
+    expect(screen.getByRole('button', { name: '평가 저장' })).toBeDisabled()
   })
 
   it('저장된 이행도를 "선택 지우기"로 되돌리면 지운 항목으로 보낸다', async () => {

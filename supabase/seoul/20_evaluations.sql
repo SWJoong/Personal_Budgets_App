@@ -96,12 +96,16 @@ CREATE TRIGGER trg_seoul_plan_item_eval_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- ★교차 오염 방지 — 항목(신청 서비스)의 계획 소유자 = 평가의 당사자여야 한다. 역할 무관 차단.
---   SECURITY INVOKER(활동사진 경로 트리거와 동일): 조회가 호출자 RLS 를 따르므로, 평가·계획을 볼 수 없는
---   호출자(미배정 실무자 등)는 NULL 로 판정되어 fail-closed 차단된다. 정당한 작성자(담당·관리자·service
---   role)는 해당 행을 항상 볼 수 있어 오탐이 없다. (verify_evaluations I2·I3·I4·I5)
+--   SECURITY DEFINER: 호출자 RLS 와 무관한 '구조' 판정만 한다(권한은 RLS 가 따로 막는다 — verify T1·I4).
+--   ★FOR SHARE: 부모(신청 서비스·계획) 행을 잠가, 동시에 실행되는 부모 이동(아래 가드)과의 write skew 를 막는다
+--   — 부모 이동 UPDATE 는 이 항목 트랜잭션이 끝날 때까지 기다린 뒤 새 스냅샷으로 방금 커밋된 평가를 보고 거부되고,
+--   반대 순서면 이 잠금 읽기가 최신 행(옮겨진 plan_id)을 다시 읽어 불일치로 거부된다.
+--   오류 문구에 id 를 넣지 않는다(권한 없는 호출자에게 존재 여부를 흘리지 않게).
 CREATE OR REPLACE FUNCTION public.seoul_check_plan_item_eval_owner()
 RETURNS TRIGGER
 LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
 DECLARE
   v_eval_participant UUID;
@@ -112,11 +116,11 @@ BEGIN
   SELECT p.participant_id INTO v_item_participant
     FROM public.seoul_requested_services rs
     JOIN public.seoul_utilization_plans p ON p.id = rs.plan_id
-   WHERE rs.id = NEW.requested_service_id;
+   WHERE rs.id = NEW.requested_service_id
+     FOR SHARE OF rs, p;
   IF v_eval_participant IS NULL OR v_item_participant IS NULL
      OR v_eval_participant <> v_item_participant THEN
-    RAISE EXCEPTION '계획 항목(%)이 이 평가의 당사자(%) 계획에 속하지 않습니다',
-      NEW.requested_service_id, v_eval_participant;
+    RAISE EXCEPTION '이 계획 항목은 이 평가의 당사자 계획에 속하지 않습니다';
   END IF;
   RETURN NEW;
 END;
@@ -211,6 +215,8 @@ CREATE POLICY seoul_plan_item_eval_write ON public.seoul_plan_item_evaluations
 -- 평가 목록 화면이 전 평가 행을 읽으면 PostgREST max_rows(기본 1000)에 잘려 오래된 당사자가 '평가 없음'으로
 -- 잘못 보인다. 당사자당 1행만 돌려주는 뷰로 대체. security_invoker = true → 조회자 RLS(seoul_can_access)가
 -- 그대로 적용된다(v_seoul_monthly_usage 등 기존 뷰와 같은 방식).
+-- ★빈 평가(서술 3칸이 비었고 항목 평가도 없음)는 제외한다. 이행도를 모두 지운 달은 행을 지우지 않고(동시 저장과
+--   경쟁하는 파괴적 삭제를 피함) 여기서 '작성 안 됨'으로 취급한다 — 앱(getEvaluationContext)도 같은 규칙.
 CREATE OR REPLACE VIEW public.v_seoul_latest_evaluation
   WITH (security_invoker = true) AS
 SELECT DISTINCT ON (e.participant_id)
@@ -218,6 +224,10 @@ SELECT DISTINCT ON (e.participant_id)
   e.period,
   e.updated_at
 FROM public.seoul_evaluations e
+WHERE nullif(btrim(e.budget_usage_note), '') IS NOT NULL
+   OR nullif(btrim(e.participant_opinion), '') IS NOT NULL
+   OR nullif(btrim(e.overall_note), '') IS NOT NULL
+   OR EXISTS (SELECT 1 FROM public.seoul_plan_item_evaluations i WHERE i.evaluation_id = e.id)
 ORDER BY e.participant_id, e.period DESC;
 COMMENT ON VIEW public.v_seoul_latest_evaluation IS
   '당사자별 가장 최근 평가 달. security_invoker — 조회자 RLS 적용. /supporter/evaluations 목록 요약용.';

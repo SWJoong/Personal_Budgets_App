@@ -110,4 +110,4 @@ jobs:
             printf '%s\n' "$fails"
             exit 1
           fi
-          echo "전 계약 통과 ✅ (build 멱등 + verify 12종 green)"
+          echo "전 계약 통과 ✅ (build 멱등 + verify ${#verify[@]}종 green)"

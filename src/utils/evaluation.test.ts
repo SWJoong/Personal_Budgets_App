@@ -161,6 +161,18 @@ describe('selectEvaluationPlan — 평가 기준 계획 고르기', () => {
     expect(selectEvaluationPlan([], '2026-09')).toBeNull()
   })
 
+  it('같은 차수 안에서 계획을 바꿔 유효 기간이 같으면, 지난 달엔 그 달에 이미 있던 계획을 쓴다', () => {
+    const a = plan({ id: 'A-jan', start: '2026-01-01', end: '2026-12-31', createdAt: '2026-01-10T00:00:00Z' })
+    const b = plan({ id: 'B-jul', start: '2026-01-01', end: '2026-12-31', createdAt: '2026-07-05T00:00:00Z' })
+    expect(selectEvaluationPlan([a, b], '2026-03')?.id).toBe('A-jan') // 3월엔 B 가 아직 없었다
+    expect(selectEvaluationPlan([a, b], '2026-09')?.id).toBe('B-jul') // 둘 다 있던 달 → 최근 계획
+  })
+
+  it('항목이 두 계획에 걸쳐 동률이면 anchor 후보 안에서 기간 규칙으로 가린다(행 순서 무관)', () => {
+    expect(selectEvaluationPlan([h1, h2], '2026-09', ['B-2027H1', 'A-2026H2'])?.id).toBe('A-2026H2')
+    expect(selectEvaluationPlan([h2, h1], '2027-02', ['A-2026H2', 'B-2027H1'])?.id).toBe('B-2027H1')
+  })
+
   it('겹치는 계획이 없으면 가장 최근 승인 계획', () => {
     expect(selectEvaluationPlan([h2, h1], '2028-01')?.id).toBe('B-2027H1')
   })
