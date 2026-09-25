@@ -116,6 +116,85 @@ export async function recordServiceUsage(input: ServiceUsageInput) {
 }
 
 /**
+ * 기존 지출에 영수증 첨부(교체) — recordServiceUsage 는 '신규 지출 insert' 시에만 영수증을 붙일 수
+ * 있어, 이미 기록된 지출(영수증 검토 대기·거래 상세)에 영수증을 뒤늦게 붙일 경로가 없었다. 이 액션이
+ * 그 공백을 메운다. usage 당 1장 취급 — 기존 영수증 행이 있으면 교체하고 이전 파일도 정리한다.
+ *
+ * ★보안: ① participant·provider 는 usage 에서 서버 도출(클라 신뢰 금지, RLS 가 접근 가능한 usage 만
+ * 반환) · ② 저장 경로는 서버가 `${participantId}/${usageId}.${ext}` 로 구성(위조 불가) · ③ seoul_receipts
+ * insert/delete 는 user 스코프(RLS seoul_receipts_write = 담당 staff 또는 self-pending 이 강제).
+ * 스토리지 바이트만 admin 클라이언트. view-as 중에는 차단.
+ */
+export async function attachReceipt(
+  usageId: string,
+  receipt: { base64: string; mimeType?: string },
+): Promise<{ success?: true; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.' }
+
+  // 관리자 둘러보기(view-as) 중에는 쓰기를 막는다(읽기전용 미리보기).
+  const viewAsBlock = await viewAsWriteBlock()
+  if (viewAsBlock) return { error: viewAsBlock }
+
+  if (!receipt.base64) return { error: '영수증 사진이 없어요.' }
+
+  const { data: usage } = await supabase
+    .from('seoul_service_usages')
+    .select('participant_id, provider_id')
+    .eq('id', usageId)
+    .maybeSingle()
+  if (!usage) return { error: '지출 정보를 찾을 수 없어요.' }
+
+  const contentType = receipt.mimeType || 'image/jpeg'
+  const ext = MIME_EXT[contentType] || 'jpg'
+  const path = `${usage.participant_id}/${usageId}.${ext}`
+
+  // ★권한 게이트를 스토리지보다 먼저 통과시킨다(보안, 검증 지적 반영). seoul_service_usages_select(RLS)
+  //   는 self·staff 모두에게 열려 있어 위 usage 는 읽히지만, seoul_receipts_write(RLS)는 '담당 staff
+  //   또는 self+pending' 만 허용한다(정산 완료된 자기 지출은 write 불가). 그래서 seoul_receipts 행
+  //   INSERT 를 먼저 시도해 이 write 권한을 강제한다 — 실패하면 admin 스토리지를 전혀 건드리지 않는다.
+  //   (스토리지를 먼저 만졌다면 self+정산완료 지출의 영수증 원본을 덮어쓰거나 지울 수 있었다.)
+  const { data: inserted, error: insertError } = await supabase
+    .from('seoul_receipts')
+    .insert({ usage_id: usageId, provider_id: usage.provider_id || null, storage_path: path })
+    .select('id')
+    .single()
+  if (insertError || !inserted) {
+    return { error: '이 지출에는 영수증을 붙일 수 없어요. (정산이 끝났거나 권한이 없어요.)' }
+  }
+
+  // 권한 확인 후에만 스토리지 바이트를 올린다.
+  const admin = createAdminClient()
+  const buffer = Buffer.from(receipt.base64, 'base64')
+  const { error: uploadError } = await admin.storage
+    .from('receipts')
+    .upload(path, buffer, { contentType, upsert: true })
+  if (uploadError) {
+    // 방금 넣은 행을 롤백 — 어떤 파일도 가리키지 못하는 dangling 행을 남기지 않는다.
+    await supabase.from('seoul_receipts').delete().eq('id', inserted.id)
+    return { error: `영수증 저장에 실패했어요: ${uploadError.message}` }
+  }
+
+  // usage 당 1장 — 방금 넣은 행(inserted.id) 외의 이전 영수증 행을 정리(교체)하고, 경로가 달라
+  // 새 파일과 겹치지 않는 이전 파일만 제거한다. 여기 delete 도 RLS(seoul_receipts_write) 적용.
+  const { data: others } = await supabase
+    .from('seoul_receipts')
+    .select('id, storage_path')
+    .eq('usage_id', usageId)
+    .neq('id', inserted.id)
+  if (others?.length) {
+    await supabase.from('seoul_receipts').delete().eq('usage_id', usageId).neq('id', inserted.id)
+    const stalePaths = others.map((r) => r.storage_path).filter((p): p is string => !!p && p !== path)
+    if (stalePaths.length) await admin.storage.from('receipts').remove(stalePaths)
+  }
+
+  revalidatePath('/supporter/review')
+  revalidatePath(`/supporter/transactions/${usageId}`)
+  return { success: true }
+}
+
+/**
  * 지출 수정 — 실무자가 잘못 기록한 지출의 금액·날짜·내용을 고친다(오기 정정).
  *
  * 정책: settlement_status='pending' 일 때만 허용한다. 검토가 끝난 지출
