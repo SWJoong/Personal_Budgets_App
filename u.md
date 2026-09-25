@@ -1437,3 +1437,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-25T09:12Z] U
 [진행] 계획·평가 개선 5슬라이스 — #188 영수증검토 추가(PASS, 보안결함 수정 후 재검증 PASS) · #189 거래장부 표+인라인편집(PASS) · #190 정산원장 표+관리자 인라인편집(PASS) — 3건 머지 승인 대기. #191 슬라이스4+5 = 당사자별 아코디언 + 월별 평가 양식(신규 20_evaluations: seoul_evaluations·seoul_plan_item_evaluations, RLS 열람=can_access/쓰기=staff_for, 교차오염·당사자잠금 트리거, 항목 RESTRICT, authored_by 위장차단). verify_evaluations 31단언·로컬 PG17 CI재현 21종 green·vitest 146/980. 독립 검증 워크플로(4관점+반박) 실행중. ★Manual-Ops(머지 후): 20_evaluations.sql 대시보드 실행.
 
+## [2026-09-25T09:43Z] U
+[진행] #191 독립검증(4관점+반박, 10에이전트) 결과: 보통+ 8건 확인(반박 6/6 불가) — DB-1 부모이동 우회·T1 항목쓰기RLS 미검증·F1 기간없는 계획 기준고정·UI-1(높음) 선택라디오 포커스링·UI-2 오류캐시·UI-3 저장중 재마운트 대필 NULL덮어쓰기·UI-4 이탈확인 없음·UI-5 달이동 포커스 소실. 전부 수정(d98139c): 부모잠금 트리거(DEFINER)·T1/T2/I8-10/V1 단언(45, 돌연변이 RED 확인)·selectEvaluationPlan(배정→계획→차수 보강+anchor)·패널고정 nav+aria-disabled·재시도·저장잠금+updatedAt 재마운트·confirm·최신평가 뷰. vitest 146/996·tsc0·lint0·build0. 재검증 워크플로 실행중.
+
