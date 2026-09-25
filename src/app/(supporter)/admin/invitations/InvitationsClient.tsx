@@ -30,17 +30,21 @@ export default function InvitationsClient({ invitations }: { invitations: Invita
 
   function handleCreate(e: FormEvent) {
     e.preventDefault()
-    setError('')
     const trimmed = email.trim()
     if (!trimmed) {
-      setError('이메일을 입력해 주세요.')
+      const msg = '이메일을 입력해 주세요.'
+      // 오류는 이메일 칸의 role=alert 한 채널로 읽는다. 같은 오류가 이미 떠 있으면(그대로 다시 제출) DOM 이 안 바뀌어
+      // 무음이 되므로 그때만 전역으로 다시 알린다.
+      if (error === msg) announce(msg, 'assertive')
+      setError(msg)
       return
     }
+    setError('')
     startTransition(async () => {
       const result = await createInvitation({ email: trimmed, role })
+      // 서버 오류도 칸의 role=alert 한 채널로만 — 위에서 비운 뒤 다시 넣어 같은 오류도 다시 읽힌다(전역까지 부르면 두 번).
       if (result.error) {
         setError(result.error)
-        announce(result.error, 'assertive')
         return
       }
       setEmail('')

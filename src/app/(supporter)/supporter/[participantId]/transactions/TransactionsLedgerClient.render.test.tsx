@@ -78,6 +78,22 @@ describe('TransactionsLedgerClient — 오류는 인라인 한 채널로만', ()
     expect(globalAlert()).toHaveTextContent('')
   })
 
+  it('같은 금액 검증 오류를 다시 내도 인라인 alert 가 새 노드로 들어가 다시 읽힌다', async () => {
+    const user = userEvent.setup()
+    renderLedger()
+    await user.click(screen.getByRole('button', { name: '수정' }))
+    await user.clear(screen.getByLabelText('금액'))
+    const MSG = '금액을 올바르게 입력해 주세요.'
+
+    await user.click(screen.getByRole('button', { name: '저장' }))
+    const first = alertsWith(MSG)[0]
+    expect(first).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: '저장' }))
+    expect(alertsWith(MSG)).toHaveLength(1)
+    expect(alertsWith(MSG)[0]).not.toBe(first)
+    expect(updateServiceUsage).not.toHaveBeenCalled()
+  })
+
   it('성공 안내는 전역(polite) 영역으로 읽는다', async () => {
     vi.mocked(updateServiceUsage).mockResolvedValue({ success: true })
     const user = userEvent.setup()

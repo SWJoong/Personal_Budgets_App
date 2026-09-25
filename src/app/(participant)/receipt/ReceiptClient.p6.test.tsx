@@ -68,6 +68,21 @@ describe('ReceiptClient p6 소비자 — 필드연결 오류(참조구현) + Liv
     expect(hit).toBe(true)
   })
 
+  it('금액 오류는 한 번만 읽힌다 — 첫 제출은 칸의 alert 만, 그대로 다시 제출하면(칸 DOM 불변) 전역으로 다시 알린다', () => {
+    renderClient()
+    const form = screen.getByRole('button', { name: '기록하기' }).closest('form') as HTMLFormElement
+    const MSG = '얼마 썼는지 금액을 적어 주세요.'
+    const withMsg = () => screen.getAllByRole('alert').filter((n) => n.textContent?.includes(MSG))
+    const globalAlert = () => screen.getAllByRole('alert').find((n) => n.getAttribute('aria-live') === 'assertive')!
+
+    fireEvent.submit(form)
+    expect(withMsg()).toHaveLength(1) // 칸의 alert 하나(전역 중복 없음)
+    expect(globalAlert()).toHaveTextContent('')
+
+    fireEvent.submit(form)
+    expect(globalAlert()).toHaveTextContent(MSG)
+  })
+
   it('[GUARD] 사진 선택 시 OCR 진행 안내가 polite(role=status) 로 도달한다(action→region)', async () => {
     // ReceiptClient 가 setPhoto 에서 URL.createObjectURL 을 호출 → jsdom 미구현이라 스텁.
     const origCreate = (URL as unknown as { createObjectURL?: unknown }).createObjectURL
