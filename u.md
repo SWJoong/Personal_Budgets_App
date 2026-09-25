@@ -1434,3 +1434,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-23T10:17Z] U
 [HANDOFF→W] 경로별 기능 QA 체크리스트 docs/release/16 = PR #187(문서전용). cheese0318@gmail.com(내장슈퍼관리자)+TEST_USER_EMAIL로 경로A(실무자 /supporter 직접)·경로B(둘러보기 view-as) 편집 QA. 대조/보안·접근성·발견사항표 포함.
 
+## [2026-09-25T09:12Z] U
+[진행] 계획·평가 개선 5슬라이스 — #188 영수증검토 추가(PASS, 보안결함 수정 후 재검증 PASS) · #189 거래장부 표+인라인편집(PASS) · #190 정산원장 표+관리자 인라인편집(PASS) — 3건 머지 승인 대기. #191 슬라이스4+5 = 당사자별 아코디언 + 월별 평가 양식(신규 20_evaluations: seoul_evaluations·seoul_plan_item_evaluations, RLS 열람=can_access/쓰기=staff_for, 교차오염·당사자잠금 트리거, 항목 RESTRICT, authored_by 위장차단). verify_evaluations 31단언·로컬 PG17 CI재현 21종 green·vitest 146/980. 독립 검증 워크플로(4관점+반박) 실행중. ★Manual-Ops(머지 후): 20_evaluations.sql 대시보드 실행.
+
