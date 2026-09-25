@@ -149,32 +149,44 @@ export async function attachReceipt(
   const contentType = receipt.mimeType || 'image/jpeg'
   const ext = MIME_EXT[contentType] || 'jpg'
   const path = `${usage.participant_id}/${usageId}.${ext}`
+
+  // ★권한 게이트를 스토리지보다 먼저 통과시킨다(보안, 검증 지적 반영). seoul_service_usages_select(RLS)
+  //   는 self·staff 모두에게 열려 있어 위 usage 는 읽히지만, seoul_receipts_write(RLS)는 '담당 staff
+  //   또는 self+pending' 만 허용한다(정산 완료된 자기 지출은 write 불가). 그래서 seoul_receipts 행
+  //   INSERT 를 먼저 시도해 이 write 권한을 강제한다 — 실패하면 admin 스토리지를 전혀 건드리지 않는다.
+  //   (스토리지를 먼저 만졌다면 self+정산완료 지출의 영수증 원본을 덮어쓰거나 지울 수 있었다.)
+  const { data: inserted, error: insertError } = await supabase
+    .from('seoul_receipts')
+    .insert({ usage_id: usageId, provider_id: usage.provider_id || null, storage_path: path })
+    .select('id')
+    .single()
+  if (insertError || !inserted) {
+    return { error: '이 지출에는 영수증을 붙일 수 없어요. (정산이 끝났거나 권한이 없어요.)' }
+  }
+
+  // 권한 확인 후에만 스토리지 바이트를 올린다.
   const admin = createAdminClient()
   const buffer = Buffer.from(receipt.base64, 'base64')
-
   const { error: uploadError } = await admin.storage
     .from('receipts')
     .upload(path, buffer, { contentType, upsert: true })
-  if (uploadError) return { error: `영수증 저장에 실패했어요: ${uploadError.message}` }
+  if (uploadError) {
+    // 방금 넣은 행을 롤백 — 어떤 파일도 가리키지 못하는 dangling 행을 남기지 않는다.
+    await supabase.from('seoul_receipts').delete().eq('id', inserted.id)
+    return { error: `영수증 저장에 실패했어요: ${uploadError.message}` }
+  }
 
-  // 기존 영수증(있으면) 정리 — usage 당 1장. 확장자가 달라 경로가 바뀐 경우 이전 파일도 제거.
-  const { data: existing } = await supabase
+  // usage 당 1장 — 방금 넣은 행(inserted.id) 외의 이전 영수증 행을 정리(교체)하고, 경로가 달라
+  // 새 파일과 겹치지 않는 이전 파일만 제거한다. 여기 delete 도 RLS(seoul_receipts_write) 적용.
+  const { data: others } = await supabase
     .from('seoul_receipts')
     .select('id, storage_path')
     .eq('usage_id', usageId)
-  if (existing?.length) {
-    const stalePaths = existing.map((r) => r.storage_path).filter((p): p is string => !!p && p !== path)
-    await supabase.from('seoul_receipts').delete().eq('usage_id', usageId)
+    .neq('id', inserted.id)
+  if (others?.length) {
+    await supabase.from('seoul_receipts').delete().eq('usage_id', usageId).neq('id', inserted.id)
+    const stalePaths = others.map((r) => r.storage_path).filter((p): p is string => !!p && p !== path)
     if (stalePaths.length) await admin.storage.from('receipts').remove(stalePaths)
-  }
-
-  const { error: insertError } = await supabase
-    .from('seoul_receipts')
-    .insert({ usage_id: usageId, provider_id: usage.provider_id || null, storage_path: path })
-  if (insertError) {
-    // 어떤 seoul_receipts 행에서도 참조되지 못한 파일을 버킷에 남기지 않는다(orphan 롤백).
-    await admin.storage.from('receipts').remove([path])
-    return { error: `영수증 정보 저장에 실패했어요: ${insertError.message}` }
   }
 
   revalidatePath('/supporter/review')
