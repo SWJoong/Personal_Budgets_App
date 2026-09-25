@@ -115,6 +115,7 @@ function EditRow({
   const [amount, setAmount] = useState(String(row.amount))
   const [usageDate, setUsageDate] = useState(row.usageDate)
   const [description, setDescription] = useState(row.description ?? '')
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [pending, startTransition] = useTransition()
 
   function save() {
@@ -195,9 +196,22 @@ function EditRow({
             <Button size="sm" variant="secondary" onClick={onDone} disabled={pending}>
               취소
             </Button>
-            <Button size="sm" variant="danger" onClick={remove} disabled={pending} className="ml-auto">
-              삭제
-            </Button>
+            {/* 2단계 삭제 확인 — 지출(돈 기록) 삭제라 실수 방지(모니터링 삭제 #180 과 동일 패턴). */}
+            {confirmDelete ? (
+              <div className="ml-auto flex items-center gap-2">
+                <span className="text-xs text-danger-fg font-bold">정말 삭제할까요?</span>
+                <Button size="sm" variant="danger" onClick={remove} disabled={pending}>
+                  {pending ? '삭제 중...' : '삭제'}
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => setConfirmDelete(false)} disabled={pending}>
+                  아니요
+                </Button>
+              </div>
+            ) : (
+              <Button size="sm" variant="danger" onClick={() => setConfirmDelete(true)} disabled={pending} className="ml-auto">
+                삭제
+              </Button>
+            )}
           </div>
         </div>
       </td>
