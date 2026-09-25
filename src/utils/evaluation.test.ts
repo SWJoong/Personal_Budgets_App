@@ -10,6 +10,10 @@ import {
   summarizeMonthUsage,
   spentByRequestedService,
   evaluationHasContent,
+  isFuturePeriod,
+  formatKSTDateTime,
+  selectEvaluationPlan,
+  type PlanCandidate,
 } from './evaluation'
 
 describe('이행 정도(achievement)', () => {
@@ -99,5 +103,65 @@ describe('evaluationHasContent', () => {
   it('전부 비었거나 공백뿐이면 불가', () => {
     expect(evaluationHasContent({ itemCount: 0 })).toBe(false)
     expect(evaluationHasContent({ budgetUsageNote: '   ', participantOpinion: '', overallNote: null, itemCount: 0 })).toBe(false)
+  })
+})
+
+describe('isFuturePeriod · formatKSTDateTime', () => {
+  it('기준 달보다 뒤인 달만 미래', () => {
+    expect(isFuturePeriod('2026-10', '2026-09')).toBe(true)
+    expect(isFuturePeriod('2026-09', '2026-09')).toBe(false)
+    expect(isFuturePeriod('2025-12', '2026-01')).toBe(false)
+  })
+
+  it('저장 시각은 한국 시간으로 — UTC 자정 전후가 하루 밀리지 않는다', () => {
+    expect(formatKSTDateTime('2026-09-24T16:30:00Z')).toBe('2026.09.25 01:30')
+    expect(formatKSTDateTime('2026-09-25T05:03:00+00:00')).toBe('2026.09.25 14:03')
+    expect(formatKSTDateTime('not-a-date')).toBe('')
+  })
+})
+
+describe('selectEvaluationPlan — 평가 기준 계획 고르기', () => {
+  const plan = (over: Partial<PlanCandidate> & { id: string }): PlanCandidate => ({
+    status: 'approved',
+    start: null,
+    end: null,
+    createdAt: '2026-01-01T00:00:00Z',
+    ...over,
+  })
+  const h2 = plan({ id: 'A-2026H2', start: '2026-07-01', end: '2026-12-31', createdAt: '2026-06-01T00:00:00Z' })
+  const h1 = plan({ id: 'B-2027H1', start: '2027-01-01', end: '2027-06-30', createdAt: '2026-12-01T00:00:00Z' })
+
+  it('그 달을 포함하는 승인 계획을 고른다(나중 생성 계획이 있어도)', () => {
+    expect(selectEvaluationPlan([h2, h1], '2026-09')?.id).toBe('A-2026H2')
+    expect(selectEvaluationPlan([h2, h1], '2027-03')?.id).toBe('B-2027H1')
+  })
+
+  it('달 경계 — 종료일은 포함, 다음 계획 시작 달에는 다음 계획', () => {
+    expect(selectEvaluationPlan([h2, h1], '2026-12')?.id).toBe('A-2026H2')
+    expect(selectEvaluationPlan([h2, h1], '2027-01')?.id).toBe('B-2027H1')
+  })
+
+  it('이미 쓴 평가가 참조하는 계획(anchor)이 우선 — 쓸 때의 계획에 고정', () => {
+    expect(selectEvaluationPlan([h2, h1], '2027-03', 'A-2026H2')?.id).toBe('A-2026H2')
+  })
+
+  it('anchor 는 상태 무관(이의신청 중 등)이지만, 새 기준 선택엔 승인 계획만 쓴다', () => {
+    const appeal = plan({ id: 'C-appeal', status: 'under_appeal', start: '2026-07-01', end: '2026-12-31' })
+    expect(selectEvaluationPlan([appeal, h1], '2026-09', 'C-appeal')?.id).toBe('C-appeal')
+    expect(selectEvaluationPlan([appeal, h1], '2026-09')?.id).toBe('B-2027H1') // 겹치는 승인 계획 없음 → 최근 승인
+  })
+
+  it('기간을 아는 계획이 기간 모르는 계획보다 우선(모르는 계획은 모든 달을 덮는 것처럼 보이므로)', () => {
+    const unknown = plan({ id: 'U', createdAt: '2027-01-01T00:00:00Z' })
+    expect(selectEvaluationPlan([unknown, h2], '2026-09')?.id).toBe('A-2026H2')
+  })
+
+  it('승인 계획이 없고 anchor 도 없으면 null', () => {
+    expect(selectEvaluationPlan([plan({ id: 'D', status: 'draft' })], '2026-09')).toBeNull()
+    expect(selectEvaluationPlan([], '2026-09')).toBeNull()
+  })
+
+  it('겹치는 계획이 없으면 가장 최근 승인 계획', () => {
+    expect(selectEvaluationPlan([h2, h1], '2028-01')?.id).toBe('B-2027H1')
   })
 })

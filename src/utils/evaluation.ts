@@ -51,6 +51,71 @@ export function periodLabel(period: string): string {
   return `${y}년 ${m}월`
 }
 
+/** period 가 기준 달(보통 오늘의 KST 달)보다 뒤인가 — 'YYYY-MM' 은 사전식 비교 = 시간순. */
+export function isFuturePeriod(period: string, currentPeriod: string): boolean {
+  return period > currentPeriod
+}
+
+/** timestamptz ISO → 한국 시간 표기 '2026.09.25 14:03'. (formatDate 는 앞 10자리를 잘라 UTC 날짜가 나온다.) */
+export function formatKSTDateTime(iso: string): string {
+  const t = new Date(iso).getTime()
+  if (Number.isNaN(t)) return ''
+  const k = new Date(t + 9 * 60 * 60 * 1000)
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${k.getUTCFullYear()}.${p(k.getUTCMonth() + 1)}.${p(k.getUTCDate())} ${p(k.getUTCHours())}:${p(k.getUTCMinutes())}`
+}
+
+export interface PlanCandidate {
+  id: string
+  status: string
+  /** 유효 시작일 — 예산 배정 기간 → 계획 기간 → 차수 기간 순으로 보강한 값(모르면 null). */
+  start: string | null
+  /** 유효 종료일(포함). */
+  end: string | null
+  createdAt: string
+}
+
+const APPROVED = new Set(['approved', 'conditional'])
+
+/**
+ * 한 달 평가의 기준 이용계획을 고른다.
+ *  ① anchor — 그 달 평가가 이미 참조하는 계획(쓸 때의 계획에 고정. 상태 무관).
+ *  ② 승인(approved/conditional) 계획 중 유효 기간이 그 달과 겹치는 것 — 기간을 둘 다 아는 계획 우선,
+ *     그다음 시작이 늦은 것, 그다음 최근 생성.
+ *  ③ 없으면 가장 최근 승인 계획(시작 늦은 순 → 생성 늦은 순).
+ * 앱으로 만든 계획은 기간이 비어 있을 수 있어(NewPlanClient), 호출부가 배정·차수 기간으로 보강해 넘긴다.
+ */
+export function selectEvaluationPlan(
+  plans: PlanCandidate[],
+  period: string,
+  anchorPlanId?: string | null,
+): PlanCandidate | null {
+  if (anchorPlanId) {
+    const anchor = plans.find((p) => p.id === anchorPlanId)
+    if (anchor) return anchor
+  }
+  const monthStart = `${period}-01`
+  const nextMonthStart = `${shiftPeriod(period, 1)}-01`
+  const approved = plans.filter((p) => APPROVED.has(p.status))
+  const byRecency = (a: PlanCandidate, b: PlanCandidate) => {
+    if (a.start !== b.start) {
+      if (a.start == null) return 1
+      if (b.start == null) return -1
+      return a.start < b.start ? 1 : -1
+    }
+    return a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0
+  }
+  const covering = approved
+    .filter((p) => (p.start == null || p.start < nextMonthStart) && (p.end == null || p.end >= monthStart))
+    .sort((a, b) => {
+      const aKnown = a.start != null && a.end != null ? 0 : 1
+      const bKnown = b.start != null && b.end != null ? 0 : 1
+      return aKnown - bKnown || byRecency(a, b)
+    })
+  if (covering.length) return covering[0]
+  return [...approved].sort(byRecency)[0] ?? null
+}
+
 export type SettlementStatusKey = 'pending' | 'accepted' | 'rejected' | 'recovered'
 
 export interface MonthUsageRow {
