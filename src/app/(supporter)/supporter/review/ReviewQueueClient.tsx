@@ -4,10 +4,15 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { decideRuleCheck } from '@/app/actions/ruleCheck'
 import { MoneyText } from '@/components/ui/MoneyText'
+import ReceiptUploader from '@/components/ui/ReceiptUploader'
+import ActivityPhotoUploader from '@/components/ui/ActivityPhotoUploader'
 import { formatDate } from '@/utils/formatDate'
 
 interface ReviewItem {
   id: string
+  /** 지출 id — 영수증·활동사진을 이 지출에 붙일 때 쓴다. page.tsx 는 항상 채우지만,
+   *  기존 계약 테스트(usageId 미포함)와의 호환을 위해 optional. 없으면 업로더 미표시. */
+  usageId?: string
   ruleLabel: string
   participantName: string
   usageDate: string
@@ -78,6 +83,19 @@ export default function ReviewQueueClient({ items }: { items: ReviewItem[] }) {
             />
           ) : (
             <p className="text-xs text-muted-foreground p-3 rounded-xl bg-muted text-center">영수증 사진이 없어요.</p>
+          )}
+          {/* 증빙 보강 — 검토 중 영수증이 없거나 활동 사진을 함께 남길 때 이 지출에 바로 붙인다.
+              (담당 실무자·관리자. addActivityPhotos·attachReceipt 가 참여자·경로를 서버에서 도출.) */}
+          {item.usageId && (
+            <details className="rounded-xl bg-muted/50 ring-1 ring-border">
+              <summary className="cursor-pointer list-none px-3 py-2 text-xs font-bold text-muted-foreground min-h-[44px] flex items-center gap-1">
+                <span aria-hidden="true">＋</span> 영수증·활동 사진 추가
+              </summary>
+              <div className="flex flex-col gap-3 p-3 pt-1">
+                <ReceiptUploader usageId={item.usageId} hasReceipt={!!item.receiptUrl} />
+                <ActivityPhotoUploader usageId={item.usageId} />
+              </div>
+            </details>
           )}
           <input
             type="text"

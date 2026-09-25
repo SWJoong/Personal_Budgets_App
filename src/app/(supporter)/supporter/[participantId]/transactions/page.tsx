@@ -1,15 +1,12 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireStaff } from '@/utils/supabase/staff'
 import { getServiceUsages } from '@/app/actions/serviceUsage'
-import { settlementLabel, settlementIntent } from '@/utils/settlementStatus'
-import { formatDate } from '@/utils/formatDate'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { LinkButton } from '@/components/ui/LinkButton'
 import { Card } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
-import { StatusPill } from '@/components/ui/StatusPill'
 import { EmptyState } from '@/components/ui/EmptyState'
+import TransactionsLedgerClient from './TransactionsLedgerClient'
 
 /**
  * 거래장부 (GOAL축 A) — 당사자의 지출(seoul_service_usages) 목록. 실무자·본인 열람.
@@ -47,7 +44,7 @@ export default async function TransactionsPage({ params }: { params: Promise<{ p
         }
       />
 
-      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-4">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6 flex flex-col gap-4">
         {error && (
           <Card as="div" variant="danger" className="text-sm">
             {error}
@@ -65,30 +62,15 @@ export default async function TransactionsPage({ params }: { params: Promise<{ p
         {usages.length === 0 ? (
           <EmptyState emoji="📭" title="아직 지출 기록이 없어요." variant="inline" />
         ) : (
-          <ul className="flex flex-col gap-2">
-            {usages.map((u) => (
-              <li key={u.id}>
-                <Link
-                  href={`/supporter/transactions/${u.id}`}
-                  className="flex items-center justify-between gap-3 rounded-2xl p-4 min-h-[44px] bg-card ring-1 ring-border hover:bg-muted-hover transition-colors"
-                >
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="font-bold text-foreground truncate">{u.description || '(내용 없음)'}</span>
-                    <span className="text-xs text-muted-foreground">{formatDate(u.usage_date)}</span>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span className="font-bold">
-                      <MoneyText value={Number(u.amount)} emphasis="body" />
-                    </span>
-                    <StatusPill
-                      label={settlementLabel(u.settlement_status)}
-                      intent={settlementIntent(u.settlement_status)}
-                    />
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <TransactionsLedgerClient
+            rows={usages.map((u) => ({
+              id: u.id,
+              usageDate: u.usage_date,
+              description: u.description,
+              amount: Number(u.amount),
+              settlementStatus: u.settlement_status,
+            }))}
+          />
         )}
       </main>
     </div>

@@ -13,7 +13,8 @@ export const metadata = { title: '정산 원장' }
  * ·참여자명을 조회해 allocMap 을 만든 뒤 순수 buildSettlementLedger 로 집계한다. 미매핑 → '(알 수 없음)'.
  */
 export default async function SettlementsPage() {
-  const { supabase } = await requireStaff()
+  const { supabase, profile } = await requireStaff()
+  const isAdmin = profile?.role === 'admin'
   const { settlements, error } = await getSettlements()
 
   // allocation → { participantId, participantName } 매핑 —
@@ -56,13 +57,13 @@ export default async function SettlementsPage() {
         <h1 className="text-xl font-bold tracking-tight">정산 원장</h1>
       </header>
 
-      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-lg mx-auto p-4 sm:p-6">
+      <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-3xl mx-auto p-4 sm:p-6">
         {error ? (
           <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm leading-relaxed">
             {error}
           </div>
         ) : (
-          <SettlementsLedgerClient ledger={ledger} />
+          <SettlementsLedgerClient ledger={ledger} isAdmin={isAdmin} />
         )}
       </main>
     </div>
