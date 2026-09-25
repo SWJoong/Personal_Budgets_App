@@ -59,6 +59,7 @@ jobs:
             supabase/seoul/17_participant_feedback.sql
             supabase/seoul/18_sis_assessments.sql
             supabase/seoul/19_plan_feedback.sql
+            supabase/seoul/20_evaluations.sql
           )
           for f in "${build[@]}"; do
             echo "=== apply $f ==="
@@ -71,7 +72,8 @@ jobs:
                    supabase/seoul/11_provider_domains.sql \
                    supabase/seoul/12_audit_log.sql \
                    supabase/seoul/17_participant_feedback.sql \
-                   supabase/seoul/18_sis_assessments.sql; do
+                   supabase/seoul/18_sis_assessments.sql \
+                   supabase/seoul/20_evaluations.sql; do
             psql -v ON_ERROR_STOP=1 -q -f "$f"
           done
 
@@ -92,6 +94,7 @@ jobs:
             verify_activity_photos
             verify_participant_feedback
             verify_sis_assessments
+            verify_evaluations
           )
           out="$(mktemp)"
           for v in "${verify[@]}"; do

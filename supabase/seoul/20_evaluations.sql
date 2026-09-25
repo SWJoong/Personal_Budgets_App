@@ -1,0 +1,134 @@
+-- =====================================================================
+-- 20 · 월별 평가 (evaluations)  —  축B: 실무자 행정(평가 양식)  —  U(backend)
+--
+--      설계권위: 사용자 결정 2026-09-25 (계획·평가 개선 — "레거시 검토 후 신규 테이블 여부 결정")
+--        · 당사자 직접 평가 = 실무자가 대신 기록(대필)
+--        · 계획 이행 정도   = 계획 항목(신청 서비스)별
+--
+-- 배경: 서울형 스키마에는 정형 평가가 없었다(03_seoul_schema §11 모니터링 주석). 레거시(월별 4+1
+--       evaluations · 항목별 goal_evaluations)는 036a8d1 에서 제거되어 아카이브(미실행)로만 남아 있어
+--       '부활'이 아니라 서울형 모델에 맞춘 '신설'이다. 레거시의 폼 개념(월별 서술 + 항목별 달성)만 계승.
+--
+-- 모델:
+--   seoul_evaluations           — 당사자 × 월(period 'YYYY-MM') 1건.
+--                                 budget_usage_note(월별 예산 사용 평가 서술) · participant_opinion(당사자
+--                                 의견 — 실무자 대필) · overall_note(종합 소견).
+--                                 ★예산 수치(쓴 돈·정산)는 저장하지 않는다 — 화면에서 seoul_service_usages /
+--                                   seoul_settlements 로 계산해 보여준다(원장이 정본, 사본 불일치 방지).
+--   seoul_plan_item_evaluations — 평가 × 계획 항목(seoul_requested_services) 1건. 이행 정도 4단계 + 메모.
+--
+-- RLS:
+--   열람 = seoul_can_access(참여자) — 본인·담당 실무자·관리자. 당사자도 자기 평가를 볼 수 있다.
+--   쓰기 = seoul_is_staff_for(참여자) — 담당 실무자·관리자만. 당사자 본인 작성 없음(대필 결정).
+--   항목 평가는 부모 평가의 참여자로 판정한다.
+-- 무결성(역할 무관 트리거): 항목의 신청 서비스가 '같은 당사자'의 계획 소속이어야 한다 — 남의 계획
+--   항목에 평가를 붙이는 교차 오염을 DB 레벨에서 차단(service role·직접 SQL 포함).
+-- 멱등: CREATE TABLE/INDEX IF NOT EXISTS · CREATE OR REPLACE FUNCTION · DROP POLICY/TRIGGER IF EXISTS 후 재생성.
+-- 의존: participants·profiles·set_updated_at·seoul_can_access·seoul_is_staff_for(01) ·
+--       seoul_requested_services·seoul_utilization_plans(03). → 03 이후.
+-- =====================================================================
+
+-- ── §1. 월별 평가 (헤더) ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.seoul_evaluations (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  participant_id      UUID NOT NULL REFERENCES public.participants(id) ON DELETE CASCADE,
+  period              TEXT NOT NULL CHECK (period ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
+  budget_usage_note   TEXT,   -- 월별 예산 사용 평가(서술). 수치는 원장에서 계산해 보여준다.
+  participant_opinion TEXT,   -- 당사자 직접 평가 — 실무자가 당사자의 말을 대신 기록(대필).
+  overall_note        TEXT,   -- 종합 소견
+  authored_by         UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (participant_id, period)   -- 당사자·월 1건 (upsert 키, 인덱스 겸용)
+);
+COMMENT ON TABLE public.seoul_evaluations IS
+  '당사자별 월별 평가(예산 사용 서술·당사자 의견 대필·종합 소견). 열람=본인·담당·관리자, 쓰기=담당·관리자. 수치는 원장에서 계산.';
+
+DROP TRIGGER IF EXISTS trg_seoul_evaluations_updated_at ON public.seoul_evaluations;
+CREATE TRIGGER trg_seoul_evaluations_updated_at
+  BEFORE UPDATE ON public.seoul_evaluations
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+-- ── §2. 계획 항목별 이행 정도 ─────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.seoul_plan_item_evaluations (
+  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  evaluation_id        UUID NOT NULL REFERENCES public.seoul_evaluations(id) ON DELETE CASCADE,
+  requested_service_id UUID NOT NULL REFERENCES public.seoul_requested_services(id) ON DELETE CASCADE,
+  achievement          TEXT NOT NULL
+                         CHECK (achievement IN ('not_achieved', 'partial', 'achieved', 'exceeded')),
+  note                 TEXT,
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (evaluation_id, requested_service_id)   -- 평가·항목 1건 (upsert 키)
+);
+COMMENT ON TABLE public.seoul_plan_item_evaluations IS
+  '월별 평가의 계획 항목(신청 서비스)별 이행 정도(미이행/부분/이행/초과) + 메모. 권한은 부모 평가의 참여자로 판정.';
+CREATE INDEX IF NOT EXISTS idx_seoul_plan_item_eval_service
+  ON public.seoul_plan_item_evaluations(requested_service_id);
+
+DROP TRIGGER IF EXISTS trg_seoul_plan_item_eval_updated_at ON public.seoul_plan_item_evaluations;
+CREATE TRIGGER trg_seoul_plan_item_eval_updated_at
+  BEFORE UPDATE ON public.seoul_plan_item_evaluations
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+-- ★교차 오염 방지 — 항목(신청 서비스)의 계획 소유자 = 평가의 당사자여야 한다. 역할 무관 차단.
+--   SECURITY INVOKER(활동사진 경로 트리거와 동일): 조회가 호출자 RLS 를 따르므로, 평가·계획을 볼 수 없는
+--   호출자(미배정 실무자 등)는 NULL 로 판정되어 fail-closed 차단된다. 정당한 작성자(담당·관리자·service
+--   role)는 해당 행을 항상 볼 수 있어 오탐이 없다. (verify_evaluations I2·I3·I4·I5)
+CREATE OR REPLACE FUNCTION public.seoul_check_plan_item_eval_owner()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_eval_participant UUID;
+  v_item_participant UUID;
+BEGIN
+  SELECT e.participant_id INTO v_eval_participant
+    FROM public.seoul_evaluations e WHERE e.id = NEW.evaluation_id;
+  SELECT p.participant_id INTO v_item_participant
+    FROM public.seoul_requested_services rs
+    JOIN public.seoul_utilization_plans p ON p.id = rs.plan_id
+   WHERE rs.id = NEW.requested_service_id;
+  IF v_eval_participant IS NULL OR v_item_participant IS NULL
+     OR v_eval_participant <> v_item_participant THEN
+    RAISE EXCEPTION '계획 항목(%)이 이 평가의 당사자(%) 계획에 속하지 않습니다',
+      NEW.requested_service_id, v_eval_participant;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS trg_seoul_check_plan_item_eval_owner ON public.seoul_plan_item_evaluations;
+CREATE TRIGGER trg_seoul_check_plan_item_eval_owner
+  BEFORE INSERT OR UPDATE ON public.seoul_plan_item_evaluations
+  FOR EACH ROW EXECUTE FUNCTION public.seoul_check_plan_item_eval_owner();
+
+-- ── §3. RLS ───────────────────────────────────────────────────────────
+ALTER TABLE public.seoul_evaluations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.seoul_plan_item_evaluations ENABLE ROW LEVEL SECURITY;
+
+-- 평가: 열람 = 본인·담당·관리자 / 쓰기(insert·update·delete) = 담당·관리자.
+DROP POLICY IF EXISTS seoul_evaluations_select ON public.seoul_evaluations;
+CREATE POLICY seoul_evaluations_select ON public.seoul_evaluations
+  FOR SELECT TO authenticated
+  USING (public.seoul_can_access(participant_id));
+
+DROP POLICY IF EXISTS seoul_evaluations_write ON public.seoul_evaluations;
+CREATE POLICY seoul_evaluations_write ON public.seoul_evaluations
+  FOR ALL TO authenticated
+  USING (public.seoul_is_staff_for(participant_id))
+  WITH CHECK (public.seoul_is_staff_for(participant_id));
+
+-- 항목 평가: 부모 평가의 참여자로 판정.
+DROP POLICY IF EXISTS seoul_plan_item_eval_select ON public.seoul_plan_item_evaluations;
+CREATE POLICY seoul_plan_item_eval_select ON public.seoul_plan_item_evaluations
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_evaluations e
+                  WHERE e.id = evaluation_id AND public.seoul_can_access(e.participant_id)));
+
+DROP POLICY IF EXISTS seoul_plan_item_eval_write ON public.seoul_plan_item_evaluations;
+CREATE POLICY seoul_plan_item_eval_write ON public.seoul_plan_item_evaluations
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.seoul_evaluations e
+                  WHERE e.id = evaluation_id AND public.seoul_is_staff_for(e.participant_id)))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.seoul_evaluations e
+                  WHERE e.id = evaluation_id AND public.seoul_is_staff_for(e.participant_id)));
