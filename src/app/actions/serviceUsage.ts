@@ -116,6 +116,73 @@ export async function recordServiceUsage(input: ServiceUsageInput) {
 }
 
 /**
+ * 기존 지출에 영수증 첨부(교체) — recordServiceUsage 는 '신규 지출 insert' 시에만 영수증을 붙일 수
+ * 있어, 이미 기록된 지출(영수증 검토 대기·거래 상세)에 영수증을 뒤늦게 붙일 경로가 없었다. 이 액션이
+ * 그 공백을 메운다. usage 당 1장 취급 — 기존 영수증 행이 있으면 교체하고 이전 파일도 정리한다.
+ *
+ * ★보안: ① participant·provider 는 usage 에서 서버 도출(클라 신뢰 금지, RLS 가 접근 가능한 usage 만
+ * 반환) · ② 저장 경로는 서버가 `${participantId}/${usageId}.${ext}` 로 구성(위조 불가) · ③ seoul_receipts
+ * insert/delete 는 user 스코프(RLS seoul_receipts_write = 담당 staff 또는 self-pending 이 강제).
+ * 스토리지 바이트만 admin 클라이언트. view-as 중에는 차단.
+ */
+export async function attachReceipt(
+  usageId: string,
+  receipt: { base64: string; mimeType?: string },
+): Promise<{ success?: true; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.' }
+
+  // 관리자 둘러보기(view-as) 중에는 쓰기를 막는다(읽기전용 미리보기).
+  const viewAsBlock = await viewAsWriteBlock()
+  if (viewAsBlock) return { error: viewAsBlock }
+
+  if (!receipt.base64) return { error: '영수증 사진이 없어요.' }
+
+  const { data: usage } = await supabase
+    .from('seoul_service_usages')
+    .select('participant_id, provider_id')
+    .eq('id', usageId)
+    .maybeSingle()
+  if (!usage) return { error: '지출 정보를 찾을 수 없어요.' }
+
+  const contentType = receipt.mimeType || 'image/jpeg'
+  const ext = MIME_EXT[contentType] || 'jpg'
+  const path = `${usage.participant_id}/${usageId}.${ext}`
+  const admin = createAdminClient()
+  const buffer = Buffer.from(receipt.base64, 'base64')
+
+  const { error: uploadError } = await admin.storage
+    .from('receipts')
+    .upload(path, buffer, { contentType, upsert: true })
+  if (uploadError) return { error: `영수증 저장에 실패했어요: ${uploadError.message}` }
+
+  // 기존 영수증(있으면) 정리 — usage 당 1장. 확장자가 달라 경로가 바뀐 경우 이전 파일도 제거.
+  const { data: existing } = await supabase
+    .from('seoul_receipts')
+    .select('id, storage_path')
+    .eq('usage_id', usageId)
+  if (existing?.length) {
+    const stalePaths = existing.map((r) => r.storage_path).filter((p): p is string => !!p && p !== path)
+    await supabase.from('seoul_receipts').delete().eq('usage_id', usageId)
+    if (stalePaths.length) await admin.storage.from('receipts').remove(stalePaths)
+  }
+
+  const { error: insertError } = await supabase
+    .from('seoul_receipts')
+    .insert({ usage_id: usageId, provider_id: usage.provider_id || null, storage_path: path })
+  if (insertError) {
+    // 어떤 seoul_receipts 행에서도 참조되지 못한 파일을 버킷에 남기지 않는다(orphan 롤백).
+    await admin.storage.from('receipts').remove([path])
+    return { error: `영수증 정보 저장에 실패했어요: ${insertError.message}` }
+  }
+
+  revalidatePath('/supporter/review')
+  revalidatePath(`/supporter/transactions/${usageId}`)
+  return { success: true }
+}
+
+/**
  * 지출 수정 — 실무자가 잘못 기록한 지출의 금액·날짜·내용을 고친다(오기 정정).
  *
  * 정책: settlement_status='pending' 일 때만 허용한다. 검토가 끝난 지출

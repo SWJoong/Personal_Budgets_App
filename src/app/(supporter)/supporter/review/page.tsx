@@ -47,6 +47,7 @@ export default async function ReviewQueuePage() {
     const usage = usageById.get(rc.usage_id)
     return {
       id: rc.id,
+      usageId: rc.usage_id,
       ruleLabel: rc.rule_id ? ruleById.get(rc.rule_id)?.label ?? '' : '',
       participantName: usage ? participantById.get(usage.participant_id) ?? '' : '',
       usageDate: usage?.usage_date ?? '',
