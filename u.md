@@ -1452,3 +1452,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-26T07:19Z] U
 [진행] 사용자 20_evaluations.sql 라이브 실행(머지 전). anon 프로브 green: 두 테이블·전 컬럼·임베드 관계·뷰 노출·UNIQUE 2종(ON CONFLICT 추론)·소유 트리거 최신본(P0001 무-id 문구=0b8d5d3+). 독립검증 3에이전트: ①읽기전용 카탈로그 점검쿼리 32항목(PG15/17 baseline ✅, 뮤테이션 37종 각각 RED) ②머지 전 적용의 main 영향 = 안전(upsert plan_id 트리거 무발화·참여자삭제 cascade 성공·00~19/시드 재실행 무오류) — 보통1: CREATE TABLE IF NOT EXISTS 라 과거본(06d55b3 CASCADE) 선실행 시 FK RESTRICT 미반영 가능 → 카탈로그 K4 로 확인 요청 ③프로브 해석 반박: RLS(항목)·정책·security_invoker·DEFINER 는 프로브로 미확정 → 카탈로그로. 사용자 카탈로그 실행+#191 머지 승인 대기.
 
+## [2026-09-26T08:10Z] U
+[진행] 20_evaluations 라이브 카탈로그 점검 32항목 전부 ✅(사용자 SQL Editor 실행) — K4 RESTRICT·정책4·트리거6·DEFINER3·security_invoker·권한 확인. #191 Manual-Ops 선반영 완료, 머지 승인만 대기.
+
