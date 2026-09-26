@@ -27,6 +27,7 @@ export const AUDIT_ACTIONS: Record<string, AuditActionMeta> = {
   'document.delete': { label: '서류 삭제', category: 'change' },
   'settlement.record': { label: '정산 기록', category: 'change' },
   'plan.review': { label: '이용계획 심의', category: 'change' },
+  'evaluation.save': { label: '월별 평가 저장', category: 'change' },
   'invitation.create': { label: '초대 만듦', category: 'change' },
   'invitation.delete': { label: '초대 지움', category: 'change' },
   // AI 호출

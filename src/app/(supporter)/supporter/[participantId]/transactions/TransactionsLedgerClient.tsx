@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useCallback, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { updateServiceUsage, deleteServiceUsage } from '@/app/actions/serviceUsage'
@@ -30,11 +30,17 @@ export default function TransactionsLedgerClient({ rows }: { rows: LedgerTxRow[]
   const router = useRouter()
   const { announce } = useToast()
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [error, setError] = useState('')
+  // 오류마다 새 노드(key=seq)로 넣는다 — 같은 오류를 다시 내도(예: 금액 검증 반복) 보조기기가 다시 읽게.
+  const [error, setErrorState] = useState({ text: '', seq: 0 })
+  const setError = useCallback((text: string) => setErrorState((prev) => ({ text, seq: prev.seq + 1 })), [])
 
   return (
     <div className="flex flex-col gap-2">
-      {error && <p role="alert" className="text-sm text-danger-fg font-bold">{error}</p>}
+      {error.text && (
+        <p key={error.seq} role="alert" className="text-sm text-danger-fg font-bold">
+          {error.text}
+        </p>
+      )}
       <div className="overflow-x-auto rounded-2xl ring-1 ring-border bg-card">
         <table className="w-full min-w-[34rem] text-sm border-collapse">
           <caption className="sr-only">거래장부 표 — 날짜, 내용, 금액, 정산 상태, 작업</caption>
@@ -127,9 +133,9 @@ function EditRow({
     onError('')
     startTransition(async () => {
       const result = await updateServiceUsage(row.id, { amount: amountNum, usageDate, description })
+      // 오류는 표 위 인라인 role=alert 한 채널로만 읽는다(전역 announce 까지 부르면 두 번 읽힌다).
       if (result.error) {
         onError(result.error)
-        announce(result.error, 'assertive')
         return
       }
       announce('지출을 수정했어요.')
@@ -144,7 +150,6 @@ function EditRow({
       const result = await deleteServiceUsage(row.id)
       if (result.error) {
         onError(result.error)
-        announce(result.error, 'assertive')
         return
       }
       announce('지출을 삭제했어요.')

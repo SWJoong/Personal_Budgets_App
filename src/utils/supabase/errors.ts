@@ -12,5 +12,7 @@ export function friendlyDbError(
   if (!error) return '오류가 발생했어요.'
   if (error.code === '23505') return duplicateMessage
   if (error.code === '42501') return '지금은 이 항목을 처리할 수 없어요. 상태가 바뀌었을 수 있어요.'
+  // foreign_key_violation — 원문("violates foreign key constraint ...")이 기술 용어. 연결된 기록 보호(RESTRICT) 등.
+  if (error.code === '23503') return '연결된 다른 기록이 있어서 처리할 수 없어요.'
   return error.message
 }

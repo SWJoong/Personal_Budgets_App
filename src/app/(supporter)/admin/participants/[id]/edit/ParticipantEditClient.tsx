@@ -45,9 +45,10 @@ export default function ParticipantEditClient({
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
+  // 오류는 아래 인라인 role=alert 한 채널로만 읽는다(시도마다 setError('') 로 비웠다 다시 넣어 같은 오류도 다시 읽힘).
+  // 전역 announce 까지 부르면 같은 오류가 두 번 읽힌다.
   const fail = (msg: string) => {
     setError(msg)
-    announce(msg, 'assertive')
   }
 
   async function handleSubmit(e: FormEvent) {

@@ -154,8 +154,10 @@ export default function ReceiptClient({
     if (!allocationId) return
     if (!amount || Number(amount) <= 0) {
       const msg = '얼마 썼는지 금액을 적어 주세요.'
+      // 금액 칸의 role=alert 가 새로 뜨면 그것만 읽힌다. 같은 오류가 이미 떠 있으면(그대로 다시 제출) DOM 이 안 바뀌어
+      // 무음이 되므로 그때만 전역으로 다시 알린다(둘 다 부르면 두 번 읽힘).
+      if (amountError === msg) announce(msg, 'assertive')
       setAmountError(msg)
-      announce(msg, 'assertive')
       return
     }
 

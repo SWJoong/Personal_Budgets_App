@@ -29,6 +29,11 @@
 12_audit_log.sql       통합 감사 로그 seoul_audit_log (append-only·행위자 스탬프·관리자 열람)
                        (13~15 = 관계망(Track B) 제거됨 — 번호 결번. 라이브 DB 드롭은 _drops/2026-09-19_drop_network.sql)
 16_seed_documents_demo.sql    (선택·데모) 데모 당사자 서류 메타데이터 시드 — 서류함 QA용. 08 이후 실행. 멱등. ★파일없음(열기 미동작)
+17_participant_feedback.sql   당사자 온보딩·화면 감정 피드백 participant_feedback (본인 작성·본인+관리자 열람)
+18_sis_assessments.sql        SIS-A 지원요구척도 점수 sis_assessments
+19_plan_feedback.sql          계획 가벼운 피드백 seoul_plan_feedback (당사자 "확인/궁금" → 실무자 열람, append-only)
+20_evaluations.sql            월별 평가 seoul_evaluations + 계획 항목별 이행도 seoul_plan_item_evaluations
+                              (실무자 작성·당사자 열람, 교차 당사자 오염 방지 트리거). 03 이후.
 ```
 
 여기까지가 **운영 환경에도 그대로 실행하는 부분**입니다. 이어서 데모 계정이 필요하면:

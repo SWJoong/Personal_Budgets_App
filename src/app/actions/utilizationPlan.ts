@@ -234,6 +234,8 @@ export async function deleteRequestedService(id: string) {
       .select('id')
       .maybeSingle()
 
+    // 월별 평가(seoul_plan_item_evaluations)가 이 항목을 참조하면 FK RESTRICT 로 거부된다 — 평가 기록 보호(20_evaluations).
+    if (error?.code === '23503') return { error: '이미 월별 평가가 작성된 항목이라 지울 수 없어요.' }
     if (error) return { error: `삭제 실패: ${friendlyDbError(error)}` }
     if (!data) return { error: '삭제할 권한이 없거나 이미 삭제됐어요.' }
 

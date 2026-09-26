@@ -22,7 +22,8 @@ vi.mock('@/app/actions/admin', () => ({
   updateParticipant: (...a: unknown[]) => updateMock(...a),
   deleteParticipant: (...a: unknown[]) => deleteMock(...a),
 }))
-vi.mock('@/components/ui/LiveRegion', () => ({ useToast: () => ({ announce: vi.fn() }) }))
+const { announceMock } = vi.hoisted(() => ({ announceMock: vi.fn() }))
+vi.mock('@/components/ui/LiveRegion', () => ({ useToast: () => ({ announce: announceMock }) }))
 
 const PARTICIPANT = { id: 'p1', name: '김철수', email: 'kim@example.com', assigned_supporter_id: 's1' }
 const SUPPORTERS = [
@@ -34,6 +35,7 @@ beforeEach(() => {
   updateMock.mockReset(); updateMock.mockResolvedValue({ success: true })
   deleteMock.mockReset(); deleteMock.mockResolvedValue({ success: true })
   pushMock.mockReset()
+  announceMock.mockClear()
 })
 afterEach(() => cleanup())
 
@@ -64,6 +66,15 @@ describe('ParticipantEditClient — 당사자 수정·삭제', () => {
     await user.click(screen.getByRole('button', { name: /저장|수정/ }))
     expect(updateMock).not.toHaveBeenCalled()
     expect(screen.getByText(/이름/)).toBeInTheDocument()
+  })
+
+  it('서버 오류는 인라인 role=alert 한 채널로만 알린다(전역 announce 중복 없음 — 두 번 읽힘 방지)', async () => {
+    updateMock.mockResolvedValue({ error: '이미 쓰는 이메일이에요.' })
+    const user = userEvent.setup()
+    render(<ParticipantEditClient participant={PARTICIPANT} supporters={SUPPORTERS} />)
+    await user.click(screen.getByRole('button', { name: /저장|수정/ }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('이미 쓰는 이메일이에요.')
+    expect(announceMock).not.toHaveBeenCalledWith('이미 쓰는 이메일이에요.', expect.anything())
   })
 
   it('삭제는 확인 단계를 거친다 — 바로 삭제 안 됨', async () => {
