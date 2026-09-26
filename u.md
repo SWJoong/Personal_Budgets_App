@@ -1455,3 +1455,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-26T08:10Z] U
 [진행] 20_evaluations 라이브 카탈로그 점검 32항목 전부 ✅(사용자 SQL Editor 실행) — K4 RESTRICT·정책4·트리거6·DEFINER3·security_invoker·권한 확인. #191 Manual-Ops 선반영 완료, 머지 승인만 대기.
 
+## [2026-09-26T08:22Z] U
+[MERGED] #191 계획·평가 당사자별 펼쳐보기+월별 평가 양식 → main 7f7cd58(사용자 승인, squash). 20_evaluations 라이브 선반영·카탈로그 32항목 ✅. 원격 브랜치 삭제. 별건 태스크: 영수증 기록 성공 무음(기존결함).
+
