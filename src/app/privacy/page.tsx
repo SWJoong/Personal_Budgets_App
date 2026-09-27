@@ -142,11 +142,33 @@ export default function PrivacyPolicyPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-sm text-muted-foreground break-keep">
-              영수증 자동 인식(OCR)은 영수증 이미지 원본이 전송될 수 있습니다. 이름·기관명이 포함될 수
-              있는 텍스트는 전송 전에 가명처리(대체)합니다. 인공지능 기능을 원하지 않으면 직접 입력으로
-              대체할 수 있습니다.
-            </p>
+            {/* 기능별 전송 범위 — 액션 실측(ocr.ts=이미지 원본 / 나머지=callAIDeidentified 텍스트). */}
+            <div className="mt-3 flex flex-col gap-1.5 text-sm text-muted-foreground break-keep">
+              <p>
+                데이터베이스·로그인·파일은 국내(서울) 서버에 저장합니다. 인공지능 기능으로 미국에 보내는
+                정보는 기능마다 다릅니다.
+              </p>
+              <ul className="flex flex-col gap-1">
+                <li>
+                  • 영수증 자동 인식(OCR): 영수증 사진을 올리면 날짜·금액·상호·주소를 읽기 위해{' '}
+                  <strong className="text-foreground">이미지 원본</strong>이 전송됩니다. 이미지는
+                  가명처리할 수 없습니다.
+                </li>
+                <li>
+                  • 이용계획 쉬운 말 요약(실무자 사용): 계획 기간, 자기서술(건강·장애 관련 내용이 포함될 수
+                  있음), 받고 싶은 도움 목록이 전송됩니다. 당사자·대리인 이름은 기호로 바꿔(가명처리) 보내며,
+                  그 밖의 내용은 그대로 전송됩니다.
+                </li>
+                <li>
+                  • 활동 제안(당사자 사용)·AI 점검 제안(실무자 사용): 영역별 남은 예산, 지출·점검 현황 같은
+                  요약 정보가 전송됩니다. 이름은 기호로 바꿔(가명처리) 보냅니다.
+                </li>
+              </ul>
+              <p>
+                이름과 기호의 대응표는 저장하지 않습니다. 영수증 사진을 올리지 않고 직접 입력할 수도
+                있습니다.
+              </p>
+            </div>
           </Card>
 
           {/* 5. 권리 */}
@@ -165,7 +187,8 @@ export default function PrivacyPolicyPage() {
           <Card as="section" title="6. 안전조치">
             <p className="text-muted-foreground break-keep">
               접근권한 분리(이용자는 본인 정보만 열람), 파일의 비공개 저장 및 서명된 임시 링크(signed URL),
-              암호화 전송(HTTPS), 인공지능 전송 전 가명처리, 관리자만 열람 가능한 접근 기록을 적용합니다.
+              암호화 전송(HTTPS), 인공지능으로 글을 보내기 전 이름 가명처리(영수증 이미지는 제외), 관리자만
+              열람 가능한 접근 기록을 적용합니다.
             </p>
           </Card>
 

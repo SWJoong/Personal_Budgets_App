@@ -56,22 +56,29 @@ export interface Processor {
   note?: string
 }
 
-/** 처리위탁·국외이전 현황 — src/utils/ai.ts·ocr.ts·geocode.ts·package.json·.env 실측(11 §2-4). */
+/**
+ * 처리위탁·국외이전 현황 — src/utils/ai.ts·ocr.ts·geocode.ts·package.json·.env 실측(11 §2-4).
+ * Supabase 리전 = 서울(ap-northeast-2) 확인(2026-09-23, docs/release/15 §3) → 저장은 국외이전 아님.
+ * Anthropic 전송 범위(액션 실측): OCR(ocr.ts)=영수증 이미지 원본을 callAI 로 직송(이미지라 가명처리 불가) /
+ *   요약·활동제안·점검제안(easyReadSummary·activitySuggestion·staffReviewSuggestion)=callAIDeidentified 로
+ *   당사자·대리인 이름을 토큰화한 텍스트만 전송, 토큰 맵은 요청 스코프 메모리(미저장).
+ */
 export const PROCESSORS: Processor[] = [
   {
     name: 'Supabase',
     purpose: '데이터베이스·로그인·파일 저장',
-    location: '서버 리전 [확인필요]',
-    overseas: 'unknown', // 리전 미확정 → 국외이전 '아니오' 단정 금지(리전 국외 시 §28의8 누락 위험)
+    location: '국내(서울, AWS ap-northeast-2)',
+    overseas: 'no',
     safeguard: '접근권한 분리(RLS)·비공개 저장소·암호화 전송',
-    note: '리전이 국외이면 국외이전 대상 — 확인 후 반영',
   },
   {
     name: 'Anthropic (Claude)',
-    purpose: '영수증 자동 인식(OCR)·기록 요약·활동 제안',
+    purpose: '영수증 자동 인식(OCR)·이용계획 쉬운 말 요약·당사자 활동 제안·실무자용 AI 점검 제안',
     location: '미국',
     overseas: 'yes',
-    safeguard: '이름·기관명 가명처리(대체) 후 전송, 대응표 미저장',
+    safeguard:
+      '영수증 자동 인식은 영수증 이미지 원본을 그대로 전송(이미지라 가명처리 불가). ' +
+      '요약·활동 제안·점검 제안은 당사자·대리인 이름을 기호로 바꾼(가명처리) 글만 전송, 대응표 미저장.',
   },
   {
     name: 'Vercel',
