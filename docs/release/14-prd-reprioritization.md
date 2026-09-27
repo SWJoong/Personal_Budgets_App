@@ -71,7 +71,7 @@
 | # | 항목 | 상태 | 레인 | 핵심 |
 |---|------|------|------|------|
 | P2-1 | 계획 명시적 공유 게이트 + 양방향 피드백 | **done** (#183) | W+U | '공유'가 RLS+알림으로 암묵적. 축B 명시 목표('계획 공유')의 사용자 대면 절반. **(2026-09-27)** 사용자 결정 (a) 가벼운 피드백 → #183(`19_plan_feedback.sql`, 2026-09-21 라이브 반영). 남음: 미읽음 표시(P3)·RLS verify 계약(W) |
-| P2-2 | 월간 실적 보고서(출력/제출본) | **done** (#182) | U | '월간보고서' 카드는 실은 지원영역 흐름 화면. 인쇄/제출본 부재. **(2026-09-27)** #182 `/report/print` 범용 양식 v1 — 기관 공식 양식을 받으면 교체 |
+| P2-2 | 월간 실적 보고서(출력/제출본) | **done** (#182) | U | '월간보고서' 카드는 실은 지원영역 흐름 화면. 인쇄/제출본 부재. **(2026-09-27)** #182 `/supporter/[participantId]/report/print` 범용 양식 v1 — 기관 공식 양식을 받으면 교체 |
 | P2-3 | 모니터링 기록 수정/삭제 | **done** (#180) | U | `monitoring.ts` insert·list 만, update/delete 없음 |
 | P2-4 | 정산 기록 실무자 행정 흐름 연결 | partial | U+user | `recordSettlement`가 관리자 전용(assertAdmin). 실무자 흐름 정책 결정. **(2026-09-27)** #190 정산 원장 인라인 편집도 관리자 전용. 실무자 허용 여부는 여전히 사용자 결정 대기 |
 | P2-5 | 축C 사업 진행 파악 집계 대시보드(KPI 통합뷰) | **done** (#179, A~C) | U | 대시보드가 오늘할일 3카운트뿐. 배정대비 집행률·신청 퍼널·차수 진행 부재. **(2026-09-27)** #179 `/admin/insights` 지표 A~C. D(자기주도성)는 보류, 모니터링은 v1 '최근 30일 기록 유무'(기대주기 기관결정 전) |
@@ -157,7 +157,7 @@
 - **P1** 지출기록 화면 읽어주기(`SpeakButton`) (P1-4).
 - **P2** 지출 기록 성공 안내 → **#194(리뷰 중)**.
 - **P2** 검토 대기 화면 `receipt.view` 렌더마다 반복 기록 → 실제 열람 시점으로 좁히기(doc12 §6).
-- **P2** 감사 기록 `target_participant_id` 누락(`receipt.view`·`usage.update`·`settlement.record`·`plan.review`·`ai.summary`) (doc12 §6).
+- **P2** 감사 기록 `target_participant_id` 누락 — `receipt.view`(doc12 §6) · `usage.update`(`serviceUsage.ts:243`) · `settlement.record`(`settlement.ts:51`) · `plan.review`(`planReview.ts:56`) · `ai.summary`(`easyReadSummary.ts:89`) (2026-09-27 재점검에서 코드로 확인).
 - **P2** `db-verify.yml` 멱등 재적용 루프에 `19_plan_feedback.sql` 추가 + verify 목록에 `verify_plan_feedback` 등재(W 저작 후, 짝 작업).
 - **P3** 계획 피드백 미읽음 표시 · `database.ts` 타입 재생성(CLI 접근 필요) · 고아 서버액션 3개(`getServiceDomains`·`getServiceSubdomains`·`getSelectionDecision`) 정리.
 - **P3** `is_super_admin` 판정 소스 일원화 · easyread 자동검증 CI · `src/proxy.ts` 인증경로 `startsWith` 정확매칭화.

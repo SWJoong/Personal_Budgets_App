@@ -42,7 +42,7 @@
 
 ### A-4. 서류·보고서
 - [ ] 서류 보관함 (`/supporter/documents`) 열람·업로드
-- [ ] **월간 실적 보고서 인쇄/제출본** (`/report/print`, #182) — 인쇄 레이아웃(`print:hidden` 적용)
+- [ ] **월간 실적 보고서 인쇄/제출본** (`/supporter/[participantId]/report/print`, #182) — 인쇄 레이아웃(`print:hidden` 적용)
 
 ### A-5. 정산 (관리자 전용)
 - [ ] 정산 기록(`recordSettlement`) — 관리자 권한 확인, 반려/환수 흐름

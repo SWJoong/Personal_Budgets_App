@@ -152,6 +152,7 @@ export async function myAction(formData: FormData) {
 12_audit_log → 17_participant_feedback → 18_sis_assessments → 19_plan_feedback → 20_evaluations`.
 - `13~15` 는 결번(관계망/Track B 제거 #171 — 라이브 드롭은 `_drops/2026-09-19_drop_network.sql`).
 - 데모용(운영 제외): `scripts/seed-demo-auth.mjs`(터미널) → `08_seed_demo.sql` · `16_seed_documents_demo.sql`(선택, 08 이후).
+
 실행 순서·대시보드 수동작업 상세는 [`supabase/seoul/README.md`](supabase/seoul/README.md).
 
 **레거시**: 번호 마이그레이션 `supabase/migrations/04~31` 은 D0 컷오버(#16)에서
