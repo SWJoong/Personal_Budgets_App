@@ -1,0 +1,50 @@
+{
+  "$comment": "Personal_Budgets_App 하네스 정본 — 플러그인 harness 의 lane-guard·agent-sync·wave-plan·verify-pr 이 읽는다. 글롭은 셸 case 의미론(*·** 가 / 를 가로지름). CLAUDE.md 「레인 규칙」·「검증 티어」와 1:1 이어야 한다.",
+  "project": "Personal_Budgets_App",
+  "baseBranch": "main",
+  "roles": { "author": "u", "verifier": "w", "seat": "w" },
+  "roleSkills": { "u": ["backend", "frontend"], "w": ["qa", "pl", "easy-read-review"] },
+  "lanes": {
+    "w": [
+      "Plan&Source/**",
+      "**/verify_*.sql",
+      "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.spec.ts", "src/**/*.spec.tsx",
+      "src/test/**",
+      "vitest.config.ts",
+      ".claude/skills/**",
+      "docs/harness-plan.md"
+    ],
+    "shared": ["CLAUDE.md", ".claude/harness.json", ".claude/settings.json", ".github/pull_request_template.md", "scripts/agent-sync.sh"]
+  },
+  "gate": {
+    "contract": "npx vitest run {file}",
+    "all": "npx tsc --noEmit && npm run lint && npm test && npm run build"
+  },
+  "featureBranch": "feat/*",
+  "contractBranch": "test/w-*",
+  "prefixes": { "toVerifier": "[HANDOFF→W]", "toAuthor": "[HANDOFF→U]", "sync": "[SYNC]" },
+  "tiers": {
+    "docs": ["docs/**", "**/*.md"],
+    "high": {
+      "rls": ["supabase/**/*rls*.sql", "supabase/seoul/12_audit_log.sql"],
+      "auth": ["src/proxy.ts", "src/app/(auth)/**", "src/app/actions/demoAuth.ts", "src/app/actions/viewAs.ts", "src/app/actions/admin.ts", "src/utils/supabase/**", "src/utils/viewAsCookies.ts", "src/utils/superAdmin.ts"],
+      "privacy": ["src/utils/deidentify.ts", "src/utils/aiDeidentify.ts", "src/utils/ai.ts", "src/app/actions/ocr.ts", "src/app/actions/easyReadSummary.ts", "src/app/actions/activitySuggestion.ts", "src/content/privacyPolicy.ts"],
+      "audit": ["src/utils/audit*.ts", "src/app/(supporter)/admin/audit/**"],
+      "money": ["src/app/actions/settlement.ts", "src/app/actions/serviceUsage.ts", "src/utils/settlement*.ts", "src/utils/orgLedger.ts", "src/utils/ledgerCsv.ts", "src/utils/copay.ts", "src/utils/budgetByDomain.ts", "src/app/(supporter)/supporter/settlements/**", "src/app/(supporter)/supporter/transactions/**"],
+      "gate": [".github/workflows/**", ".claude/settings.json", ".claude/harness.json"]
+    },
+    "sqlPolicyRegex": "(CREATE|ALTER|DROP) POLICY|SECURITY DEFINER|GRANT|REVOKE|ROW LEVEL SECURITY",
+    "large": { "files": 12, "lines": 400 },
+    "participantCopyGlobs": ["src/app/(participant)/**"]
+  },
+  "verify": {
+    "lenses": ["requirements-types", "security-rls", "a11y-copy", "tests-mutation"],
+    "refuters": 2,
+    "refuterModel": "sonnet"
+  },
+  "channel": {
+    "branch": "agent-sync",
+    "roles": "w u",
+    "seatPrefixes": ["[DECISION by user]", "[QA by user]", "[MERGED by user]"]
+  }
+}

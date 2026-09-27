@@ -1,5 +1,8 @@
 # 17 · 하네스 코드화 — 서브에이전트 정의 · 레인 가드 · 저장 워크플로
 
+> **같은 날 후속(2026-09-27)**: 이 문서의 `.claude/agents/*` · `scripts/lane-guard*.sh` · `.claude/workflows/verify-pr.js` 는 플러그인 `harness` 로 이전됐다
+> (에이전트 `harness:u-worker` 등, 워크플로 `/harness:verify-pr`). 저장소에는 `.claude/harness.json` 만 남는다 — [`18`](18-single-account-operating-model.md).
+
 > **한 줄**: 2026-09-04 이후 U 세션이 즉석 브리핑으로 띄우던 워커·검증자를 **정의 파일**(`.claude/agents/`)로,
 > 매번 다시 쓰던 독립 검증 팬아웃을 **저장 워크플로**(`/verify-pr`)로, 프롬프트 약속에만 기대던 레인 규율을
 > **PreToolUse 훅**(`scripts/lane-guard.sh`)으로 옮긴다. 저자↔검증자 분리·PR/CI 게이트·agent-sync 채널은 불변.
@@ -22,7 +25,7 @@
 Claude Code 의 병렬 수단 비교(문서 기준): 서브에이전트 = 한 세션 안의 워커(자기 컨텍스트, 요약 반환) /
 워크플로(ultracode) = 스크립트가 다수 서브에이전트를 조율(중간 결과는 스크립트 변수, 같은 세션에서 재개) /
 에이전트 팀 = 리드가 동료 세션들을 조율(실험 기능, worktree 격리 없음, 세션 재개 시 팀원 소실) /
-지금의 W-U = 사람이 여는 독립 세션 2개 + git 채널. **이 프로젝트는 서브에이전트 + 저장 워크플로 조합을 택한다.**
+지금의 W-U = 사람이 여는 독립 세션 2개 + git 채널(2026-09-27 이후: 한 계정의 오케스트레이터 + 서브에이전트 — doc18). **이 프로젝트는 서브에이전트 + 저장 워크플로 조합을 택한다.**
 에이전트 팀은 격리·재개·권한 프롬프트 집중 문제로 도입하지 않는다.
 
 ---
@@ -109,8 +112,8 @@ Claude Code 의 병렬 수단 비교(문서 기준): 서브에이전트 = 한 �
 
 ## 6. 남은 일 (후속)
 
-- [ ] 새 세션에서 `u-worker` 라이브 spawn 1건으로 훅 차단 메시지·리턴 형식 실증.
+- [ ] 새 세션에서 `harness:u-worker` 라이브 spawn 1건으로 훅 차단 메시지·리턴 형식 실증.
 - [ ] `u-wave` 저장 워크플로: `u-wave-plan.sh` 출력 → 서로소 웨이브 → `u-worker` 동시 spawn.
-- [ ] 홈 `~/.claude/CLAUDE.md` U 지시서 「W 레인 열지도 말 것」을 단일세션 운영모드(검증=신선 서브에이전트, 머지=사람)로 갱신(사용자 파일).
+- [x] 홈 `~/.claude/CLAUDE.md` U 지시서 → 플러그인 `skills/install/assets/home-directive.md`(오케스트레이터 지시서)로 대체 — doc18.
 - [ ] agent-sync 브랜치 push 의 Vercel 빌드 노이즈 → Ignored Build Step(W 제안, 처리 여부 확인).
-- [ ] W 복귀 시: Remote Control 교차세션 메시징을 라이브 보조 채널로(정본은 여전히 agent-sync).
+- [ ] 사람 자리가 다른 머신 세션에서 열릴 때: Remote Control 을 라이브 보조 채널로(정본은 agent-sync).

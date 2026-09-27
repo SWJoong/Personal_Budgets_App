@@ -29,7 +29,7 @@ GitHub Actions 는 **`if` 조건에서 `secrets` 컨텍스트 참조를 금지**
 - **required_status_checks**: `quality-check`, `db-verify`
 - **strict: true** — PR 을 최신 main 에 맞춘 뒤에만 병합 → **base 이동 회귀 자동 차단**(#30 교훈).
 - **enforce_admins: false** — 비상시 `gh pr merge --admin` escape 유지.
-- **required_pull_request_reviews: null** — 리뷰는 W의 독립검증(채널+골든/verify)이 담당, 게이트는 CI.
+- **required_pull_request_reviews: null** — 리뷰는 W 역할 컨텍스트(`harness:w-verifier` · `/harness:verify-pr`)의 독립검증 리포트 + 사람 승인(검증 티어, CLAUDE.md). 단일 계정에서 U 계정 PR 은 자기승인이 불가하므로 GitHub 필수 리뷰는 켜지 않는다(2026-09-27).
 
 재설정/확인:
 ```bash

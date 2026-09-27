@@ -1,170 +1,125 @@
-# 병렬 에이전트 하네스 운영 계획 — 개인예산제 앱
+# 병렬 에이전트 하네스 운영 계획 — 개인예산제 앱 (v2 · 단일 계정 · W/U = 역할)
 
-> 2개의 Claude Code 인스턴스(**W · U**)를 한 저장소에서 병렬 운영해
-> **충돌·재작업·토큰 낭비 없이** 협업한다.
-> 대상 작업: **온톨로지 기반 DB 구조 개편** + **서울형 개인예산제 웹 앱 우선 구축**.
->
-> 상태: **FINAL — 수렴 완료** (W-v1 ⇄ U-round2, agent-sync 채널, 2026-08-19). 양쪽 `STATUS: FINAL / AGREE` 성립.
-> 원본 하네스 스킬: `parallel-agent-harness` (EASYREAD에서 일반화). 이 문서는 그 템플릿을 이 프로젝트에 맞춰 채운 것(= "개조").
+> 한 계정의 **오케스트레이터 세션(U)** 이 서브에이전트로 **W(설계·검증)·U(구현·배포) 역할 컨텍스트**를 분리 실행한다.
+> 규칙 정본 = `CLAUDE.md` 「병렬 하네스」 + `.claude/harness.json` · 런타임 = 플러그인 `harness` · 이 문서 = 근거·절차·이력.
+> 상태: **v2 (2026-09-27)** — v1 FINAL(2026-08-19, 2계정 W·U 수렴 모델)은 §10 전환 기록으로 남긴다.
+> 원본 하네스 스킬 `parallel-agent-harness`(EASYREAD 유래) → 플러그인 `harness`(`/harness:install`·`/harness:operate`)로 승계.
 
 ---
 
-## 1. 왜 병렬·분리인가 (버리지 말 것)
+## 1. 왜 분리인가 (버리지 말 것)
 
 핵심은 속도가 아니라 **자기 결과를 자기가 채점하지 않게 하는 것**이다.
-- **설계·검증(테스트를 만드는 손)** 과 **구현(코드를 짜는 손)** 을 다른 세션에 둔다 → 확증편향·자기채점 방지.
-- 각자 **자기 레인**에만 토큰을 쓰고, 상태는 복붙 대신 git 채널로 나른다 → 협업 토큰 비용↓.
-- 이 두 이득은 세트다. 레인을 안 나누면 충돌, 채널이 없으면 사람이 복붙 셔틀이 된다.
-
-이 프로젝트는 이미 in-flight 브랜치가 **설계(온톨로지) ↔ 구현(서울형 리빌드)** 으로 자연히 갈라져 있어
-하네스 축과 정확히 일치한다. 그 갈래를 하네스로 규율화한다.
+- 계약(테스트·verify SQL)을 쓰는 컨텍스트, 구현하는 컨텍스트, 검증하는 컨텍스트를 **서로 다른 서브에이전트**에 둔다 → 확증편향·자기채점 방지.
+- 각 컨텍스트는 자기 레인에만 토큰을 쓰고, 상태는 채널(agent-sync)로 나른다 → 협업 토큰 비용↓.
+- 계정이 둘일 필요는 없다. 분리는 **컨텍스트 경계 + 도구 권한(훅)** 으로 만든다.
 
 ---
 
-## 2. 인스턴스 구성 (역할 스킬 매핑 = 하네스 '개조'의 핵심)
+## 2. 역할 구성 (컨텍스트 = 실행 주체)
 
-| 에이전트 | 환경/계정 | 축 | 역할 스킬 | 레인(디렉터리·파일 소유) |
+| 역할 | 실행 주체 | 축 | 역할 스킬(`roleSkills`) | 레인 |
 |---|---|---|---|---|
-| **W** | Windows / 개인 | **설계·검증** | `/pl` `/qa` `/ux-ui` `/pm` `/easy-read-review` | `Plan&Source/ontology/`, `supabase/**/verify_*.sql`, `src/**/*.{test,spec}.{ts,tsx}`, `src/test/`, `vitest.config.ts`, `.claude/skills/`, `docs/harness-plan.md`, CLAUDE.md 하네스 섹션 |
-| **U** | Ubuntu / 팀 | **구현·배포** | `/backend` `/frontend` `/devops` | `src/` 구현코드(테스트 제외), `supabase/`(빌드 SQL·`migrations/`), `.github/workflows/`, `src/types/database.ts`, 빌드설정(`next.config.ts`·`postcss`·`eslint`·`package.json`), `docs/release/`, `.claude/settings.json` |
+| 오케스트레이터 | U 세션 메인 컨텍스트(사용자와 대화) | 조율 | 설계·계획은 `/ux-ui` `/pm` `/pl` 을 사용자와 함께 | 공유·인프라·`docs/release/` + 소규모 예외 |
+| `harness:u-worker` | 서브에이전트(sonnet · worktree · background) | 구현·배포 | backend · frontend | U 레인 |
+| `harness:w-contract-author` | 서브에이전트(opus · worktree · background) | 설계·계약 | qa | W 레인 |
+| `harness:w-verifier` · `/harness:verify-pr` | 서브에이전트(opus · Edit/Write 불가) | 검증 | qa · pl · easy-read-review | 없음(리포트만) |
+| **사람 자리(W)** | 사용자 — 어느 세션·머신에서든 | QA · 머지 · 결정 | — | 전부(권위) |
 
-> **축 정하는 규칙(하나뿐)**: 결과를 만드는 손과 그것을 검증하는 손을 분리한다.
-> 이 프로젝트는 "**설계·검증 ↔ 구현·배포**" 분할을 채택한다.
-
-### 역할 스킬 → 레인 호출 지도
-각 세션은 자기 축의 역할 스킬만 주도적으로 호출한다(상대 축 스킬은 참고만).
-
-- **W 세션이 호출**:
-  - `/pl` — 아키텍처·데이터모델 방향, 코드 리뷰(요구충족→타입→성능→보안→접근성→테스트 순), 기술 결정문.
-  - `/qa` — 테스트 계획·골든/계약 테스트, 릴리스 품질 게이트, 접근성(axe) 검증.
-  - `/ux-ui` — 사용자 흐름·IA, 발달장애인 인지 접근성 설계 검토.
-  - `/pm` — 일정·마일스톤·리스크, 산출물 추적, 이해관계자(기관) 문서.
-  - `/easy-read-review` — UI 문구·라벨 쉬운정보 검수(≥70점 게이트).
-- **U 세션이 호출**:
-  - `/backend` — Supabase 스키마·RLS·마이그레이션·쿼리·Edge Function, 예산 계산 로직.
-  - `/frontend` — Next.js 화면·컴포넌트·훅, 접근성 속성 구현.
-  - `/devops` — CI/CD·Vercel 배포·환경변수·Supabase 운영 모니터링.
+- 에이전트는 시작 시 `.claude/harness.json` 의 `roleSkills` 를 Skill 도구로 로드한다(`/devops` 는 오케스트레이터가 CI·배포 문서 작업에 직접).
+- 핵심 규칙: **같은 기능의 구현과 계약을 한 컨텍스트가 함께 쓰지 않는다.** 오케스트레이터가 구현을 직접 썼다면 그 기능의 계약·검증은 반드시 위임한다.
 
 ---
 
-## 3. 레인(충돌 방지) — 이 저장소 특이점 반영
+## 3. 레인 (충돌 방지) — 정본 `.claude/harness.json`
 
-이 repo는 테스트가 `src/`에 **co-located** 이라(vitest `include: src/**/*.{test,spec}`),
-레인을 최상위 디렉터리가 아니라 **파일 접미사**로도 가른다 → 같은 파일을 둘이 만지지 않는다(1:1:1 유지).
-
-- `Plan&Source/ontology/` (RDF/OWL·스키마 draft·검토보고서) → **W만** (설계 권위)
-- `supabase/**/verify_*.sql` (검증 쿼리) → **W만** · 그 외 `supabase/` 빌드 SQL·`migrations/` → **U만** (접미사 분리)
-- `src/**/*.{test,spec}.{ts,tsx}`, `src/test/`, `vitest.config.ts` → **W만** · 그 외 `src/`·`src/types/database.ts` → **U만**
-- `.claude/skills/`, `docs/harness-plan.md` → **W만** · `.claude/settings.json`(+SessionStart 훅)·`docs/release/` → **U만**
-- **공유 파일** `CLAUDE.md`: 하네스 섹션 = W 저작, 「현재 작업 현황」 = 양쪽 append, 그 외 프로젝트 가이드 구조변경 = U.
-  (주 상태 채널은 CLAUDE.md가 아니라 agent-sync — CLAUDE.md 편집은 최소화)
-- 레인은 **디스크상 겹치지 않게** 긋는다. 충돌이 자주 나면 레인 설계 오류 신호.
+- **W 레인**: `Plan&Source/**` · `**/verify_*.sql` · `src/**/*.{test,spec}.{ts,tsx}` · `src/test/**` · `vitest.config.ts` · `.claude/skills/**` · `docs/harness-plan.md`
+  → `harness:w-contract-author` 컨텍스트만. 오케스트레이터는 소규모 예외(경로·주석·오타·현황)만 직접 — 플러그인 훅이 확인을 묻는다.
+- **U 레인**: 그 외 `src/` · `supabase/` 빌드 SQL · `src/types/database.ts` · `.github/workflows/` · 빌드설정 · `docs/release/` → `harness:u-worker`.
+- **공유·인프라**: `CLAUDE.md` · `.claude/harness.json` · `.claude/settings.json` · `.github/pull_request_template.md` · `scripts/agent-sync.sh` → 오케스트레이터·사람만(양쪽 워커 훅 차단).
+- 이 repo 특이점: 테스트가 `src/` 에 co-located 라 **파일 접미사**로 가른다(vitest include `src/**/*.{test,spec}.{ts,tsx}`).
+- 패턴은 플러그인 `scripts/lane-guard.sh` 가 강제하고 `lane-guard-selftest.sh` 가 대조한다(레인 = 코드 = 테스트).
 
 ---
 
 ## 4. Git 워크플로
 
 ```
-main ───────────────────────────────► (항상 그린, 브랜치 보호)
-  ├── U: feat/* 구현·마이그레이션 ──► PR → main
-  └── W: 실패하는 골든/계약 테스트·verify SQL ──► (test-first) → U가 초록 만들면 merge
-통합 base: db-ontology-rdf-format (in-flight 최신) — 협의 후 확정
+main ─────────────────────────────────────► (항상 그린 · 브랜치 보호: quality-check + db-verify required, strict)
+  ├── test/w-* 계약 PR([HANDOFF→U], draft) ─┐   harness:w-contract-author
+  └── feat/* 구현 PR([HANDOFF→W]) ◄─────────┘   harness:u-worker → 티어별 검증 → 사람 승인 1회 → squash 머지(어느 세션에서든)
 ```
-- 코드 핸드오프는 **PR·CI**로만. main 직접 push 금지.
-- 브랜치 보호(strict): 각 PR 최신화 → CI 재green → merge.
+- 코드 핸드오프는 PR·CI 로만. main 직접 push 금지(플러그인 훅이 `gh pr merge`·main push 를 다시 묻는다).
+- strict 보호라 BEHIND 면 update-branch → CI 재green → 머지. 계약 PR 은 단독 머지하지 않고 구현 PR 에 스택, 머지 후 닫는다.
 
 ---
 
-## 5. 작업 흐름 패턴 (test-first 기본)
+## 5. 작업 흐름 (test-first)
 
-| 순서 | 에이전트 | 작업 |
+| 순서 | 컨텍스트 | 작업 |
 |---|---|---|
-| 1 | **W** | 동작을 **실패하는 골든/계약 테스트**(또는 verify SQL)로 먼저 못 박음(스펙 역할) |
-| 2 | **U** | 그 테스트를 초록으로 만드는 구현·마이그레이션 |
-| 3 | **W** | 게이트·리뷰(+easy-read·a11y)로 검증 → merge |
+| 1 | `harness:w-contract-author` | 실패하는 골든/계약 테스트 · verify SQL 로 동작을 못 박음(RED · 그린어빌리티 · tsc 확인) |
+| 2 | `harness:u-worker` | 계약을 초록으로 만드는 구현 · 빌드 SQL(격리 worktree · 편집 화이트리스트) |
+| 3 | `harness:w-verifier` / `/harness:verify-pr` | 티어별 독립 검증 리포트(돌연변이 확인 포함) → PR 코멘트 |
+| 4 | 사람 자리 | 브리핑 → 승인 1회 → 머지 |
 
-- **첫 파일럿**: `src/utils/copay.ts`(본인부담금 계산, 순수함수·예산 핵심) — W 골든테스트 → U 초록.
-  `src/utils/budget-visuals.test.ts` 선례와 동형이라 배관 검증에도 최적.
-- 규칙 = 파일 = 테스트 **1:1:1** → 실패 지점 즉시 특정, 디버깅 대화 감소.
-
----
-
-## 6. 커뮤니케이션 규약
-
-- 핸드오프 커밋 접두: `[HANDOFF→W]` · `[HANDOFF→U]` · `[SYNC]`
-- 상태 채널: `bash scripts/agent-sync.sh {pull | post <w|u> "..." | log}`
-- **수렴 프로토콜**(자동 의논 종료 조건): 각 글 끝에 STATUS 1줄 —
-  `STATUS: PROPOSE <U|W>-vN` | `STATUS: AGREE <상대버전>` | `STATUS: FINAL`.
-  수렴 = 양쪽이 동일 버전에 AGREE → 각자 자기 레인 파일로 설치 적용. 6라운드 초과 시 사용자 에스컬레이션.
+- test-first 필수 범위: 순수 로직(`src/utils`) · 서버 액션 · DB 계약. UI 문구·docs 는 선택.
+- 규칙 = 파일 = 테스트 **1:1:1** → 실패 지점 즉시 특정.
 
 ---
 
-## 7. 상태 동기화 — 복붙 제거 (agent-sync)
+## 6. 결정 규약 (v1 수렴 프로토콜 폐기)
 
-- 전용 `agent-sync` 브랜치(orphan)를 메시지 보드로 쓴다. **코드는 안 담고 main에 병합하지 않는다.**
-- `pull`(세션 시작 시 상대 상태 로드) / `post`(턴 종료 시 내 상태 기록). 임시 worktree로 채널만 갱신.
-- SessionStart 훅에 `pull`을 걸어 자동 로드(`.claude/settings.json`, U 소유).
-
----
-
-## 8. 통합 로드맵 (콘텐츠 레이어 — 사용자 GOAL 직결)
-
-> 하네스는 "어떻게 협업하나"이고, 이 절은 "무엇을 만드나"다. GOAL = ① 온톨로지 DB 개편 + ② 서울형 앱 우선.
-
-### 8.0 현황 (in-flight = stacked 브랜치, U 조사로 확정)
-`ontology-disability-case-management`(설계문서 11) **⊂** `seoul-personal-budget-rebuild`(+앱리빌드 15) **⊂**
-`db-ontology-rdf-format`(+RDF 1) = **상위집합 → 통합 base 확정.**
-- 준비된 자산(base): `supabase/seoul/` 27+테이블·RLS·그래프뷰·시드, 서버액션 11종, copay/규칙엔진,
-  구글로그인 신원연결·뷰 RLS 결함 수정, Phase 2~4 화면 일부.
-- **우선순위**: ① 서울형 개인예산 앱(진행중) → ② 복지부 서식 → ③ 기존 데모 유지.
-
-### 8.1 D0 결정 (PL 콜, 확정) — 배포 정본 전환
-**(i) `supabase/seoul/` 를 배포 정본으로 전환.**
-- `supabase/migrations/`(04~31, 구 앱)은 삭제하지 않고 `_archive/` 로 이관(git 이력·롤백 참조 보존).
-- 데모 UUID(관리자 `00..01`·당사자 `11e9..`)는 `07_seed_program`/`08_seed_demo` 로 재현 → W가 시드 존재 verify 추가.
-- 근거: 단일 정본으로 스키마 드리프트 제거. seoul 빌드는 멱등(IF NOT EXISTS)·완결. GOAL축 A의 1단계.
-
-### 8.2 GOAL축 A — 서울형 개인예산 웹 앱 우선 구축
-1. **통합 base → main** (D0 전환 포함) — U PR / W 검증.
-2. **22개 ComingSoon 스텁 재구현** (45라우트 중): 거래장부·계획평가·서류함·예산·지도·참여자관리,
-   관리자 설정/초대/피드백/리포트, 당사자 evaluations/plan → **서울형 27테이블 기반**.
-   → **W**(`/ux-ui` 흐름·IA 명세 + `/qa` 컴포넌트 골든 선작성) → **U**(`/frontend` 구현).
-3. **라이프사이클 테스트** — 신청→동의→선정→계획→심의→지출→정산 통합/E2E.
-   → **W**(`/qa` 골든 선작성) → **U** 초록 + `generate-types` 자동화(`database.ts` 재생성).
-
-### 8.3 GOAL축 B — 온톨로지 기반 DB 구조 개편
-현재 복지부 3단 분류(대분류→중분류→지원예시)가 참조테이블 없이 **TS상수(`care-plans.ts`) + 자유텍스트
-(`transactions`/`budget_line_items.category`, `support_goals.support_area`) + JSONB로 분산.**
-- **B1 분류 참조테이블 승격** + `category` **FK화** → 사정·목표·예산·거래·평가를 **단일 분류축**으로 연결.
-- **B2 `needs_assessment` 엔티티 신설** (복지부 서식 §4 욕구사정: 대·중분류 × 제한점 × 욕구·희망).
-- **B3 `organizations` 멀티테넌시** — 현재 단일기관(`@nowondaycare.org` 이메일 도메인) 결합 → organizations + 스코프 RLS.
-  **확장 전제(사용자 확정 2026-08-31, PRD 결정 ③)**: 1차는 단일기관·30명 유지하되 **8개 수행기관·100명**을 설계 상한으로 가정.
-  원칙 ⑴ 테넌트-루트(`participants` 등)에 org 스코프 **하드코딩 금지** → `seoul_executing_agencies`(또는 신규 `organizations`) **FK 참조**. ⑵ 지금 org FK 선제도입은 YAGNI(1개 기관 확정) → **진입점만 문서화**, 구현 보류. 설계: [goala_privacy_deid_assignment_W.md](../Plan&Source/goala_privacy_deid_assignment_W.md) §3.
-- **B4 담당자 배정 스코핑**(사용자 확정 2026-08-31 · ★정정 2026-09-01, PRD 결정 ②) — role 은 **3종 유지**(coordinator 미도입: 권한차등 요구 미확인). **실측 정정: 배정 스코핑은 이미 구현·작동 중** — `participants.assigned_supporter_id` + `seoul_is_staff_for()`(=admin OR 배정) + `seoul_can_access()`, 04_seoul_rls 개인정보 SELECT 전부 스코프. 검토보고서 ⑥"모든 실무자 전체 열람"은 리빌드 이전 상태. → 남은 일 = W `verify_assignment_rls.sql`(교차 supporter 격리 회귀잠금, 작성됨)을 `db-verify` 배열에 배선. 신규 M:N(`seoul_case_assignments`·#66)은 **공동배정 실요구 시까지 보류**. 설계 §2.
-- **B5 가명처리 게이트웨이·노드 마스킹**(사용자 확정 2026-08-31, PRD 결정 ①·전면 착수) — PRD 7장 5단계 + 그래프 노드 마스킹. 앱층 `deidentify.ts`(AI 호출 전 이름·기관명 토큰 치환·복원, **골든 test-first**) + DB층 그래프 뷰 마스킹. 현재 AI 노출은 OCR뿐이나 요약·제안 확장 대비 게이트 강제. 설계 §1 → **W** 골든·설계, **U** 게이트웨이·마스킹 구현.
-- 제외(base가 이미 해결): 정체성 이원화, 서울 신청/동의 모델. 설계만 존재: value_nodes, PCT 성과측정 6클래스.
-- → **W**(`/pl` 설계권위: 온톨로지 RDF ↔ base 대조·확정, 두 온톨로지[서울형 6 ↔ 복지부 8] 판정)
-  → **U**(`/backend` 마이그레이션·서버액션).
-
-### 8.4 정합성 검증 (W 상시, [conformance-mapping](../supabase/seoul/) 참조)
-- 온톨로지 RDF ↔ `supabase/seoul` 스키마 대응표 · `verify_*.sql` 재배치(→ `supabase/seoul/`, W소유) + 골든화.
-- 신설 `verify_04_copay` — INV4/5 교차계층(`copay_status` DB CHECK 5값 ↔ TS `CopayStatus` ↔ `describeCopay`).
-- 서울형 시드 `spending_rules` 중 `enforcement='block'` **0건** 검증(정책: 막지 않고 기록).
-
-### 8.5 공통 릴리스 절차
-- 코드: U PR → CI(tsc+lint+test+build) → W 리뷰(+easy-read·a11y) → main.
-- 배포: **U** Vercel 프리뷰→프로덕션 · Supabase 마이그레이션은 대시보드 SQL Editor 수동 실행.
-
-### 8.6 첫 착수 (파일럿) — 하네스 배관 검증
-`src/utils/copay.ts` **계약(골든) 테스트**를 W가 통합 base에 배치 → `[HANDOFF→U]` → U 초록 확인.
-(copay.ts는 base에 이미 구현되어 있어 배관·게이트·핸드오프 흐름 검증에 최적. 진짜 test-first는 8.3 B2 needs_assessment부터.)
+- 결정 질문은 **오케스트레이터만** 한다(AskUserQuestion, 옵션 프레이밍). 서브에이전트·워크플로는 묻지 않고 플래그만.
+- 결정은 3곳에 기록: CLAUDE.md 「현재 작업 현황」 결정 확정 줄 · `docs/release/decisions.md` 행(D-YYYYMMDD-nn) · `agent-sync.sh post w "[DECISION by user] …"`.
+- v1 의 `STATUS: PROPOSE/AGREE/FINAL` · 6라운드 에스컬레이션은 상대 세션이 없으므로 폐기.
 
 ---
 
-## 9. 성공 기준
+## 7. 상태 동기화 — agent-sync (저널 + 사람 자리 기록)
 
-- [ ] 두 인스턴스가 **충돌 없이** merge(레인이 실제로 안 겹침)
-- [ ] 사람의 상태 복붙 **0회**(모든 핸드오프가 채널·PR·커밋으로)
-- [ ] main 항상 그린(모든 코드가 CI 게이트 통과 후 병합)
-- [ ] 온톨로지 RDF ↔ 서울형 스키마 정합성 verify SQL **전부 통과**
-- [ ] 서울형 개인예산 핵심 플로우(신청→동의→선정→계획→심의→지출→정산) E2E 통과
+- `u.md` = 오케스트레이터 저널·다음 세션 인계문(턴 종료·웨이브 취합 1건). `w.md` = 사람 자리 기록(QA·머지·결정) — 어느 머신에서든 `post w`,
+  U 세션이 대신 올리면 `[DECISION by user]`·`[QA by user]`·`[MERGED by user]` 접두 필수 + 헤더 "(via U)".
+- 세션 시작 시 플러그인 훅이 `pull`. 채널엔 상태만, 코드는 PR·CI.
+
+---
+
+## 8. 검증 티어 — 정본 `.claude/harness.json` `tiers`
+
+| 티어 | 조건(하나라도 해당하면 상위) | 검증 |
+|---|---|---|
+| **docs** | `docs/**` · `*.md` 만 | CI + 사람 읽기 |
+| **small** | 코드 ≤ 12파일 · ≤ 400줄, 고위험 없음 | `harness:w-verifier` 1건(돌연변이 포함) |
+| **high** | rls · auth · privacy · audit · money · gate 경로군 / SQL 정책·DEFINER·GRANT / 대형 / 당사자 문구(`src/app/(participant)/**`) | `/harness:verify-pr N` (재검증은 `--lens`) |
+
+계약 PR(`[HANDOFF→U]`)은 티어 대상이 아니다. 티어 하향은 결정 기록이 필요하다.
+
+---
+
+## 9. 로드맵 (콘텐츠 레이어 — v1 §8 승계, 역사)
+
+> W/U 라벨은 역할이다. GOAL축 A(서울형 앱)·B(온톨로지 DB 개편)의 대부분은 완료됐고 **현행 백로그 정본은 `docs/release/14-prd-reprioritization.md` 「현행 백로그」** 다.
+> 요약: D0 seoul 정본 전환 완료 · ComingSoon 재구현·프론트 재구성 P1~P7 완료(#81~#115) · B1 분류축 FK화 완료 · B3 멀티테넌시는 진입점만 문서화(보류) ·
+> B4 배정 스코핑은 구현 확인 · B5 가명처리 게이트웨이 완료(#175) · 관계망(Track B)은 제거(#171~#173).
+
+---
+
+## 10. 전환 기록 (2026-09-27): 2계정 → 단일 계정 · 역할 분리
+
+- **연표**: 08-19 v1 FINAL(2계정 W·U, 수렴 프로토콜) → 09-03 W 머신의 마지막 채널 유입(게시 수 W 62 vs U 264) → 09-04 U 단일세션이 양축 대행(메모리·현황 한 줄에만 기록) →
+  09-27 #197 하네스 코드화(에이전트 정의·레인 가드·/verify-pr) → 09-27 사용자 결정 D-20260927-02~06 → 플러그인 `harness` 0.1.0 으로 추출 → 이 v2.
+- **바뀐 것**: 계정 → 역할 컨텍스트 · 검증자 = 서브에이전트 · 사람 자리(W) = QA·머지·결정(U 세션에서도) · 수렴 프로토콜 폐기 · agent-sync 의미(저널·사람 자리 기록) ·
+  검증 티어 · 하네스 런타임을 플러그인으로(여러 프로젝트 재사용, 프로젝트엔 `.claude/harness.json` 만).
+- **안 바뀐 것**: 레인 패턴 · PR/CI 게이트 · 접두 · main 보호 · Manual-Ops 게이트 · 머지 = 사람 승인.
+- **되돌림**: W 계정 세션이 복귀하면 "두 번째 사람 자리" 또는 사람이 w-verifier 절차를 직접 운전하는 보조 검증 세션으로 — 레인·채널·접두 변경 없음. Remote Control 은 라이브 보조 채널.
+- 상세: `docs/release/18-single-account-operating-model.md`.
+
+---
+
+## 11. 성공 기준
+
+- [ ] 구현 컨텍스트 ≠ 검증 컨텍스트 100%(자기 PR 사인오프 0)
+- [ ] high 티어 → `/harness:verify-pr` 100%
+- [ ] 레인 가드 우회 0
+- [ ] 사람 개입 = 승인·QA·결정만(상태 복붙 0)
+- [ ] main 항상 그린 · verify SQL 전부 통과 · 핵심 플로우(신청→동의→선정→계획→심의→지출→정산) 수동 QA 통과
