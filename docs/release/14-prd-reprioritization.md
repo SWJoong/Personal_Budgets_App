@@ -6,6 +6,8 @@
   (A 당사자 자기주도성 · B 실무자 행정 간소화/계획 공유 · C 관리자 파악/슈퍼비전)
 - **방법**: 8개 도메인 병렬 실측 평가(코드·릴리스노트 근거) → 3축 정렬 종합 → 적대적 완전성 비평(총 10 에이전트).
   각 판정은 파일/PR 근거 첨부. 03의 안티패턴("이미 done 을 gap 으로 재발견")을 회피하도록 설계.
+- **2026-09-27 갱신**: 아래 표의 상태 컬럼과 「열린 결정」을 #175~#191 머지·라이브 반영 기준으로 고쳤고, 끝에
+  [「현행 백로그 (2026-09-27 재점검)」](#현행-백로그-2026-09-27-재점검)을 붙였다. 「핵심 결론」 본문은 2026-09-20 시점 기록이다.
 
 ---
 
@@ -29,55 +31,55 @@
 ## 우선순위 백로그 (비평가 재정렬 반영)
 
 > 축: A=당사자 · B=실무자 · C=관리자 · X=교차 · I=인프라. 레인: U=구현 · W=설계 · user=기관/사용자 결정.
-> 상태: gap=미착수 · partial=일부 · deferred=결정 대기.
+> 상태: gap=미착수 · partial=일부 · deferred=결정 대기 · **done=완료**(2026-09-27 갱신).
 
 ### P0 — 개인정보 국외이전 법무 (단일 워크스트림 · 축X)
 비평가 지적: OCR·자유서술·처리방침은 흩어진 항목이 아니라 **하나의 법적 노출 클러스터**다. 함께 처리.
 
 | # | 항목 | 상태 | 레인 | 핵심 |
 |---|------|------|------|------|
-| P0-1 | OCR 영수증 원본 국외직송 + 결과 텍스트 마스킹 | partial | U+user | `ocr.ts`가 게이트 예외로 이미지 원본을 미국 직송, 반환 store/address(상호·주소=PII) 마스킹 없음 |
-| P0-2 | `easyReadSummary` 자유서술 국외전송 term 커버리지 | partial | U+user | 당사자 자기서술(강점·장벽·바라는 삶 등)·service_name 을 전송하는데 `participantName` 만 토큰화 → 임베드 제3자 이름 무마스킹. **비평가가 P1→P0 승격**(OCR 과 동종 노출) |
-| P0-3 | 처리방침 발효 + 당사자 노출 + 국외이전 고지/동의 UI | partial | U+user | `/privacy`·`/privacy/easy` 구현 done 이나 `PRIVACY_DRAFT=true`·내비 미연결(고아)·`EFFECTIVE_DATE=''`. AI 처리위탁·국외이전 동의항목(`consent_type` 2종뿐) 미구현 |
+| P0-1 | OCR 영수증 원본 국외직송 + 결과 텍스트 마스킹 | partial | U+user | `ocr.ts`가 게이트 예외로 이미지 원본을 미국 직송, 반환 store/address(상호·주소=PII) 마스킹 없음. **(2026-09-27)** #175 는 OCR 을 일부러 뺐다(상호·주소는 거래 데이터라 가리면 기능이 깨지고, 실제 노출은 이미지 자체). 근거 결정(doc15 §8) 대기 |
+| P0-2 | `easyReadSummary` 자유서술 국외전송 term 커버리지 | partial | U+user | 당사자 자기서술(강점·장벽·바라는 삶 등)·service_name 을 전송하는데 `participantName` 만 토큰화 → 임베드 제3자 이름 무마스킹. **비평가가 P1→P0 승격**(OCR 과 동종 노출). **(2026-09-27)** #175 로 대리인 이름(`seoul_proxies.proxy_name`) 치환 done. 당사자 이름은 `profiles` 를 `participants.id` 로 찾는 결함 때문에 #73 이후 실제로 가려지지 않았음 → #192(리뷰 중)가 `participants.name` 조회 + fail-closed 로 수정. 자유서술 속 제3자 이름은 잔여(탐지 방식 W 설계) |
+| P0-3 | 처리방침 발효 + 당사자 노출 + 국외이전 고지/동의 UI | partial | U+user | `/privacy`·`/privacy/easy` 구현 done 이나 `PRIVACY_DRAFT=true`·내비 미연결(고아)·`EFFECTIVE_DATE=''`. AI 처리위탁·국외이전 동의항목(`consent_type` 2종뿐) 미구현. **(2026-09-27)** 초안의 사실 오류(Supabase 리전 미확정 표기·OCR 원본 전송과 안 맞는 가명처리 문구)는 #192(리뷰 중)가 정정. 발효·동의 UI 는 기관 확정값 대기 |
 
 → **전제(기관 결정)**: 국외이전 동의 vs 고지-only + DPA · 보존연한 · Supabase 리전 · 발효값. (아래 "열린 결정")
 
 ### P0 — Manual-Ops (사용자 수동 · 비가역 · 축I)
 | # | 항목 | 상태 | 레인 | 핵심 |
 |---|------|------|------|------|
-| P0-4 | `12_audit_log.sql` 운영 대시보드 라이브 적용 | deferred | user | 코드·CI done, 운영 Supabase 반영은 수동. 안 하면 열람감사·파기 전부 무효 |
-| P0-5 | 감사로그 파기 스케줄 등록 + 1회 동작 확인 | deferred | user | `seoul_audit_purge`(함수 done) 정기 실행(pg_cron 등) 미등록 → 무한 적재 |
+| P0-4 | `12_audit_log.sql` 운영 대시보드 라이브 적용 | **done** (2026-09-21) | user | 코드·CI done, 운영 Supabase 반영은 수동. 안 하면 열람감사·파기 전부 무효. **(2026-09-27)** 사용자가 2026-09-21 대시보드에서 실행, `seoul_audit_log` PostgREST 200 확인 |
+| P0-5 | 감사로그 파기 스케줄 등록 + 1회 동작 확인 | deferred · 등록 미확인 | user | `seoul_audit_purge`(함수 done) 정기 실행(pg_cron 등) 미등록 → 무한 적재. **(2026-09-27)** 보존 730일 확정(2026-09-22), 런북 전달(`0 18 * * *` = UTC 18시 = KST 03시, doc12 §4). 등록 완료(`cron.job` active=true) 확인 대기 |
 
 ### P1 — 축C 슈퍼비전 무결성·가시성
 | # | 항목 | 상태 | 레인 | 핵심 |
 |---|------|------|------|------|
-| P1-1 | `participant.preview` 대리열람 감사 배선 | gap | U | 설계에 있던 `auditLog('participant.preview')`가 구현 누락 — 관리자의 당사자 화면 대리열람(가장 민감)이 무기록. **비평가: 대시보드보다 우선** |
-| P1-2 | 관리자 감사 열람 대시보드 `/admin/audit` | gap | U | `seoul_audit_log` RLS 로 관리자 SELECT 되나 조회 화면 0건. "누가 누구 정보를 열람/변경했나" 미가시 |
+| P1-1 | `participant.preview` 대리열람 감사 배선 | **done** (#175) | U | 설계에 있던 `auditLog('participant.preview')`가 구현 누락 — 관리자의 당사자 화면 대리열람(가장 민감)이 무기록. **비평가: 대시보드보다 우선** |
+| P1-2 | 관리자 감사 열람 대시보드 `/admin/audit` | **done** (#176) | U | `seoul_audit_log` RLS 로 관리자 SELECT 되나 조회 화면 0건. "누가 누구 정보를 열람/변경했나" 미가시 |
 
 ### P1 — 축A 자기주도 심화 (저비용 배선)
 | # | 항목 | 상태 | 레인 | 핵심 |
 |---|------|------|------|------|
-| P1-3 | 쉬운말 전환(EasyTerm) 앱 전반화 | partial | W+U | EasyTerm 이 온보딩 3곳만 → '쉬운 말' 토글이 대부분 화면에서 무효. 용어쌍 매핑(W) → 배선(U) |
-| P1-4 | TTS(읽어주기) 주 플로우 확대 | partial | U | `utils/tts.ts` 존재, `speak()`가 guide·privacy 2곳만. 홈 잔액·지출기록·계획에 배선 |
+| P1-3 | 쉬운말 전환(EasyTerm) 앱 전반화 | partial (#178) | W+U | EasyTerm 이 온보딩 3곳만 → '쉬운 말' 토글이 대부분 화면에서 무효. 용어쌍 매핑(W) → 배선(U). **(2026-09-27)** #178 로 용어 사전 8종 + `<Term>` 을 만들고 '이용계획' 4곳(my-plan 2·더보기·NavDropdown)에 배선. 남음: `plan/page.tsx` 의 '이용계획' 원문(#177 과 파일 겹쳐 미룸)·나머지 7개 용어의 화면 매핑(W) |
+| P1-4 | TTS(읽어주기) 주 플로우 확대 | partial (#177) | U | `utils/tts.ts` 존재, `speak()`가 guide·privacy 2곳만. 홈 잔액·지출기록·계획에 배선. **(2026-09-27)** #177 로 `SpeakButton` 을 만들어 홈 잔액·이용계획에 배선. 남음: 지출기록(`(participant)/receipt/`, 배선 0건) |
 
 ### P1 — 인증 사람 관문 (축A)
 | # | 항목 | 상태 | 레인 | 핵심 |
 |---|------|------|------|------|
-| P1-5 | 발달장애 당사자 실사용자 심사 실시 | gap | user | 계획(09)+기록도구(#156) done, 실제 심사 미실시. NIA 웹접근성 인증의 사람 관문 |
+| P1-5 | 발달장애 당사자 실사용자 심사 실시 | gap | user | 계획(09)+기록도구(#156) done, 실제 심사 미실시. NIA 웹접근성 인증의 사람 관문. **(2026-09-27)** 결과 기록 없음 — 여전히 미실시 |
 
 ### P2 — 축B 행정 마감 / 축C 집계
 | # | 항목 | 상태 | 레인 | 핵심 |
 |---|------|------|------|------|
-| P2-1 | 계획 명시적 공유 게이트 + 양방향 피드백 | gap | W+U | '공유'가 RLS+알림으로 암묵적. 축B 명시 목표('계획 공유')의 사용자 대면 절반 |
-| P2-2 | 월간 실적 보고서(출력/제출본) | gap | U | '월간보고서' 카드는 실은 지원영역 흐름 화면. 인쇄/제출본 부재 |
-| P2-3 | 모니터링 기록 수정/삭제 | gap | U | `monitoring.ts` insert·list 만, update/delete 없음 |
-| P2-4 | 정산 기록 실무자 행정 흐름 연결 | partial | U+user | `recordSettlement`가 관리자 전용(assertAdmin). 실무자 흐름 정책 결정 |
-| P2-5 | 축C 사업 진행 파악 집계 대시보드(KPI 통합뷰) | gap | U | 대시보드가 오늘할일 3카운트뿐. 배정대비 집행률·신청 퍼널·차수 진행 부재 |
-| P2-6 | 축C 슈퍼비전(실무자 활동 가시성) 뷰 | gap | U | 담당자별 업무량·처리현황 뷰 부재. P1-2 와 데이터 소스 공유 |
+| P2-1 | 계획 명시적 공유 게이트 + 양방향 피드백 | **done** (#183) | W+U | '공유'가 RLS+알림으로 암묵적. 축B 명시 목표('계획 공유')의 사용자 대면 절반. **(2026-09-27)** 사용자 결정 (a) 가벼운 피드백 → #183(`19_plan_feedback.sql`, 2026-09-21 라이브 반영). 남음: 미읽음 표시(P3)·RLS verify 계약(W) |
+| P2-2 | 월간 실적 보고서(출력/제출본) | **done** (#182) | U | '월간보고서' 카드는 실은 지원영역 흐름 화면. 인쇄/제출본 부재. **(2026-09-27)** #182 `/report/print` 범용 양식 v1 — 기관 공식 양식을 받으면 교체 |
+| P2-3 | 모니터링 기록 수정/삭제 | **done** (#180) | U | `monitoring.ts` insert·list 만, update/delete 없음 |
+| P2-4 | 정산 기록 실무자 행정 흐름 연결 | partial | U+user | `recordSettlement`가 관리자 전용(assertAdmin). 실무자 흐름 정책 결정. **(2026-09-27)** #190 정산 원장 인라인 편집도 관리자 전용. 실무자 허용 여부는 여전히 사용자 결정 대기 |
+| P2-5 | 축C 사업 진행 파악 집계 대시보드(KPI 통합뷰) | **done** (#179, A~C) | U | 대시보드가 오늘할일 3카운트뿐. 배정대비 집행률·신청 퍼널·차수 진행 부재. **(2026-09-27)** #179 `/admin/insights` 지표 A~C. D(자기주도성)는 보류, 모니터링은 v1 '최근 30일 기록 유무'(기대주기 기관결정 전) |
+| P2-6 | 축C 슈퍼비전(실무자 활동 가시성) 뷰 | **done** (#181) | U | 담당자별 업무량·처리현황 뷰 부재. P1-2 와 데이터 소스 공유 |
 
 ### P3 — 인프라·테스트·문서
 `easyread 자동검증 CI`(gap) · `copay TS 패리티 테스트`(**partial**: DB `verify_06_copay` done, TS `CopayStatus↔describeCopay`만 남음) ·
-`UI/브라우저 E2E`(gap, 현재 라이프사이클은 `verify_lifecycle.sql` DB계약만) · `문서 위생`(CLAUDE.md 현황·copay 프레이밍 stale) ·
+`UI/브라우저 E2E`(gap, 현재 라이프사이클은 `verify_lifecycle.sql` DB계약만) · `문서 위생`(CLAUDE.md 현황·copay 프레이밍 stale — **2026-09-27 `docs/status-sync-2026-09-27` 에서 정리**) ·
 `is_super_admin 판정 소스 일원화`(이메일 vs DB 컬럼).
 
 ### 보류(deferred) — 3축 기여 없음 · 기관 트리거 대기
@@ -103,15 +105,71 @@
 ## 열린 결정 (기관/사용자 선행 — 다수 P0/P1 의 전제)
 
 1. **국외이전 근거**: Anthropic(미국) 처리위탁 — 별도 '동의' vs 처리방침 '고지-only' + DPA 확인 → P0-1·P0-2·P0-3 일괄.
+   *(2026-09-27: 결정 입력물 `docs/release/15`(#186). 기관 결정 대기 — doc15 §8 체크박스 미체크.)*
 2. **보존연한**: 개인정보 + 감사 접속기록(권고 730일/2년, PRD 3년) → P0-5 파기 인자·표시.
-3. **Supabase 리전** 확인 → `privacyPolicy.ts overseas:'unknown'` 반영.
+   *(**감사 접속기록 = 730일(2년) 확정, 2026-09-22 사용자 결정.** 일반 개인정보 보존연한은 여전히 기관 결정 대기.)*
+3. ~~**Supabase 리전** 확인 → `privacyPolicy.ts overseas:'unknown'` 반영.~~
+   *(**해소 2026-09-23**: `ap-northeast-2`(AWS 서울) 확인 → 저장 국외이전 면제(doc15 §3). `privacyPolicy.ts` 반영은 #192(리뷰 중).)*
 4. **처리방침 발효값**: `EFFECTIVE_DATE` 기입·`PRIVACY_DRAFT=false` 승인·문안 최종 검토.
 5. **고유식별정보(주민번호 등)** 실제 수집·보관 위치 확인(`unique_id` 동의는 있으나 DB 컬럼 미발견 — 확인 필요).
 6. **정산 실무자 기록 허용** 여부(현재 관리자 전용) — P2-4.
-7. **계획 공유 게이트/피드백** 도입 범위 — P2-1.
+7. ~~**계획 공유 게이트/피드백** 도입 범위 — P2-1.~~
+   *(**해소 2026-09-21**: (a) 가벼운 피드백으로 사용자 결정 → #183.)*
 8. **당사자 권리행사(동의·철회) 참여 범위** — 자기결정권 vs 실무자 대리.
 9. **2번째 수행기관 온보딩** 여부 → 멀티테넌시·공동배정 트리거(보류 해제 조건).
 10. 코디네이터 역할 세분화 도입 여부.
+
+---
+
+## 현행 백로그 (2026-09-27 재점검)
+
+> 2026-09-27 백로그 점검(코드·PR·agent-sync·라이브 기록 대조) 결과 중 **아직 열린 것만** 담당별로 모았다. 한 줄 = 한 항목.
+> `#192(리뷰 중)`·`#193(리뷰 중)`·`#194(리뷰 중)` 은 열린 PR(미머지)이다 — 머지 전까지 해당 항목은 열린 것으로 본다.
+> 위 표에서 done 으로 바뀐 항목(#175~#183)과 라이브 반영 완료분(12·19·20 SQL)은 여기서 뺐다.
+
+### 사용자 확인 (라이브·운영 — 에이전트가 볼 수 없는 것)
+- **P0** 감사로그 파기 pg_cron 등록 확인 — `select jobid, schedule, active from cron.job where jobname='audit-purge';` 0행이면 doc12 §4 런북 실행(P0-5).
+- **P1** 활동사진 04 RLS 정책 2종·03 경로 트리거 라이브 존재 확인(테이블·시드는 2026-09-07 라이브 확인) — doc06 §2.
+- **P1** 발달장애 당사자 실사용자 심사 실시 → 기록도구 결과 전달(P1-5, doc09).
+- **P1** 경로별 기능 QA(doc16) + AI 기능(요약·활동제안·AI점검)·TTS·보고서 인쇄 라이브 확인 — doc16 발견사항표 비어 있음.
+- **P1** 운영 전환 하드닝(go-live 전 P0 승격): `TEST_PARTICIPANT_ID`·`TEST_USER_EMAIL` 삭제, 데모 로그인 유지 여부, Email 공개 가입 차단, `ALLOWED_EMAIL_DOMAINS` 결정. 체크리스트 문서는 U.
+- **P2** 영수증 `storage_path` 위조 방지 트리거 — 2026-09-06 보류 결정의 해제 여부.
+- **P2** 실무자 정산 기록 허용 vs 관리자 전용 유지(P2-4, 열린 결정 #6).
+- **P2** KPI D(자기주도성)를 수치 KPI 로 할지 성찰·추세 지표로 할지.
+- **P2** 테스트 편집 env 상태 확인(`TEST_USER_EMAIL` 설정 여부·view-as 저장 실동작).
+- **P3** 데모 Storage 샘플 파일 업로드(선택, doc05 §2) · Vercel Ignored Build Step 으로 agent-sync 배포 실패 소음 제거 · PRD 원본 기술스택 오기 정정(doc03 백로그 #5).
+
+### 기관 결정
+- **P0** AI API 국외이전 근거 — OCR(A안 동의 / 국내 OCR / 제거) · 요약·제안(B안 마스킹 확정). doc15 §8(열린 결정 #1).
+- **P0** 처리방침 확정값 — 시행일·최종 문안·보호책임자 연락처·일반 개인정보 보존연한·고유식별정보 실제 수집 여부·CDN(jsdelivr) 고지 여부(열린 결정 #2 일반·#4·#5).
+- **P0** Supabase DPA 대시보드 서명(doc15 §8 미체크).
+- **P0** Vercel Analytics·Speed Insights 수집 범위·DPA 확인(`src/app/layout.tsx` 로드, 처리방침은 '미국(추정)'·수집범위 [확인필요]).
+- **P3** 모니터링 기대주기(현재 KPI 는 '최근 30일 기록 유무' 안전판) · 월간보고서 공식 양식 제공(#182 v1 교체).
+- **P3** 당사자 권리행사(동의·철회) 본인 참여 범위(열린 결정 #8) · 보류 구조결정(코디네이터·멀티테넌시·공동배정·그래프DB, #9·#10).
+
+### U (구현·배포)
+- **P0** 처리방침 초안 사실 정정(Supabase 서울·OCR 원본 전송 구분) → **#192(리뷰 중)**.
+- **P0** 쉬운말 요약 이름 마스킹 — 당사자 이름 조회 결함 수정은 **#192(리뷰 중)**. 자유서술 속 제3자 이름은 W 탐지 방식 설계 후.
+- **P0** OCR 동의 게이트(consent_type 확장·동의 UI·미동의 시 수동 입력) — 기관 국외이전 결정 후.
+- **P0** 처리방침 발효 반영(`PRIVACY_DRAFT=false`·`EFFECTIVE_DATE`·로그인/더보기 링크) — 기관 확정값 후.
+- **P1** AI 산출물 공통 라벨 + OCR 자동채움 표시 → **#193(리뷰 중)**.
+- **P1** 쉬운말 `<Term>` 배선 확대(`plan/page.tsx` 원문 먼저, 나머지 7개 용어는 W 매핑 후) (P1-3).
+- **P1** 지출기록 화면 읽어주기(`SpeakButton`) (P1-4).
+- **P2** 지출 기록 성공 안내 → **#194(리뷰 중)**.
+- **P2** 검토 대기 화면 `receipt.view` 렌더마다 반복 기록 → 실제 열람 시점으로 좁히기(doc12 §6).
+- **P2** 감사 기록 `target_participant_id` 누락(`receipt.view`·`usage.update`·`settlement.record`·`plan.review`·`ai.summary`) (doc12 §6).
+- **P2** `db-verify.yml` 멱등 재적용 루프에 `19_plan_feedback.sql` 추가 + verify 목록에 `verify_plan_feedback` 등재(W 저작 후, 짝 작업).
+- **P3** 계획 피드백 미읽음 표시 · `database.ts` 타입 재생성(CLI 접근 필요) · 고아 서버액션 3개(`getServiceDomains`·`getServiceSubdomains`·`getSelectionDecision`) 정리.
+- **P3** `is_super_admin` 판정 소스 일원화 · easyread 자동검증 CI · `src/proxy.ts` 인증경로 `startsWith` 정확매칭화.
+- **P3** #191 잔여위험 ③(당사자 전환 후 늦은 오류 안내) · 담당자 대리 화면설정 UI(W 판단 후) · 미리보기 홈 렌더 중복 정리.
+- **P3** 문서·기록 위생 → 2026-09-27 `docs/status-sync-2026-09-27`(이 갱신).
+
+### W (설계·검증)
+- **P2** `verify_plan_feedback.sql` 저작(본인 작성·`can_access` 열람·append-only).
+- **P2** #176~#191 신규 화면 KWCAG 3차 감사(`/admin/audit`·`/admin/insights`·`/admin/supervision`·보고서 인쇄·평가 아코디언·거래장부/정산 표) — doc07.
+- **P2** 쉬운말 요약 자유서술 제3자 이름 탐지 방식 설계(P0-2 잔여, B안 확정 전제).
+- **P3** copay TS 패리티 테스트 · UI/브라우저 E2E 범위·도구 설계 · 감사 커버리지 후속(갤러리·상세 열람·변경 감사 대상) 설계.
+- **P3** AI 기능 후속(요약 저장 캐시·근처 기관 연계·AI점검 v2) — 보류 유지.
 
 ---
 
@@ -122,5 +180,5 @@
 - 저심각 커버리지 관측(비평가): PRD 6장 AI 스택 재검증 미실시 · UI/E2E 부재(DB계약 `verify_lifecycle`로 완화).
 
 ## 관련 파일
-- `docs/release/03-prd-alignment-review.md`(앵커) · `docs/harness-plan.md`(GOAL축 로드맵) · `CLAUDE.md`「현재 작업 현황」(stale, 갱신 필요)
+- `docs/release/03-prd-alignment-review.md`(앵커) · `docs/harness-plan.md`(GOAL축 로드맵) · `CLAUDE.md`「현재 작업 현황」(2026-09-27 스냅샷으로 갱신)
 - `Plan&Source/goala_privacy_deid_assignment_W.md`·`goala_audit_log_W.md` · `src/utils/{aiDeidentify,deidentify,ocr,tts}.ts` · `src/content/privacyPolicy.ts`

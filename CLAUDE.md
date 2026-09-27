@@ -146,10 +146,12 @@ export async function myAction(formData: FormData) {
 
 ## 데이터베이스 마이그레이션 (D0 컷오버 후 — 서울형 정본)
 
-**정본 빌드**: `supabase/seoul/` — 순서대로 수동 실행:
+**정본 빌드**: `supabase/seoul/` — 순서대로 수동 실행(`supabase/seoul/README.md` 「실행 순서」 기준):
 `00_extensions → 01_core → 02_core_rls → 03_seoul_schema → 04_seoul_rls → 05_seoul_graph →
-06_storage → 07_seed_program → 08_seed_demo`.
-축B 온톨로지 분류축 `09_ontology_classification.sql`(03 program 확장과 세트)는 진행 중(PR #17).
+06_storage → 07_seed_program → 09_ontology_classification → 10_fk_ization → 11_provider_domains →
+12_audit_log → 17_participant_feedback → 18_sis_assessments → 19_plan_feedback → 20_evaluations`.
+- `13~15` 는 결번(관계망/Track B 제거 #171 — 라이브 드롭은 `_drops/2026-09-19_drop_network.sql`).
+- 데모용(운영 제외): `scripts/seed-demo-auth.mjs`(터미널) → `08_seed_demo.sql` · `16_seed_documents_demo.sql`(선택, 08 이후).
 실행 순서·대시보드 수동작업 상세는 [`supabase/seoul/README.md`](supabase/seoul/README.md).
 
 **레거시**: 번호 마이그레이션 `supabase/migrations/04~31` 은 D0 컷오버(#16)에서
@@ -267,7 +269,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 - **PRD 대조(U, 2026-08-28)**: 사용자 업로드 「서울형 리빌딩 PRD」 정합성 리뷰 완료 — `docs/release/03-prd-alignment-review.md`. 9장 그래프 시각화 등은 이미 구현·머지된 재발견, 가명처리·마스킹(7장)은 실제 공백으로 확인. W 판단 대기: ①가명처리 설계 착수 여부·우선순위 ②코디네이터 역할 세분화 여부 ③멀티테넌시 확장 가이드(GOAL축B3) 반영 여부.
 - **U 병렬 오케스트레이션(U, 2026-09-04)**: U 축을 단일 직렬 세션 → **오케스트레이터 + worktree 격리 병렬 워커**로 승격(계정 한도 상향 활용). 저자(U)↔검증자(W) 분리·레인·PR/CI 불변, 병렬화는 저자(U) 내부 팬아웃뿐. 운영모델 `docs/release/04-u-parallel-orchestration.md` + 도구 `scripts/u-wave-plan.sh`([HANDOFF→U] PR을 파일겹침+STATE로 웨이브 편성, 이미구현/스펙 자동 스킵). 첫 실행: #83 P2토큰 → PR #89(green), #79·#80은 이미구현 판정으로 중복워커 중지. **U 구현큐 현재 비어있음** — W 신규 RED 계약 시 재편성 spawn.
 
-- **★현행 스냅샷(2026-09-20) — 위 항목들은 역사 기록**: 이후 대량 머지로 상태가 크게 바뀜.
+- **스냅샷(2026-09-20) — 역사 기록**(아래 2026-09-27 스냅샷이 현행. 이 블록의 '진행 중(U)'는 #175 로 종료 — 단 OCR 결과 마스킹은 기관결정 선행이라 의도적 제외. 'P0 Manual-Ops' 중 감사 라이브적용은 2026-09-21 완료, 파기 스케줄은 미확인): 이후 대량 머지로 상태가 크게 바뀜.
   - **완료(재착수 금지)**: Track A 회계·거래장부·서류 6슬라이스(#131~#136) · P0-A 개인정보 처리방침 초안(#167) ·
     P0-B 통합 감사로그+열람감사+파기함수(#169) · 테스트 당사자 편집 예외(#168) · **관계망(Track B) 제거**
     (#171~#173, 코드·DB·설계 전면 종료, 라이브 드롭 PostgREST 검증) · P1~P7 프론트 재구성 완결(#89~#115).
@@ -281,3 +283,21 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
     (`participant.preview` 배선)·가시성(`/admin/audit`)·축A 저비용 배선(EasyTerm·TTS)·인증 사람관문(당사자 실사용자 심사).
   - **진행 중(U)**: 결정 불필요 P0 코드 하드닝 착수 — OCR 결과 마스킹 · `easyReadSummary` term 커버리지 · `participant.preview` 감사 배선.
   - **copay 정정**: "교차계층 계약 대기"는 stale — DB `verify_06_copay` done, TS 패리티 테스트만 잔여(P3).
+
+- **★현행 스냅샷(2026-09-27) — 위 항목들은 역사 기록**: main = `7f7cd58`(#191). 백로그 정본 =
+  `docs/release/14-prd-reprioritization.md` 「현행 백로그 (2026-09-27 재점검)」(담당별·우선순위).
+  - **완료(재착수 금지, 2026-09-20 이후)**: #175 요약 대리인 이름 치환 + `participant.preview` 감사 · #176 `/admin/audit` ·
+    #177 TTS `SpeakButton`(홈 잔액·이용계획) · #178 쉬운 용어 사전+`<Term>`('이용계획') · #179 `/admin/insights` KPI A~C ·
+    #180 모니터링 수정·삭제 · #181 `/admin/supervision` · #182 월간 보고서 인쇄 v1 · #183 계획 가벼운 피드백 ·
+    #184 `TEST_USER_EMAIL` · #185 실무자 기존 지출 사진 추가 · #186 국외이전 결정메모(doc15) · #187 기능 QA 체크리스트(doc16) ·
+    #188~#191 영수증검토 추가·거래장부/정산 표·평가 아코디언+월별 양식. 지출↔분류축 UI 는 #39 로 이미 완료(옛 '다음' 줄 stale).
+  - **라이브 반영(사용자 Manual-Ops)**: `12_audit_log`(2026-09-21)·`19_plan_feedback`(2026-09-21)·`20_evaluations`(2026-09-26, 카탈로그 32/32).
+    **미확인**: 감사 파기 pg_cron 등록(`0 18 * * *` UTC = KST 03시, `docs/release/12` §4) · 활동사진 04 RLS·03 경로 트리거(`docs/release/06` §2).
+  - **결정 확정**: 감사 접속기록 보존 730일(2026-09-22) · Supabase 리전 `ap-northeast-2` 서울 → 저장 국외이전 면제(2026-09-23) ·
+    계획 공유 = 가벼운 피드백(a)(→#183).
+  - **리뷰 중(미머지)**: #192(처리방침 사실 정정 + 쉬운말 요약 당사자 이름 가림 결함 수정 — `profiles` 오조회로 #73 이후 미마스킹) ·
+    #193(AI 생성물 공통 라벨 `AiNotice` + OCR 자동채움 표시) · #194(지출 기록 성공 안내).
+  - **다음(결정·확인 선행)**: 기관 = AI API 국외이전 근거(OCR A안/국내/제거 · 요약·제안 B안)·처리방침 확정값·Supabase DPA 서명·Vercel
+    Analytics 수집범위/DPA · 사용자 = pg_cron·활동사진 RLS 라이브 확인·실사용자 심사·기능 QA(doc16)·정산 실무자 허용·KPI D.
+  - **다음(U 코드, 결정 불요)**: 쉬운말 `<Term>` 확대(`plan/page.tsx`)·지출기록 TTS·`receipt.view` 반복 기록 축소·감사 `target_participant_id` 누락.
+  - **운영 모드**: 변동 없음 — U 한 세션이 양축 대행(구현≠검증은 신선 서브에이전트), main 머지는 사람.
