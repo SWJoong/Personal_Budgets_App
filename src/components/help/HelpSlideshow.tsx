@@ -30,9 +30,10 @@ export default function HelpSlideshow({ section, onClose }: Props) {
         <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">
           {section.title}
         </span>
+        {/* 44px 터치 영역. 음수 여백(-my-2 -mr-3)으로 헤더 높이·✕ 위치는 그대로 둔다. */}
         <button
           onClick={onClose}
-          className="text-muted-foreground hover:text-foreground text-lg font-bold transition-colors"
+          className="min-h-11 min-w-11 -my-2 -mr-3 flex items-center justify-center text-muted-foreground hover:text-foreground text-lg font-bold transition-colors"
           aria-label="닫기"
         >
           ✕
@@ -55,7 +56,7 @@ export default function HelpSlideshow({ section, onClose }: Props) {
 
       {/* 슬라이드 콘텐츠 */}
       <div className="px-6 pb-2 flex flex-col items-center gap-4 min-h-[200px] justify-center text-center">
-        <span className="text-6xl">{slide.icon}</span>
+        <span aria-hidden="true" className="text-6xl">{slide.icon}</span>
         <h3 className="text-xl font-black text-foreground">{slide.title}</h3>
         <p className="text-sm text-muted-foreground leading-relaxed">{slide.body}</p>
       </div>

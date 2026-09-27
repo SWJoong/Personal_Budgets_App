@@ -31,7 +31,7 @@ function SectionToggle({
       className="w-full min-h-[44px] flex items-center justify-between py-1 mb-2"
     >
       <h2 className="text-sm font-black text-foreground uppercase tracking-widest ml-2">{title}</h2>
-      <span className="text-muted-foreground text-xs font-bold mr-1">{open ? '▲ 접기' : '▼ 펼치기'}</span>
+      <span className="text-muted-foreground text-xs font-bold mr-1"><span aria-hidden="true">{open ? '▲' : '▼'}</span> {open ? '접기' : '펼치기'}</span>
     </button>
   )
 }
@@ -106,28 +106,28 @@ export default function MoreMenuClient({
               href="/plan"
               className="relative flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-card ring-1 ring-border shadow-sm hover:ring-primary transition-all active:scale-[0.98] group"
             >
-              <span className="text-3xl group-hover:scale-110 transition-transform">🤔</span>
+              <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">🤔</span>
               <span className="text-sm font-black text-foreground">해보고 싶은 것</span>
             </Link>
             <Link
               href="/calendar"
               className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-card ring-1 ring-border shadow-sm hover:ring-primary transition-all active:scale-[0.98] group"
             >
-              <span className="text-3xl group-hover:scale-110 transition-transform">📅</span>
+              <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">📅</span>
               <span className="text-sm font-black text-foreground">달력</span>
             </Link>
             <Link
               href="/map"
               className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-card ring-1 ring-border shadow-sm hover:ring-primary transition-all active:scale-[0.98] group"
             >
-              <span className="text-3xl group-hover:scale-110 transition-transform">🗺️</span>
+              <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">🗺️</span>
               <span className="text-sm font-black text-foreground">사용 장소 지도</span>
             </Link>
             <Link
               href="/gallery"
               className="flex flex-col items-center justify-center gap-2 p-5 rounded-[2rem] bg-card ring-1 ring-border shadow-sm hover:ring-primary transition-all active:scale-[0.98] group"
             >
-              <span className="text-3xl group-hover:scale-110 transition-transform">📸</span>
+              <span aria-hidden="true" className="text-3xl group-hover:scale-110 transition-transform">📸</span>
               <span className="text-sm font-black text-foreground">사진 모아보기</span>
             </Link>
             <Link
@@ -155,7 +155,7 @@ export default function MoreMenuClient({
           <div className="bg-card rounded-[2rem] p-6 ring-1 ring-border shadow-sm flex flex-col gap-6">
             {/* 글자 크기 */}
             <div className="flex flex-col gap-3">
-              <p className="text-sm font-bold text-muted-foreground">🔤 글자 크기를 조절할 수 있어요.</p>
+              <p className="text-sm font-bold text-muted-foreground"><span aria-hidden="true">🔤</span> 글자 크기를 조절할 수 있어요.</p>
               <div className="flex gap-2">
                 {([
                   { id: 'normal', label: '가', size: '기본' },
@@ -183,7 +183,7 @@ export default function MoreMenuClient({
             {/* 고대비 모드 */}
             <div className="flex items-center justify-between pt-4 border-t border-border">
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-foreground">🌗 글씨가 더 잘 보여요</span>
+                <span className="text-sm font-bold text-foreground"><span aria-hidden="true">🌗</span> 글씨가 더 잘 보여요</span>
                 <span className="text-xs text-muted-foreground font-medium">글씨와 배경의 대비를 높여요</span>
               </div>
               <button
@@ -202,51 +202,57 @@ export default function MoreMenuClient({
             {/* 다크 모드 */}
             <div className="flex items-center justify-between pt-4 border-t border-border">
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-foreground">🌙 다크 모드</span>
+                <span className="text-sm font-bold text-foreground"><span aria-hidden="true">🌙</span> 다크 모드</span>
                 <span className="text-xs text-muted-foreground font-medium">눈부심을 줄이기 위해 어두운 배경을 사용해요</span>
               </div>
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className={`relative w-14 h-8 rounded-full transition-all duration-300 ${darkMode ? 'bg-primary' : 'bg-muted'}`}
+                className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 role="switch"
                 aria-checked={darkMode}
                 aria-label="다크 모드 전환"
               >
-                <div className={`absolute top-1 w-6 h-6 rounded-full bg-card shadow-md transition-all duration-300 ${darkMode ? 'left-7' : 'left-1'}`} />
+                <span className={`relative block w-14 h-8 rounded-full transition-all duration-300 ${darkMode ? 'bg-primary' : 'bg-muted'}`}>
+                  <span className={`absolute top-1 w-6 h-6 rounded-full bg-card shadow-md transition-all duration-300 ${darkMode ? 'left-7' : 'left-1'}`} />
+                </span>
               </button>
             </div>
 
             {/* 쉬운 말 모드 */}
             <div className="flex items-center justify-between pt-4 border-t border-border">
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-foreground">💬 쉬운 말 모드</span>
+                <span className="text-sm font-bold text-foreground"><span aria-hidden="true">💬</span> 쉬운 말 모드</span>
                 <span className="text-xs text-muted-foreground font-medium">쉬운 말로 바꿔요</span>
               </div>
               <button
                 onClick={() => setEasyTerms(!easyTerms)}
-                className={`relative w-14 h-8 rounded-full transition-all duration-300 ${easyTerms ? 'bg-primary' : 'bg-muted'}`}
+                className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 role="switch"
                 aria-checked={easyTerms}
                 aria-label="쉬운 용어 모드 전환"
               >
-                <div className={`absolute top-1 w-6 h-6 rounded-full bg-card shadow-md transition-all duration-300 ${easyTerms ? 'left-7' : 'left-1'}`} />
+                <span className={`relative block w-14 h-8 rounded-full transition-all duration-300 ${easyTerms ? 'bg-primary' : 'bg-muted'}`}>
+                  <span className={`absolute top-1 w-6 h-6 rounded-full bg-card shadow-md transition-all duration-300 ${easyTerms ? 'left-7' : 'left-1'}`} />
+                </span>
               </button>
             </div>
 
             {/* 노란 배경 모드 */}
             <div className="flex items-center justify-between pt-4 border-t border-border">
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-foreground">🟡 노란 배경 모드</span>
+                <span className="text-sm font-bold text-foreground"><span aria-hidden="true">🟡</span> 노란 배경 모드</span>
                 <span className="text-xs text-muted-foreground font-medium">글 읽기 어려운 분을 위해 배경을 노란색으로 바꿔요</span>
               </div>
               <button
                 onClick={() => setYellowBg(!yellowBg)}
-                className={`relative w-14 h-8 rounded-full transition-all duration-300 ${yellowBg ? 'bg-primary' : 'bg-muted'}`}
+                className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 role="switch"
                 aria-checked={yellowBg}
                 aria-label="노란 배경 모드 전환"
               >
-                <div className={`absolute top-1 w-6 h-6 rounded-full bg-card shadow-md transition-all duration-300 ${yellowBg ? 'left-7' : 'left-1'}`} />
+                <span className={`relative block w-14 h-8 rounded-full transition-all duration-300 ${yellowBg ? 'bg-primary' : 'bg-muted'}`}>
+                  <span className={`absolute top-1 w-6 h-6 rounded-full bg-card shadow-md transition-all duration-300 ${yellowBg ? 'left-7' : 'left-1'}`} />
+                </span>
               </button>
             </div>
           </div>
@@ -260,7 +266,7 @@ export default function MoreMenuClient({
           <div className="bg-card rounded-[2rem] p-6 ring-1 ring-border shadow-sm flex flex-col gap-3">
             {fileLinks.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground">
-                <span className="text-4xl block mb-2">📁</span>
+                <span aria-hidden="true" className="text-4xl block mb-2">📁</span>
                 <p className="text-sm font-bold">아직 등록한 서류가 없어요.</p>
               </div>
             ) : (

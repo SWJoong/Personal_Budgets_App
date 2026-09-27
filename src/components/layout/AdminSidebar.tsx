@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useId } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
@@ -17,6 +17,8 @@ interface AdminSidebarProps {
 interface SubItem {
   name: string
   href: string
+  // 글자 앞 장식 이모지. 스크린리더에는 숨기고(aria-hidden) 글자(name)만 읽힌다.
+  icon?: string
   soon?: boolean
   adminOnly?: boolean
 }
@@ -58,9 +60,9 @@ const menuGroups: MenuGroup[] = [
         icon: '👥',
         adminOnly: true, // /admin/participants = requireAdmin. 실무자는 아래 supporterParticipantItem 로 대체.
         sub: [
-          { name: '➕ 당사자 등록',    href: '/admin/participants/new' },
-          { name: '📋 전체 목록',      href: '/admin/participants' },
-          { name: '📊 당사자 현황',    href: '/supporter/participants' },
+          { icon: '➕', name: '당사자 등록', href: '/admin/participants/new' },
+          { icon: '📋', name: '전체 목록',   href: '/admin/participants' },
+          { icon: '📊', name: '당사자 현황', href: '/supporter/participants' },
         ],
       },
       {
@@ -68,8 +70,8 @@ const menuGroups: MenuGroup[] = [
         href: '/supporter/applications',
         icon: '📝',
         sub: [
-          { name: '➕ 신청서 접수', href: '/supporter/applications/new' },
-          { name: '📋 전체 목록',   href: '/supporter/applications' },
+          { icon: '➕', name: '신청서 접수', href: '/supporter/applications/new' },
+          { icon: '📋', name: '전체 목록',   href: '/supporter/applications' },
         ],
       },
       { name: '이용계획 · 심의', href: '/supporter/plans', icon: '🎯' },
@@ -98,14 +100,24 @@ const menuGroups: MenuGroup[] = [
 const supporterParticipantItem: MenuItem = { name: '당사자 현황', href: '/supporter/participants', icon: '👥' }
 
 const quickItems: SubItem[] = [
-  { name: '➕ 당사자 등록',    href: '/admin/participants/new', adminOnly: true },
-  { name: '📝 신청서 접수',    href: '/supporter/applications/new' },
-  { name: '🧾 영수증 검토',    href: '/supporter/review' },
-  { name: '👥 당사자 목록 보기', href: '/admin/participants', adminOnly: true },
-  { name: '📋 평가 작성',      href: '/supporter/evaluations' },
-  { name: '😊 피드백 확인',    href: '/admin/feedback', adminOnly: true },
-  { name: '✉️ 초대 관리',      href: '/admin/invitations', adminOnly: true },
+  { icon: '➕', name: '당사자 등록',    href: '/admin/participants/new', adminOnly: true },
+  { icon: '📝', name: '신청서 접수',    href: '/supporter/applications/new' },
+  { icon: '🧾', name: '영수증 검토',    href: '/supporter/review' },
+  { icon: '👥', name: '당사자 목록 보기', href: '/admin/participants', adminOnly: true },
+  { icon: '📋', name: '평가 작성',      href: '/supporter/evaluations' },
+  { icon: '😊', name: '피드백 확인',    href: '/admin/feedback', adminOnly: true },
+  { icon: '✉️', name: '초대 관리',      href: '/admin/invitations', adminOnly: true },
 ]
+
+// 서브·빠른 설정 링크 라벨 — 장식 이모지는 aria-hidden, 글자만 접근명. 공백 한 칸은 그대로 둬 보이는 모양이 같다.
+function SubLabel({ item }: { item: SubItem }) {
+  return (
+    <span className="truncate">
+      {item.icon && <><span aria-hidden="true">{item.icon}</span> </>}
+      {item.name}
+    </span>
+  )
+}
 
 function SoonBadge() {
   return (
@@ -121,6 +133,8 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
   const [openSubs, setOpenSubs] = useState<Record<string, boolean>>({})
   const [quickOpen, setQuickOpen] = useState(false)
   const [role, setRole] = useState<UserRole | null>(roleProp ?? null)
+  // 서브메뉴 영역 id 접두 — 데스크톱 사이드바와 모바일 드로어가 함께 떠도 id 가 겹치지 않게 인스턴스마다 다르게.
+  const subIdPrefix = useId()
 
   useEffect(() => {
     // 서버가 role 을 prop 으로 내려줬으면 그것이 정본 — 클라 조회를 건너뛴다(flash·조회실패 고착 방지).
@@ -151,8 +165,10 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
   const visibleQuick = isSupporter ? quickItems.filter((q) => !q.adminOnly) : quickItems
   const roleLabel = role === 'supporter' ? '담당자' : role === 'participant' ? '당사자' : '관리자'
 
-  const toggleSub = (href: string) =>
-    setOpenSubs(prev => ({ ...prev, [href]: !prev[href] }))
+  // 지금 보이는 상태(isOpen)를 뒤집는다. 활성 경로라 자동으로 펼쳐진 항목(openSubs 미기록)도 첫 클릭에 접힌다
+  // — 예전 `!prev[href]` 는 undefined→true 라 첫 클릭이 무반응이었다(aria-expanded 도 그대로 true).
+  const toggleSub = (href: string, isOpen: boolean) =>
+    setOpenSubs(prev => ({ ...prev, [href]: !isOpen }))
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -170,6 +186,7 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
     const subItems = isSupporter ? item.sub?.filter((s) => !s.adminOnly) : item.sub
     const hasSub = !collapsed && !!subItems && subItems.length > 0
     const isSubOpen = openSubs[item.href] ?? isActive
+    const subId = `${subIdPrefix}-sub${item.href.replace(/\//g, '-')}`
 
     return (
       <div key={item.name}>
@@ -195,22 +212,24 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
               </>
             )}
           </Link>
-          {/* 서브메뉴 토글 버튼 */}
+          {/* 서브메뉴 토글 버튼 — 44px 터치 영역(행 높이 48px 안이라 줄 높이 불변). 라벨에 메뉴 이름을
+              넣어 어느 메뉴를 펼치는지 알 수 있게 하고, 펼쳐졌을 때만 aria-controls 로 서브 영역을 가리킨다. */}
           {hasSub && (
             <button
-              onClick={() => toggleSub(item.href)}
-              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-strong transition-all shrink-0 mr-1"
-              aria-label={isSubOpen ? '접기' : '펼치기'}
+              onClick={() => toggleSub(item.href, isSubOpen)}
+              className="min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-sidebar-hover text-sidebar-muted-foreground hover:text-sidebar-strong transition-all shrink-0 mr-1"
+              aria-label={`${item.name} 하위 메뉴 ${isSubOpen ? '접기' : '펼치기'}`}
               aria-expanded={isSubOpen}
+              aria-controls={isSubOpen ? subId : undefined}
             >
-              <span className="text-xs">{isSubOpen ? '▲' : '▼'}</span>
+              <span aria-hidden="true" className="text-xs">{isSubOpen ? '▲' : '▼'}</span>
             </button>
           )}
         </div>
 
         {/* 서브메뉴 */}
         {hasSub && isSubOpen && (
-          <div className="ml-8 mt-0.5 flex flex-col gap-0.5">
+          <div id={subId} className="ml-8 mt-0.5 flex flex-col gap-0.5">
             {subItems!.map(sub => (
               <Link
                 key={sub.href}
@@ -222,7 +241,7 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
                     : 'text-sidebar-muted-foreground hover:bg-sidebar-hover hover:text-sidebar-strong'
                 }`}
               >
-                <span className="truncate">{sub.name}</span>
+                <SubLabel item={sub} />
                 {sub.soon && <SoonBadge />}
               </Link>
             ))}
@@ -295,9 +314,9 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
             aria-expanded={quickOpen}
             className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm text-sidebar-muted-foreground hover:text-sidebar-strong hover:bg-sidebar-hover transition-all"
           >
-            <span className="text-base">⚡</span>
+            <span aria-hidden="true" className="text-base">⚡</span>
             <span className="flex-1 text-left font-bold">빠른 설정</span>
-            <span className="text-xs">{quickOpen ? '▲' : '▼'}</span>
+            <span aria-hidden="true" className="text-xs">{quickOpen ? '▲' : '▼'}</span>
           </button>
           {quickOpen && (
             <div className="mt-1 flex flex-col gap-0.5">
@@ -307,7 +326,7 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
                   href={q.href}
                   className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg text-sidebar-muted-foreground hover:bg-sidebar-hover hover:text-sidebar-strong transition-all"
                 >
-                  <span className="truncate">{q.name}</span>
+                  <SubLabel item={q} />
                   {q.soon && <SoonBadge />}
                 </Link>
               ))}
@@ -326,11 +345,13 @@ export function AdminSidebar({ collapsed = false, onToggle, role: roleProp }: Ad
         <button
           onClick={handleLogout}
           title={collapsed ? '로그아웃' : undefined}
+          // 접힘 모드엔 보이는 글자가 없어(🚪 는 장식) 접근명을 따로 준다.
+          aria-label={collapsed ? '로그아웃' : undefined}
           className={`flex items-center gap-3 w-full rounded-xl text-left text-sm hover:bg-sidebar-hover transition-all text-sidebar-muted-foreground hover:text-sidebar-strong py-2.5 ${
             collapsed ? 'justify-center px-0' : 'px-3'
           }`}
         >
-          <span className="text-xl shrink-0">🚪</span>
+          <span aria-hidden="true" className="text-xl shrink-0">🚪</span>
           {!collapsed && <span>로그아웃</span>}
         </button>
       </div>
