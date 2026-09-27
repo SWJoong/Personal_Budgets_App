@@ -32,6 +32,8 @@ const ocrOk = (data: Record<string, unknown>) => ({ success: true, data }) as un
 const ocrFail = () => ({ success: false, error: 'x' }) as unknown as OcrResult
 
 const CHECK_PROMPT = '채워진 칸이 맞는지 봐 주세요.'
+// 사람 최종 확인(docs/release/15 §6 · AiNotice 불변식 2) — 영수증 칸은 당사자가 보고, 정산 때 선생님이 한 번 더 본다.
+const STAFF_CHECK = '선생님도 한 번 더 살펴봐요.'
 const OCR_FAIL = '사진에서 내용을 읽지 못했어요. 아래 칸에 직접 입력해 주세요.'
 
 const baseProps = {
@@ -85,6 +87,7 @@ describe('ReceiptClient — 판독 자동채움 생성물 표시 라벨', () => 
     const note = await screen.findByRole('note')
     expect(note).toHaveTextContent(AI_NOTICE_PARTICIPANT.receipt)
     expect(note).toHaveTextContent(CHECK_PROMPT)
+    expect(note).toHaveTextContent(STAFF_CHECK)
     // 정적 라벨: 라이브 영역 밖 + 전역 status 는 기존 OCR 완료 문구만 담는다(라벨 문구 미포함).
     expect(note.closest('[aria-live]')).toBeNull()
     expect(screen.getByRole('status')).toHaveTextContent('사진에서 내용을 다 읽었어요.')

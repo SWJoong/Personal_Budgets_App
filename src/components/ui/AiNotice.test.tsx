@@ -8,7 +8,8 @@ import { AiNotice, AI_NOTICE_TEXT, AI_NOTICE_PARTICIPANT } from '@/components/ui
  *
  * 불변식(행위/시맨틱만 단언 — 토큰·색상 단언 금지):
  *   1) 두 audience 모두 보이는 글자 라벨을 렌더한다(비색큐 — 고대비 모드에서도 뜻이 남는다).
- *   2) 라벨은 '만든 주체(컴퓨터/AI)'와 '사람 최종 확인(선생님/담당자)'을 둘 다 담는다.
+ *   2) 라벨(머리말 + 화면별 덧붙임 전체)은 '만든 주체(컴퓨터/AI)'와 '사람 최종 확인(선생님/담당자)'을 둘 다 담는다
+ *      — 영수증처럼 머리말이 '읽었어요'뿐인 화면은 덧붙임이 사람 확인을 싣는다(ReceiptClient.ainotice.test).
  *   3) 당사자 문구에는 'AI' 리터럴이 없다(P7 B4 규칙 — '컴퓨터'로 쓴다).
  *   4) 정적 라벨이다 — role=note 이고 라이브 영역(aria-live·status·alert)이 아니다(#191 한 번·한 채널).
  *   5) 장식 아이콘은 aria-hidden. 화면별 덧붙임(children)도 같은 라벨 안에 보인다.
@@ -32,7 +33,7 @@ describe('AiNotice — AI 생성물 표시 라벨', () => {
   it('당사자 화면별 머리말: 영수증은 컴퓨터가 "읽은" 값(만든 값 아님), 활동 추천은 "추천"이 주어 · AI 리터럴 없음', () => {
     expect(AI_NOTICE_PARTICIPANT.receipt).toMatch(/컴퓨터가[^.]*읽었어요/)
     expect(AI_NOTICE_PARTICIPANT.receipt).not.toMatch(/만든|만들/)
-    expect(AI_NOTICE_PARTICIPANT.activity).toMatch(/^추천은 컴퓨터가 만들었어요/)
+    expect(AI_NOTICE_PARTICIPANT.activity).toBe('추천은 컴퓨터가 만들었어요. 선생님과 함께 봐요.')
     for (const t of Object.values(AI_NOTICE_PARTICIPANT)) expect(AI_LITERAL.test(t)).toBe(false)
   })
 
@@ -63,9 +64,9 @@ describe('AiNotice — AI 생성물 표시 라벨', () => {
   })
 
   it('화면별 덧붙임(children)이 같은 라벨 안에 보인다', () => {
-    render(<AiNotice audience="participant">사진에서 읽은 값이 맞는지 봐 주세요.</AiNotice>)
+    render(<AiNotice audience="staff">내용이 맞는지 꼭 확인하고 쓰세요.</AiNotice>)
     const note = screen.getByRole('note')
-    expect(note).toHaveTextContent(AI_NOTICE_TEXT.participant)
-    expect(note).toHaveTextContent('사진에서 읽은 값이 맞는지 봐 주세요.')
+    expect(note).toHaveTextContent(AI_NOTICE_TEXT.staff)
+    expect(note).toHaveTextContent('내용이 맞는지 꼭 확인하고 쓰세요.')
   })
 })
