@@ -1467,3 +1467,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-27T08:11Z] U
 [MERGED] #192(5c96181) 처리방침 사실정정+쉬운말요약 당사자이름 가림 결함 수정 · #193(50cbe15) AiNotice AI 생성물 라벨 · #194(4b78491) 지출기록 성공 안내 · #195(56551b4) 문서 정리(CLAUDE.md 현행 스냅샷·doc14 현행 백로그) → main 56551b4 (사용자 승인, squash, 순차 update-branch+CI). 남은 사용자 확인: pg_cron·활동사진 04 RLS·ai.summary 사용량(감사로그).
 
+## [2026-09-27T08:53Z] U
+[진행] worktree 정리: 세션 wf_* 10개 + 기존 4개(-u·-wact·objective-goldberg·pb-apply) 제거 — 모두 고유 작업 없음(내용 비교 검증). 원격 브랜치 3개(test/w-activity-photos-c·feat/demo-personas-seed·feat/phase-c-plan) 삭제. [HANDOFF→W] #196 docs/a11y/phase-c-plan.md 보관+절별 실행 현황표 — ★Phase C 는 핵심만 done(§4 날짜 형식 도움말 미반영, §3·§5~§10 일부) → doc14 백로그 U P2 'Phase C 잔여'. 머지 승인 대기.
+
