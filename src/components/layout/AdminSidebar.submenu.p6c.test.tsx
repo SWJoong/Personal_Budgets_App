@@ -94,10 +94,15 @@ describe('P6-C 장식 이모지 — AdminSidebar 링크·버튼 접근명 (admin
 
   it("로그아웃 버튼은 펼침·접힘 모두 접근명이 '로그아웃'(🚪 는 장식)", () => {
     const { unmount } = render(<AdminSidebar />)
-    expect(screen.getByRole('button', { name: '로그아웃' })).toBeInTheDocument()
+    // 펼침: 보이는 글자 '로그아웃' 이 이름(aria-label 을 덧씌우지 않음 — 보이는 라벨과 일치)
+    const open = screen.getByRole('button', { name: '로그아웃' })
+    expect(open).not.toHaveAttribute('aria-label')
     unmount()
     render(<AdminSidebar collapsed onToggle={() => {}} />)
-    expect(screen.getByRole('button', { name: '로그아웃' })).toBeInTheDocument()
+    // 접힘: 보이는 글자가 없어(🚪 는 aria-hidden) title 만으론 이름이 약하다(title 은 accname 최후 대체·
+    // 터치기기 미노출) → aria-label 을 명시. title 폴백과 구별하려고 속성 자체를 단언한다.
+    const collapsedBtn = screen.getByRole('button', { name: '로그아웃' })
+    expect(collapsedBtn).toHaveAttribute('aria-label', '로그아웃')
     expect(screen.getByText('🚪').closest('[aria-hidden="true"]')).not.toBeNull()
   })
 })
