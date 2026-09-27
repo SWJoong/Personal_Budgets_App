@@ -2,12 +2,13 @@
 
 import { useState, useTransition } from 'react'
 import { useToast } from '@/components/ui/LiveRegion'
+import { AiNotice } from '@/components/ui/AiNotice'
 import { generateEasyReadSummary } from '@/app/actions/easyReadSummary'
 
 /**
  * 쉬운 말 요약 — 담당자가 이 계획을 당사자가 읽기 쉬운 말로 요약해 함께 본다(설계 §3).
  * 액션: generateEasyReadSummary(planId). 접근성: 비동기(수 초) 진행·결과·오류를 라이브 영역(useToast)으로 알린다.
- * 투명성: AI 생성물이므로 내용 확인 후 사용하도록 안내한다.
+ * 투명성: AI 생성물 표시는 공통 라벨 AiNotice(staff)로 한다 — 요약은 틀릴 수 있어 '확인 후 사용'을 덧붙인다.
  */
 export default function EasyReadSummary({ planId }: { planId: string }) {
   const [pending, startTransition] = useTransition()
@@ -57,9 +58,7 @@ export default function EasyReadSummary({ planId }: { planId: string }) {
         </div>
       )}
 
-      <p className="text-[11px] text-muted-foreground leading-relaxed">
-        컴퓨터가 만든 요약이에요. 내용이 맞는지 꼭 확인하고 쓰세요.
-      </p>
+      <AiNotice audience="staff">내용이 맞는지 꼭 확인하고 쓰세요.</AiNotice>
     </section>
   )
 }
