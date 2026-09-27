@@ -93,7 +93,7 @@
 
 - **가명처리**: `callAIDeidentified` 게이트(#70)·`deidentify/reidentify`(#65)·`aiGateBoundary` 우회차단 — 03 유일 실공백 해소.
 - **감사로그**: `seoul_audit_log`(append-only·행위자 스탬프·관리자 RLS)·16 action 커버리지·열람감사(#169)·`role.change` — 03 gap 해소.
-- **접근성**: jsx-a11y 4규칙 error 승격+CI blocking(#58/#61/#106)·Phase C 리트로핏(핵심 — 잔여는 [`docs/a11y/phase-c-plan.md`](../a11y/phase-c-plan.md) 「실행 현황」)·명도대비 4테마 sweep(#107~#111)·P1~P7 완결(#89~#115)·KWCAG 자가진단 ~96~100%.
+- **접근성**: jsx-a11y 4규칙 error 승격+CI blocking(#61, 규칙 도입 #57)·Phase C 리트로핏(핵심 — 잔여는 [`docs/a11y/phase-c-plan.md`](../a11y/phase-c-plan.md) 「실행 현황」)·명도대비 4테마 sweep(#107~#111)·P1~P7 완결(#89~#115)·KWCAG 자가진단 ~96~100%.
 - **역할·인프라**: 3역할 모델·view-as 3역할 미리보기·배정 스코핑 RLS(#68)·역할관리 화면·초대·`TEST_PARTICIPANT_ID`(#168).
 - **축A**: 당사자 홈·시각잔액 5스타일(#157)·본인 지출기록(#126)·OCR 자동채움·화면개인화·이의신청 본인행사·지불가능성 미리보기·AI 활동제안.
 - **축B**: Track A 회계 6슬라이스(#131~#136)·영수증검토·이용계획심의·평가·AI점검(5신호)·자산맵·욕구사정·SIS-A·예산실행.
@@ -155,7 +155,7 @@
 - ✅ **P1** AI 산출물 공통 라벨 + OCR 자동채움 표시 → **#193**(2026-09-27 머지). 당사자 화면 '컴퓨터' 문구의 AI기본법 충족 여부는 기관 판단(잔여).
 - **P1** 쉬운말 `<Term>` 배선 확대(`plan/page.tsx` 원문 먼저, 나머지 7개 용어는 W 매핑 후) (P1-3).
 - **P1** 지출기록 화면 읽어주기(`SpeakButton`) (P1-4).
-- **P2** Phase C 잔여(2026-09-27 보관 계획서 대조) — 날짜 형식 도움말(✗) · 파일 업로드 제한 사전 안내·파일 목록/삭제 · 무음 제출 오류 7화면·`DisplaySettingsClient` · 값 변경 즉시 이동 select 2곳 · 필터 초기화·결과 수 · `AdminSidebar` 키보드·모바일 드로어 Modal 화 · 새 창 표시. 절별 근거 [`docs/a11y/phase-c-plan.md`](../a11y/phase-c-plan.md) 「실행 현황」.
+- **P2** Phase C 잔여(2026-09-27 보관 계획서 대조, 요약) — 날짜 형식 도움말(✗) · 파일 업로드 제한 사전 안내·파일 목록/삭제·영수증 사진 크기 확인 · 무음 제출 오류 6화면·`DisplaySettingsClient`·`ReceiptUploader` 사전 검증 · 값 변경 즉시 이동 select 2곳 · 신청 상세 동의 체크박스 `fieldset` · 필터 초기화·결과 수·당사자 지도 칩 `aria-pressed` · `AdminSidebar` 키보드·하위메뉴 토글 28px→44px·모바일 드로어 Modal 화 · 새 창 표시 · 홈 단독 ⚙ 링크. 절별 근거 [`docs/a11y/phase-c-plan.md`](../a11y/phase-c-plan.md) 「실행 현황」.
 - ✅ **P2** 지출 기록 성공 안내 → **#194**(2026-09-27 머지).
 - **P2** 검토 대기 화면 `receipt.view` 렌더마다 반복 기록 → 실제 열람 시점으로 좁히기(doc12 §6).
 - **P2** 감사 기록 `target_participant_id` 누락 — `receipt.view`(doc12 §6) · `usage.update`(`serviceUsage.ts:243`) · `settlement.record`(`settlement.ts:51`) · `plan.review`(`planReview.ts:56`) · `ai.summary`(`easyReadSummary.ts:89`) (2026-09-27 재점검에서 코드로 확인).

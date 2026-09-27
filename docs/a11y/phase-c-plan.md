@@ -12,18 +12,18 @@
 | §0 전역 배선(`LiveRegionProvider`) | ✅ done | #58 | — (전 화면 `useToast` 통일은 §6) |
 | §1 모달 6종 → `Modal` | ✅ done | #58 (가드 #59·#105·#106·#113) | 계획 목록 밖: 실무자 모바일 사이드바 드로어(`SupporterLayoutClient.tsx` 84~107행)는 아직 직접 만든 오버레이 — Esc·포커스 트랩·복원 없음 |
 | §2 폼 `FormField` 5화면 | ✅ done | #61 (보강 #67·#105) | 선택 사항이던 `NewTransactionClient`·`AssessmentClient` 의 FormField 정렬(라벨 연결은 이미 됨) |
-| §3 영수증 파일 업로드 | ◐ 일부 | #61·#118·#123 | 파일 유형·크기(5MB)·개수 제한을 **미리** 안내 · 고른 파일 목록(파일명 한 줄 + 삭제 버튼) · 영수증 사진 크기 확인. 참고: 화면 진입 시 파일 선택창 자동 열림(#146)은 계획의 '자동 동작 금지' 취지와 긴장 |
+| §3 영수증 파일 업로드 | ◐ 일부 | #61·#118·#123 | 파일 유형·크기(5MB)·개수 제한을 **미리** 안내 · 고른 파일 목록(파일명 한 줄 + 삭제 버튼) · 영수증 사진 크기 확인. 참고: 화면 진입 시 파일 선택창이 자동으로 열림(#146, `ReceiptClient.tsx` 81~83행) — 계획은 '자동 제출 금지'만 적었지만, 요청하지 않은 화면 변화라는 점에서 같은 취지와 부딪힌다고 봄(2026-09-27 판단) |
 | §4 날짜 형식 도움말 | ✗ 안 됨 | — | 날짜 칸 전부에 형식 도움말(예: "예: 2026-08-27") — `NewTransactionClient`·`ReceiptClient` 먼저 |
 | §5 select·라디오·버튼형 선택 | ◐ 일부 | #61·#72·#155·#157·#191 | 값만 바꿔도 이동하는 select 2곳(`PreviewBanner`·`MapParticipantFilter`)에 명시적 이동 버튼 · 신청 상세 동의 체크박스 묶음(`ApplicationDetailClient`)에 `fieldset/legend` |
-| §6 라이브 영역 배선 | ◐ 일부 | #58·#61·#194 외 | 계획이 이름 댄 `DisplaySettingsClient` 저장 상태·오류 · 제출 오류가 무음인 화면(로그인·`MyPlanClient`·`ParticipantDetailClient`·`PlanDetailClient`·`NewPlanClient`·`ParticipantPlanFeedback`·`ReceiptUploader`) |
-| §7 필터 명시·초기화·결과 수 | ◐ 일부 | #72·#134·#135·#150 | 기관 원장: 필터 4종 한 번에 초기화 · 결과 수 라이브 안내. 지도: 영역 칩 `aria-pressed` · 결과 수 · 적용 필터 표시 |
+| §6 라이브 영역 배선 | ◐ 일부 | #58·#61·#194 외 | 계획이 이름 댄 `DisplaySettingsClient` 저장 상태·오류 · 제출 오류가 무음인 화면(로그인·`MyPlanClient`·`ParticipantDetailClient`·`PlanDetailClient`·`NewPlanClient`·`ParticipantPlanFeedback`) · `ReceiptUploader` 는 업로드 **전** 검증 오류(5MB·읽기 실패)만 무음(업로드 실패는 안내됨) |
+| §7 필터 명시·초기화·결과 수 | ◐ 일부 | #72·#134·#135·#150 | 기관 원장: 필터 4종 한 번에 초기화 · 결과 수 라이브 안내. 당사자 지도(`(participant)/map/MapTabsClient.tsx`): 영역 칩 `aria-pressed`·묶음 라벨 · 결과 수 · 적용 필터 표시(실무자 지도 `supporter/map/MapClient.tsx` 는 이미 됨) |
 | §8 내비 상태 | ◐ 일부 | #98·#58·#106 | `AdminSidebar` 키보드(Esc·방향키) · 하위메뉴 토글 28px→44px·이름 있는 라벨 · 모바일 드로어 Modal 화(§1 과 같은 건) |
 | §9 외부·새 창 링크 | ◐ 일부 | #155 | 더보기 파일 링크의 **보이는** 새 창 표시 · `window.open` 으로 새 탭을 여는 '열기' 버튼 2곳(`ApplicationDetailClient`·`DocumentShelfClient`) 안내 |
 | §10 당사자 하단 탭(TabBar) | ◐ 일부 | #98·#99 | 홈의 단독 ⚙ 링크 정리(더보기 탭과 중복) |
 | 마무리: jsx-a11y 4규칙 error 승격 | ✅ done | #61 (규칙 도입 #57) | — |
 
 - 계획의 PR 분할(C1~C4)과 달리, 실제로는 C1=#58, C2=#61(4규칙 승격 포함)만 계획대로 나갔습니다. 나머지는 P4·P6 로드맵(#98·#105·#106) 등으로 흩어져 일부만 들어갔습니다.
-- 남은 항목은 `docs/release/14` 「현행 백로그」 U 목록의 'Phase C 잔여'로 옮겼습니다.
+- `docs/release/14` 「현행 백로그」 U 목록에 'Phase C 잔여'로 요약해 올렸습니다. **전체 목록은 이 표가 정본**입니다.
 
 ---
 
