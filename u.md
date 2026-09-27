@@ -1464,3 +1464,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-27T06:07Z] U
 [HANDOFF→W] 사용자 승인 배치 4 PR: #192 처리방침 사실정정(P0)+★쉬운말요약 당사자이름 미마스킹 결함 수정(profiles 오조회, #73 이후) · #193 AI 생성물 공통 라벨 AiNotice(P1) · #194 지출기록 성공 안내(P2 a11y) · #195 문서 정리(CLAUDE.md 현행 스냅샷·doc14 현행 백로그 46건·11/12/15 정정). 각 worktree 구현+독립검증(뮤테이션 RED 확인) PASS. 머지 승인 대기. #193·#194 ReceiptClient 무충돌(merge-tree).
 
+## [2026-09-27T08:11Z] U
+[MERGED] #192(5c96181) 처리방침 사실정정+쉬운말요약 당사자이름 가림 결함 수정 · #193(50cbe15) AiNotice AI 생성물 라벨 · #194(4b78491) 지출기록 성공 안내 · #195(56551b4) 문서 정리(CLAUDE.md 현행 스냅샷·doc14 현행 백로그) → main 56551b4 (사용자 승인, squash, 순차 update-branch+CI). 남은 사용자 확인: pg_cron·활동사진 04 RLS·ai.summary 사용량(감사로그).
+
