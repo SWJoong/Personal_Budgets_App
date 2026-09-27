@@ -26,6 +26,7 @@ vi.mock('@/app/actions/geocode', () => ({ searchPlaces: vi.fn(async () => []) })
 vi.mock('@/app/actions/serviceProvider', () => ({ findOrCreateProvider: vi.fn(async () => ({ providerId: 'prov-1' })) }))
 
 import { recordServiceUsage } from '@/app/actions/serviceUsage'
+import { searchPlaces } from '@/app/actions/geocode'
 import { addActivityPhotos } from '@/app/actions/activityPhoto'
 const recordMock = vi.mocked(recordServiceUsage)
 const addMock = vi.mocked(addActivityPhotos)
@@ -239,5 +240,24 @@ describe('ReceiptClient — 지출 기록 성공 안내(당사자) P2 a11y', () 
     expect(liveRegionsWith(SUCCESS)).toHaveLength(0)
     expect(visibleSuccess()).toBeNull()
     expect(refreshMock).not.toHaveBeenCalled()
+  })
+
+  it('기록 뒤 남아 있던 장소 검색 결과를 고르면(폼 onChange 없음) 보이는 성공 상자가 사라진다', async () => {
+    // 성공 리셋은 선택한 장소만 비우고 검색어·결과 목록은 남긴다 → 결과 클릭은 change 이벤트 없이
+    // handlePlaceSelect 로만 들어오므로, 그 경로가 성공 상자를 지우는지 따로 못 박는다.
+    vi.mocked(searchPlaces).mockResolvedValueOnce([
+      { id: 'pl1', place_name: '동네 카페', address_name: '서울 어딘가', road_address_name: '', category_name: '카페', lat: 37.5, lng: 127 },
+    ])
+    renderClient()
+    fireEvent.change(screen.getByPlaceholderText('장소 이름으로 찾아보세요'), { target: { value: '카페' } })
+    fireEvent.click(screen.getByRole('button', { name: '찾기' }))
+    const result = await screen.findByRole('button', { name: /동네 카페/ })
+
+    fireEvent.change(amountInput(), { target: { value: '5000' } })
+    await submit()
+    await waitFor(() => expect(visibleSuccess()).not.toBeNull())
+
+    fireEvent.click(result)
+    await waitFor(() => expect(visibleSuccess()).toBeNull())
   })
 })
