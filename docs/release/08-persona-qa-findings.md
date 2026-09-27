@@ -134,6 +134,7 @@
 - **스코프 밖(의도적 유지)**: `utils/easyReadSummary.ts`·`utils/activitySuggestion.ts`(서버 easy-read **문장 빌더**, React 컴포넌트 대체 불가) + `components/admin/ParticipantHomePreviewClient.tsx`(관리자 미리보기, 당사자 트리 아님·출력 동일).
 - 게이트 tsc0·eslint0·**vitest 739/739**(737+2)·build0. W 검토→사람 머지.
 - **잔여(W 후속)**: ⑦에서 발견한 `ReceiptClient` error-경로 중복지출(§8-1 ⑦ 하위 기록) — 이번 통일과 무관한 기존 코드.
+  *(2026-09-27 갱신: #126(2026-09-09)에서 해소 — W RED 계약 + 구현.)*
 
 ---
 
@@ -156,6 +157,7 @@ W(설계·검증 축) 부재로 U 세션에서 W 검증 수행. **구현≠검�
 - **C3 계약 공백 7건**: formatDate · view-as 가드 · **AdminSidebar 死링크 분기** · 음수잔액 · ④스코프 · cheese0318 승격 · view-as UI 배선 — 커밋된 회귀보호 0(독립 서브에이전트로만 검증). W가 RED 계약 저작 필요(우선: 死링크 분기·가드·승격). ★구현≠검증상 구현자(U) 직접 저작은 자기채점 → **신선 서브에이전트 또는 W** 가 저작해야.
 
 **out-of-scope 관찰**: `supporter/network/page.tsx` h1 2개(조건분기 로딩/로드) — 이 PR 미변경, 별도 후속.
+*(2026-09-27 갱신: 이 후속은 더 이상 해당 없음 — 관계망 화면(`supporter/network`)이 #171(2026-09-19)에서 기능째 제거됐다.)*
 
 → 병합은 **사람**이(에이전트 main 직접 머지 금지). C1·C3 결정 후 진행 권고.
 

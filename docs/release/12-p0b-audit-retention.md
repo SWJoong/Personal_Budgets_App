@@ -37,13 +37,23 @@
 CI 계약 green 확인 후:
 1. **`12_audit_log.sql` 대시보드 적용** — SQL Editor 에서 전체 재실행(멱등). ★ 도11 §4에서 지적된
    "12 라이브 적용 미확정" 을 이때 해소(테이블·`seoul_audit`·`seoul_audit_purge` 반영 확인).
-2. **파기 스케줄 등록** — 아래 중 하나(보관 연한 = 기관 결정값, 권고 730):
-   - pg_cron(확장 사용 가능 시): `SELECT cron.schedule('audit-purge','0 3 * * *', $$ SELECT public.seoul_audit_purge(730); $$);`
+   *(2026-09-27 갱신: ✅ 2026-09-21 사용자 실행 — `seoul_audit_log` PostgREST 200 확인. 같은 파일의 `seoul_audit_purge`
+   존재는 직접 조회로 확인하지 않았다 — 아래 3번 실행이 확인을 겸한다. "함수 없음" 오류가 나면 12 를 다시 실행(멱등).)*
+2. **파기 스케줄 등록** — 아래 중 하나(보관 연한 = **730일 확정**, §5):
+   - pg_cron(확장 사용 가능 시): 먼저 `CREATE EXTENSION IF NOT EXISTS pg_cron;` 후
+     `SELECT cron.schedule('audit-purge','0 18 * * *', $$ SELECT public.seoul_audit_purge(730); $$);`
    - 또는 Supabase Scheduled Edge Function / 외부 cron → `rpc('seoul_audit_purge', { p_retain_days: 730 })` (service_role 키).
-3. **동작 확인** — `SELECT public.seoul_audit_purge(730);` 1회 수동 실행 → 반환값(삭제 건수) 확인.
+   - ★**시각은 UTC 기준** *(2026-09-27 정정)*: pg_cron 은 UTC 로 돈다. `'0 18 * * *'` = 매일 UTC 18:00 = **KST 03:00**(새벽).
+     이전 예시 `'0 3 * * *'` 는 UTC 03:00 = **KST 12:00(정오)** 라 업무 시간에 돌게 된다(예시만 있었고 등록 기록은 없음). 2026-09-22 사용자에게 전달한 런북도 `'0 18 * * *'` 이다.
+3. **동작 확인** — `SELECT public.seoul_audit_purge(730);` 1회 수동 실행 → 반환값(삭제 건수) 확인(초기엔 0 이 정상).
+   등록 확인: `SELECT jobid, schedule, active FROM cron.job WHERE jobname = 'audit-purge';` → `active = true`.
 
-## 5. [기관결정] 대기
+> **상태(2026-09-27)**: 2·3번(스케줄 등록·확인)은 **사용자 Manual-Op 이며 완료 여부가 아직 확인되지 않았다.**
+> 등록 확인 전까지 감사로그는 파기 없이 쌓인다. 결과(`active = true`)를 알려 주면 이 줄을 갱신한다.
+
+## 5. ~~[기관결정] 대기~~ → 확정 (2026-09-22)
 - **접속기록 보관 연한** — 권고 **730일(2년, 민감정보)**; 기관 정책으로 상향 가능(3년 등). 스케줄러 인자로 반영.
+  → **730일(2년)로 확정 — 2026-09-22 사용자 결정**(doc14 열린 결정 #2 의 감사 부분 해소). 스케줄러 인자 `730` 그대로. *(2026-09-27 갱신)*
 - (도11 §6의 다른 [기관결정] 4건과 별개 — 이건 감사 보관 전용.)
 
 ## 6. 후속(백로그)

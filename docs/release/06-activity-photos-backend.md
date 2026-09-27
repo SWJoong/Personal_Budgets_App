@@ -46,6 +46,18 @@
 
 > **비-SQL 수동작업 없음** — Auth/URL/버킷 신설 불필요(버킷은 기존). 위 SQL 2개 재실행이 전부.
 
+> **라이브 상태 (2026-09-27 갱신)**
+> - ✅ **테이블·시드는 라이브**: 2026-09-07 service-role 읽기전용 카운트에서 `seoul_activity_photos` 10행(08 시드) 확인 →
+>   1번(03)의 테이블 생성은 반영됨.
+> - ❓ **04 RLS 정책 2종(`seoul_activity_photos_select`·`_write`)과 03 경로 트리거(`trg_seoul_check_activity_photo_path`)는 라이브 존재가 확인되지 않았다.**
+>   (시드 경로는 규약을 지켜 트리거가 없어도 들어가므로, 시드 존재가 트리거 존재를 증명하지 않는다.)
+>   사용자가 SQL Editor 에서 읽기전용으로 확인한다:
+>   `select relrowsecurity from pg_class where relname='seoul_activity_photos';` ·
+>   `select policyname from pg_policies where tablename='seoul_activity_photos';` ·
+>   `select tgname from pg_trigger where tgname='trg_seoul_check_activity_photo_path';`
+>   — 하나라도 없으면 위 1·2번(03→04)을 다시 실행(멱등).
+> - 사진이 화면에 보이려면 버킷에 실제 이미지 파일도 있어야 한다(시드는 메타행만 — doc05 §2).
+
 ## 3. 보안 — 경로 위조 방지 트리거 (사용자 결정 Option 3)
 `_write` RLS 는 본인이 자기 pending 지출에 사진행을 넣는 것을 허용하되 **`storage_path` 소유 접두를
 강제하지 않는다**. 갤러리는 signed URL 을 **admin 클라이언트(RLS 우회)**로 발급하므로, 참여자가 직접 API 로
@@ -78,3 +90,11 @@
   `Plan&Source/ontology/seoul/verify_activity_photos.sql` · `src/utils/gallery.test.ts` ·
   `src/app/(participant)/gallery/gallery.wiring.ap.test.ts`
 - 정본 실행순서: `supabase/seoul/README.md` · 수동 반영 직전 브리핑: CLAUDE.md 「수동 작업 게이트」
+
+## 6. 후속 현황 (2026-09-27 갱신)
+Wave A 이후 후속으로 잡혀 있던 항목(이 문서 §3 범위 밖 + docs/release/08 §8 후속)의 현재 상태:
+- ✅ Wave B 업로드(#118) · Wave C 실무자 갤러리(#119) · 활동사진 부분실패 안내+5MB 상한(#123) · 실무자 기존 지출에 사진 추가(#185).
+- ✅ 당사자 영수증 저장 실패 경로의 **중복 지출** 방지 — #126(2026-09-09).
+- ✅ 당사자 화면 `won()` → `MoneyText`/`formatCurrency` 통일 — #125(당사자)·#130(관리자 미리보기).
+- ⏸ `seoul_receipts` 경로 위조 방지 트리거(§3 범위 밖) — **2026-09-06 사용자 보류**. 해제 여부는 사용자 결정(doc14 현행 백로그).
+- ❓ 04 RLS·03 트리거 라이브 존재 확인 — §2 끝 「라이브 상태」 참조(사용자 확인 대기).
