@@ -1473,3 +1473,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-27T09:01Z] U
 [HANDOFF→W] 하네스 코드화 = PR #197 (feat/harness-codify, docs/release/17). .claude/agents 3종(u-worker sonnet·worktree·lane-guard u / w-verifier opus·Edit/Write 불가 / w-contract-author opus·worktree·lane-guard w, 전부 memory:project) + scripts/lane-guard.sh(PreToolUse 훅, CLAUDE.md 레인 규칙 1:1, selftest 31/31) + .claude/workflows/verify-pr.js(/verify-pr <PR>: 범위→4렌즈→반박2/렌즈→종합, 최대 14 에이전트) + 역할 스킬 드리프트 정정(frontend 미설치 TanStack/Zustand/RHF/Zod·없는 fe-patterns 참조 / backend seoul 빌드 SQL·Claude AI / devops npm·현행 CI / pl·tech-stack·qa·data-models 배너, paths: 추가). 게이트: npm test 155/1056 pass, src 변경 0. W 검증 요청 3건은 PR 본문. 새 정의는 새 세션에서 인식 → 머지 후 u-worker 라이브 spawn 실증 예정. 후속: u-wave 워크플로·홈 CLAUDE.md U 지시서 단일세션 모드 갱신(사용자 파일).
 
+## [2026-09-27T10:42Z] U
+[진행] 원격 브랜치 정리: 122개 중 118개 삭제(기계판정 90 + 내용대조 23 + 에이전트 판정 5) — 로컬 백업 refs/backup/remote-branches-2026-09-27/* + .git/remote-branch-backup-2026-09-27.txt. 보존: feat/harness-codify(#197 OPEN) · feat/goala-case-assignments(#66 사용자 보류 결정·M:N 재개용) · feat/kwcag-a11y-foundation(#55 이후 미반영 a11y 커밋: HelpButton·도움말 모달 X·MoreMenu 스위치 44px·이모지 aria-hidden) · claude/db-ontology-rdf-format-tnf0qv(유일한 copay.test.ts — main 이관 후 삭제 권장, doc14 P3 copay TS 패리티).
+
