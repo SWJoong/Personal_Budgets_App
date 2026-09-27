@@ -15,7 +15,7 @@
    진행 상황을 반영하지 못한 스냅샷이다.
 2. **실제 공백** — 가명처리·마스킹(7장)은 DB에 전혀 반영되어 있지 않은 진짜 미구현 항목이다.
    *(2026-09-27 갱신: 이후 done — 게이트웨이 `deidentify`(#65)·`callAIDeidentified` 게이트(#70)·요약 대리인 이름 치환(#175).
-   **OCR 은 예외**(영수증 이미지 원본 전송, 기관 결정 대기). 요약의 당사자 이름 치환 결함은 #192(리뷰 중)에서 수정.)*
+   **OCR 은 예외**(영수증 이미지 원본 전송, 기관 결정 대기). 요약의 당사자 이름 치환 결함은 #192(2026-09-27 머지)에서 수정.)*
 3. **스코프 재확인 필요** — 역할모델(코디네이터), 멀티테넌시 전제, EASYREAD MCP 연동은 PRD와 저장소
    현황이 다르지만 "틀렸다"기보다 확인·조율이 필요한 지점이다(사용자 확인 완료, 아래 반영).
 
@@ -28,7 +28,7 @@
 | 9장 온톨로지 그래프 시각화(전체) | "신규" 1단계: PostgreSQL 뷰 + Cytoscape.js/React Flow 제안 | **이미 구현·머지 완료.** `supabase/seoul/05_seoul_graph.sql`(`v_seoul_graph_nodes`/`edges`, 전부 `security_invoker=true`, `seoul_graph_walk()` 재귀 CTE), `src/utils/egoGraph.ts`(무향 BFS·`nodeGroup`·`edgeDirection`), `(supporter)/supporter/network`(cytoscape 관계망 화면, PR #51), `11_provider_domains.sql`(자산지도 발견 SECURITY DEFINER 함수 + `src/utils/assetMap.ts` `buildDiscoveryAssets`, PR #52). PRD 9.2~9.4는 "제안"이 아니라 "완료 기록"으로 다시 써야 한다. 9.3(Neo4j vs TypeDB 조건부 2단계 판단)만 여전히 유효한 미래 검토 항목. *(2026-09-27 갱신: `(supporter)/supporter/network` 관계망 화면과 `src/utils/egoGraph.ts` 는 3축 집중 방향에 따라 **#171(2026-09-19)에서 제거**됨. `05_seoul_graph.sql` 코어 뷰와 `11_provider_domains.sql`·`assetMap.ts`(자산지도)는 유지.)* |
 | 4장 DB 단순화·마이그레이션 정리 | 04~30번 마이그레이션 단순화 필요 | **이미 완료.** D0 컷오버로 `supabase/migrations/_archive/` 이관, `supabase/seoul/`(00~11번, `09_ontology_classification`·`10_fk_ization`·`11_provider_domains`까지)이 정본. *(2026-09-27 갱신: 현재 빌드는 00~20, 13~15 는 관계망 제거로 결번 — `supabase/seoul/README.md`.)* |
 | 3장 역할모델(4단계: 당사자·지원자·코디네이터·관리자) | 4단계 role | DB `role` CHECK 제약은 **`admin`/`supporter`/`participant` 3종뿐**(`src/types/database.ts` `UserRole`도 동일). "코디네이터"는 서울형 제도 문서상 실무자 호칭일 뿐 별도 DB role이 아니며, 코드 전체에 `coordinator` 문자열이 없다. |
-| 7장 가명처리·마스킹 | 목적설정→위험성검토→가명처리→적정성검토→안전관리 5단계, 그래프 노드 마스킹 | **실질 공백.** DB 컬럼·트리거·마스킹 로직 없음. `Plan&Source/온톨로지_사례관리_개편_검토보고서_v1.md`에 `deidentify.ts`(AI 호출 전 이름·기관명 토큰 치환) 제안만 존재, 게이트웨이 미구현. *(2026-09-27 갱신: 게이트웨이·게이트 done — #65·#70, 대리인 이름 치환 #175. 단 요약의 당사자 이름 치환은 #192(리뷰 중) 머지 전까지 미작동. OCR 예외. 기관명 치환은 유틸만 있고 호출부 배선은 없음.)* |
+| 7장 가명처리·마스킹 | 목적설정→위험성검토→가명처리→적정성검토→안전관리 5단계, 그래프 노드 마스킹 | **실질 공백.** DB 컬럼·트리거·마스킹 로직 없음. `Plan&Source/온톨로지_사례관리_개편_검토보고서_v1.md`에 `deidentify.ts`(AI 호출 전 이름·기관명 토큰 치환) 제안만 존재, 게이트웨이 미구현. *(2026-09-27 갱신: 게이트웨이·게이트 done — #65·#70, 대리인 이름 치환 #175. 요약의 당사자 이름 치환은 그 전까지 미작동이었고 #192(2026-09-27 머지)로 수정. OCR 예외. 기관명 치환은 유틸만 있고 호출부 배선은 없음.)* |
 | 7장 감사로그 | 별도 audit trail 테이블, 권한 변경 이력 3년 보관 | 통합 `audit_log` 테이블 없음. 대신 `flag_criteria`/`set_copay`/`check_usage`/`recheck_copay`/`appeal_due` 등 도메인별 트리거가 개별 테이블(`seoul_rule_checks` 등)에 감사성 기록을 남기는 방식 — 기능적 등가물은 있으나 통합 조회·3년 보관 정책은 미확인. *(2026-09-27 갱신: 이후 통합 `seoul_audit_log`(`12_audit_log.sql`)·열람감사·파기 함수(#169)·감사 대시보드(#176) done. 보존은 730일(2년)로 확정(2026-09-22).)* |
 | 4장 스코프(1개 기관 고정) | `organization_id` 고정값/단일 행 참조로 단순화 | 사용자 확인: **1차 구현은 PRD대로 1개 기관·30명 유지**. 단 서울형 개인예산제 수행기관이 8곳·100명 규모로 이미 운영 중이므로, `docs/harness-plan.md` GOAL축B3(organizations 멀티테넌시)로 이어질 확장 가능성을 지금 설계에서 배제하지 않는다. |
 | 8장 EASYREAD MCP 연동 | MCP 도구 4종(`validate_easy_read` 등) 연동 | 이 저장소엔 MCP 서버 연동이 없음(`.mcp.json` 없음), 자체 프롬프트 기반 스킬 `.claude/skills/easy-read-review/`만 존재. 사용자 확인: EASYREAD MCP는 **별도로 실제 제작된 서버**이며, 즉시 연동 대상은 아니고 향후 "쉬운 정보 변환" 기능이 커질 때 연동 후보. |

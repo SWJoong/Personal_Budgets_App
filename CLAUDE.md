@@ -285,7 +285,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
   - **진행 중(U)**: 결정 불필요 P0 코드 하드닝 착수 — OCR 결과 마스킹 · `easyReadSummary` term 커버리지 · `participant.preview` 감사 배선.
   - **copay 정정**: "교차계층 계약 대기"는 stale — DB `verify_06_copay` done, TS 패리티 테스트만 잔여(P3).
 
-- **★현행 스냅샷(2026-09-27) — 위 항목들은 역사 기록**: main = `7f7cd58`(#191). 백로그 정본 =
+- **★현행 스냅샷(2026-09-27) — 위 항목들은 역사 기록**: main = `4b78491`(#194). 백로그 정본 =
   `docs/release/14-prd-reprioritization.md` 「현행 백로그 (2026-09-27 재점검)」(담당별·우선순위).
   - **완료(재착수 금지, 2026-09-20 이후)**: #175 요약 대리인 이름 치환 + `participant.preview` 감사 · #176 `/admin/audit` ·
     #177 TTS `SpeakButton`(홈 잔액·이용계획) · #178 쉬운 용어 사전+`<Term>`('이용계획') · #179 `/admin/insights` KPI A~C ·
@@ -296,7 +296,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
     **미확인**: 감사 파기 pg_cron 등록(`0 18 * * *` UTC = KST 03시, `docs/release/12` §4) · 활동사진 04 RLS·03 경로 트리거(`docs/release/06` §2).
   - **결정 확정**: 감사 접속기록 보존 730일(2026-09-22) · Supabase 리전 `ap-northeast-2` 서울 → 저장 국외이전 면제(2026-09-23) ·
     계획 공유 = 가벼운 피드백(a)(→#183).
-  - **리뷰 중(미머지)**: #192(처리방침 사실 정정 + 쉬운말 요약 당사자 이름 가림 결함 수정 — `profiles` 오조회로 #73 이후 미마스킹) ·
+  - **머지(2026-09-27)**: #192(처리방침 사실 정정 + 쉬운말 요약 당사자 이름 가림 결함 수정 — `profiles` 오조회로 #73 이후 미마스킹) ·
     #193(AI 생성물 공통 라벨 `AiNotice` + OCR 자동채움 표시) · #194(지출 기록 성공 안내).
   - **다음(결정·확인 선행)**: 기관 = AI API 국외이전 근거(OCR A안/국내/제거 · 요약·제안 B안)·처리방침 확정값·Supabase DPA 서명·Vercel
     Analytics 수집범위/DPA · 사용자 = pg_cron·활동사진 RLS 라이브 확인·실사용자 심사·기능 QA(doc16)·정산 실무자 허용·KPI D.
