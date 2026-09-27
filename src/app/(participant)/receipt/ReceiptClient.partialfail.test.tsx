@@ -7,7 +7,7 @@ import ReceiptClient from './ReceiptClient'
  * 계약(W레인): 활동사진 부분실패 안내 + 5MB 상한 — 당사자 기록화면(§8 ⑦).
  * 구현: src/app/(participant)/receipt/ReceiptClient.tsx
  * 당사자는 폼 리셋+router.refresh 라 재제출 잠금(실무자 savedUsageId)이 없다 — 대신 부분실패 시
- * setError + announce(assertive) 로 알린다. 정상(전부 성공)은 조용히 refresh(회귀 없음).
+ * setError + announce(assertive) 로 알린다. 정상(전부 성공)은 부분실패 문구 없이 refresh — 성공 안내는 ReceiptClient.success.test.tsx.
  * 테스트 파일만 신설, 구현 미수정.
  */
 
@@ -97,7 +97,7 @@ describe('ReceiptClient — 활동사진 부분실패(당사자) §8 ⑦', () =>
     })
   })
 
-  it('회귀: 전부 성공(2장)이면 부분실패 문구 없이 조용히 refresh', async () => {
+  it('회귀: 전부 성공(2장)이면 부분실패 문구 없이 refresh', async () => {
     addMock.mockResolvedValue({ success: true, added: 2 })
     renderClient()
     await fillAndAttach(twoSmallFiles())

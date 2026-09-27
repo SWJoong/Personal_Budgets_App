@@ -59,6 +59,8 @@ export default function ReceiptClient({
   const [ocrNotice, setOcrNotice] = useState('')
   const [error, setError] = useState('')
   const [amountError, setAmountError] = useState('')
+  // 다 저장됐을 때 보이는 안내. 읽기는 전역 announce 한 채널로만 한다(이 상자는 라이브 영역이 아님 — 두 번 읽힘 방지).
+  const [success, setSuccess] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const activityInputRef = useRef<HTMLInputElement>(null)
 
@@ -92,6 +94,8 @@ export default function ReceiptClient({
   }
 
   async function handlePlaceSelect(place: PlaceResult) {
+    // 장소 고르기는 버튼 클릭이라 폼 onChange 에 안 잡힌다 — 새 기록을 시작한 것이니 지난 안내를 여기서 지운다.
+    setSuccess('')
     const result = await findOrCreateProvider({
       name: place.place_name,
       address: place.road_address_name || place.address_name,
@@ -157,6 +161,8 @@ export default function ReceiptClient({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!allocationId) return
+    // 다시 제출하면 지난 '기록했어요' 안내는 지운다 — 오류가 뜨든 또 성공하든 이번 결과만 보이게.
+    setSuccess('')
     if (!amount || Number(amount) <= 0) {
       const msg = '얼마 썼는지 금액을 적어 주세요.'
       // 금액 칸의 role=alert 가 새로 뜨면 그것만 읽힌다. 같은 오류가 이미 떠 있으면(그대로 다시 제출) DOM 이 안 바뀌어
@@ -214,6 +220,13 @@ export default function ReceiptClient({
         const msg = `지출은 저장했어요. 그런데 사진 ${photoFailed}장이 안 올라갔어요.`
         setError(msg)
         announce(msg, 'assertive')
+      } else {
+        // 다 저장됐으면 조용히 폼만 비우지 않고 알린다 — 폼이 비기만 하면 저장됐는지 알 수 없다.
+        // 결과마다 안내는 하나: 부분실패는 위 assertive 한 번, 성공은 이 polite 한 번(같은 문구도 announce 가 다시 읽힘).
+        const msg = '지출을 기록했어요.'
+        setError('')
+        setSuccess(msg)
+        announce(msg)
       }
     })
   }
@@ -231,11 +244,19 @@ export default function ReceiptClient({
         {!allocationId ? (
           <NoBudgetGate title="아직 예산이 정해지지 않았어요." variant="inline" />
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          // 폼 onChange = 안쪽 어느 칸이든 사용자가 고치면(금액·내용·날짜·사진 등) 새 기록 시작 → 지난 성공 안내를 지운다.
+          // 칸마다 따로 달지 않아 새 칸이 생겨도 빠지지 않는다. 코드로 값을 채우거나(OCR·리셋) 비울 때는 change 이벤트가 없어 안 지워진다.
+          <form onSubmit={handleSubmit} onChange={() => setSuccess('')} className="flex flex-col gap-4">
             {error && (
               <div className="p-4 rounded-xl bg-danger-bg border border-border text-danger-fg text-sm font-medium leading-relaxed">
                 {error}
               </div>
+            )}
+            {success && (
+              <p className="p-4 rounded-xl bg-success-bg ring-1 ring-success-fg/20 text-success-fg text-sm font-bold leading-relaxed">
+                <span aria-hidden="true">✅ </span>
+                {success}
+              </p>
             )}
 
             {/* 막는 장치가 아니라 미리 알려주는 안내다. 기본은 접어 두어 기록을
