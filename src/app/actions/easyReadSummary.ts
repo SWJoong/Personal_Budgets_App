@@ -34,21 +34,33 @@ export async function generateEasyReadSummary(
     if (planErr) return { error: '계획을 불러오지 못했어요.' }
     if (!plan) return { error: '이 계획을 볼 권한이 없거나 존재하지 않아요.' }
 
-    const [{ data: narrative }, { data: services }, { data: participant }, { data: proxies }] =
-      await Promise.all([
-        supabase
-          .from('seoul_self_narratives')
-          .select('strengths_talents, social_barriers, desired_change, desired_life, goal_to_try')
-          .eq('plan_id', planId)
-          .maybeSingle(),
-        supabase
-          .from('seoul_requested_services')
-          .select('service_name, priority, estimated_cost')
-          .eq('plan_id', planId),
-        supabase.from('profiles').select('name, full_name').eq('id', plan.participant_id).maybeSingle(),
-        // 대리인·보호자 실명(제3자 PII) — 자기서술 자유텍스트에 언급될 수 있어 가명처리 term 에 포함(P0-2).
-        supabase.from('seoul_proxies').select('proxy_name').eq('participant_id', plan.participant_id),
-      ])
+    const [
+      { data: narrative },
+      { data: services },
+      { data: participant, error: participantErr },
+      { data: proxies, error: proxiesErr },
+    ] = await Promise.all([
+      supabase
+        .from('seoul_self_narratives')
+        .select('strengths_talents, social_barriers, desired_change, desired_life, goal_to_try')
+        .eq('plan_id', planId)
+        .maybeSingle(),
+      supabase
+        .from('seoul_requested_services')
+        .select('service_name, priority, estimated_cost')
+        .eq('plan_id', planId),
+      // ★당사자 이름은 participants 에서 — plan.participant_id 는 participants.id(기관 발급 키)라
+      //   profiles.id(=auth.users.id)로 찾으면 항상 빈값이 되어 이름이 가명처리 없이 나간다(01_core §3).
+      supabase.from('participants').select('name').eq('id', plan.participant_id).maybeSingle(),
+      // 대리인·보호자 실명(제3자 PII) — 자기서술 자유텍스트에 언급될 수 있어 가명처리 term 에 포함(P0-2).
+      supabase.from('seoul_proxies').select('proxy_name').eq('participant_id', plan.participant_id),
+    ])
+
+    // 가명처리 term 을 못 모으면 AI 를 부르지 않는다(fail-closed) — 이름이 원문 그대로 나가는 일을 막는다.
+    // 계획과 같은 RLS(seoul_can_access)라 계획이 보이면 당사자·대리인 행도 보인다.
+    if (participantErr || !participant || proxiesErr) {
+      return { error: '당사자 정보를 불러오지 못했어요. 잠시 후 다시 해주세요.' }
+    }
 
     const requestedServices: SummaryRequestedService[] = (services ?? []).map((s) => ({
       serviceName: s.service_name,
@@ -75,7 +87,7 @@ export async function generateEasyReadSummary(
       return { error: '요약할 내용이 아직 없어요. 자기서술이나 받고 싶은 도움을 먼저 적어 주세요.' }
     }
 
-    const participantName = participant?.name ?? participant?.full_name ?? null
+    const participantName = participant.name
     const proxyNames = (proxies ?? []).map((p) => p.proxy_name)
     const terms = summaryPiiTerms({ participantName, personNames: proxyNames })
 

@@ -2,13 +2,14 @@
 
 import { useState, useTransition } from 'react'
 import { useToast } from '@/components/ui/LiveRegion'
+import { AiNotice, AI_NOTICE_PARTICIPANT } from '@/components/ui/AiNotice'
 import { generateActivitySuggestions } from '@/app/actions/activitySuggestion'
 import type { ActivitySuggestion } from '@/utils/activitySuggestion'
 
 /**
  * AI 활동 제안 — 당사자가 '남은 돈'으로 해볼 만한 활동을 추천받는다(설계 §4). 액션: generateActivitySuggestions().
  * 접근성: 생성은 비동기(수 초)라 진행·결과·오류를 라이브 영역(useToast)으로 알린다.
- * 투명성: 결과가 AI 생성 참고임을 명시한다(발달장애 당사자 대상).
+ * 투명성: 결과가 AI 생성 참고임을 공통 라벨 AiNotice(participant, 쉬운 말)로 명시한다(발달장애 당사자 대상).
  */
 export default function ActivitySuggestions() {
   const [pending, startTransition] = useTransition()
@@ -83,9 +84,9 @@ export default function ActivitySuggestions() {
         )
       )}
 
-      <p className="text-xs text-muted-foreground leading-relaxed px-1">
-        추천은 컴퓨터가 만든 참고예요. 하고 싶은 게 있으면 선생님에게 말해 주세요.
-      </p>
+      <AiNotice audience="participant" headline={AI_NOTICE_PARTICIPANT.activity}>
+        하고 싶은 게 있으면 선생님에게 말해 주세요.
+      </AiNotice>
     </section>
   )
 }

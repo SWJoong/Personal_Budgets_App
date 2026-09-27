@@ -12,6 +12,7 @@ import { FormField } from '@/components/ui/FormField'
 import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 import { useToast } from '@/components/ui/LiveRegion'
 import { MoneyText } from '@/components/ui/MoneyText'
+import { AiNotice, AI_NOTICE_PARTICIPANT } from '@/components/ui/AiNotice'
 import { formatCurrency } from '@/utils/budget-visuals'
 
 const SETTLEMENT_LABEL: Record<string, string> = {
@@ -53,6 +54,8 @@ export default function ReceiptClient({
   const { announce } = useToast()
   const [pending, startTransition] = useTransition()
   const [ocrLoading, setOcrLoading] = useState(false)
+  // 사진 판독(OCR)으로 칸을 채웠는지 — 채운 칸 위에 '컴퓨터가 읽은 값' 표시 라벨을 띄운다.
+  const [ocrFilled, setOcrFilled] = useState(false)
   const [ocrNotice, setOcrNotice] = useState('')
   const [error, setError] = useState('')
   const [amountError, setAmountError] = useState('')
@@ -113,6 +116,7 @@ export default function ReceiptClient({
   async function handlePhotoSelected(file: File) {
     setError('')
     setOcrNotice('')
+    setOcrFilled(false) // 새 사진이면 이전 판독 표시를 지운다.
     const { base64, mimeType } = await fileToBase64(file)
     setPhoto({ base64, mimeType, previewUrl: URL.createObjectURL(file) })
 
@@ -124,6 +128,7 @@ export default function ReceiptClient({
         if (result.data.amount) setAmount(String(result.data.amount))
         if (result.data.date) setDate(result.data.date)
         if (result.data.store) setDescription(result.data.store)
+        setOcrFilled(Boolean(result.data.amount || result.data.date || result.data.store))
         announce('사진에서 내용을 다 읽었어요.')
       } else {
         const notice = '사진에서 내용을 읽지 못했어요. 아래 칸에 직접 입력해 주세요.'
@@ -322,6 +327,14 @@ export default function ReceiptClient({
                 <p className="text-xs text-muted-foreground leading-relaxed">활동 사진 {activityPhotos.length}장을 담았어요.</p>
               )}
             </div>
+
+            {/* 판독으로 채운 값 표시(정적 글 — 말로 알리는 채널은 위 announce 하나뿐). 저장에 성공하면 폼 리셋이
+                photo 를 비우므로 라벨도 함께 사라진다(별도 리셋 불필요). */}
+            {ocrFilled && photo && (
+              <AiNotice audience="participant" headline={AI_NOTICE_PARTICIPANT.receipt}>
+                채워진 칸이 맞는지 봐 주세요. 선생님도 한 번 더 살펴봐요.
+              </AiNotice>
+            )}
 
             <FormField id="usage-date" label="날짜">
               {(field) => (

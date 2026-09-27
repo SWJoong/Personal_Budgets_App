@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { AI_NOTICE_TEXT } from '@/components/ui/AiNotice'
 import StaffReviewSuggestions from './StaffReviewSuggestions'
 
 /**
@@ -51,8 +52,24 @@ describe('StaffReviewSuggestions — 온디맨드 AI 점검 제안(#6)', () => {
     await user.click(screen.getByRole('button', { name: /점검 제안/ }))
 
     await waitFor(() => expect(screen.getByText('점검 결정')).toBeInTheDocument())
-    // 과신 방지: 최종 판단은 사람이.
-    expect(screen.getByText(/최종 판단은 선생님이/)).toBeInTheDocument()
+    // 과신 방지: 최종 판단은 사람이. 공통 AI 표시 라벨(AiNotice staff)로 교체 — 옛 임시 문구
+    // 'AI가 만든 참고 제안이에요. 최종 판단은 선생님이 해요.' → '… 최종 판단은 담당자가 해요.'
+    const note = screen.getByRole('note')
+    expect(note).toHaveTextContent(AI_NOTICE_TEXT.staff)
+    expect(note).toHaveTextContent(/최종 판단은 담당자가/)
+    // 라벨은 정적 글 — 제안을 알리는 aria-live 영역 밖에 있어 함께 또 읽히지 않는다.
+    expect(note.closest('[aria-live]')).toBeNull()
+  })
+
+  it('제안이 없거나 에러면 AI 표시 라벨을 띄우지 않는다(표시할 생성물 없음)', async () => {
+    genMock.mockResolvedValue({ suggestions: [] })
+    const user = userEvent.setup()
+    render(<StaffReviewSuggestions participantId="p-1" />)
+    expect(screen.queryByRole('note')).toBeNull()
+    await user.click(screen.getByRole('button', { name: /점검 제안/ }))
+
+    await waitFor(() => expect(screen.getByText(/점검할 항목이 없어요/)).toBeInTheDocument())
+    expect(screen.queryByRole('note')).toBeNull()
   })
 
   it('제안이 없으면(전부 정상) 빈 상태 문구를 보여준다', async () => {
