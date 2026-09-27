@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { LiveRegionProvider } from '@/components/ui/LiveRegion'
-import { AI_NOTICE_TEXT } from '@/components/ui/AiNotice'
+import { AI_NOTICE_PARTICIPANT } from '@/components/ui/AiNotice'
 import ActivitySuggestions from './ActivitySuggestions'
 
 /**
@@ -31,7 +31,7 @@ describe('ActivitySuggestions — AI 표시 라벨', () => {
   it('처음부터 당사자용 AI 표시 라벨과 덧붙임을 보여준다', () => {
     renderIt()
     const note = screen.getByRole('note')
-    expect(note).toHaveTextContent(AI_NOTICE_TEXT.participant)
+    expect(note).toHaveTextContent(AI_NOTICE_PARTICIPANT.activity)
     expect(note).toHaveTextContent('하고 싶은 게 있으면 선생님에게 말해 주세요.')
   })
 
@@ -55,7 +55,7 @@ describe('ActivitySuggestions — AI 표시 라벨', () => {
     await user.click(screen.getByRole('button', { name: '활동 추천받기' }))
 
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('지금은 추천할 활동을 찾지 못했어요.'))
-    expect(screen.getByRole('status')).not.toHaveTextContent(AI_NOTICE_TEXT.participant)
+    expect(screen.getByRole('status')).not.toHaveTextContent(AI_NOTICE_PARTICIPANT.activity)
     expect(screen.getByRole('note').closest('[aria-live]')).toBeNull()
   })
 })

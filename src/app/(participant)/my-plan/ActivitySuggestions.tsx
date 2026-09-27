@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useToast } from '@/components/ui/LiveRegion'
-import { AiNotice } from '@/components/ui/AiNotice'
+import { AiNotice, AI_NOTICE_PARTICIPANT } from '@/components/ui/AiNotice'
 import { generateActivitySuggestions } from '@/app/actions/activitySuggestion'
 import type { ActivitySuggestion } from '@/utils/activitySuggestion'
 
@@ -84,7 +84,9 @@ export default function ActivitySuggestions() {
         )
       )}
 
-      <AiNotice audience="participant">하고 싶은 게 있으면 선생님에게 말해 주세요.</AiNotice>
+      <AiNotice audience="participant" headline={AI_NOTICE_PARTICIPANT.activity}>
+        하고 싶은 게 있으면 선생님에게 말해 주세요.
+      </AiNotice>
     </section>
   )
 }

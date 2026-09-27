@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { LiveRegionProvider } from '@/components/ui/LiveRegion'
-import { AI_NOTICE_TEXT } from '@/components/ui/AiNotice'
+import { AI_NOTICE_PARTICIPANT } from '@/components/ui/AiNotice'
 import ReceiptClient from './ReceiptClient'
 
 /**
@@ -31,7 +31,7 @@ type OcrResult = Awaited<ReturnType<typeof analyzeReceipt>>
 const ocrOk = (data: Record<string, unknown>) => ({ success: true, data }) as unknown as OcrResult
 const ocrFail = () => ({ success: false, error: 'x' }) as unknown as OcrResult
 
-const CHECK_PROMPT = '사진에서 읽은 값이 맞는지 봐 주세요.'
+const CHECK_PROMPT = '채워진 칸이 맞는지 봐 주세요.'
 const OCR_FAIL = '사진에서 내용을 읽지 못했어요. 아래 칸에 직접 입력해 주세요.'
 
 const baseProps = {
@@ -83,7 +83,7 @@ describe('ReceiptClient — 판독 자동채움 생성물 표시 라벨', () => 
 
     await waitFor(() => expect(screen.getByLabelText(/얼마 썼어요/)).toHaveValue(12000))
     const note = await screen.findByRole('note')
-    expect(note).toHaveTextContent(AI_NOTICE_TEXT.participant)
+    expect(note).toHaveTextContent(AI_NOTICE_PARTICIPANT.receipt)
     expect(note).toHaveTextContent(CHECK_PROMPT)
     // 정적 라벨: 라이브 영역 밖 + 전역 status 는 기존 OCR 완료 문구만 담는다(라벨 문구 미포함).
     expect(note.closest('[aria-live]')).toBeNull()

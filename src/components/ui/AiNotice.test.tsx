@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { AiNotice, AI_NOTICE_TEXT } from '@/components/ui/AiNotice'
+import { AiNotice, AI_NOTICE_TEXT, AI_NOTICE_PARTICIPANT } from '@/components/ui/AiNotice'
 
 /**
  * AiNotice — AI 생성물 표시 공통 라벨 계약 (AI 기본법: 생성물 표시 · 사람 최종 판단).
@@ -25,8 +25,22 @@ describe('AiNotice — AI 생성물 표시 라벨', () => {
   })
 
   it('당사자 라벨 = 쉬운 말(컴퓨터가 만든 · 선생님과 함께), AI 리터럴 없음', () => {
-    expect(AI_NOTICE_TEXT.participant).toBe('컴퓨터가 만든 거예요. 선생님과 함께 봐요.')
+    expect(AI_NOTICE_TEXT.participant).toBe('컴퓨터가 만든 내용이에요. 선생님과 함께 봐요.')
     expect(AI_LITERAL.test(AI_NOTICE_TEXT.participant)).toBe(false)
+  })
+
+  it('당사자 화면별 머리말: 영수증은 컴퓨터가 "읽은" 값(만든 값 아님), 활동 추천은 "추천"이 주어 · AI 리터럴 없음', () => {
+    expect(AI_NOTICE_PARTICIPANT.receipt).toMatch(/컴퓨터가[^.]*읽었어요/)
+    expect(AI_NOTICE_PARTICIPANT.receipt).not.toMatch(/만든|만들/)
+    expect(AI_NOTICE_PARTICIPANT.activity).toMatch(/^추천은 컴퓨터가 만들었어요/)
+    for (const t of Object.values(AI_NOTICE_PARTICIPANT)) expect(AI_LITERAL.test(t)).toBe(false)
+  })
+
+  it('headline 을 주면 기본 문구 대신 그 머리말을 보인다', () => {
+    render(<AiNotice audience="participant" headline={AI_NOTICE_PARTICIPANT.receipt} />)
+    const note = screen.getByRole('note')
+    expect(note).toHaveTextContent(AI_NOTICE_PARTICIPANT.receipt)
+    expect(note).not.toHaveTextContent(AI_NOTICE_TEXT.participant)
   })
 
   it('실무자 라벨 = AI 보조 표시 + 최종 판단은 담당자', () => {

@@ -12,7 +12,7 @@ import { FormField } from '@/components/ui/FormField'
 import { NoBudgetGate } from '@/components/ui/NoBudgetGate'
 import { useToast } from '@/components/ui/LiveRegion'
 import { MoneyText } from '@/components/ui/MoneyText'
-import { AiNotice } from '@/components/ui/AiNotice'
+import { AiNotice, AI_NOTICE_PARTICIPANT } from '@/components/ui/AiNotice'
 import { formatCurrency } from '@/utils/budget-visuals'
 
 const SETTLEMENT_LABEL: Record<string, string> = {
@@ -310,7 +310,7 @@ export default function ReceiptClient({
             {/* 판독으로 채운 값 표시(정적 글 — 말로 알리는 채널은 위 announce 하나뿐). 저장에 성공하면 폼 리셋이
                 photo 를 비우므로 라벨도 함께 사라진다(별도 리셋 불필요). */}
             {ocrFilled && photo && (
-              <AiNotice audience="participant">사진에서 읽은 값이 맞는지 봐 주세요.</AiNotice>
+              <AiNotice audience="participant" headline={AI_NOTICE_PARTICIPANT.receipt}>채워진 칸이 맞는지 봐 주세요.</AiNotice>
             )}
 
             <FormField id="usage-date" label="날짜">
