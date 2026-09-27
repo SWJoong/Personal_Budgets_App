@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { generateStaffReviewSuggestions } from '@/app/actions/staffReviewSuggestion'
+import { AiNotice } from '@/components/ui/AiNotice'
 import type { ReviewSuggestion } from '@/utils/staffReviewSuggestion'
 
 /**
@@ -9,7 +10,8 @@ import type { ReviewSuggestion } from '@/utils/staffReviewSuggestion'
  * 설계: Plan&Source/goala_staff_review_assistant_W.md §4.
  *
  * 버튼을 눌러야만 액션을 호출한다(비용 제어). 상태(로딩/제안/빈/에러)는 aria-live 영역으로 알린다.
- * 과신 방지: 제안 하단에 '최종 판단은 선생님이' 안전 고지. priority 배지 = high(danger)·medium(warning)·low(neutral).
+ * 과신 방지: 제안 하단에 공통 AI 표시 라벨 AiNotice(staff, '최종 판단은 담당자가') — aria-live 영역 밖에 둬서
+ *   제안 알림과 함께 또 읽히지 않는 정적 글로 둔다. priority 배지 = high(danger)·medium(warning)·low(neutral).
  */
 
 type Result = { suggestions: ReviewSuggestion[] } | { error: string } | null
@@ -72,30 +74,27 @@ export default function StaffReviewSuggestions({ participantId }: { participantI
         )}
 
         {suggestions && suggestions.length > 0 && (
-          <>
-            <ul className="flex flex-col gap-3">
-              {suggestions.map((s, i) => {
-                const p = PRIORITY[s.priority]
-                return (
-                  <li
-                    key={`${s.basis}-${i}`}
-                    className="p-4 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-1.5"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.cls}`}>{p.label}</span>
-                      <span className="text-sm font-bold text-foreground">{s.headline}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{s.action}</p>
-                  </li>
-                )
-              })}
-            </ul>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              AI가 만든 참고 제안이에요. 최종 판단은 선생님이 해요.
-            </p>
-          </>
+          <ul className="flex flex-col gap-3">
+            {suggestions.map((s, i) => {
+              const p = PRIORITY[s.priority]
+              return (
+                <li
+                  key={`${s.basis}-${i}`}
+                  className="p-4 rounded-2xl bg-card ring-1 ring-border flex flex-col gap-1.5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.cls}`}>{p.label}</span>
+                    <span className="text-sm font-bold text-foreground">{s.headline}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{s.action}</p>
+                </li>
+              )
+            })}
+          </ul>
         )}
       </div>
+
+      {suggestions && suggestions.length > 0 && <AiNotice audience="staff" />}
     </section>
   )
 }
