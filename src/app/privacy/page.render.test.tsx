@@ -14,8 +14,9 @@ import { render, screen, cleanup, within } from '@testing-library/react'
  *
  *  (C) 처리위탁 표의 사실(fix/privacy-policy-facts) — 과거 초안의 사실 오류 재발 방지:
  *      Supabase=서울 리전(ap-northeast-2, docs/release/15 §3 확인) → 국외 이전 '아니오'(미확정 '확인 중' 금지) /
- *      Anthropic=OCR 은 영수증 이미지 원본 전송(ocr.ts callAI 직송·가명처리 불가)과 가명처리된 글(요약·제안·점검,
- *      callAIDeidentified)을 구분. 기관명 치환은 현재 어떤 액션도 terms 로 넘기지 않으므로 '기관명 가명처리' 주장 금지.
+ *      Anthropic=OCR 은 영수증 이미지 원본 전송(ocr.ts callAI 직송·가릴 수 없음)과 이름을 기호로 바꾼 글(요약,
+ *      callAIDeidentified·당사자명=participants.name — easyReadSummary.action.test.ts)을 구분하고, 활동·점검 제안은
+ *      이름 자체를 보내지 않는다고 적는다. 기관명 치환은 현재 어떤 액션도 terms 로 넘기지 않으므로 '기관명' 주장 금지.
  *
  * 방식: PRIVACY_DRAFT 만 getter 로 목킹(나머지 콘텐츠는 실물). 헤딩은 번호 접두("1."·"4."·"5.")를
  *   허용하도록 정규식 이름 매칭. 서버 컴포넌트(순수·async 아님)라 RTL 로 직접 렌더 가능.
@@ -109,14 +110,15 @@ describe('/privacy 전문 — 처리위탁·국외이전 사실 가드', () => {
     expect(processorCell('Supabase', '국외 이전').trim()).toBe('아니오')
   })
 
-  it('Anthropic: OCR 영수증 이미지 원본 전송과 가명처리된 글 전송을 구분한다', () => {
+  it('Anthropic: OCR 영수증 이미지 원본 전송과 이름을 바꾼 글 전송을 구분한다', () => {
     render(<PrivacyPolicyPage />)
     expect(processorCell('Anthropic (Claude)', '국외 이전').trim()).toBe('예')
     const safeguard = processorCell('Anthropic (Claude)', '보호 조치')
-    // OCR = 이미지 원본(가명처리 불가) — '모두 가명처리 후 전송'으로 뭉뚱그리지 않는다.
+    // OCR = 이미지 원본(가릴 수 없음) — '모두 가명처리 후 전송'으로 뭉뚱그리지 않는다.
     expect(safeguard).toMatch(/영수증[^.]*이미지 원본/)
-    // 요약·제안·점검 = 이름을 가명처리한 글.
-    expect(safeguard).toMatch(/요약[^.]*가명처리[^.]*글/)
+    // 요약 = 이름을 기호로 바꾼 글 / 활동·점검 제안 = 이름을 보내지 않음(이름 없는 요약 정보).
+    expect(safeguard).toMatch(/요약[^.]*이름[^.]*기호로 바꾼[^.]*글/)
+    expect(safeguard).toMatch(/제안[^.]*이름을 보내지 않/)
     // 기관명 치환은 어떤 액션에도 배선돼 있지 않다 — 과장 주장 금지.
     expect(safeguard).not.toMatch(/기관명/)
     // 위탁 업무 = 실제 배선된 4개 AI 기능(ocr·easyReadSummary·activitySuggestion·staffReviewSuggestion).
@@ -133,6 +135,8 @@ describe('/privacy 전문 — 처리위탁·국외이전 사실 가드', () => {
     const text = (section!.textContent ?? '').replace(tableText, '')
     expect(text).toMatch(/영수증[^.]*이미지 원본/)
     expect(text).toMatch(/국내\(서울\)/)
+    // 활동·점검 제안 맥락에는 이름이 애초에 없다 — '기호로 바꿔 보낸다'(보낸다는 인상) 대신 '보내지 않는다'.
+    expect(text).toMatch(/점검 제안\(실무자 사용\)[^•]*이름은 보내지 않습니다/)
     expect(document.body.textContent ?? '').not.toMatch(/기관명/)
   })
 })

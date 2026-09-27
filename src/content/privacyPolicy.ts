@@ -59,9 +59,11 @@ export interface Processor {
 /**
  * 처리위탁·국외이전 현황 — src/utils/ai.ts·ocr.ts·geocode.ts·package.json·.env 실측(11 §2-4).
  * Supabase 리전 = 서울(ap-northeast-2) 확인(2026-09-23, docs/release/15 §3) → 저장은 국외이전 아님.
- * Anthropic 전송 범위(액션 실측): OCR(ocr.ts)=영수증 이미지 원본을 callAI 로 직송(이미지라 가명처리 불가) /
- *   요약·활동제안·점검제안(easyReadSummary·activitySuggestion·staffReviewSuggestion)=callAIDeidentified 로
- *   당사자·대리인 이름을 토큰화한 텍스트만 전송, 토큰 맵은 요청 스코프 메모리(미저장).
+ * Anthropic 전송 범위(액션 실측): OCR(ocr.ts)=영수증 이미지 원본을 callAI 로 직송(이미지라 가릴 수 없음) /
+ *   쉬운말 요약(easyReadSummary)=callAIDeidentified 로 당사자(participants.name)·대리인 이름을 토큰으로 바꾼
+ *   글 전송(자기서술 등 나머지는 원문 그대로) / 활동제안·점검제안(activitySuggestion·staffReviewSuggestion)=
+ *   영역·금액·신호 요약만이라 이름이 애초에 없음(같은 게이트로 안전망만). 토큰 맵은 요청 스코프 메모리(미저장).
+ * 용어: 이름만 바꾸고 나머지는 그대로라 법상 '가명처리'(§2 1의2)로 단정하지 않고 '치환'이라 쓴다(15 §2·§4 한계).
  */
 export const PROCESSORS: Processor[] = [
   {
@@ -77,8 +79,9 @@ export const PROCESSORS: Processor[] = [
     location: '미국',
     overseas: 'yes',
     safeguard:
-      '영수증 자동 인식은 영수증 이미지 원본을 그대로 전송(이미지라 가명처리 불가). ' +
-      '요약·활동 제안·점검 제안은 당사자·대리인 이름을 기호로 바꾼(가명처리) 글만 전송, 대응표 미저장.',
+      '영수증 자동 인식은 영수증 이미지 원본을 그대로 전송(이미지라 가릴 수 없음). ' +
+      '쉬운 말 요약은 당사자·대리인 이름을 기호로 바꾼(치환) 글을 전송(그 밖의 내용은 그대로). ' +
+      '활동 제안·점검 제안은 이름을 보내지 않음(들어가더라도 기호로 치환). 대응표 미저장.',
   },
   {
     name: 'Vercel',
