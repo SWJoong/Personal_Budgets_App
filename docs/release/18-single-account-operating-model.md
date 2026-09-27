@@ -1,0 +1,120 @@
+# 18 · 단일 계정 운영 모델 — W·U 를 계정에서 역할로, 하네스를 플러그인으로
+
+> **한 줄**: W(Windows/개인) 계정 한도 부족으로, 한 계정의 **오케스트레이터 세션 + 서브에이전트**가 W·U 두 역할 컨텍스트를 분리 실행한다.
+> **사람 자리(W)** = QA · PR 머지 · 결정(U 세션에서도 가능). 하네스 런타임은 플러그인 `harness` 로 추출해 여러 프로젝트에 재사용하고,
+> 이 저장소에는 `.claude/harness.json` 만 남긴다.
+
+관련: [`docs/harness-plan.md`](../harness-plan.md) v2(§10 전환 기록) · CLAUDE.md 「병렬 하네스」 · [`04`](04-u-parallel-orchestration.md)(병렬 워커 운영모델) ·
+[`17`](17-harness-codification.md)(코드화, 부품은 플러그인으로 이전) · 계획 정본 `~/.claude/plans/w-u-kind-book.md`(사용자 승인 2026-09-27).
+
+---
+
+## 1. 왜
+
+| 실측 | 의미 |
+|---|---|
+| agent-sync 채널: 다른 머신 유입 마지막 2026-09-03, 게시 수 W 62 vs U 264 | W 세션은 사실상 멈춤 |
+| 2026-09-04부터 U 단일세션이 양축 대행 — 메모리와 CLAUDE.md 현황 한 줄에만 존재 | 새 세션마다 재해석 비용, 문서와 실제의 괴리 |
+| 홈 지시서 `~/.claude/CLAUDE.md` "W 레인 열지도 말 것" | 실제 운영과 반대되는 지시가 매 세션 로드 |
+| 워커·검증자 정의 없음(#197 이전) → spawn 마다 브리핑 재작성 | 토큰·누락(첫 웨이브 재작업 사례) |
+| 같은 하네스를 다른 프로젝트에도 써야 함 | 저장소 로컬 사본은 개선이 전파되지 않음 |
+
+## 2. 사용자 결정 (2026-09-27, `docs/release/decisions.md` D-20260927-02~06)
+
+| # | 결정 | 해석 |
+|---|---|---|
+| D-02 | W = 사람 자리(QA·PR 머지·결정), **U 측에서도 가능**해야. 나머지는 U 세션 전용 | W 는 계정이 아니라 사람의 자리. 검증·계약 저작은 서브에이전트 |
+| D-03 | 오케스트레이터의 W 레인 편집 = 위임 원칙 + 소규모 예외 | 훅이 `ask` 로 묻고, 허용은 기록 |
+| D-04 | 검증 비용 = 위험도 티어 | docs / small / high |
+| D-05 | 문서는 역할 기반 재작성 + 전환 기록(홈 지시서 포함) | 이 문서 + harness-plan v2 §10 |
+| D-06 | 플러그인 + 설치 스킬 · 프라이빗 레포 · PBA 는 #197 머지 → 추출 → 중복 제거 · 파일럿은 PBA만 | 플러그인 `harness` |
+
+## 3. 역할 지도
+
+| 역할 | 실행 주체 | 입력 | 출력(리턴 블록) | 편집 범위 |
+|---|---|---|---|---|
+| 오케스트레이터(U 세션) | 메인 컨텍스트 | 사용자 지시 · 채널 인계 · 백로그 | 웨이브 편성 · 티어 판정 · 머지 브리핑 · 저널 | 공유·인프라·docs/release + 소규모 예외 |
+| `harness:u-worker` | sonnet · worktree · background | 태스크 · 화이트리스트 · 기준 브랜치 | `=== WORKER REPORT ===` + feat PR | U 레인(훅 deny) |
+| `harness:w-contract-author` | opus · worktree · background | 설계·수용 기준 | `=== CONTRACT REPORT ===` + draft 계약 PR | W 레인(훅 deny) |
+| `harness:w-verifier` · `/harness:verify-pr` | opus · Edit/Write 불가 | PR 번호 | `VERIFY-REPORT` 헤더 + `=== VERIFY REPORT ===` | 없음 |
+| 사람 자리(W) | 사용자 | 브리핑 | 승인 · QA 결과 · 결정 | 전부 |
+
+핵심 규칙: **같은 기능의 구현과 계약을 한 컨텍스트가 함께 쓰지 않는다.**
+
+## 4. 레인 → 컨텍스트 (lane-guard 가 막는 것 / 못 막는 것)
+
+- 플러그인 훅 `lane-guard.sh auto` 가 입력 JSON 의 `agent_type` 으로 판정: `harness:u-worker` → W 레인·공유 deny / `harness:w-contract-author` → W 레인 밖·공유 deny /
+  `harness:w-verifier` → 허용(편집 도구 없음) / 메인 세션·기타 서브에이전트 → W 레인이면 **ask**(사용자 확인), 공유·U 레인은 조용히 허용.
+- 소규모 예외 정의: 경로·주석·오타·현황 갱신 같은 **동작을 바꾸지 않는** 편집. 허용했으면 PR 본문·리포트 LANE_NOTES 에 남긴다.
+- 못 막는 것: Bash 편집(`sed -i`·리다이렉트) → 에이전트 본문 규율. 프로젝트/플러그인 훅은 폴더 trust 후 실행.
+- 이스케이프: `LANE_GUARD_DISABLE=1`(전부) · `LANE_GUARD_MAIN=off`(ask 만).
+
+## 5. 검증 티어 (정본 `.claude/harness.json` `tiers`)
+
+| 티어 | 조건 | 검증 | 머지 |
+|---|---|---|---|
+| docs | `docs/**`·`*.md` 만 | CI + 사람 읽기 | 사람 승인 |
+| small | 코드 ≤ 12파일·≤ 400줄, 고위험 경로 없음 | `harness:w-verifier` 1건(돌연변이) | approve + 사람 승인 |
+| high | rls(`supabase/**/*rls*.sql`·`12_audit_log`) · auth(`src/proxy.ts`·`(auth)/`·view-as·supabase 클라이언트) · privacy(`deidentify`·`ai.ts`·OCR·요약·처리방침) · audit · money(정산·거래·copay) · gate(CI·settings·harness.json) · SQL 정책/DEFINER/GRANT · 대형 · 당사자 문구 | `/harness:verify-pr N` | approve(-with-conditions 해소) + 사람 승인 |
+
+경계: 계약 PR 제외 · 문자열만 바꾼 인프라 파일은 사람 확인 + 증거로 하향 가능(결정 기록) · 재검증은 `--lens` 로 생존 렌즈만.
+
+## 6. 사람 자리 절차 3종 (U 세션에서도)
+
+- **머지**: `gh pr checks N` green · `VERIFY-REPORT` 코멘트의 `head=` 가 현재 head · Manual-Ops 목록 → 오케스트레이터 브리핑(PR·head·티어·판정·Manual-Ops·되돌림) →
+  AskUserQuestion **PR 1건·head 1개당 승인 1회** → BEHIND 면 `gh pr update-branch N` → CI 재확인 → `gh pr merge N --squash --delete-branch`(플러그인 훅이 한 번 더 묻는다) →
+  계약 PR 닫기 → `scripts/agent-sync.sh post w "[MERGED by user] #N …"`. `--admin`·일괄 승인·auto-merge 금지. 첫 실사용 = 이 문서의 PR.
+- **QA**: `docs/release/qa-runs/` 규약(README). 사람이 실행, 오케스트레이터가 준비·기록. 브라우저는 관찰·증거 수집만. `post w "[QA by user] …"`.
+- **결정**: AskUserQuestion → `docs/release/decisions.md` 행 + `post w "[DECISION by user] …"`. 수렴 프로토콜 폐기.
+
+## 7. 어떤 파일이 어떻게 바뀌었나
+
+| 위치 | 변경 |
+|---|---|
+| **플러그인 `harness`**(`~/문서/claude-harness` → private `SWJoong/claude-harness`) | `agents/`(u-worker·w-contract-author·w-verifier, 프로젝트 중립) · `workflows/verify-pr.js`(렌즈·반박자 설정 가능, `--lens`) · `hooks/hooks.json`(SessionStart pull · lane-guard auto · merge-ask) · `scripts/`(lane-guard·agent-sync·wave-plan·merge-ask + selftest) · `skills/install`·`operate` · README |
+| 삭제(플러그인이 대체) | `.claude/agents/*` · `.claude/workflows/verify-pr.js` · `scripts/lane-guard.sh`·`lane-guard-selftest.sh` · `scripts/u-wave-plan.sh` · `.claude/settings.json` SessionStart 훅 |
+| 추가 | `.claude/harness.json`(정본) · `.github/pull_request_template.md` · `docs/release/decisions.md` · `docs/release/qa-runs/README.md` · 이 문서 |
+| 재작성 | CLAUDE.md 하네스 섹션(역할 지도·레인·티어·사람 자리 절차·현황 정리) · `docs/harness-plan.md` v2 · `scripts/agent-sync.sh`(래퍼) |
+| 문구 | `04`(§1·§3·§5·§7·§8) · `17`(이전 안내) · `02`(리뷰 정책) · `14`(W 백로그 실행 주체) · `docs/release/README.md` · `.claude/skills/README.md` |
+| 저장소 밖(사용자·오케스트레이터) | `~/.claude/CLAUDE.md` 오케스트레이터 지시서(플러그인 `home-directive.md`) · `/home/choi/AGENTS.md` 축소 · 메모리 갱신 · private repo 생성·마켓플레이스 전환 · Windows 머신 설치 |
+
+## 8. 되돌림 — W 계정 세션이 복귀할 때
+
+역할 재배치만 한다: 사람 자리 2개(Windows 에서도 `post w`), 또는 사람이 w-verifier 절차를 직접 운전하는 보조 검증 세션. agent-sync·레인·접두·플러그인은 그대로.
+Remote Control 이 양쪽에 연결돼 있으면 `SendMessage` 를 라이브 보조 채널로 쓸 수 있다(정본은 여전히 agent-sync).
+
+## 9. 검증 기록
+
+- 플러그인 `harness` 0.1.0(로컬 마켓플레이스 `~/문서/claude-harness`, user scope 설치): `claude plugin validate` ✔ · `lane-guard-selftest.sh` pass=49 fail=0 · `merge-ask-selftest.sh` pass=12 fail=0 · `verify-pr.js` meta/본문 `node --check` 통과.
+- 새 세션 인식(2026-09-27): 에이전트 `harness:u-worker`·`harness:w-contract-author`·`harness:w-verifier`, 스킬 `/harness:install`·`/harness:operate`, 워크플로 `/harness:verify-pr` 이 모두 나열됨. SessionStart 훅이 `agent-sync.sh pull --hook` 을 실행해 채널 상태(`w.md · 사람 자리` / `u.md · 오케스트레이터 저널`)를 출력.
+- 이 저장소 `.claude/harness.json` 로 `lane-guard.sh auto` 실측: 메인 세션 `src/test/x.test.ts`·`Plan&Source/x_W.md` → **ask** / `CLAUDE.md`·`src/utils/x.ts` → 허용 / `harness:u-worker` `src/test/x.test.ts`·`scripts/agent-sync.sh` → **차단(2)**, `supabase/seoul/21_x.sql` → 허용 / `harness:w-contract-author` `src/utils/x.ts` → **차단(2)**, `verify_x.sql` → 허용.
+- `merge-ask.sh` 에 `gh pr merge 197 --squash` → **ask** JSON. `scripts/agent-sync.sh pull`(래퍼) → 플러그인 스크립트로 위임되어 채널 출력. `wave-plan.sh` → "대상 핸드오프 없음"(오픈 계약 PR 0건).
+- 소스 변경 없음(`src/**` 무변경) → `npm test` 는 #197 기준 155 파일·1056 테스트 통과가 유효. CI(quality-check·db-verify)는 PR 에서 재확인.
+- 라이브 spawn(`harness:u-worker` 1건)과 `/harness:verify-pr` 첫 실행은 이 PR 의 검증 단계에서 수행 — 결과는 PR 코멘트.
+
+## 부록 A · CLAUDE.md 「현재 작업 현황」 이력 (2026-08-19 ~ 2026-09-20, 원문 이관)
+
+> 원문 그대로(당시 표현 '활성(W)/활성(U)' 등은 2계정 시절 기준). 현행 현황은 CLAUDE.md.
+
+<!-- 양쪽이 작업 시작/완료 시 갱신·push -->
+- **활성(W)**: 축B(#17·#18·#20) 랜딩·verify PG15 green 확인 → verify CI 자동화 스펙 `[HANDOFF→U]`(`ci_db_verify_spec_W.md`) + 수동작업 게이트 컨벤션 신설.
+- **활성(U)**: CI 게이트 정상화(`quality-check`+`db-verify` both required·`strict`) + main 브랜치 보호 + **lint blocking 승격**(선재 22건 정리) + 욕구사정 삭제=담당자 계약 초록화(#24). 실행노트 `docs/release/02`.
+- **다음**: 지출↔분류축(`domain`/`subdomain`) UI 연결은 **W 백필 설계 확정 후** 착수(디자인 레인). GOAL축 A 잔여 화면은 W UX·easy-read 설계 후. copay 교차계층 계약 대기.
+- **PRD 대조(U, 2026-08-28)**: 사용자 업로드 「서울형 리빌딩 PRD」 정합성 리뷰 완료 — `docs/release/03-prd-alignment-review.md`. 9장 그래프 시각화 등은 이미 구현·머지된 재발견, 가명처리·마스킹(7장)은 실제 공백으로 확인. W 판단 대기: ①가명처리 설계 착수 여부·우선순위 ②코디네이터 역할 세분화 여부 ③멀티테넌시 확장 가이드(GOAL축B3) 반영 여부.
+- **U 병렬 오케스트레이션(U, 2026-09-04)**: U 축을 단일 직렬 세션 → **오케스트레이터 + worktree 격리 병렬 워커**로 승격(계정 한도 상향 활용). 저자(U)↔검증자(W) 분리·레인·PR/CI 불변, 병렬화는 저자(U) 내부 팬아웃뿐. 운영모델 `docs/release/04-u-parallel-orchestration.md` + 도구 `scripts/u-wave-plan.sh`([HANDOFF→U] PR을 파일겹침+STATE로 웨이브 편성, 이미구현/스펙 자동 스킵). 첫 실행: #83 P2토큰 → PR #89(green), #79·#80은 이미구현 판정으로 중복워커 중지. **U 구현큐 현재 비어있음** — W 신규 RED 계약 시 재편성 spawn.
+
+- **스냅샷(2026-09-20) — 역사 기록**(아래 2026-09-27 스냅샷이 현행. 이 블록의 '진행 중(U)'는 #175 로 종료 — 단 OCR 결과 마스킹은 기관결정 선행이라 의도적 제외. 'P0 Manual-Ops' 중 감사 라이브적용은 2026-09-21 완료, 파기 스케줄은 미확인): 이후 대량 머지로 상태가 크게 바뀜.
+  - **완료(재착수 금지)**: Track A 회계·거래장부·서류 6슬라이스(#131~#136) · P0-A 개인정보 처리방침 초안(#167) ·
+    P0-B 통합 감사로그+열람감사+파기함수(#169) · 테스트 당사자 편집 예외(#168) · **관계망(Track B) 제거**
+    (#171~#173, 코드·DB·설계 전면 종료, 라이브 드롭 PostgREST 검증) · P1~P7 프론트 재구성 완결(#89~#115).
+  - **운영 모드**: **W 세션 진행 불가 → U 한 세션이 양축 대행**(구현≠검증은 신선 서브에이전트로 유지, main 머지는 사람).
+    [[project_single-session-orchestration]].
+  - **상위 방향(2026-09-19 사용자 /goal)**: 앱을 **3축 집중** 완성(당사자 자기주도 · 실무자 행정간소화/계획공유 ·
+    관리자 파악/슈퍼비전). 온톨로지 성숙 전제 기능 보류.
+  - **다음 우선순위**: `docs/release/14-prd-reprioritization.md`(PRD 재정합, 10-에이전트 실측). 03의 3대 실공백
+    (가명처리·감사로그·Phase C) 전부 done. 남은 것 = **P0 개인정보 국외이전 법무 묶음**(OCR 원본+자유서술 국외전송+
+    처리방침 발효/고지·동의, 기관결정 선행) · P0 Manual-Ops(감사 라이브적용·파기 스케줄) · P1 축C 감사무결성
+    (`participant.preview` 배선)·가시성(`/admin/audit`)·축A 저비용 배선(EasyTerm·TTS)·인증 사람관문(당사자 실사용자 심사).
+  - **진행 중(U)**: 결정 불필요 P0 코드 하드닝 착수 — OCR 결과 마스킹 · `easyReadSummary` term 커버리지 · `participant.preview` 감사 배선.
+  - **copay 정정**: "교차계층 계약 대기"는 stale — DB `verify_06_copay` done, TS 패리티 테스트만 잔여(P3).
+
