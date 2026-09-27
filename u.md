@@ -1470,3 +1470,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-27T08:53Z] U
 [진행] worktree 정리: 세션 wf_* 10개 + 기존 4개(-u·-wact·objective-goldberg·pb-apply) 제거 — 모두 고유 작업 없음(내용 비교 검증). 원격 브랜치 3개(test/w-activity-photos-c·feat/demo-personas-seed·feat/phase-c-plan) 삭제. [HANDOFF→W] #196 docs/a11y/phase-c-plan.md 보관+절별 실행 현황표 — ★Phase C 는 핵심만 done(§4 날짜 형식 도움말 미반영, §3·§5~§10 일부) → doc14 백로그 U P2 'Phase C 잔여'. 머지 승인 대기.
 
+## [2026-09-27T09:01Z] U
+[HANDOFF→W] 하네스 코드화 = PR #197 (feat/harness-codify, docs/release/17). .claude/agents 3종(u-worker sonnet·worktree·lane-guard u / w-verifier opus·Edit/Write 불가 / w-contract-author opus·worktree·lane-guard w, 전부 memory:project) + scripts/lane-guard.sh(PreToolUse 훅, CLAUDE.md 레인 규칙 1:1, selftest 31/31) + .claude/workflows/verify-pr.js(/verify-pr <PR>: 범위→4렌즈→반박2/렌즈→종합, 최대 14 에이전트) + 역할 스킬 드리프트 정정(frontend 미설치 TanStack/Zustand/RHF/Zod·없는 fe-patterns 참조 / backend seoul 빌드 SQL·Claude AI / devops npm·현행 CI / pl·tech-stack·qa·data-models 배너, paths: 추가). 게이트: npm test 155/1056 pass, src 변경 0. W 검증 요청 3건은 PR 본문. 새 정의는 새 세션에서 인식 → 머지 후 u-worker 라이브 spawn 실증 예정. 후속: u-wave 워크플로·홈 CLAUDE.md U 지시서 단일세션 모드 갱신(사용자 파일).
+
