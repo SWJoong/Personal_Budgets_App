@@ -35,7 +35,8 @@ describe('/privacy/easy 쉬운 말판 — 저장 위치·국외 전송 사실 �
     render(<EasyPrivacyClient />)
     const text = sectionText(/미국으로 보내는 정보/)
     expect(text).toMatch(/영수증 사진을 그대로 미국 회사에 보내요/)
-    expect(text).toMatch(/글을 보낼 때는 이름을 안 보이게 가려요/)
+    // 가리는 이름은 당사자·대리인(보호자)뿐 — '이름을 가려요'처럼 모든 이름으로 넓혀 말하지 않는다.
+    expect(text).toMatch(/글을 보낼 때는 당신 이름과 보호자 이름을 안 보이게 가려요/)
   })
 
   it('미국 전송 섹션 제목은 인공지능 기능으로 범위를 한정한다(전체 목록 주장 금지)', () => {

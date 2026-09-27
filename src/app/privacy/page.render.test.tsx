@@ -139,4 +139,11 @@ describe('/privacy 전문 — 처리위탁·국외이전 사실 가드', () => {
     expect(text).toMatch(/점검 제안\(실무자 사용\)[^•]*이름은 보내지 않습니다/)
     expect(document.body.textContent ?? '').not.toMatch(/기관명/)
   })
+
+  it('6. 안전조치의 이름 치환은 당사자·대리인 이름으로 한정한다(모든 이름을 가린다고 넓혀 말하지 않음)', () => {
+    render(<PrivacyPolicyPage />)
+    const section = screen.getByRole('heading', { name: /안전조치/ }).closest('section')
+    expect(section, '안전조치 섹션이 없다').not.toBeNull()
+    expect(section!.textContent ?? '').toMatch(/당사자·대리인 이름을 기호로 치환/)
+  })
 })

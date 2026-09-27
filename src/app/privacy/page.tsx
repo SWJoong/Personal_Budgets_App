@@ -187,7 +187,7 @@ export default function PrivacyPolicyPage() {
           <Card as="section" title="6. 안전조치">
             <p className="text-muted-foreground break-keep">
               접근권한 분리(이용자는 본인 정보만 열람), 파일의 비공개 저장 및 서명된 임시 링크(signed URL),
-              암호화 전송(HTTPS), 인공지능으로 글을 보내기 전 이름을 기호로 치환(영수증 이미지는 제외),
+              암호화 전송(HTTPS), 인공지능으로 글을 보내기 전 당사자·대리인 이름을 기호로 치환(영수증 이미지는 제외),
               관리자만 열람 가능한 접근 기록을 적용합니다.
             </p>
           </Card>
