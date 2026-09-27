@@ -1461,3 +1461,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-27T04:17Z] U
 [SYNC] 라이브 반영 기록 보정: 12_audit_log(2026-09-21 사용자 실행·seoul_audit_log PostgREST 200)·19_plan_feedback(2026-09-21T13:41 실행·200) 완료 — 이전 '19 Manual-Ops 대기'는 stale. 남은 라이브 미확인: 감사파기 pg_cron 등록·활동사진 04 RLS/경로트리거. [진행] 사용자 승인 배치: ①처리방침 사실정정(P0) ②AI 생성물 표시 라벨(P1) ③영수증 기록 성공 안내(P2) ④문서 정리(P3) — ①~③ worktree 병렬 구현+독립검증 중.
 
+## [2026-09-27T06:07Z] U
+[HANDOFF→W] 사용자 승인 배치 4 PR: #192 처리방침 사실정정(P0)+★쉬운말요약 당사자이름 미마스킹 결함 수정(profiles 오조회, #73 이후) · #193 AI 생성물 공통 라벨 AiNotice(P1) · #194 지출기록 성공 안내(P2 a11y) · #195 문서 정리(CLAUDE.md 현행 스냅샷·doc14 현행 백로그 46건·11/12/15 정정). 각 worktree 구현+독립검증(뮤테이션 RED 확인) PASS. 머지 승인 대기. #193·#194 ReceiptClient 무충돌(merge-tree).
+
