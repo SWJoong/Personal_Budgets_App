@@ -155,7 +155,7 @@
 - ✅ **P1** AI 산출물 공통 라벨 + OCR 자동채움 표시 → **#193**(2026-09-27 머지). 당사자 화면 '컴퓨터' 문구의 AI기본법 충족 여부는 기관 판단(잔여).
 - **P1** 쉬운말 `<Term>` 배선 확대(`plan/page.tsx` 원문 먼저, 나머지 7개 용어는 W 매핑 후) (P1-3).
 - **P1** 지출기록 화면 읽어주기(`SpeakButton`) (P1-4).
-- **P2** Phase C 잔여(2026-09-27 보관 계획서 대조, 요약) — 날짜 형식 도움말(✗) · 파일 업로드 제한 사전 안내·파일 목록/삭제·영수증 사진 크기 확인 · 무음 제출 오류 6화면·`DisplaySettingsClient`·`ReceiptUploader` 사전 검증 · 값 변경 즉시 이동 select 2곳 · 신청 상세 동의 체크박스 `fieldset` · 필터 초기화·결과 수·당사자 지도 칩 `aria-pressed` · `AdminSidebar` 키보드·모바일 드로어 Modal 화(하위메뉴 토글 44px·이름 있는 라벨은 이 PR) · 새 창 표시 · 홈 단독 ⚙ 링크. 절별 근거 [`docs/a11y/phase-c-plan.md`](../a11y/phase-c-plan.md) 「실행 현황」.
+- **P2** Phase C 잔여(2026-09-27 보관 계획서 대조, 요약) — 날짜 형식 도움말(✗) · 파일 업로드 제한 사전 안내·파일 목록/삭제·영수증 사진 크기 확인 · 무음 제출 오류 6화면·`DisplaySettingsClient`·`ReceiptUploader` 사전 검증 · 값 변경 즉시 이동 select 2곳 · 신청 상세 동의 체크박스 `fieldset` · 필터 초기화·결과 수·당사자 지도 칩 `aria-pressed` · `AdminSidebar` 키보드·모바일 드로어 Modal 화(하위메뉴 토글 44px·이름 있는 라벨은 #201) · 새 창 표시 · 홈 단독 ⚙ 링크. 절별 근거 [`docs/a11y/phase-c-plan.md`](../a11y/phase-c-plan.md) 「실행 현황」.
 - ✅ **P2** 지출 기록 성공 안내 → **#194**(2026-09-27 머지).
 - **P2** 검토 대기 화면 `receipt.view` 렌더마다 반복 기록 → 실제 열람 시점으로 좁히기(doc12 §6).
 - **P2** 감사 기록 `target_participant_id` 누락 — `receipt.view`(doc12 §6) · `usage.update`(`serviceUsage.ts:243`) · `settlement.record`(`settlement.ts:51`) · `plan.review`(`planReview.ts:56`) · `ai.summary`(`easyReadSummary.ts:89`) (2026-09-27 재점검에서 코드로 확인).
