@@ -138,6 +138,18 @@ const sorted = (xs: Iterable<string>) => [...xs].sort()
 const quoted = (s: string) => [...s.matchAll(/'([^']*)'/g)].map((m) => m[1])
 const TS_SORTED = sorted(COPAY_STATUSES)
 
+/**
+ * verify_06 의 「C1~C6」 절(그 `=== ` 헤더 ~ 다음 `=== ` 절 헤더)에서 판정하는 copay_status 값 — 등장 순서·중복 그대로.
+ * 파일 전체를 훑으면 C11·C12 재확인 시나리오에 같은 값이 다시 나와 C1~C6 판정 누락을 가린다. 그래서 절로 좁힌다.
+ * 절을 못 찾으면 undefined(빨강으로 떨어진다).
+ */
+function c1to6Judged(verifySql: string): string[] | undefined {
+  const block = verifySql.match(/^\\echo '=== C1~C6[^\n]*\n([\s\S]*?)(?=^\\echo '===|(?![\s\S]))/m)?.[1]
+  return block === undefined
+    ? undefined
+    : [...block.matchAll(/copay_status\s*=\s*'([^']*)'/g)].map((m) => m[1])
+}
+
 /** 정본 빌드 SQL(verify_* 제외) — 파일명·본문 */
 function seoulBuildSql(): { file: string; sql: string }[] {
   return readdirSync(SEOUL_DIR)
@@ -167,10 +179,12 @@ describe('TS↔DB 패리티 — copay_status 값 목록', () => {
   })
 
   it("컬럼 기본값은 TS 상태이며 'not_applicable'(숨김) — 트리거 전 행이 금액을 내보이지 않는다", () => {
+    // CHECK 와 같은 두 경로(CREATE TABLE 인라인 + 기배포 DB 용 ALTER ADD COLUMN). 대소문자 무관으로 찾고
+    // 둘 다 잡혀야 한다 — 한쪽이 다른 표기로 바뀌어 스캔에서 빠지면 조용히 초록이 되지 않게.
     const defaults = files.flatMap(({ sql }) =>
-      [...sql.matchAll(/copay_status\s+TEXT\s+NOT\s+NULL\s+DEFAULT\s+'([^']*)'/g)].map((m) => m[1]),
+      [...sql.matchAll(/copay_status\s+TEXT\s+NOT\s+NULL\s+DEFAULT\s+'([^']*)'/gi)].map((m) => m[1]),
     )
-    expect(defaults.length).toBeGreaterThanOrEqual(1)
+    expect(defaults.length).toBeGreaterThanOrEqual(2)
     for (const d of defaults) {
       expect(TS_SORTED).toContain(d)
       expect(d).toBe('not_applicable')
@@ -190,10 +204,26 @@ describe('TS↔DB 패리티 — copay_status 값 목록', () => {
     expect(sorted(assigned)).toEqual(TS_SORTED)
   })
 
-  it('DB 계약(verify_06_copay)이 판정하는 상태 == TS CopayStatus (계약이 전 상태를 덮는다)', () => {
-    const sql = readFileSync(VERIFY_06, 'utf8')
-    const judged = new Set([...sql.matchAll(/copay_status\s*=\s*'([^']*)'/g)].map((m) => m[1]))
-    expect(sorted(judged)).toEqual(TS_SORTED)
+  const verifySql = readFileSync(VERIFY_06, 'utf8')
+
+  it('DB 계약(verify_06_copay) C1~C6 판정이 상태마다 정확히 한 번 == TS CopayStatus (계약이 전 상태를 판정한다)', () => {
+    const judged = c1to6Judged(verifySql)
+    expect(judged, 'verify_06 의 C1~C6 절을 찾지 못함').toBeDefined()
+    // Set 이 아니라 배열로 대조 — 한 상태를 두 번 판정하고 다른 상태를 빼먹는 경우도 빨강.
+    expect(sorted(judged!)).toEqual(TS_SORTED)
+  })
+
+  it('가드 자체 검증 — C1~C6 판정에서 한 상태를 빼면 빨강 (다른 절에 같은 값이 남아 있어도)', () => {
+    // 메모리 사본만 바꾼다(Plan&Source 원본은 건드리지 않음).
+    const dropped = "AND a.copay_status = 'exempt_basic_livelihood'"
+    expect(verifySql).toContain(dropped) // 변이 대상이 실제로 있다
+    const mutant = verifySql.replace(dropped, '')
+    // 파일 전체를 훑었다면 C11·C12 재확인 시나리오의 같은 값 때문에 이 변이를 놓친다 — 그 전제를 확인해 둔다.
+    expect(mutant).toMatch(/copay_status\s*=\s*'exempt_basic_livelihood'/)
+    const judged = c1to6Judged(mutant)
+    expect(judged).toBeDefined()
+    expect(judged).not.toContain('exempt_basic_livelihood')
+    expect(sorted(judged!)).not.toEqual(TS_SORTED)
   })
 
   it('타입 전수 가드가 살아 있다 (컴파일 타임 검사의 런타임 흔적)', () => {
