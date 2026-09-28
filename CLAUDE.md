@@ -269,7 +269,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 |---|---|---|---|
 | **T0 docs** | 변경이 `docs/**`·`*.md` 뿐 | CI + 사람 읽기 | 사람 승인 |
 | **T1 small** | 코드 ≤ 12파일·≤ 400줄, 고위험 경로 없음 | `harness:w-verifier` 1건(돌연변이 포함) | approve + 사람 승인 |
-| **T2 high** | rls(`supabase/**/*rls*.sql`·`12_audit_log`) · auth(`src/proxy.ts`·`(auth)/`·view-as·`src/utils/supabase/**`) · privacy(`deidentify*`·`ai.ts`·OCR·요약·처리방침) · audit · money(정산·거래·copay) · gate(CI·settings·harness.json) · SQL diff 에 POLICY/DEFINER/GRANT · 대형 · 당사자 문구(`src/app/(participant)/**`) | `/harness:verify-pr N` 팬아웃(≤14) | approve(-with-conditions 해소) + 사람 승인 |
+| **T2 high** | rls(`supabase/**/*rls*.sql`·`12_audit_log`) · auth(`src/proxy.ts`·`(auth)/`·view-as·`src/utils/supabase/**`) · privacy(`deidentify*`·`ai.ts`·OCR·요약·처리방침) · audit · money(정산·거래·copay) · storage(활동사진·서류 업로드·`src/utils/supabase/storage.ts`) · gate(CI·settings·harness.json) · SQL diff 에 POLICY/DEFINER/GRANT · 대형 · 당사자 문구(`src/app/(participant)/**`) | `/harness:verify-pr N` 팬아웃(≤14) | approve(-with-conditions 해소) + 사람 승인 |
 - 판정 정본은 `.claude/harness.json` `tiers`(플러그인 `pr-risk-tier.sh <PR>` 가 계산) — 위 표는 요약이다. 티어는 PR 본문 `- 검증 티어:` 에 선언하고 게이트가 선언·계산 중 높은 쪽을 적용한다. 하향은 머지 승인과 같은 AskUserQuestion 안에서만 인정(채널·결정 로그 기록만으로는 불가). 계약 PR(`[HANDOFF→U]`)은 티어 대상이 아니다.
 - src 를 바꾸지 않는 문서·설정 PR 은 돌연변이 검증 대신 **설정 계약**(`src/test/harnessConfig.test.ts`: harness.json ↔ CLAUDE.md 레인·티어 정합)으로 조인다.
 - 재검증은 `/harness:verify-pr N --lens <렌즈>` 로 생존 finding 이 있던 렌즈만(전체 재실행 금지).
