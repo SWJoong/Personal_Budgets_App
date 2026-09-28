@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import HelpSlideshow from './HelpSlideshow'
 import { HELP_SECTIONS } from '@/data/helpSlides'
 
@@ -30,5 +31,18 @@ describe('P6-C 장식 이모지 — HelpSlideshow 슬라이드 아이콘 (helpsl
     render(<HelpSlideshow section={section} onClose={() => {}} />)
     const icon = screen.getByText(section.slides[0].icon)
     expect(icon.closest('[aria-hidden="true"]')).not.toBeNull()
+  })
+
+  it("마지막 슬라이드 '시작하기' 버튼 접근명은 글자만이다(✓ 는 장식 — aria-hidden)", async () => {
+    // b5f49e9 수정 고정: 온보딩 '시작하기 🎉'·선택 ✓ 처럼 여기 ✓ 도 이름에서 뺀다.
+    // ✓(U+2713)는 Extended_Pictographic 밖이라 이모지 스캔으로는 못 잡는다 → exact 이름으로 단언.
+    const user = userEvent.setup()
+    render(<HelpSlideshow section={section} onClose={() => {}} />)
+    const total = section.slides.length
+    expect(total).toBeGreaterThan(0)
+    if (total > 1) await user.click(screen.getByRole('button', { name: `슬라이드 ${total}` }))
+    const start = screen.getByRole('button', { name: '시작하기' })
+    expect(start).toBeInTheDocument()
+    expect(screen.getByText('✓').closest('[aria-hidden="true"]')).not.toBeNull()
   })
 })

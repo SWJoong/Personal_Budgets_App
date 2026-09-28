@@ -10,7 +10,9 @@ import { AdminSidebar } from './AdminSidebar'
  *   ('하위메뉴 토글 28px→44px·이름 있는 라벨').
  *
  * - 하위메뉴 토글: 'w-7 h-7'(28px) → 44px. 라벨 '펼치기'/'접기' 만으로는 어느 메뉴인지 모름(여러 개가
- *   같은 이름) → '<메뉴이름> 하위 메뉴 펼치기/접기'. 펼쳤을 때 aria-controls 가 서브 영역 id 를 가리킨다.
+ *   같은 이름) → '<메뉴이름> 하위 메뉴 펼치기/접기'. 펼쳤을 때만 aria-controls 가 서브 영역 id 를 가리킨다
+ *   (접힘 = 속성 없음). id 는 useId 접두로 인스턴스마다 달라 데스크톱+모바일 드로어 동시 마운트에도 겹치지 않는다
+ *   (#201 검증 돌연변이 M6 '항상 부여'·M7 'useId 접두 제거' 생존 → 보강).
  * - 활성 경로라 자동으로 펼쳐진 항목도 첫 클릭에 접힌다(예전엔 첫 클릭 무반응 — aria-expanded 고착).
  * - 서브·빠른 설정 링크의 앞 이모지(➕📋…), '빠른 설정' ⚡·▲▼, 로그아웃 🚪 는 장식 → 접근명에서 빠진다.
  *   접힘 모드 로그아웃은 보이는 글자가 없어 aria-label='로그아웃' 로 이름을 준다.
@@ -49,6 +51,8 @@ describe('P6-C touch44 — AdminSidebar 하위메뉴 토글 (adminsidebar-submen
     render(<AdminSidebar />)
     const toggle = screen.getByRole('button', { name: '당사자 관리 하위 메뉴 펼치기' })
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    // 접혔을 땐 서브 영역이 DOM 에 없다 → aria-controls 가 있으면 없는 IDREF 를 가리킨다(펼쳤을 때만 부여)
+    expect(toggle).not.toHaveAttribute('aria-controls')
 
     await user.click(toggle)
     expect(toggle).toHaveAccessibleName('당사자 관리 하위 메뉴 접기')
@@ -71,6 +75,41 @@ describe('P6-C touch44 — AdminSidebar 하위메뉴 토글 (adminsidebar-submen
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
     expect(toggle).toHaveAccessibleName('당사자 관리 하위 메뉴 펼치기')
     expect(screen.queryByRole('link', { name: '당사자 등록' })).toBeNull()
+    // 접은 뒤엔 aria-controls 도 빠진다(사라진 영역을 가리키지 않게)
+    expect(toggle).not.toHaveAttribute('aria-controls')
+  })
+
+  it('두 인스턴스(데스크톱 사이드바 + 모바일 드로어)가 함께 떠도 하위메뉴 id 가 겹치지 않고 각자 자기 영역을 가리킨다', async () => {
+    // SupporterLayoutClient 는 데스크톱(hidden md:flex — DOM 에 남음)과 모바일 드로어에 AdminSidebar 를 동시에 마운트한다.
+    const user = userEvent.setup()
+    render(
+      <>
+        <AdminSidebar />
+        <AdminSidebar />
+      </>,
+    )
+    const toggles = screen.getAllByRole('button', { name: '당사자 관리 하위 메뉴 펼치기' })
+    expect(toggles).toHaveLength(2)
+    for (const t of toggles) await user.click(t)
+
+    const ids = toggles.map((t) => {
+      expect(t).toHaveAttribute('aria-expanded', 'true')
+      const id = t.getAttribute('aria-controls')
+      expect(id).toBeTruthy()
+      return id!
+    })
+    expect(ids[0]).not.toBe(ids[1])
+
+    for (const [i, t] of toggles.entries()) {
+      // 같은 id 를 가진 요소가 문서 전체에 정확히 1개(중복 id = 마크업 오류·오참조)
+      const same = Array.from(document.querySelectorAll('[id]')).filter((el) => el.id === ids[i])
+      expect(same).toHaveLength(1)
+      // 가리키는 영역이 자기 인스턴스(aside) 안에 있고, 서브 링크를 담는다
+      const aside = t.closest('aside')
+      expect(aside).not.toBeNull()
+      expect(aside!.contains(same[0])).toBe(true)
+      expect(same[0].querySelector('a[href="/admin/participants/new"]')).not.toBeNull()
+    }
   })
 })
 

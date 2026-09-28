@@ -45,7 +45,7 @@ function exposedEmoji(root: HTMLElement): string[] {
   return out
 }
 
-function renderClient() {
+function renderClient(participants: { id: string; name: string | null; avatar_url: string | null }[] = []) {
   return render(
     <LiveRegionProvider>
       <OnboardingClient
@@ -54,7 +54,7 @@ function renderClient() {
         userName="김지수"
         userAvatar=""
         supporters={[{ id: 's1', name: '박지원', avatar_url: null }]}
-        participants={[]}
+        participants={participants}
       />
     </LiveRegionProvider>,
   )
@@ -85,6 +85,20 @@ describe('P6-C 장식 이모지 — 온보딩 프로필 설정 (onboarding-profi
     expect(picked).toHaveAttribute('aria-pressed', 'true')
     // ✓ 는 이모지 범주 밖이라 따로 — 선택 상태는 aria-pressed 가 전달하므로 이름에 섞이지 않는다
     expect(picked).not.toHaveAccessibleName(/✓/)
+    expect(exposedEmoji(container)).toEqual([])
+  })
+
+  it('프로필 스텝(지원자)에서 담당 당사자 선택 표시 ✓ 는 aria-hidden 이라 버튼 이름에 섞이지 않는다', async () => {
+    // 지원자 경로는 당사자 목록이 있어야 그려진다 — 당사자 경로 ✓ 와 별개의 렌더 가지(#201 검증 돌연변이 P3 생존 → 보강)
+    const user = userEvent.setup()
+    const { container } = renderClient([{ id: 'p1', name: '김지수', avatar_url: null }])
+    await user.click(screen.getByRole('button', { name: /당사자의 예산 관리를 지원해요/ }))
+    await user.click(screen.getByRole('button', { name: /김지수/ }))
+    const picked = screen.getByRole('button', { name: /김지수/ })
+    expect(picked).toHaveAttribute('aria-pressed', 'true')
+    // ✓(U+2713)는 Extended_Pictographic 밖이라 exposedEmoji 가 못 잡는다 → 이름·aria-hidden 을 직접 단언
+    expect(picked).not.toHaveAccessibleName(/✓/)
+    expect(screen.getByText('✓').closest('[aria-hidden="true"]')).not.toBeNull()
     expect(exposedEmoji(container)).toEqual([])
   })
 
