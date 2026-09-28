@@ -3,7 +3,7 @@ import { deidentify, reidentify, type PiiTerm } from '@/utils/deidentify'
 
 /**
  * 가명처리 게이트웨이 — test-first 골든 계약 (W 작성, U 초록화).
- * 설계: Plan&Source/goala_privacy_deid_assignment_W.md §1 · 로드맵 harness-plan §8.3 B5.
+ * 설계: Plan&Source/goala_privacy_deid_assignment_W.md §1 · 로드맵 harness-plan v2 §9(로드맵 요약, 구 v1 §8.3) B5.
  *
  * AI(callAI) 로 텍스트를 보내기 전 이름·기관명 등 식별자를 안정 토큰으로 치환하고,
  * AI 응답을 원문으로 복원한다. 토큰 맵은 요청 스코프 메모리에만 두고 저장·로깅하지 않는다(설계 §1-1).
