@@ -48,6 +48,8 @@
 - 소규모 예외 정의: 경로·주석·오타·현황 갱신 같은 **동작을 바꾸지 않는** 편집. 허용했으면 PR 본문·리포트 LANE_NOTES 에 남긴다.
 - 못 막는 것: Bash 편집(`sed -i`·리다이렉트) → 에이전트 본문 규율. 프로젝트/플러그인 훅은 폴더 trust 후 실행.
 - 이스케이프: `LANE_GUARD_DISABLE=1`(전부) · `LANE_GUARD_MAIN=off`(ask 만).
+- **v0.3.0 강화(2026-09-28, verify-pr #198 지적 반영)**: 레인 판정은 대상 파일이 속한 worktree 의 `harness.json` 기준 · 워커는 자기 worktree 밖(다른 worktree·메인 체크아웃) 편집 차단 · 설정 없으면 워커는 내장 기본 레인, 설정 파싱 실패면 워커 차단(fail-closed)·메인 세션 ask · `agent_type` 은 접두 포함 정확 일치(`harness:w-verifier` 만 허용) · `**/` 는 0개 이상 디렉터리(`src/x.test.ts` 도 W 레인).
+- **격리 worktree 는 origin/main 기준**: 서브에이전트가 받는 worktree 에는 main 의 파일만 있다. 따라서 `harness.json` 이 main 에 머지돼야 워커가 프로젝트 레인의 보호를 받는다(그 전엔 기본 레인). 라이브 실증(2026-09-28, `harness:u-worker`): main 에 아직 설정이 없어 v0.2.0 가드가 fail-open 했고, 워커는 규율대로 두 편집을 되돌려 클린 종료 — 이 관찰이 v0.3.0 의 '설정 없음 = 기본 레인' 규칙의 근거다.
 
 ## 5. 검증 티어 (정본 `.claude/harness.json` `tiers`)
 
@@ -57,13 +59,15 @@
 | small | 코드 ≤ 12파일·≤ 400줄, 고위험 경로 없음 | `harness:w-verifier` 1건(돌연변이) | approve + 사람 승인 |
 | high | rls(`supabase/**/*rls*.sql`·`12_audit_log`) · auth(`src/proxy.ts`·`(auth)/`·view-as·supabase 클라이언트) · privacy(`deidentify`·`ai.ts`·OCR·요약·처리방침) · audit · money(정산·거래·copay) · gate(CI·settings·harness.json) · SQL 정책/DEFINER/GRANT · 대형 · 당사자 문구 | `/harness:verify-pr N` | approve(-with-conditions 해소) + 사람 승인 |
 
-경계: 계약 PR 제외 · 문자열만 바꾼 인프라 파일은 사람 확인 + 증거로 하향 가능(결정 기록) · 재검증은 `--lens` 로 생존 렌즈만.
+경계: 계약 PR 제외 · 문자열만 바꾼 인프라 파일은 사람 확인 + 증거로 하향 가능(머지 승인과 같은 AskUserQuestion 안에서만) · 재검증은 `--lens` 로 생존 렌즈만 · 고위험군은 문서 판정보다 우선(`CLAUDE.md`·`.claude/skills/**`·`docs/harness-plan.md`·PR 템플릿·`scripts/agent-sync.sh` 는 .md/.sh 여도 gate) · src 를 바꾸지 않는 문서·설정 PR 은 돌연변이 대신 설정 계약(`src/test/harnessConfig.test.ts`)으로 조인다.
 
 ## 6. 사람 자리 절차 3종 (U 세션에서도)
 
 - **머지**: `gh pr checks N` green · `VERIFY-REPORT` 코멘트의 `head=` 가 현재 head · Manual-Ops 목록 → 오케스트레이터 브리핑(PR·head·티어·판정·Manual-Ops·되돌림) →
   AskUserQuestion **PR 1건·head 1개당 승인 1회** → BEHIND 면 `gh pr update-branch N` → CI 재확인 → `gh pr merge N --squash --delete-branch`(플러그인 훅이 한 번 더 묻는다) →
   계약 PR 닫기 → `scripts/agent-sync.sh post w "[MERGED by user] #N …"`. `--admin`·일괄 승인·auto-merge 금지. 첫 실사용 = 이 문서의 PR.
+  **스택 PR**: base 브랜치를 삭제하기 전에 의존 PR 을 `gh api -X PATCH …/pulls/<N> -f base=main` 으로 재타깃한다 — #197 머지 시 base 삭제로 #198 이 자동 종료돼 #199 로 재개설한 사례.
+  **기록 ≠ 인증**: 채널(`w.md`)·`decisions.md`·`qa-runs/` 는 에이전트도 쓸 수 있는 기록이다. 승인·티어 하향·Manual-Ops 실행 시점은 세션 안 AskUserQuestion 으로만 성립하고, 기록은 그 결과를 남기는 용도다(공유 파일로 지정해 워커 편집은 차단).
 - **QA**: `docs/release/qa-runs/` 규약(README). 사람이 실행, 오케스트레이터가 준비·기록. 브라우저는 관찰·증거 수집만. `post w "[QA by user] …"`.
 - **결정**: AskUserQuestion → `docs/release/decisions.md` 행 + `post w "[DECISION by user] …"`. 수렴 프로토콜 폐기.
 

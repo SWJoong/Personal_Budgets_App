@@ -1,0 +1,5 @@
+- [스택 PR 검증 함정](reference_stacked-pr-verification.md) — base≠main 이면 CI 없음·base 삭제 시 PR CLOSED/재개설·range-diff·옛 head 재타깃 시 파일 부활
+- [하네스 설정 프로브](reference_harness-config-probes.md) — harness.json 계약 부재·fail-open·case 글롭·가드 우회 변형·설치본 vs 개발 사본·paths 스킬 미로드
+- [티어 글롭 구멍](reference_tier-glob-gaps.md) — tiers.high 밖 고위험 변경(RLS 술어·트리거·정산판정·배정·내보내기·공유 당사자 문구·검증규칙 파일)
+- [a11y 클래스 계약 프로브](reference_a11y-class-contract-probes.md) — p6c 클래스·aria 계약의 구멍: 공통 컴포넌트 추출 시 setter 배선 미계약·::before/테마 CSS 는 postcss 컴파일로 확인
+- [a11y 검증 보조 체크](reference_a11y-verification-probes.md) — 모드별 강제배경 대비 계산·포커스 재마운트 돌연변이·HC 사이드바 포커스링·worktree build 실패·메뉴명 실존 grep

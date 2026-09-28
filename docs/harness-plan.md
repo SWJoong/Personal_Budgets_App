@@ -38,7 +38,7 @@
 - **U 레인**: 그 외 `src/` · `supabase/` 빌드 SQL · `src/types/database.ts` · `.github/workflows/` · 빌드설정 · `docs/release/` → `harness:u-worker`.
 - **공유·인프라**: `CLAUDE.md` · `.claude/harness.json` · `.claude/settings.json` · `.github/pull_request_template.md` · `scripts/agent-sync.sh` → 오케스트레이터·사람만(양쪽 워커 훅 차단).
 - 이 repo 특이점: 테스트가 `src/` 에 co-located 라 **파일 접미사**로 가른다(vitest include `src/**/*.{test,spec}.{ts,tsx}`).
-- 패턴은 플러그인 `scripts/lane-guard.sh` 가 강제하고 `lane-guard-selftest.sh` 가 대조한다(레인 = 코드 = 테스트).
+- 패턴은 플러그인 `scripts/lane-guard.sh` 가 강제하고, 플러그인 selftest(픽스처)와 **이 저장소의 정적 계약 `src/test/harnessConfig.test.ts`**(W 레인, `harness:w-contract-author` 저작 — harness.json 파싱·필수 레인/티어·CLAUDE.md 표와의 정합·대표 경로 매칭)가 대조한다(레인 = 코드 = 테스트).
 
 ---
 

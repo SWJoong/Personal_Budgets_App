@@ -175,6 +175,7 @@ export async function myAction(formData: FormData) {
 - **버튼**: 최소 44×44px 터치 영역
 - **언어**: 쉬운 말 사용, 전문 용어 최소화
 - **테마**: 7가지 색상 테마 (`useAccessibility` 훅)
+- **검증 체크(w-verifier·QA 공통)**: 키보드 도달 · 포커스 생존(재마운트·달 이동·모달 복원) · 접근 가능한 이름 · 라이브 영역 단일 채널(같은 문구 재안내는 새 노드, 보이는 상자는 live 아님) · 대비 4.5:1 · 터치 44px · `jsx-a11y` 오류 0 · 당사자 노출 문구 easy-read ≥ 70
 
 ---
 
@@ -245,8 +246,9 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
   오케스트레이터는 소규모 예외(경로·주석·오타·현황)만 직접 — 플러그인 훅이 확인을 묻는다.
 - **U 레인**(그 외 `src/` · `supabase/` 빌드 SQL·`migrations/` · `src/types/database.ts` · `.github/workflows/` · 빌드설정 · `docs/release/`) → `harness:u-worker` 컨텍스트.
   오케스트레이터가 직접 구현하면 그 기능의 계약·검증은 위임한다.
-- **공유·인프라**(`CLAUDE.md` · `.claude/harness.json` · `.claude/settings.json` · `.github/pull_request_template.md` · `scripts/agent-sync.sh`) → 오케스트레이터·사람만(양쪽 워커 훅 차단).
-- 가드가 막는 것: 워커의 Edit/Write(플러그인 `lane-guard.sh`). 못 막는 것: Bash 편집(규율로 금지). **main 직접 push 금지** — 코드는 항상 PR·CI 경유.
+- **공유·인프라**(`CLAUDE.md` · `AGENTS.md` · `.mcp.json` · `.claude/harness.json` · `.claude/settings*.json` · `.claude/agents|workflows|commands/**` · `.github/pull_request_template.md` · `scripts/agent-sync.sh` · `docs/release/decisions.md` · `docs/release/qa-runs/**`) → 오케스트레이터·사람만(양쪽 워커 훅 차단).
+- 가드가 막는 것: 워커의 Edit/Write(플러그인 `lane-guard.sh` — 대상 파일이 속한 worktree 의 `harness.json` 기준, 워커는 자기 worktree 밖 편집 불가, 설정 없으면 기본 레인·설정 깨지면 차단). 못 막는 것: Bash 편집(규율로 금지). **main 직접 push 금지** — 코드는 항상 PR·CI 경유(훅이 다시 묻는다).
+- 서브에이전트의 격리 worktree 는 origin/main 기준으로 생기므로 **`harness.json` 이 main 에 머지돼 있어야** 워커가 이 레인의 보호를 받는다.
 
 ### 상태 동기화 (agent-sync = 저널 + 사람 자리 기록)
 - `u.md` = 오케스트레이터 저널·다음 세션 인계문(턴 종료·웨이브 취합 시 `post u` 1건). `w.md` = 사람 자리 기록(머지·QA·결정, 어느 머신에서든 `post w`).
@@ -268,13 +270,15 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 | **T0 docs** | 변경이 `docs/**`·`*.md` 뿐 | CI + 사람 읽기 | 사람 승인 |
 | **T1 small** | 코드 ≤ 12파일·≤ 400줄, 고위험 경로 없음 | `harness:w-verifier` 1건(돌연변이 포함) | approve + 사람 승인 |
 | **T2 high** | rls(`supabase/**/*rls*.sql`·`12_audit_log`) · auth(`src/proxy.ts`·`(auth)/`·view-as·`src/utils/supabase/**`) · privacy(`deidentify*`·`ai.ts`·OCR·요약·처리방침) · audit · money(정산·거래·copay) · gate(CI·settings·harness.json) · SQL diff 에 POLICY/DEFINER/GRANT · 대형 · 당사자 문구(`src/app/(participant)/**`) | `/harness:verify-pr N` 팬아웃(≤14) | approve(-with-conditions 해소) + 사람 승인 |
-- 티어는 PR 본문 `- 검증 티어:` 에 선언한다. 사람은 올릴 수만 있고, 하향은 결정 기록이 필요하다. 계약 PR(`[HANDOFF→U]`)은 티어 대상이 아니다.
+- 판정 정본은 `.claude/harness.json` `tiers`(플러그인 `pr-risk-tier.sh <PR>` 가 계산) — 위 표는 요약이다. 티어는 PR 본문 `- 검증 티어:` 에 선언하고 게이트가 선언·계산 중 높은 쪽을 적용한다. 하향은 머지 승인과 같은 AskUserQuestion 안에서만 인정(채널·결정 로그 기록만으로는 불가). 계약 PR(`[HANDOFF→U]`)은 티어 대상이 아니다.
+- src 를 바꾸지 않는 문서·설정 PR 은 돌연변이 검증 대신 **설정 계약**(`src/test/harnessConfig.test.ts`: harness.json ↔ CLAUDE.md 레인·티어 정합)으로 조인다.
 - 재검증은 `/harness:verify-pr N --lens <렌즈>` 로 생존 finding 이 있던 렌즈만(전체 재실행 금지).
 
 ### 사람 자리(W) 절차 — U 세션에서도 수행
 - **머지**: CI green(`quality-check`·`db-verify`) · 검증 리포트(`VERIFY-REPORT` 코멘트의 head = 현재 head) · Manual-Ops 목록 확인 → 오케스트레이터 브리핑 →
-  **PR 1건·head 1개당 사용자 승인 1회**(AskUserQuestion) → BEHIND 면 `gh pr update-branch N` → CI 재확인 → `gh pr merge N --squash --delete-branch`(플러그인 훅이 한 번 더 묻는다) →
-  계약 PR 닫기 → `post w "[MERGED by user] #N …"`. `--admin`·일괄 승인·auto-merge 금지.
+  **PR 1건·head 1개당 사용자 승인 1회**(AskUserQuestion) → 플러그인 `pr-merge-gate.sh N merge --approved-by "user via U <시각>"`(승인 코멘트 → BEHIND 면 update-branch·CI 재확인 → head 검증 → squash 머지 → 계약 PR 닫기 → `post u [MERGED]`; 훅이 한 번 더 묻는다) →
+  `post w "[MERGED by user] #N …"`. `--admin`·일괄 승인·auto-merge 금지.
+  **스택 PR**: 머지할 PR 위에 다른 PR 이 스택돼 있으면 base 브랜치를 삭제하기 **전에** `gh api -X PATCH repos/{owner}/{repo}/pulls/<의존PR> -f base=main` 으로 재타깃한다(삭제되면 의존 PR 이 자동으로 닫힌다 — #198 사례).
 - **QA**: 사람이 실행, 오케스트레이터가 준비(체크리스트 `docs/release/16`·프리뷰·재현 절차)와 기록 — `docs/release/qa-runs/` + `post w "[QA by user] …"`. 브라우저는 관찰·증거 수집만.
 - **결정**: 결정 질문은 오케스트레이터만 → AskUserQuestion → `docs/release/decisions.md` 행 + `post w "[DECISION by user] …"`. 수렴 프로토콜(STATUS PROPOSE/AGREE/FINAL)은 폐기.
 

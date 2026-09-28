@@ -1,7 +1,8 @@
 {
-  "$comment": "Personal_Budgets_App 하네스 정본 — 플러그인 harness 의 lane-guard·agent-sync·wave-plan·verify-pr 이 읽는다. 글롭은 셸 case 의미론(*·** 가 / 를 가로지름). CLAUDE.md 「레인 규칙」·「검증 티어」와 1:1 이어야 한다.",
+  "$comment": "Personal_Budgets_App 하네스 정본 — 플러그인 harness(>=0.3.0)의 lane-guard·agent-sync·wave-plan·pr-risk-tier·pr-merge-gate·verify-pr 이 읽는다. 글롭은 셸 case 의미론(*·** 가 / 를 가로지르고, '**/' 는 0개 이상 디렉터리) — CLAUDE.md 「레인 규칙」·「검증 티어」는 이 파일의 요약이며 판정은 여기가 정본. 정적 계약: src/test/harnessConfig.test.ts(W 레인).",
   "project": "Personal_Budgets_App",
   "baseBranch": "main",
+  "plugin": { "name": "harness", "minVersion": "0.3.0", "source": "SWJoong/claude-harness" },
   "roles": { "author": "u", "verifier": "w", "seat": "w" },
   "roleSkills": { "u": ["backend", "frontend"], "w": ["qa", "pl", "easy-read-review"] },
   "lanes": {
@@ -14,7 +15,14 @@
       ".claude/skills/**",
       "docs/harness-plan.md"
     ],
-    "shared": ["CLAUDE.md", ".claude/harness.json", ".claude/settings.json", ".github/pull_request_template.md", "scripts/agent-sync.sh"]
+    "shared": [
+      "CLAUDE.md", "AGENTS.md", ".mcp.json",
+      ".claude/harness.json", ".claude/settings.json", ".claude/settings.local.json",
+      ".claude/agents/**", ".claude/workflows/**", ".claude/commands/**",
+      ".github/pull_request_template.md",
+      "scripts/agent-sync.sh",
+      "docs/release/decisions.md", "docs/release/qa-runs/**"
+    ]
   },
   "gate": {
     "contract": "npx vitest run {file}",
@@ -26,19 +34,20 @@
   "tiers": {
     "docs": ["docs/**", "**/*.md"],
     "high": {
-      "rls": ["supabase/**/*rls*.sql", "supabase/seoul/12_audit_log.sql"],
-      "auth": ["src/proxy.ts", "src/app/(auth)/**", "src/app/actions/demoAuth.ts", "src/app/actions/viewAs.ts", "src/app/actions/admin.ts", "src/utils/supabase/**", "src/utils/viewAsCookies.ts", "src/utils/superAdmin.ts"],
-      "privacy": ["src/utils/deidentify.ts", "src/utils/aiDeidentify.ts", "src/utils/ai.ts", "src/app/actions/ocr.ts", "src/app/actions/easyReadSummary.ts", "src/app/actions/activitySuggestion.ts", "src/content/privacyPolicy.ts"],
+      "rls": ["supabase/**/*rls*.sql", "supabase/seoul/01_core.sql", "supabase/seoul/03_seoul_schema.sql", "supabase/seoul/06_storage.sql", "supabase/seoul/12_audit_log.sql"],
+      "auth": ["src/proxy.ts", "src/app/(auth)/**", "src/app/api/**", "src/app/actions/demoAuth.ts", "src/app/actions/viewAs.ts", "src/app/actions/admin.ts", "src/utils/supabase/**", "src/utils/viewAsCookies.ts", "src/utils/superAdmin.ts"],
+      "privacy": ["src/utils/deidentify.ts", "src/utils/aiDeidentify.ts", "src/utils/ai.ts", "src/utils/easyReadSummary.ts", "src/utils/activitySuggestion.ts", "src/utils/staffReviewSuggestion.ts", "src/app/actions/ocr.ts", "src/app/actions/easyReadSummary.ts", "src/app/actions/activitySuggestion.ts", "src/app/actions/staffReviewSuggestion.ts", "src/content/privacyPolicy.ts", "src/app/privacy/**"],
       "audit": ["src/utils/audit*.ts", "src/app/(supporter)/admin/audit/**"],
-      "money": ["src/app/actions/settlement.ts", "src/app/actions/serviceUsage.ts", "src/utils/settlement*.ts", "src/utils/orgLedger.ts", "src/utils/ledgerCsv.ts", "src/utils/copay.ts", "src/utils/budgetByDomain.ts", "src/app/(supporter)/supporter/settlements/**", "src/app/(supporter)/supporter/transactions/**"],
-      "gate": [".github/workflows/**", ".claude/settings.json", ".claude/harness.json"]
+      "money": ["src/app/actions/settlement.ts", "src/app/actions/serviceUsage.ts", "src/app/actions/ruleCheck.ts", "src/app/api/export/**", "src/utils/settlement*.ts", "src/utils/orgLedger.ts", "src/utils/ledgerCsv.ts", "src/utils/copay.ts", "src/utils/budgetByDomain.ts", "src/app/(supporter)/supporter/settlements/**", "src/app/(supporter)/supporter/transactions/**"],
+      "storage": ["src/app/actions/activityPhoto.ts", "src/app/actions/document.ts", "src/utils/supabase/storage.ts"],
+      "gate": [".github/workflows/**", ".github/pull_request_template.md", ".claude/settings.json", ".claude/harness.json", ".claude/agents/**", ".claude/workflows/**", ".claude/commands/**", ".claude/skills/**", ".mcp.json", "CLAUDE.md", "docs/harness-plan.md", "scripts/agent-sync.sh"]
     },
-    "sqlPolicyRegex": "(CREATE|ALTER|DROP) POLICY|SECURITY DEFINER|GRANT|REVOKE|ROW LEVEL SECURITY",
+    "sqlPolicyRegex": "(CREATE|ALTER|DROP) POLICY|SECURITY DEFINER|GRANT|REVOKE|ROW LEVEL SECURITY|CREATE (OR REPLACE )?FUNCTION|CREATE (OR REPLACE )?TRIGGER|seoul_(can_access|is_staff_for|is_admin|is_self)|seoul_check_[a-z_]+_path",
     "large": { "files": 12, "lines": 400 },
-    "participantCopyGlobs": ["src/app/(participant)/**"]
+    "participantCopyGlobs": ["src/app/(participant)/**", "src/components/**", "src/utils/easyTerms.ts", "src/content/**"]
   },
   "verify": {
-    "lenses": ["requirements-types", "security-rls", "a11y-copy", "tests-mutation"],
+    "lenses": ["requirements-types", "security-rls", "a11y-copy", "tests-mutation", "docs-consistency"],
     "refuters": 2,
     "refuterModel": "sonnet"
   },
@@ -46,5 +55,9 @@
     "branch": "agent-sync",
     "roles": "w u",
     "seatPrefixes": ["[DECISION by user]", "[QA by user]", "[MERGED by user]"]
+  },
+  "qa": {
+    "dir": "docs/release/qa-runs",
+    "checklists": ["docs/release/16-functional-qa-checklist.md", "docs/release/08-persona-qa-findings.md", "docs/release/07-a11y-kwcag-1st-eval.md"]
   }
 }
