@@ -234,8 +234,8 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 | 역할 | 실행 주체 | 편집 범위 | 검증 규칙 |
 |---|---|---|---|
 | 오케스트레이터(U 세션) | 사용자와 대화하는 메인 컨텍스트 | 공유·인프라·`docs/release/` + **소규모 예외**(W 레인은 훅이 묻는다) | 자기 PR 사인오프 금지, 검증은 위임 |
-| `harness:u-worker` | sonnet · worktree · background · 스킬 backend/frontend | U 레인만(훅 차단) | 계약을 초록으로만 |
-| `harness:w-contract-author` | opus · worktree · background · 스킬 qa | W 레인만(훅 차단) | RED·그린어빌리티·tsc 확인 |
+| `harness:u-worker` | sonnet · worktree · background · 스킬 backend/frontend · user 메모리 | U 레인만(훅 차단) | 계약을 초록으로만 |
+| `harness:w-contract-author` | opus · worktree · background · 스킬 qa·pl·easy-read-review(roleSkills.w) · user 메모리 | W 레인만(훅 차단) | RED·그린어빌리티·tsc 확인 |
 | `harness:w-verifier` · `/harness:verify-pr` | opus · Edit/Write 불가 · 스킬 qa/pl/easy-read-review | 없음 | 티어별 독립 검증 리포트 |
 | **사람 자리(W)** | 사용자 | 전부(권위) | QA · 머지 승인 · 결정 |
 
@@ -271,7 +271,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 |---|---|---|---|
 | **T0 docs** | 변경이 `docs/**`·`*.md` 뿐 — 단 gate 군의 규칙 파일은 `.md` 여도 high | CI + 사람 읽기 | 사람 승인 |
 | **T1 small** | 코드 ≤ 12파일·≤ 400줄, 고위험 경로 없음 | `harness:w-verifier` 1건(돌연변이 포함) | approve + 사람 승인 |
-| **T2 high** | rls(`supabase/**/*rls*.sql`·`01_core`·`03_seoul_schema`·`06_storage`·`12_audit_log`) · auth(`src/proxy.ts`·`(auth)/`·`src/app/api/**`·view-as·view-as 쓰기 차단 액션·`src/utils/supabase/**`) · privacy(`deidentify*`·`ai.ts`·OCR·요약·제안·처리방침) · audit(`audit*`·감사 기록 액션·supervision) · money(정산·거래·copay·ruleCheck·내보내기) · storage(활동사진·서류·신청서 업로드·갤러리·`src/utils/supabase/storage.ts`) · gate(CI·settings·harness.json·에이전트/워크플로/명령/스킬/에이전트 메모리·CLAUDE.md·harness-plan·PR 템플릿·agent-sync — `.md` 여도) · SQL diff 에 POLICY/DEFINER/GRANT/FUNCTION/TRIGGER · 대형(> 12파일 또는 > 400줄) · 당사자 문구(`participantCopyGlobs` 경로에 한글 문구가 추가될 때 — 접근성만 바꾼 변경은 small 이니 필요하면 선언을 high 로) | `/harness:verify-pr N` 팬아웃(에이전트 2 + 렌즈 × (1 + 반박자), 현재 설정 17) | approve(-with-conditions 해소) + 사람 승인 |
+| **T2 high** | rls(`supabase/**/*rls*.sql`·`01_core`·`03_seoul_schema`·`06_storage`·`12_audit_log`) · auth(`src/proxy.ts`·`(auth)/`·`src/app/api/**`·view-as·view-as 쓰기 차단 액션·`src/utils/supabase/**`) · privacy(`deidentify*`·`ai.ts`·OCR·요약·제안·처리방침) · audit(`audit*`·감사 기록 액션·supervision) · money(정산·거래·copay·ruleCheck·내보내기) · storage(활동사진·서류·신청서 업로드·갤러리·`src/utils/supabase/storage.ts`) · gate(CI·settings·harness.json·에이전트/워크플로/명령/스킬/에이전트 메모리·CLAUDE.md·AGENTS.md·harness-plan·PR 템플릿·agent-sync — `.md` 여도) · SQL diff 에 POLICY/DEFINER/GRANT/FUNCTION/TRIGGER · 대형(> 12파일 또는 > 400줄) · 당사자 문구(`participantCopyGlobs` 경로에 한글 문구가 추가될 때 — 접근성만 바꾼 변경은 small 이니 필요하면 선언을 high 로) | `/harness:verify-pr N` 팬아웃(에이전트 2 + 렌즈 × (1 + 반박자), 현재 설정 17) | approve(-with-conditions 해소) + 사람 승인 |
 - 판정 정본은 `.claude/harness.json` `tiers`(플러그인 `pr-risk-tier.sh <PR>` 가 계산) — 위 표는 요약이다. 티어는 PR 본문 `- 검증 티어:` 에 `docs`·`small`·`high` 중 한 단어로 선언하고 게이트가 선언·계산 중 높은 쪽을 적용한다. **계산 티어 아래로 내리는 수단은 없다** — 계산이 과하면 `.claude/harness.json` `tiers` 를 고치는 PR(gate 티어)로 조정한다(채널·결정 로그 기록으로는 내려가지 않는다). 계약 PR(`[HANDOFF→U]`)은 티어 대상이 아니다.
 - src 를 바꾸지 않는 문서·설정 PR 은 돌연변이 검증 대신 **설정 계약**(`src/test/harnessConfig.test.ts`: harness.json ↔ CLAUDE.md 레인·티어 정합)으로 조인다.
 - 재검증은 `/harness:verify-pr N --lens <렌즈>` 로 생존 finding 이 있던 렌즈만(전체 재실행 금지).
