@@ -1485,3 +1485,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-28T02:07Z] U
 [HANDOFF→W] #200 test/copay-parity(T1 small): copay 골든 안착+TS↔DB 패리티 가드(22 tests, 돌연변이 22종 RED) — 독립검증 2회 PASS. #201 fix/a11y-touch-emoji-reapply(T2 high·대형): f13f641 미반영분 재반영(44px·이모지 aria-hidden)+사이드바 하위메뉴 토글 44px·이름라벨·aria-controls+더보기 스위치 SettingSwitch(다크·고대비 켜짐/꺼짐 색 소실 수정) — 독립검증 2회(1차 CR medium→수정→PASS) + /harness:verify-pr 201 실행중. 머지 후 원격 claude/db-ontology-rdf-format-tnf0qv·feat/kwcag-a11y-foundation 삭제 예정.
 
+## [2026-09-28T05:03Z] U
+[SYNC] #199 head fbd70a8: 계약 PR #202(harnessConfig.test.ts 13 테스트, w-contract-author) fast-forward 병합 → 첫 실행 1 RED = CLAUDE.md T2 요약 storage 누락(실제 드리프트) → 48b243b 로 해소. 게이트 로컬 green(계약 13/13·tsc·lint 오류 0·test 156/1069·build). 설치본 실측: 로컬 마켓플레이스도 캐시 사본 실행 — 세션은 0.1.0 이었음 → 0.3.0 update(README 정정 9dd33ed). /harness:verify-pr 199 재검증(5렌즈 — 이전 4렌즈 모두 생존 finding + docs-consistency 미실행) 진행 중. 플러그인 0.3.1 = SWJoong/claude-harness#1(에이전트 메모리 자기 폴더만, selftest 84) 독립 검증 워크플로 진행 중. 머지 승인은 두 검증 완료 후 브리핑.
+
