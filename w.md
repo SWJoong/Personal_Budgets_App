@@ -583,3 +583,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-14T14:17Z] W
 [W검증] PR #169 P0-B 판정=changes-requested→반영완료. 읽기감사·purge 자체는 요구·타입·보안 통과(PG15 실측 green: 안전레일 365/NULL·service_role전용·append-only 유일DELETE). ★막는항목[높음]=CI db-verify RED(service_role 롤 부재)—12_audit_log.sql은 프로덕션정본이라 불변, 테스트하네스 verify_00_auth_stub.sql에 anon·service_role 추가로 해소(커밋 b3ce456). W산출물 통합: auditReadAccess.test.ts(8)·verify_audit_log P9~P12. 판단반영[보통 검토큐 로그증폭·낮음 receipt 스코프]=docs/release/12 §6 백로그(fast-follow). CI 재실행중.
 
+## [2026-09-28T02:14Z] W (via U)
+[DECISION by user] D-20260928-01 PR #199 검증 리포트: 닫힌 #198(head 5d51ad1) 대상 /harness:verify-pr 결과를 #199(head 2cb5ba9, main 위 리베이스, diff 내용 동일 — hunk 오프셋 1줄만 상이·md5 대조)에 인정. 헤더 head 는 2cb5ba9 로 기록, 재검증 생략. + D-20260928-02 플러그인 harness 를 private SWJoong/claude-harness 로 생성·푸시(로컬 마켓플레이스는 개발용 유지). (사용자 결정, U 세션 기록)
+
