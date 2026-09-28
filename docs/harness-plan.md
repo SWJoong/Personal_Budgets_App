@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | 오케스트레이터 | U 세션 메인 컨텍스트(사용자와 대화) | 조율 | 설계·계획은 `/ux-ui` `/pm` `/pl` 을 사용자와 함께 | 공유·인프라·`docs/release/` + 소규모 예외 |
 | `harness:u-worker` | 서브에이전트(sonnet · worktree · background) | 구현·배포 | backend · frontend | U 레인 |
-| `harness:w-contract-author` | 서브에이전트(opus · worktree · background) | 설계·계약 | qa | W 레인 |
+| `harness:w-contract-author` | 서브에이전트(opus · worktree · background) | 설계·계약 | qa · pl · easy-read-review(`roleSkills.w` 공유) | W 레인 |
 | `harness:w-verifier` · `/harness:verify-pr` | 서브에이전트(opus · Edit/Write 불가) | 검증 | qa · pl · easy-read-review | 없음(리포트만) |
 | **사람 자리(W)** | 사용자 — 어느 세션·머신에서든 | QA · 머지 · 결정 | — | 전부(권위) |
 
@@ -33,12 +33,12 @@
 
 ## 3. 레인 (충돌 방지) — 정본 `.claude/harness.json`
 
-- **W 레인**: `Plan&Source/**` · `**/verify_*.sql` · `src/**/*.{test,spec}.{ts,tsx}` · `src/test/**` · `vitest.config.ts` · `.claude/skills/**` · `docs/harness-plan.md`
-  → `harness:w-contract-author` 컨텍스트만. 오케스트레이터는 소규모 예외(경로·주석·오타·현황)만 직접 — 플러그인 훅이 확인을 묻는다.
-- **U 레인**: 그 외 `src/` · `supabase/` 빌드 SQL · `src/types/database.ts` · `.github/workflows/` · 빌드설정 · `docs/release/` → `harness:u-worker`.
-- **공유·인프라**: `CLAUDE.md` · `.claude/harness.json` · `.claude/settings.json` · `.github/pull_request_template.md` · `scripts/agent-sync.sh` → 오케스트레이터·사람만(양쪽 워커 훅 차단).
-- 이 repo 특이점: 테스트가 `src/` 에 co-located 라 **파일 접미사**로 가른다(vitest include `src/**/*.{test,spec}.{ts,tsx}`).
-- 패턴은 플러그인 `scripts/lane-guard.sh` 가 강제하고, 플러그인 selftest(픽스처)와 **이 저장소의 정적 계약 `src/test/harnessConfig.test.ts`**(W 레인, `harness:w-contract-author` 저작 — harness.json 파싱·필수 레인/티어·CLAUDE.md 표와의 정합·대표 경로 매칭)가 대조한다(레인 = 코드 = 테스트).
+- **어디를 보나**: 레인 목록 요약 = `CLAUDE.md` 「레인 규칙」, 판정 정본 = `.claude/harness.json` `lanes`. 이 문서는 글롭을 다시 나열하지 않는다
+  — 요약이 둘이면 한쪽이 조용히 낡는다(#199 재검증에서 이 절의 공유 목록이 5개로 멈춰 있던 사례). 설정 계약은 CLAUDE.md 요약만 대조한다.
+- **세 레인의 뜻**: W = 계약·검증·설계(`harness:w-contract-author` 컨텍스트만 — 오케스트레이터는 소규모 예외(경로·주석·오타·현황)만 직접, 플러그인 훅이 확인을 묻는다) ·
+  U = 그 밖의 구현·빌드 SQL·빌드설정·릴리스 문서(`harness:u-worker`) · 공유·인프라 = 하네스 규칙·설정·기록·에이전트 메모리(오케스트레이터·사람만, 양쪽 워커 훅 차단).
+- 이 repo 특이점: 테스트가 `src/` 에 co-located 라 **파일 접미사**(`.test`·`.spec`)로 가른다(vitest include 와 같은 규칙).
+- 패턴은 플러그인 `scripts/lane-guard.sh` 가 강제하고, 플러그인 selftest(픽스처)와 **이 저장소의 정적 계약 `src/test/harnessConfig.test.ts`**(W 레인, `harness:w-contract-author` 저작 — harness.json 파싱·필수 레인/티어/채널/게이트 값·CLAUDE.md 요약과의 양방향 정합·군별 대표 경로·SQL 정책 정규식 샘플)가 대조한다(레인 = 코드 = 테스트).
 
 ---
 
@@ -86,13 +86,14 @@ main ─────────────────────────
 
 ## 8. 검증 티어 — 정본 `.claude/harness.json` `tiers`
 
-| 티어 | 조건(하나라도 해당하면 상위) | 검증 |
-|---|---|---|
-| **docs** | `docs/**` · `*.md` 만 | CI + 사람 읽기 |
-| **small** | 코드 ≤ 12파일 · ≤ 400줄, 고위험 없음 | `harness:w-verifier` 1건(돌연변이 포함) |
-| **high** | rls · auth · privacy · audit · money · gate 경로군 / SQL 정책·DEFINER·GRANT / 대형 / 당사자 문구(`src/app/(participant)/**`) | `/harness:verify-pr N` (재검증은 `--lens`) |
-
-계약 PR(`[HANDOFF→U]`)은 티어 대상이 아니다. 티어 하향은 결정 기록이 필요하다.
+- **어디를 보나**: 티어 요약(조건·검증·머지) = `CLAUDE.md` 「검증 티어」, 판정 정본 = `.claude/harness.json` `tiers`(플러그인 `pr-risk-tier.sh` 가 계산).
+  이 문서는 경로군·임계·정규식을 다시 적지 않는다 — §3 과 같은 이유(요약 이중화 = 드리프트, #199 재검증에서 이 표의 storage 군 누락 사례).
+- **세 티어의 뜻**: docs = 문서만 바뀜(CI + 사람 읽기) · small = 고위험이 아닌 코드(`harness:w-verifier` 1건, 돌연변이 포함) ·
+  high = 고위험 경로군·SQL 정책 diff·대형·당사자 문구 중 하나라도(`/harness:verify-pr N`, 재검증은 `--lens`).
+- 티어는 PR 본문 `- 검증 티어:` 에 선언하고 게이트가 선언·계산 중 높은 쪽을 적용한다. **계산 티어 아래로 내리는 수단은 없다** — 계산이 과하면
+  `.claude/harness.json` `tiers` 를 고치는 PR(gate 티어)로 조정한다(채널·결정 로그 기록으로는 내려가지 않는다).
+- 계약 PR(`[HANDOFF→U]`)은 티어 대상이 아니다.
+- src 를 바꾸지 않는 설정 PR 은 돌연변이 검증 대신 설정 계약 `src/test/harnessConfig.test.ts`(§3)로 조인다.
 
 ---
 
