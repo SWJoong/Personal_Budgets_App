@@ -78,7 +78,7 @@
 | **플러그인 `harness`**(`~/문서/claude-harness` → private `SWJoong/claude-harness`) | `agents/`(u-worker·w-contract-author·w-verifier, 프로젝트 중립) · `workflows/verify-pr.js`(렌즈·반박자 설정 가능, `--lens`) · `hooks/hooks.json`(SessionStart pull · lane-guard auto · merge-ask) · `scripts/`(lane-guard·agent-sync·wave-plan·merge-ask·pr-risk-tier·pr-merge-gate·qa-run + selftest 4종) · `commands/qa-run.md` · `skills/install`·`operate` · README |
 | 삭제(플러그인이 대체) | `.claude/agents/*` · `.claude/workflows/verify-pr.js` · `scripts/lane-guard.sh`·`lane-guard-selftest.sh` · `scripts/u-wave-plan.sh` · `.claude/settings.json` SessionStart 훅 |
 | 추가 | `.claude/harness.json`(정본) · `.github/pull_request_template.md` · `docs/release/decisions.md` · `docs/release/qa-runs/README.md` · `src/test/harnessConfig.test.ts`(설정 계약, #202) · 이 문서 |
-| 제외 | `.claude/agent-memory/harness-w-verifier/*`(검증자 메모리 6개) — b9aed51 에 섞여 들어갔다가 재검증 지적으로 추적 해제. 메모리는 기능 PR 에 넣지 않는다(추적/무시 정책은 사용자 결정) |
+| 제외 | `.claude/agent-memory/harness-w-verifier/*`(검증자 메모리 6개) — b9aed51 에 섞여 들어갔다가 재검증 지적으로 추적 해제. 메모리는 로컬 전용(`.gitignore`, D-20260928-03) — 워커 2종은 플러그인 0.3.1 에서 `memory: user` |
 | 재작성 | CLAUDE.md 하네스 섹션(역할 지도·레인·티어·사람 자리 절차·현황 정리) · `docs/harness-plan.md` v2 · `scripts/agent-sync.sh`(래퍼) |
 | 문구 | `04`(§1·§3·§5·§7·§8) · `17`(이전 안내) · `02`(리뷰 정책) · `14`(W 백로그 실행 주체) · `docs/release/README.md` · `.claude/skills/README.md` |
 | 저장소 밖(사용자·오케스트레이터) | `~/.claude/CLAUDE.md` 오케스트레이터 지시서(플러그인 `home-directive.md`) · `/home/choi/AGENTS.md` 축소 · 메모리 갱신 · private repo 생성·마켓플레이스 전환 · Windows 머신 설치 |

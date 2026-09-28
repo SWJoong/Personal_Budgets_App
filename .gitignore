@@ -49,3 +49,6 @@ supabase/.temp/
 
 # Claude Code local settings (personal, not shared)
 .claude/settings.local.json
+# 서브에이전트 메모리 — 로컬 전용(D-20260928-03). PR 에 넣지 않는다.
+.claude/agent-memory/
+.claude/agent-memory-local/

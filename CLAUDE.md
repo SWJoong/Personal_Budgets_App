@@ -247,7 +247,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 - **U 레인**(그 외 `src/` · `supabase/` 빌드 SQL·`migrations/` · `src/types/database.ts` · `.github/workflows/` · 빌드설정 · `docs/release/`) → `harness:u-worker` 컨텍스트.
   오케스트레이터가 직접 구현하면 그 기능의 계약·검증은 위임한다.
 - **공유·인프라**(`CLAUDE.md` · `AGENTS.md` · `.mcp.json` · `.claude/harness.json` · `.claude/settings*.json` · `.claude/agents|workflows|commands/**` · `.github/pull_request_template.md` · `scripts/agent-sync.sh` · `docs/release/decisions.md` · `docs/release/qa-runs/**` · `.claude/agent-memory/**`) → 오케스트레이터·사람만(양쪽 워커 훅 차단).
-- **에이전트 메모리**(`.claude/agent-memory/<에이전트>/`): 각 에이전트는 **자기 폴더만** 쓴다(플러그인 ≥ 0.3.1 — 0.3.0 은 워커의 메모리 쓰기를 전부 막는다). 메모리는 **기능 PR 에 커밋하지 않는다** — 경로를 지정해 `git add` 하고 `git add -A` 는 쓰지 않는다(#199 에서 검증자 메모리 6개가 섞였던 사례). 추적/무시 정책은 사용자 결정(`docs/release/decisions.md`).
+- **에이전트 메모리**(`.claude/agent-memory/<에이전트>/`): 각 에이전트는 **자기 폴더만** 쓴다(플러그인 ≥ 0.3.1 — 0.3.0 은 워커의 메모리 쓰기를 전부 막는다). 메모리는 **로컬 전용**이다(D-20260928-03): `.claude/agent-memory*/` 는 `.gitignore` — 검증자(project 범위)는 메인 체크아웃에만 쌓이고, `harness:u-worker`·`harness:w-contract-author` 는 `memory: user`(`~/.claude/agent-memory/`, 프로젝트 공통이므로 프로젝트 고유 경로·비밀 대신 일반 교훈만). 커밋은 경로를 지정해 `git add` 한다(`git add -A` 금지 — #199 에서 검증자 메모리 6개가 섞였던 사례).
 - 가드가 막는 것: 워커의 Edit/Write(플러그인 `lane-guard.sh` — 대상 파일이 속한 worktree 의 `harness.json` 기준, 워커는 자기 worktree 밖 편집 불가, 설정 없으면 기본 레인·설정 깨지면 차단). 못 막는 것: Bash 편집(규율로 금지). **main 직접 push 금지** — 코드는 항상 PR·CI 경유(훅이 다시 묻는다).
 - 서브에이전트의 격리 worktree 는 origin/main 기준으로 생기므로 **`harness.json` 이 main 에 머지돼 있어야** 워커가 이 레인의 보호를 받는다.
 
@@ -308,7 +308,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
   - **라이브 반영(사용자 Manual-Ops)**: `12_audit_log`(2026-09-21)·`19_plan_feedback`(2026-09-21)·`20_evaluations`(2026-09-26, 카탈로그 32/32).
     **미확인**: 감사 파기 pg_cron 등록(`0 18 * * *` UTC = KST 03시, `docs/release/12` §4) · 활동사진 04 RLS·03 경로 트리거(`docs/release/06` §2).
   - **결정 확정**: 감사 접속기록 보존 730일(2026-09-22) · Supabase 리전 `ap-northeast-2` 서울 → 저장 국외이전 면제(2026-09-23) ·
-    계획 공유 = 가벼운 피드백(a)(→#183) · 단일 계정 운영 모델·플러그인화(D-20260927-02~06, D-20260928-01/02). 결정 정본 = `docs/release/decisions.md`.
+    계획 공유 = 가벼운 피드백(a)(→#183) · 단일 계정 운영 모델·플러그인화(D-20260927-02~06, D-20260928-01/02) · 에이전트 메모리 로컬 전용(D-20260928-03). 결정 정본 = `docs/release/decisions.md`.
   - **머지(2026-09-27)**: #192(처리방침 사실 정정 + 쉬운말 요약 당사자 이름 가림 결함 수정 — `profiles` 오조회로 #73 이후 미마스킹) ·
     #193(AI 생성물 공통 라벨 `AiNotice` + OCR 자동채움 표시) · #194(지출 기록 성공 안내) · #195(상태 기록 정리) · #196(Phase C 계획서 보관).
   - **머지(2026-09-28)**: #197(하네스 코드화 — 에이전트 3종·lane-guard·`/verify-pr`, 같은 날 플러그인으로 이전).
