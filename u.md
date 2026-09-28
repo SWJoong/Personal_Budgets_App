@@ -1491,3 +1491,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-28T13:17Z] U
 [SYNC] #199 head a68fb99: fbd70a8 재검증 approve-with-conditions(보통 11) 반영 — 권한 경계 호출부 12개 tiers.high·agent-memory shared/gate·검증자 메모리 6개 추적 해제+gitignore(D-20260928-03)·CLAUDE.md/doc18/doc02/doc17/PR 템플릿/래퍼 정합·계약 #203(29 규칙, 62 돌연변이 RED) 병합. 게이트 로컬 green(29/29·1085·build). 5렌즈 --lens 재검증 진행 중. 플러그인 0.3.1 = claude-harness#1 head 2c3f908(1차 approve-with-conditions mustFix 4 + 게이트 헤더 정규화 결함) 재검증 진행 중 — #199 보다 먼저 머지 예정.
 
+## [2026-09-28T14:11Z] U
+[SYNC] #199 head cb7e0a8: a68fb99 재검증 approve-with-conditions(보통 6) 반영 — main(#200) 병합·vercel.json privacy·스택 PR 순서·결정 3곳·계약 #204(35+래퍼 4) 병합. 의도된 RED 1 = minVersion ≥ 0.3.1(플러그인 머지·설치 후 0.4.0 으로 올림). 플러그인 = claude-harness#1 head be28d5b(0.4.0: realpath -L·설정 영역 우선·close_decision·report_body·호환 영향), 2차 검증 approve-with-conditions(보통 3) 반영 후 3차(bypass·compat) 재검증 중. 순서: 플러그인 승인·머지·설치 → #199 minVersion 0.4.0 → 4렌즈 재검증 → #199 승인·머지.
+
