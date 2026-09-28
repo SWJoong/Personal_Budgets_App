@@ -3,8 +3,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import OnboardingClient from './OnboardingClient'
 import { LiveRegionProvider } from '@/components/ui/LiveRegion'
-import MoreMenuClient from '@/components/layout/MoreMenuClient'
-import { AccessibilityProvider } from '@/hooks/useAccessibility'
 
 /**
  * P6 Phase C — 온보딩 장식 이모지 aria-hidden (f13f641 A6-content 재적용)
@@ -123,30 +121,32 @@ describe('P6-C 장식 이모지 — 온보딩 프로필 설정 (onboarding-profi
 })
 
 /**
- * #201 검증 조건(a11y-copy-2) — 역할 선택 화면의 '나중에 바꿀 수 있어요' 안내가 앱에 없는 메뉴 '계정 관리'를
- * 가리켰다. 실제로 역할(사용자/지원자)을 바꾸는 곳은 더보기의 '내 정보'(/settings/profile) 링크다(40fdd1e).
- * 쉬운 글 A-06(같은 것은 같은 말로): 안내문의 메뉴 이름 = 더보기 화면 링크 이름. 화살표(→)는 스크린리더가
- * '오른쪽 화살표'로 읽으므로 쓰지 않는다.
+ * #201 검증 조건(a11y-copy-2) + 사용자 결정(2026-09-28) — 역할 선택 화면의 '나중에 바꿀 수 있어요' 안내.
+ * 사실: 사용자/지원자 역할은 **관리자만** 바꿀 수 있다. supabase/seoul/01_core.sql 의 BEFORE UPDATE 트리거
+ *   protect_profile_role() 가 관리자가 아닌 사람의 profiles.role 변경을 조용히 원래 값으로 되돌린다.
+ *   그래서 '내 정보'(/settings/profile)에서 역할을 바꿔 저장해도 성공처럼 보이지만 아무것도 바뀌지 않고,
+ *   지원자 화면에는 '더보기'(/more)로 가는 링크도 없다. 즉 옛 안내("'더보기'의 '내 정보'에서 바꿀 수 있어요",
+ *   그 전엔 없는 메뉴 '계정 관리 →')는 둘 다 스스로 바꿀 수 있다는 거짓 약속이었다.
+ * 결정 문구(정확히 이 문장): "잘못 골랐어도 괜찮아요. 관리자에게 바꿔 달라고 말해 주세요."
+ * 단언: (1) 결정 문구 그대로. (2) '내 정보'/'더보기'에서 스스로 바꿀 수 있다고 말하지 않고, 없는 메뉴 '계정 관리'와
+ *   스크린리더가 '오른쪽 화살표'로 읽는 → 도 쓰지 않는다.
+ * 옛 교차 렌더 단언(더보기의 /settings/profile 링크 이름 = '내 정보')은 뺐다: 안내문이 더 이상 메뉴 이름을
+ *   말하지 않아 이 안내와 맞춰 볼 이름이 없고(쉬운 글 A-06 대상 소멸), '역할 바꾸는 곳'이라는 전제도 틀렸다.
+ *   그 링크의 존재·도달성은 MoreMenuClient.test.tsx(nav-reachability)가 계속 지킨다.
  */
-describe('P6-C 쉬운 글 — 역할 바꾸는 곳 안내가 실제 메뉴 이름을 쓴다 (onboarding-role-change-hint)', () => {
-  const MENU = '내 정보'
-  const HINT = `나중에 '더보기'의 '${MENU}'에서 바꿀 수 있어요.`
+describe('P6-C 쉬운 글 — 역할 바꾸는 방법 안내가 실제 절차(관리자에게 요청)를 말한다 (onboarding-role-change-hint)', () => {
+  const HINT = '잘못 골랐어도 괜찮아요. 관리자에게 바꿔 달라고 말해 주세요.'
 
-  it(`안내문이 "${HINT}" 이고, 없는 메뉴 '계정 관리'·화살표(→)를 쓰지 않는다`, () => {
-    const { container } = renderClient()
+  it(`안내문이 결정 문구 "${HINT}" 그대로다`, () => {
+    renderClient()
     expect(screen.getByText(HINT)).toBeInTheDocument()
-    expect(container).not.toHaveTextContent('계정 관리')
-    expect(container).not.toHaveTextContent('→')
   })
 
-  it(`안내문의 '${MENU}' 는 더보기 화면에서 역할을 바꾸는 링크(/settings/profile)의 이름과 같다`, () => {
-    render(
-      <AccessibilityProvider>
-        <MoreMenuClient fileLinks={[]} />
-      </AccessibilityProvider>,
-    )
-    const profile = screen.getAllByRole('link').filter((a) => a.getAttribute('href') === '/settings/profile')
-    expect(profile).toHaveLength(1)
-    expect(profile[0]).toHaveAccessibleName(MENU)
+  it("스스로 바꿀 수 있다는 거짓 안내('내 정보'·'더보기'에서 바꾸기)·없는 메뉴 '계정 관리'·화살표(→)가 없다", () => {
+    const { container } = renderClient()
+    expect(container).not.toHaveTextContent(/내 정보.*바꿀 수 있어요/)
+    expect(container).not.toHaveTextContent(/더보기.*바꿀 수 있어요/)
+    expect(container).not.toHaveTextContent('계정 관리')
+    expect(container).not.toHaveTextContent('→')
   })
 })
