@@ -166,7 +166,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
             </div>
 
             <p className="text-center text-xs text-muted-foreground mt-6">
-              나중에 더보기 → 계정 관리에서 바꾸 수 있어요.
+              나중에 더보기 → 계정 관리에서 바꿀 수 있어요.
             </p>
           </div>
         )}

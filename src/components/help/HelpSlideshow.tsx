@@ -88,7 +88,7 @@ export default function HelpSlideshow({ section, onClose }: Props) {
             onClick={onClose}
             className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary-hover transition-colors"
           >
-            시작하기 ✓
+            시작하기 <span aria-hidden="true">✓</span>
           </button>
         ) : (
           <button

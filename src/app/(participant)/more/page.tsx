@@ -52,7 +52,7 @@ export default async function MorePage({
             <span className="text-sm font-bold">서울형 개인예산제</span>
           </Link>
           <span className="text-muted-foreground">·</span>
-          <h1 className="text-sm font-black text-foreground">⚙ 더보기</h1>
+          <h1 className="text-sm font-black text-foreground"><span aria-hidden="true">⚙</span> 더보기</h1>
         </div>
         <div className="flex items-center gap-2">
           <HelpButton sectionKey="more" />
@@ -64,7 +64,7 @@ export default async function MorePage({
         {/* 프로필 요약 */}
         <section className="flex items-center gap-4 p-6 rounded-[2rem] bg-card ring-1 ring-border shadow-sm">
           <div className="w-16 h-16 rounded-3xl bg-muted flex items-center justify-center text-3xl font-black text-muted-foreground">
-            {displayName?.[0] || '👤'}
+            {displayName?.[0] || <span aria-hidden="true">👤</span>}
           </div>
           <div className="flex flex-col">
             <span className="text-xl font-black text-foreground">{displayName} 님</span>
