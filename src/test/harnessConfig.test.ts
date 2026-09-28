@@ -9,24 +9,30 @@ import { join } from 'node:path'
  *   (>=0.3.0)의 lane-guard·pr-risk-tier·pr-merge-gate·agent-sync·verify-pr 가 이 파일을 그대로 읽으므로, 글롭 한 줄을
  *   빼거나 JSON 이 깨지면 곧 레인 가드·검증 티어·사람 자리 접두 가드가 무력화된다. 독립 검증(verify-pr)이 "설정을
  *   조이는 계약이 없어 레인 약화·JSON 파손 돌연변이가 게이트에서 살아남는다"고 지적 → 이 계약이 CI(quality-check
- *   `npm test`)에서 그 돌연변이를 죽인다. 결정 D-20260928-01. CLAUDE.md 「검증 티어」와 harness.json `$comment` 가
- *   이 파일을 가리킨다. src 를 바꾸지 않는 설정 PR 은 돌연변이 검증 대신 이 계약으로 조인다(CLAUDE.md 「검증 티어」).
+ *   `npm test`)에서 그 돌연변이를 죽인다. 출처: verify-pr #199 지적(fbd70a8·a68fb99 리포트) — 사용자 결정이 아니다.
+ *   CLAUDE.md 「검증 티어」와 harness.json `$comment` 가 이 파일을 가리킨다. src 를 바꾸지 않는 설정 PR 은 돌연변이
+ *   검증 대신 이 계약으로 조인다(CLAUDE.md 「검증 티어」). 래퍼 `scripts/agent-sync.sh` 의 fail-safe 는 별도 계약
+ *   `src/test/agentSyncWrapper.test.ts` 가 잠근다.
  *
  * 원칙: 필수 목록은 "저작 시점 harness.json 값 = 최소 집합"이다(늘리는 것은 자유, 줄이면 RED). 줄여야 할 이유가
- *   생기면 설정과 이 계약을 같은 PR(gate 티어 — 팬아웃 검증 + 사람 승인)에서 함께 고친다.
+ *   생기면 설정과 이 계약을 같은 PR(gate 티어 — 팬아웃 검증 + 사람 승인)에서 함께 고친다. 설정에 글롭을 더하는
+ *   커밋은 이 계약의 필수 목록 갱신 요청을 함께 올린다(3차 보강의 AGENTS.md 사례).
  *
  * 규칙(it 1개 = 규칙 1개, 실패 메시지가 원인을 가리킨다):
  *   1. 파싱·형태     — 유효한 JSON + 플러그인이 읽는 최상위 키의 형태.
  *   2. W 레인        — lanes.w 가 계약·검증·설계 글롭을 문자열 그대로 모두 포함(레인 약화 차단).
  *   3. 공유 파일     — lanes.shared 가 공유·인프라 목록 전체를 포함 + U·W 레인 경로를 삼키지 않음(과확장 차단).
- *   4. 고위험 티어   — gate 목록 전체 · 7군 존재 · 군별 필수 글롭 · 군별 대표 경로(권한 경계 호출부 12개 포함) ·
- *                      sqlPolicyRegex 샘플 매치 · docs 가 코드를 잡지 않음 · large 상한.
+ *   4. 고위험 티어   — gate 목록 전체(AGENTS.md 포함) · 7군 존재 · 군별 필수 글롭(privacy 의 vercel.json 포함) ·
+ *                      군별 대표 경로(권한 경계 호출부 12개 포함) · sqlPolicyRegex 샘플 매치 ·
+ *                      docs 허용 목록(`docs/` 로 시작하거나 `.md` 로 끝나는 글롭만) · large 상한.
  *   5. 글롭 의미론   — lane-guard(hc_match)와 같은 매처로 대표 경로의 W 레인 소속을 판정.
- *   6. CLAUDE.md 정합 — 양방향: 「레인 규칙」 W·공유 ↔ lanes.w·lanes.shared, 「검증 티어」 T2 군 ↔ tiers.high,
- *                      T1 임계 = tiers.large.
- *   7. 문구·렌즈·스킬 — participantCopyGlobs 4 · verify.lenses 5 · roleSkills.w · CLAUDE.md 접근성 검증 체크 수치.
- *   8. 채널          — channel.seatPrefixes 3접두 · channel.branch · roles.seat.
- *   9. 게이트 명령   — gate.all 4단계(&& 만) · gate.contract `vitest run {file}`.
+ *   6. CLAUDE.md 정합 — 줄 단위 양방향: 「레인 규칙」 W 줄 ↔ lanes.w, 공유 줄 ↔ lanes.shared, U 줄 ∩ (lanes.w ∪
+ *                      lanes.shared) = ∅ · 「검증 티어」 T2 조건 칸 `name(` ↔ tiers.high · T1 임계 = tiers.large.
+ *   7. 문구·렌즈·스킬 — participantCopyGlobs 4 · verify.lenses 5 · roleSkills.w · CLAUDE.md 접근성 검증 체크 줄의
+ *                      정성·수치 항목과 '기준+값' 쌍(방향 고정).
+ *   8. 채널          — channel.seatPrefixes 3접두 · channel.branch · roles.seat · channel.roles ⊇ {w, u}.
+ *   9. 게이트 명령   — gate.all = CLAUDE.md 게이트 줄 조각(정확히 같음) · gate.contract `vitest run {file}`.
+ *  10. 플러그인 동작 값 — prefixes(toAuthor·toVerifier·sync) · baseBranch = main · plugin.minVersion ≥ 0.3.1.
  *
  * 저작 시 돌연변이 RED 확인(#199 head b5d9109 위, 매번 `git checkout -- .claude/harness.json CLAUDE.md` 로 원복):
  *   1차 저작(2cb7922) — ① lanes.w 에서 `src/test/**` 제거 → 2·5 RED  ② tiers.high.gate 에서 `CLAUDE.md` 제거 → 4 RED
@@ -37,6 +43,12 @@ import { join } from 'node:path'
  *     tiers.docs `["**"]`/`+src/**`·lanes.shared 에서 AGENTS.md/.mcp.json/settings.local.json/commands 제거·
  *     lanes.shared `+src/**`·gate.all/contract `"true"`·lenses 에서 security-rls/requirements-types 제거·
  *     roleSkills.w 에서 easy-read-review 제거·CLAUDE.md 접근성 검증 체크 줄 삭제 → 각각 해당 규칙 RED.
+ *   3차 보강(verify-pr #199 재검증 a68fb99 생존 돌연변이 전부, 37ce0ff 위) — gate 에서 AGENTS.md 제거·CLAUDE.md T2 행의
+ *     gate(…) 항목 삭제·tiers.docs `+supabase/seoul/1*.sql`/`+src/types/**`·lanes.w `+src/types/database.ts`·
+ *     W 줄의 `src/test/**` 를 U 줄로 옮김·prefixes.toAuthor/toVerifier/baseBranch/channel.roles 변경·
+ *     gate.all 에 `-- --passWithNoTests __none__` 약화·접근성 체크 줄의 정성 항목 삭제·`jsx-a11y` 오류 0/`outline-none`
+ *     단독 금지 반전 → 각각 해당 규칙 RED. 저작 시점 설정에서 의도적으로 RED 인 규칙: plugin.minVersion ≥ 0.3.1(설정
+ *     0.3.0 — 플러그인 0.3.1 머지·설치 후 올린다) · privacy 군 `vercel.json`(설정 미포함 — 오케스트레이터가 추가).
  */
 
 const ROOT = process.cwd()
@@ -124,7 +136,11 @@ const REQUIRED_SHARED: readonly string[] = [
   'docs/release/qa-runs/**',
 ]
 
-/** 4. gate 경로군(저작 시점 tiers.high.gate 전체) — CI·하네스 설정·규칙 문서를 바꾸는 PR 은 T2 팬아웃 검증. */
+/**
+ * 4. gate 경로군(저작 시점 tiers.high.gate 전체 14개) — CI·하네스 설정·규칙 문서를 바꾸는 PR 은 T2 팬아웃 검증.
+ *    AGENTS.md(a68fb99 추가)가 빠지면 AGENTS.md 만 바꾼 PR 이 tiers.docs 의 `.md` 글롭에 걸려 T0(docs, VERIFY REPORT
+ *    불요)까지 내려간다(설치본 pr-risk-tier.sh 로 확인: high → docs).
+ */
 const REQUIRED_GATE: readonly string[] = [
   '.github/workflows/**',
   '.github/pull_request_template.md',
@@ -137,6 +153,7 @@ const REQUIRED_GATE: readonly string[] = [
   '.claude/agent-memory/**',
   '.mcp.json',
   'CLAUDE.md',
+  'AGENTS.md',
   'docs/harness-plan.md',
   'scripts/agent-sync.sh',
 ]
@@ -183,6 +200,8 @@ const REQUIRED_HIGH: Readonly<Record<string, readonly string[]>> = {
     'src/app/actions/staffReviewSuggestion.ts',
     'src/content/privacyPolicy.ts',
     'src/app/privacy/**',
+    // 함수 처리 위치(리전 icn1 = 서울) — doc11 국외이전 기록의 근거. 바꾸면 처리 위치가 바뀌므로 privacy(T2).
+    'vercel.json',
   ],
   audit: [
     'src/utils/audit*.ts',
@@ -267,6 +286,7 @@ const HIGH_SAMPLES: Readonly<Record<string, readonly string[]>> = {
     'src/content/privacyPolicy.ts',
     'src/app/privacy/page.tsx',
     'src/app/privacy/easy/page.tsx',
+    'vercel.json',
   ],
   audit: [
     'src/utils/audit.ts',
@@ -312,6 +332,7 @@ const HIGH_SAMPLES: Readonly<Record<string, readonly string[]>> = {
     '.claude/agent-memory/harness-w-verifier/MEMORY.md',
     '.mcp.json',
     'CLAUDE.md',
+    'AGENTS.md',
     'docs/harness-plan.md',
     'scripts/agent-sync.sh',
   ],
@@ -339,18 +360,16 @@ const SQL_POLICY_SAMPLES: readonly string[] = [
   '  EXECUTE FUNCTION seoul_check_photo_path();',
 ]
 
-/** 4. tiers.docs 에 걸리면 안 되는 코드·빌드·스크립트 경로(걸리면 그 PR 이 VERIFY REPORT 없는 T0 가 된다). */
-const DOCS_EXCLUDED_SAMPLES: readonly string[] = [
-  'src/app/actions/receipts.ts',
-  'src/utils/copay.ts',
-  'src/app/(participant)/page.tsx',
-  'src/components/ui/Button.tsx',
-  'supabase/seoul/21_new.sql',
-  'scripts/x.sh',
-  'next.config.ts',
-  'package.json',
-  '.github/workflows/ci.yml',
-]
+/**
+ * 4. tiers.docs 허용 목록 — 글롭마다 `docs/` 로 시작(문서 폴더)하거나 `.md` 로 끝나야(마크다운) 한다. 이 모양의 글롭은
+ *    문자 그대로의 접두/접미 때문에 문서 폴더 밖 비-.md 파일을 잡을 수 없다(샘플 나열보다 강하다 — 2차의 음성 샘플
+ *    9개는 샘플 밖 `supabase/seoul/1*.sql`·`src/types/**` 를 놓쳤다). docs 판정은 pr-risk-tier.sh 에서 sqlPolicyRegex
+ *    검사보다 먼저 `continue` 하므로, 여기에 SQL·코드가 걸리면 RLS 정책 diff 도 T0 로 떨어진다.
+ */
+const REQUIRED_DOCS: readonly string[] = ['docs/**']
+function isDocsOnlyGlob(glob: string): boolean {
+  return glob.startsWith('docs/') || glob.endsWith('.md')
+}
 
 /** 4. tiers.large 상한 — CLAUDE.md 「검증 티어」 T1 행(코드 ≤ 12파일·≤ 400줄)과 같은 값. 올리면 대형 PR 이 팬아웃을 건너뛴다. */
 const LARGE_MAX = { files: 12, lines: 400 } as const
@@ -368,12 +387,20 @@ const W_LANE_SAMPLES: readonly string[] = [
   'vitest.config.ts',
 ]
 
-/** 5. W 레인에 들면 안 되는 대표 경로(U 레인 — 구현 코드·빌드 SQL·빌드 설정). 3 에서 lanes.shared 에도 대조한다. */
+/**
+ * 5. W 레인에 들면 안 되는 대표 경로(U 레인 — 구현 코드·빌드 SQL·빌드 설정·생성 타입·CI·릴리스 문서·공통 컴포넌트).
+ *    3 에서 lanes.shared 에도 대조한다. CLAUDE.md 「레인 규칙」 U 줄이 적은 항목마다 1개 이상.
+ */
 const U_LANE_SAMPLES: readonly string[] = [
   'src/utils/copay.ts',
   'supabase/seoul/21_new.sql',
   'src/app/actions/receipts.ts',
   'next.config.ts',
+  'src/types/database.ts',
+  '.github/workflows/ci.yml',
+  'supabase/seoul/01_core.sql',
+  'docs/release/14-prd-reprioritization.md',
+  'src/components/ui/Button.tsx',
 ]
 
 /**
@@ -402,15 +429,80 @@ const REQUIRED_LENSES: readonly string[] = [
 ]
 const REQUIRED_W_SKILLS: readonly string[] = ['qa', 'pl', 'easy-read-review']
 
-/** 7. CLAUDE.md 「접근성 원칙」 검증 체크 줄의 수치 기준 — 플러그인 a11y-copy 렌즈에는 수치가 없어 이 줄이 기준이다. */
-const A11Y_CHECK_TOKENS: readonly string[] = ['4.5:1', '44px', 'jsx-a11y', '≥ 70', '3:1']
+/**
+ * 7. CLAUDE.md 「접근성 원칙」 검증 체크 줄 — T1 접근성 검증의 유일한 명시 기준이다. 플러그인 a11y-copy 렌즈에는 수치가
+ *    없고, 플러그인 w-verifier ⑤ 는 「접근성·최종 사용자 노출 문구(프로젝트 기준이 있으면 그 기준)」 일반형이라 항목을
+ *    이 줄에 위임한다 — 여기서 항목이 빠지거나 기준이 뒤집히면 w-verifier·QA 가 그 항목을 보지 않는다.
+ *    A11Y_CHECK_TOKENS: 항목 존재(정성 6 + 수치 5). A11Y_CHECK_CRITERIA: '기준+값' 쌍(방향 — `오류 0` 을 `경고만` 으로,
+ *    `단독 금지` 를 `허용` 으로 바꾸는 반전을 잡는다).
+ */
+const A11Y_CHECK_TOKENS: readonly string[] = [
+  '키보드 도달',
+  '포커스 생존',
+  '접근 가능한 이름',
+  '라이브 영역 단일 채널',
+  '포커스 표시',
+  ':focus-visible',
+  '4.5:1',
+  '44px',
+  'jsx-a11y',
+  '≥ 70',
+  '3:1',
+]
+const A11Y_CHECK_CRITERIA: readonly RegExp[] = [
+  /`jsx-a11y` 오류 0/,
+  /`outline-none` 단독 금지/,
+  /대비 4\.5:1/,
+  /터치 44px/,
+  /easy-read ≥ 70/,
+]
 
 /** 8. 사람 자리 기록 접두(CLAUDE.md 「상태 동기화」) — 비면 agent-sync 가 w.md 접두 가드를 끈다(agent-sync.sh:86). */
 const REQUIRED_SEAT_PREFIXES: readonly string[] = ['[DECISION by user]', '[QA by user]', '[MERGED by user]']
 
-/** 9. 전체 게이트 단계(CLAUDE.md 「매 세션 루틴」 게이트 줄) · 계약 단건 게이트의 필수 조각. */
-const REQUIRED_GATE_ALL_STEPS: readonly string[] = ['tsc --noEmit', 'npm run lint', 'npm test', 'npm run build']
+/** 8. 채널 역할(`channel.roles` — 공백 구분 문자열) — 오케스트레이터 저널(u)·사람 자리 기록(w) 둘 다 있어야 post 가 받는다. */
+const REQUIRED_CHANNEL_ROLES: readonly string[] = ['w', 'u']
+
+/**
+ * 9. 전체 게이트(CLAUDE.md 「매 세션 루틴」 게이트 줄의 백틱 조각과 정확히 같음) · 계약 단건 게이트의 필수 조각.
+ *    부분문자열 검사는 `npm test -- --passWithNoTests __none__`(테스트 0건 rc=0) 같은 약화를 통과시켰다 — 정확 일치로 잠근다.
+ */
+const GATE_ALL = 'npx tsc --noEmit && npm run lint && npm test && npm run build'
 const REQUIRED_GATE_CONTRACT_PARTS: readonly string[] = ['vitest run', '{file}']
+
+/**
+ * 10. 플러그인이 동작에 쓰는 값 — 모양이 아니라 값을 고정한다.
+ *    toAuthor: pr-merge-gate.sh 가 제목에 이 접두가 있으면 "계약 PR 단독 머지 금지"(✗, blocking) — 바꾸면 차단이 조용히 꺼진다.
+ *    wave-plan.sh 도 같은 접두로 구현 대기 핸드오프를 찾는다. toVerifier·sync 는 CLAUDE.md 「상태 동기화」 접두와 같아야 한다.
+ */
+const EXPECTED_PREFIXES: Readonly<Record<string, string>> = {
+  'prefixes.toAuthor': '[HANDOFF→U]',
+  'prefixes.toVerifier': '[HANDOFF→W]',
+  'prefixes.sync': '[SYNC]',
+}
+const EXPECTED_BASE_BRANCH = 'main'
+
+/**
+ * 10. 플러그인 최소 버전 — 0.3.0 의 lane-guard 는 어떤 git 저장소에도 속하지 않는 경로(~/.claude 설정·지시서, 플러그인
+ *    캐시의 lane-guard.sh·hooks.json 자신)를 워커에게 허용하고(`[ -n "$troot" ] || exit 0`), 워커 에이전트가
+ *    `memory: project` 라 CLAUDE.md 「레인 규칙」 의 `memory: user`·자기 폴더 규칙(D-20260928-03)과 다르다. 둘 다 0.3.1
+ *    (claude-harness#1)이 고친다 — 설치본을 0.3.1 로 올린 뒤 이 값을 올려야 CLAUDE.md 가 적은 보호가 실제로 선다.
+ */
+const MIN_PLUGIN_VERSION: readonly [number, number, number] = [0, 3, 1]
+
+/** `X.Y.Z` 를 숫자 3개로 — 모양이 다르면 null. */
+function parseSemver(v: unknown): [number, number, number] | null {
+  const m = typeof v === 'string' ? /^(\d+)\.(\d+)\.(\d+)$/.exec(v) : null
+  return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null
+}
+
+/** a ≥ b (semver 핵심 3자리 사전식). */
+function semverAtLeast(a: readonly [number, number, number], b: readonly [number, number, number]): boolean {
+  for (let i = 0; i < 3; i++) {
+    if (a[i] !== b[i]) return a[i] > b[i]
+  }
+  return true
+}
 
 // ── 5. 글롭 매처 ─────────────────────────────────────────────────────────────────────────────
 // 플러그인 harness(>=0.3.0) scripts/harness-config.sh 의 hc_match 와 같은 의미론(bash `case "$rel" in $p)`):
@@ -486,16 +578,6 @@ function documentedIn(spans: ReadonlySet<string>, glob: string): boolean {
   return Array.from(spans).some((span) => expandSpan(span).includes(glob))
 }
 
-/**
- * 군 이름이 절에 적혀 있는가 — 백틱 밖 본문의 독립 낱말(영숫자·밑줄에 붙지 않음)이거나, 이름 그대로인 백틱 조각.
- * 경로 조각은 세지 않는다: 백틱 안 `ai.ts` 의 ai·`12_audit_log` 의 audit·`*rls*.sql` 의 rls 는 군 이름 표기가 아니다.
- */
-function mentionsGroup(section: string, name: string): boolean {
-  if (codeSpans(section).has(name)) return true
-  const prose = section.replace(/`[^`\n]+`/g, ' ')
-  return new RegExp(`(^|[^A-Za-z0-9_])${escapeRegExp(name)}([^A-Za-z0-9_]|$)`).test(prose)
-}
-
 /** 「검증 티어」 표의 행(`| **T1 …`)에서 조건 칸(둘째 칸) — 백틱 조각은 먼저 지운다(조각 안의 `|` 로 칸이 갈리지 않게). */
 function conditionCell(row: string): string {
   return row.replace(/`[^`\n]+`/g, ' ').split('|')[2] ?? ''
@@ -505,6 +587,22 @@ function conditionCell(row: string): string {
 function groupNamesInCell(cell: string): string[] {
   return Array.from(cell.matchAll(/(?:^|·)\s*([a-z][a-z0-9_-]*)\(/g), (m) => m[1])
 }
+
+/** 「검증 티어」 T2 행 조건 칸의 군 이름 표기들 — 6 의 T2 양방향 규칙 둘이 같은 칸을 읽는다(절 산문·T0 행은 보지 않는다). */
+function t2GroupNames(): string[] {
+  return groupNamesInCell(conditionCell(sectionLine(claudeSection('### 검증 티어'), '| **T2')))
+}
+
+/** 「레인 규칙」 절에서 `prefix` 로 시작하는 한 줄의 백틱 글롭(에이전트 이름 `harness:…` 제외, 약식 표기는 펼침). */
+function laneLineGlobs(prefix: string): string[] {
+  return Array.from(codeSpans(sectionLine(claudeSection('### 레인 규칙'), prefix)))
+    .filter((span) => !span.startsWith('harness:')) // 에이전트 이름(`harness:w-contract-author`)은 글롭이 아니다
+    .flatMap(expandSpan)
+}
+
+const W_LANE_LINE = '- **W 레인**'
+const U_LANE_LINE = '- **U 레인**'
+const SHARED_LINE = '- **공유·인프라**'
 
 describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md', () => {
   describe('1. 파싱·형태', () => {
@@ -622,12 +720,12 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
       ).toEqual([])
     })
 
-    it('tiers.docs 가 `docs/**` 를 포함하고, 코드·빌드 SQL·스크립트·빌드 설정 경로는 잡지 않는다', () => {
+    it('tiers.docs 가 `docs/**` 를 포함하고, 모든 글롭이 허용 목록 모양(`docs/` 로 시작하거나 `.md` 로 끝남)이다', () => {
       const docs = strings('tiers.docs')
-      expect(missingFrom(docs, ['docs/**']), 'tiers.docs 에서 빠진 글롭').toEqual([])
+      expect(missingFrom(docs, REQUIRED_DOCS), 'tiers.docs 에서 빠진 글롭').toEqual([])
       expect(
-        DOCS_EXCLUDED_SAMPLES.filter((rel) => inLane(rel, docs)),
-        'tiers.docs 에 걸리는 코드 경로 — 그 PR 이 VERIFY REPORT 없는 T0(docs, CI + 사람 읽기)로 내려간다',
+        docs.filter((glob) => !isDocsOnlyGlob(glob)),
+        'tiers.docs 에 문서 전용이 아닌 글롭 — 그 글롭에 걸리는 코드·빌드 SQL 경로 PR 이 VERIFY REPORT 없는 T0(docs)로 내려간다(RLS 정책 diff 포함)',
       ).toEqual([])
     })
 
@@ -681,51 +779,67 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
   })
 
   describe('6. CLAUDE.md 정합 (양방향)', () => {
-    it('「레인 규칙」 절이 lanes.w 의 모든 글롭을 백틱으로 적는다(test/spec 4글롭은 brace 축약 1개로 대체 인정)', () => {
-      const spans = codeSpans(claudeSection('### 레인 규칙'))
+    it('「레인 규칙」 W 레인 줄이 lanes.w 의 모든 글롭을 백틱으로 적는다(test/spec 4글롭은 brace 축약 1개로 대체 인정)', () => {
+      // 절 전체가 아니라 W 줄만 본다 — 절 전체면 U 줄의 `src/types/database.ts` 가 lanes.w 추가를 "문서화됨"으로 통과시킨다.
+      const spans = codeSpans(sectionLine(claudeSection('### 레인 규칙'), W_LANE_LINE))
       expect(
         strings('lanes.w').filter((glob) => !documentedIn(spans, glob)),
-        'CLAUDE.md 「레인 규칙」 요약에 없는 W 레인 글롭 — 정본(harness.json)과 요약이 어긋난다',
+        `CLAUDE.md 「레인 규칙」 「${W_LANE_LINE}」 줄에 없는 W 레인 글롭 — 정본(harness.json lanes.w)과 요약이 어긋난다(다른 레인 줄에 적힌 것은 인정하지 않는다)`,
       ).toEqual([])
     })
 
-    it('「레인 규칙」 절이 lanes.shared 의 모든 항목을 백틱으로 적는다(`.claude/settings*.json`·`.claude/agents|workflows|commands/**` 약식 인정)', () => {
-      const spans = codeSpans(claudeSection('### 레인 규칙'))
+    it('「레인 규칙」 공유·인프라 줄이 lanes.shared 의 모든 항목을 백틱으로 적는다(`.claude/settings*.json`·`.claude/agents|workflows|commands/**` 약식 인정)', () => {
+      const spans = codeSpans(sectionLine(claudeSection('### 레인 규칙'), SHARED_LINE))
       expect(
         strings('lanes.shared').filter((glob) => !documentedIn(spans, glob)),
-        'CLAUDE.md 「레인 규칙」 요약에 없는 공유 항목 — 정본(harness.json lanes.shared)과 요약이 어긋난다',
+        `CLAUDE.md 「레인 규칙」 「${SHARED_LINE}」 줄에 없는 공유 항목 — 정본(harness.json lanes.shared)과 요약이 어긋난다(다른 줄에 적힌 것은 인정하지 않는다)`,
       ).toEqual([])
     })
 
     it('「레인 규칙」 W 레인·공유 줄에 적힌 백틱 글롭이 전부 lanes.w·lanes.shared 에 있다(요약이 없는 보호를 약속하지 않음)', () => {
-      const section = claudeSection('### 레인 규칙')
-      const claimed = (prefix: string) =>
-        Array.from(codeSpans(sectionLine(section, prefix)))
-          .filter((span) => !span.startsWith('harness:')) // 에이전트 이름(`harness:w-contract-author`)은 글롭이 아니다
-          .flatMap(expandSpan)
       const lanesW = strings('lanes.w')
       const shared = strings('lanes.shared')
       expect(
         [
-          ...missingFrom(lanesW, claimed('- **W 레인**')).map((g) => `W 레인: ${g}`),
-          ...missingFrom(shared, claimed('- **공유·인프라**')).map((g) => `공유: ${g}`),
+          ...missingFrom(lanesW, laneLineGlobs(W_LANE_LINE)).map((g) => `W 레인: ${g}`),
+          ...missingFrom(shared, laneLineGlobs(SHARED_LINE)).map((g) => `공유: ${g}`),
         ],
         'CLAUDE.md 「레인 규칙」 이 적었지만 harness.json 레인에 없는 글롭 — 요약은 보호한다고 말하는데 lane-guard 는 막지 않는다',
       ).toEqual([])
     })
 
-    it('「검증 티어」 절이 tiers.high 의 모든 군 이름을 적는다', () => {
-      const section = claudeSection('### 검증 티어')
+    it('「레인 규칙」 U 레인 줄에 적힌 경로가 lanes.w·lanes.shared 에 들지 않는다(요약은 U 라는데 워커가 못 고침)', () => {
+      // 디렉터리 조각(`src/`·`docs/release/`)은 그 자체·`<조각>**` 가 레인 글롭으로 있으면, 파일 조각(`src/types/database.ts`)은
+      // 레인 글롭에 걸리면 위반이다. 디렉터리 안의 공유 예외(`docs/release/decisions.md` 등)는 공유 줄이 따로 적는다.
+      const lanes: Array<[label: string, globs: readonly string[]]> = [
+        ['lanes.w', strings('lanes.w')],
+        ['lanes.shared', strings('lanes.shared')],
+      ]
+      const clashes = laneLineGlobs(U_LANE_LINE).flatMap((span) => {
+        const isDir = span.endsWith('/')
+        return lanes
+          .filter(([, globs]) => (isDir ? globs.includes(span) || globs.includes(`${span}**`) : globs.includes(span) || inLane(span, globs)))
+          .map(([label]) => `${span} ∈ ${label}`)
+      })
+      expect(
+        clashes,
+        `CLAUDE.md 「레인 규칙」 「${U_LANE_LINE}」 줄의 경로가 W·공유 레인에 들어 있음 — 요약은 구현 워커 몫이라는데 lane-guard 는 그 워커를 막는다(또는 다른 레인 글롭을 U 줄로 옮겨 적었다)`,
+      ).toEqual([])
+    })
+
+    it('「검증 티어」 T2 행 조건 칸이 tiers.high 의 모든 군 이름을 `name(…)` 으로 적는다', () => {
+      // 절 전체가 아니라 T2 조건 칸만 본다 — 절 전체면 T0 행의 "gate 군"·산문의 "(gate 티어)" 가 T2 의 gate 항목 삭제를 가린다.
       const high = pick('tiers.high')
       if (!isRecord(high)) throw new Error(`${HARNESS_JSON} tiers.high 가 객체가 아님(실제: ${JSON.stringify(high)})`)
+      const names = t2GroupNames()
       expect(
-        Object.keys(high).filter((group) => !mentionsGroup(section, group)),
-        'CLAUDE.md 「검증 티어」 T2 요약에 없는 고위험 군 — 정본(harness.json tiers.high)과 요약이 어긋난다',
+        Object.keys(high).filter((group) => !names.includes(group)),
+        `CLAUDE.md 「검증 티어」 T2 행 조건 칸에 \`name(…)\` 으로 없는 고위험 군(읽은 군: ${names.join('·')}) — 정본(harness.json tiers.high)과 요약이 어긋난다`,
       ).toEqual([])
     })
 
     it('「검증 티어」 T2 행의 군 이름 표기 `name(…)` 이 전부 tiers.high 에 있다', () => {
-      const names = groupNamesInCell(conditionCell(sectionLine(claudeSection('### 검증 티어'), '| **T2')))
+      const names = t2GroupNames()
       expect(names.length, 'CLAUDE.md T2 행에서 군 이름 `name(…)` 을 하나도 못 읽음 — 행 형식이 바뀌었으면 이 계약도 고친다').toBeGreaterThan(0)
       expect(
         names.filter((name) => highGlobs(name).length === 0),
@@ -766,11 +880,19 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
       ).toEqual([])
     })
 
-    it('CLAUDE.md 「접근성 원칙」 검증 체크 줄이 수치 기준(4.5:1·44px·jsx-a11y·≥ 70·3:1)을 적는다', () => {
+    it('CLAUDE.md 「접근성 원칙」 검증 체크 줄이 정성 항목(키보드 도달·포커스 생존·접근 가능한 이름·라이브 영역 단일 채널·포커스 표시·:focus-visible)과 수치 기준(4.5:1·44px·jsx-a11y·≥ 70·3:1)을 모두 적는다', () => {
       const line = sectionLine(claudeSection('## 접근성 원칙'), '- **검증 체크')
       expect(
         A11Y_CHECK_TOKENS.filter((token) => !line.includes(token)),
-        'CLAUDE.md 접근성 검증 체크 줄에서 빠진 기준 — 플러그인 a11y-copy 렌즈엔 수치가 없어 이 줄이 w-verifier·QA 의 기준이다',
+        'CLAUDE.md 접근성 검증 체크 줄에서 빠진 항목 — 플러그인 w-verifier ⑤ 가 일반형이라 T1 접근성 검증은 이 줄의 항목만 본다',
+      ).toEqual([])
+    })
+
+    it('CLAUDE.md 「접근성 원칙」 검증 체크 줄의 기준이 방향을 유지한다(`jsx-a11y` 오류 0 · `outline-none` 단독 금지 · 대비 4.5:1 · 터치 44px · easy-read ≥ 70)', () => {
+      const line = sectionLine(claudeSection('## 접근성 원칙'), '- **검증 체크')
+      expect(
+        A11Y_CHECK_CRITERIA.filter((criterion) => !criterion.test(line)).map(String),
+        'CLAUDE.md 접근성 검증 체크 줄에서 기준+값 쌍이 사라지거나 뒤집힘(예: 오류 0 → 경고만, 단독 금지 → 허용) — w-verifier·QA 가 느슨한 기준으로 통과시킨다',
       ).toEqual([])
     })
   })
@@ -790,19 +912,28 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
         '채널 브랜치·사람 자리 역할이 CLAUDE.md 「상태 동기화」 와 다름 — 인계문·사람 자리 기록이 다른 곳으로 가거나 접두 가드 대상이 바뀐다',
       ).toEqual({ 'channel.branch': 'agent-sync', 'roles.seat': 'w' })
     })
+
+    it('channel.roles 가 공백 구분 문자열이고 w·u 를 모두 포함한다', () => {
+      const roles = text('channel.roles').split(/\s+/).filter(Boolean)
+      expect(
+        missingFrom(roles, REQUIRED_CHANNEL_ROLES),
+        `channel.roles 에서 빠진 역할(실제: ${JSON.stringify(pick('channel.roles'))}) — agent-sync 가 그 역할의 post(u = 오케스트레이터 저널, w = 사람 자리 기록)를 거부한다`,
+      ).toEqual([])
+    })
   })
 
   describe('9. 게이트 명령', () => {
-    it('gate.all 이 tsc --noEmit·npm run lint·npm test·npm run build 를 && 로만 잇는다', () => {
+    it('gate.all 이 CLAUDE.md 「매 세션 루틴」 게이트 줄의 전체 게이트 조각과 정확히 같다(4단계 && 고정)', () => {
+      const gateLine = sectionLine(claudeSection('### 매 세션 루틴'), '게이트:')
+      expect(
+        codeSpans(gateLine).has(GATE_ALL),
+        `CLAUDE.md 「매 세션 루틴」 게이트 줄에 \`${GATE_ALL}\` 조각이 없음 — 요약의 전체 게이트가 바뀌었으면 이 계약도 함께 고친다`,
+      ).toBe(true)
       const all = text('gate.all')
       expect(
-        REQUIRED_GATE_ALL_STEPS.filter((step) => !all.includes(step)),
-        `gate.all 에서 빠진 단계(실제: ${JSON.stringify(all)}) — u-worker·w-verifier 가 그 검사 없이 초록을 선언한다`,
-      ).toEqual([])
-      expect(
-        /[|;]|(^|[^&])&(?!&)/.test(all),
-        `gate.all 에 \`||\`·\`|\`·\`;\`·단독 \`&\` 가 있음(실제: ${JSON.stringify(all)}) — 앞 단계 실패가 묻혀도 게이트가 통과한다`,
-      ).toBe(false)
+        all,
+        `gate.all 이 전체 게이트와 다름(실제: ${JSON.stringify(all)}) — 단계 누락·필터 인자(\`-- --passWithNoTests __none__\` 등 테스트 0건)·\`||\`/\`;\` 로 u-worker·w-verifier 가 약한 검사로 초록을 선언한다`,
+      ).toBe(GATE_ALL)
     })
 
     it('gate.contract 가 `vitest run` 과 `{file}` 자리표시를 포함한다', () => {
@@ -811,6 +942,38 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
         REQUIRED_GATE_CONTRACT_PARTS.filter((part) => !contract.includes(part)),
         `gate.contract 에서 빠진 조각(실제: ${JSON.stringify(contract)}) — 계약 저자·구현 워커가 계약 단건 RED/GREEN 을 확인하지 못한다`,
       ).toEqual([])
+    })
+  })
+
+  describe('10. 플러그인 동작 값', () => {
+    it('prefixes 가 [HANDOFF→U]·[HANDOFF→W]·[SYNC] 이고 CLAUDE.md 「상태 동기화」 접두 줄이 같은 표기를 쓴다', () => {
+      const actual = Object.fromEntries(Object.keys(EXPECTED_PREFIXES).map((path) => [path, pick(path)]))
+      expect(
+        actual,
+        'prefixes 값이 바뀜 — toAuthor 가 다르면 pr-merge-gate 가 계약 PR 단독 머지를 막지 않고 wave-plan 이 구현 대기 핸드오프를 못 찾는다',
+      ).toEqual(EXPECTED_PREFIXES)
+      const spans = codeSpans(sectionLine(claudeSection('### 상태 동기화'), '- 접두:'))
+      expect(
+        Object.values(EXPECTED_PREFIXES).filter((prefix) => !spans.has(prefix)),
+        'CLAUDE.md 「상태 동기화」 접두 줄에 없는 핸드오프 접두 — 요약과 플러그인 판정 접두가 어긋난다',
+      ).toEqual([])
+    })
+
+    it("baseBranch 가 'main' 이다", () => {
+      expect(
+        pick('baseBranch'),
+        '하네스 baseBranch 가 main 이 아님 — pr-merge-gate·wave-plan·verify-pr 가 다른 브랜치를 기준으로 BEHIND·diff·머지를 판정한다',
+      ).toBe(EXPECTED_BASE_BRANCH)
+    })
+
+    it(`plugin.minVersion 이 semver ≥ ${MIN_PLUGIN_VERSION.join('.')} 이다(0.3.0 lane-guard 는 저장소 밖 경로를 허용·워커 메모리 규칙 불일치)`, () => {
+      const raw = pick('plugin.minVersion')
+      const v = parseSemver(raw)
+      expect(v, `plugin.minVersion 이 X.Y.Z 가 아님(실제: ${JSON.stringify(raw)})`).not.toBeNull()
+      expect(
+        v !== null && semverAtLeast(v, MIN_PLUGIN_VERSION),
+        `plugin.minVersion ${JSON.stringify(raw)} < ${MIN_PLUGIN_VERSION.join('.')} — CLAUDE.md 「레인 규칙」 이 적은 보호(worktree 밖 편집 불가·에이전트 자기 메모리 폴더만)가 이 버전에서는 서지 않는다. 플러그인 ${MIN_PLUGIN_VERSION.join('.')} 을 설치한 뒤 올린다`,
+      ).toBe(true)
     })
   })
 })
