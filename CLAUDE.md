@@ -175,7 +175,7 @@ export async function myAction(formData: FormData) {
 - **버튼**: 최소 44×44px 터치 영역
 - **언어**: 쉬운 말 사용, 전문 용어 최소화
 - **테마**: 7가지 색상 테마 (`useAccessibility` 훅)
-- **검증 체크(w-verifier·QA 공통)**: 키보드 도달 · 포커스 생존(재마운트·달 이동·모달 복원) · 접근 가능한 이름 · 라이브 영역 단일 채널(같은 문구 재안내는 새 노드, 보이는 상자는 live 아님) · 대비 4.5:1 · 터치 44px · `jsx-a11y` 오류 0 · 당사자 노출 문구 easy-read ≥ 70
+- **검증 체크(w-verifier·QA 공통)**: 키보드 도달 · 포커스 생존(재마운트·달 이동·모달 복원) · 접근 가능한 이름 · 라이브 영역 단일 채널(같은 문구 재안내는 새 노드, 보이는 상자는 live 아님) · 포커스 표시(`:focus-visible` 링 유지 · `outline-none` 단독 금지 · 링 대비 3:1, 테마별) · 대비 4.5:1 · 터치 44px · `jsx-a11y` 오류 0 · 당사자 노출 문구 easy-read ≥ 70
 
 ---
 
@@ -246,7 +246,8 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
   오케스트레이터는 소규모 예외(경로·주석·오타·현황)만 직접 — 플러그인 훅이 확인을 묻는다.
 - **U 레인**(그 외 `src/` · `supabase/` 빌드 SQL·`migrations/` · `src/types/database.ts` · `.github/workflows/` · 빌드설정 · `docs/release/`) → `harness:u-worker` 컨텍스트.
   오케스트레이터가 직접 구현하면 그 기능의 계약·검증은 위임한다.
-- **공유·인프라**(`CLAUDE.md` · `AGENTS.md` · `.mcp.json` · `.claude/harness.json` · `.claude/settings*.json` · `.claude/agents|workflows|commands/**` · `.github/pull_request_template.md` · `scripts/agent-sync.sh` · `docs/release/decisions.md` · `docs/release/qa-runs/**`) → 오케스트레이터·사람만(양쪽 워커 훅 차단).
+- **공유·인프라**(`CLAUDE.md` · `AGENTS.md` · `.mcp.json` · `.claude/harness.json` · `.claude/settings*.json` · `.claude/agents|workflows|commands/**` · `.github/pull_request_template.md` · `scripts/agent-sync.sh` · `docs/release/decisions.md` · `docs/release/qa-runs/**` · `.claude/agent-memory/**`) → 오케스트레이터·사람만(양쪽 워커 훅 차단).
+- **에이전트 메모리**(`.claude/agent-memory/<에이전트>/`): 각 에이전트는 **자기 폴더만** 쓴다(플러그인 ≥ 0.3.1 — 0.3.0 은 워커의 메모리 쓰기를 전부 막는다). 메모리는 **기능 PR 에 커밋하지 않는다** — 경로를 지정해 `git add` 하고 `git add -A` 는 쓰지 않는다(#199 에서 검증자 메모리 6개가 섞였던 사례). 추적/무시 정책은 사용자 결정(`docs/release/decisions.md`).
 - 가드가 막는 것: 워커의 Edit/Write(플러그인 `lane-guard.sh` — 대상 파일이 속한 worktree 의 `harness.json` 기준, 워커는 자기 worktree 밖 편집 불가, 설정 없으면 기본 레인·설정 깨지면 차단). 못 막는 것: Bash 편집(규율로 금지). **main 직접 push 금지** — 코드는 항상 PR·CI 경유(훅이 다시 묻는다).
 - 서브에이전트의 격리 worktree 는 origin/main 기준으로 생기므로 **`harness.json` 이 main 에 머지돼 있어야** 워커가 이 레인의 보호를 받는다.
 
@@ -263,14 +264,15 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 4. 착수: 계약 선행이면 `harness:w-contract-author` → 플러그인 `wave-plan.sh` 로 서로소 웨이브 → `harness:u-worker` × N(한 메시지에서 동시) → 티어별 검증 → 머지 브리핑.
 5. 턴 종료: `post u` 1건. 사람 자리 행위가 있었으면 `post w`.
 게이트: 계약 단건 `npx vitest run <파일>` → 전체 `npx tsc --noEmit && npm run lint && npm test && npm run build`. `/harness:operate` 가 이 루틴을 안내한다.
+플러그인 스크립트(`wave-plan.sh`·`pr-risk-tier.sh`·`pr-merge-gate.sh`·`qa-run.sh`) 호출 경로: `H="$(jq -r '.plugins["harness@harness"][0].installPath' ~/.claude/plugins/installed_plugins.json)/scripts"` 후 `bash "$H/pr-merge-gate.sh" N check`. 설치본 버전은 `harness.json` `plugin.minVersion` 이상이어야 한다(설치본은 캐시 사본 — 개발 폴더 편집은 version bump·`claude plugin update` 전까지 반영되지 않는다).
 
 ### 검증 티어 (머지 전 요구 검증 — 정본 `.claude/harness.json` `tiers`)
 | 티어 | 조건(하나라도 해당하면 상위) | 검증 | 머지 |
 |---|---|---|---|
-| **T0 docs** | 변경이 `docs/**`·`*.md` 뿐 | CI + 사람 읽기 | 사람 승인 |
+| **T0 docs** | 변경이 `docs/**`·`*.md` 뿐 — 단 gate 군의 규칙 파일은 `.md` 여도 high | CI + 사람 읽기 | 사람 승인 |
 | **T1 small** | 코드 ≤ 12파일·≤ 400줄, 고위험 경로 없음 | `harness:w-verifier` 1건(돌연변이 포함) | approve + 사람 승인 |
-| **T2 high** | rls(`supabase/**/*rls*.sql`·`12_audit_log`) · auth(`src/proxy.ts`·`(auth)/`·view-as·`src/utils/supabase/**`) · privacy(`deidentify*`·`ai.ts`·OCR·요약·처리방침) · audit · money(정산·거래·copay) · storage(활동사진·서류 업로드·`src/utils/supabase/storage.ts`) · gate(CI·settings·harness.json) · SQL diff 에 POLICY/DEFINER/GRANT · 대형 · 당사자 문구(`src/app/(participant)/**`) | `/harness:verify-pr N` 팬아웃(≤14) | approve(-with-conditions 해소) + 사람 승인 |
-- 판정 정본은 `.claude/harness.json` `tiers`(플러그인 `pr-risk-tier.sh <PR>` 가 계산) — 위 표는 요약이다. 티어는 PR 본문 `- 검증 티어:` 에 선언하고 게이트가 선언·계산 중 높은 쪽을 적용한다. 하향은 머지 승인과 같은 AskUserQuestion 안에서만 인정(채널·결정 로그 기록만으로는 불가). 계약 PR(`[HANDOFF→U]`)은 티어 대상이 아니다.
+| **T2 high** | rls(`supabase/**/*rls*.sql`·`01_core`·`03_seoul_schema`·`06_storage`·`12_audit_log`) · auth(`src/proxy.ts`·`(auth)/`·`src/app/api/**`·view-as·view-as 쓰기 차단 액션·`src/utils/supabase/**`) · privacy(`deidentify*`·`ai.ts`·OCR·요약·제안·처리방침) · audit(`audit*`·감사 기록 액션·supervision) · money(정산·거래·copay·ruleCheck·내보내기) · storage(활동사진·서류·신청서 업로드·갤러리·`src/utils/supabase/storage.ts`) · gate(CI·settings·harness.json·에이전트/워크플로/명령/스킬/에이전트 메모리·CLAUDE.md·harness-plan·PR 템플릿·agent-sync — `.md` 여도) · SQL diff 에 POLICY/DEFINER/GRANT/FUNCTION/TRIGGER · 대형(> 12파일 또는 > 400줄) · 당사자 문구(`participantCopyGlobs` 경로에 한글 문구가 추가될 때 — 접근성만 바꾼 변경은 small 이니 필요하면 선언을 high 로) | `/harness:verify-pr N` 팬아웃(에이전트 2 + 렌즈 × (1 + 반박자), 현재 설정 17) | approve(-with-conditions 해소) + 사람 승인 |
+- 판정 정본은 `.claude/harness.json` `tiers`(플러그인 `pr-risk-tier.sh <PR>` 가 계산) — 위 표는 요약이다. 티어는 PR 본문 `- 검증 티어:` 에 `docs`·`small`·`high` 중 한 단어로 선언하고 게이트가 선언·계산 중 높은 쪽을 적용한다. **계산 티어 아래로 내리는 수단은 없다** — 계산이 과하면 `.claude/harness.json` `tiers` 를 고치는 PR(gate 티어)로 조정한다(채널·결정 로그 기록으로는 내려가지 않는다). 계약 PR(`[HANDOFF→U]`)은 티어 대상이 아니다.
 - src 를 바꾸지 않는 문서·설정 PR 은 돌연변이 검증 대신 **설정 계약**(`src/test/harnessConfig.test.ts`: harness.json ↔ CLAUDE.md 레인·티어 정합)으로 조인다.
 - 재검증은 `/harness:verify-pr N --lens <렌즈>` 로 생존 finding 이 있던 렌즈만(전체 재실행 금지).
 
@@ -296,7 +298,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 
 ### 현재 작업 현황
 <!-- 오케스트레이터가 갱신 · 사람 자리 기록은 agent-sync w.md · 2026-08-19~09-20 이력은 docs/release/18 부록 A 로 이관 -->
-- **★현행 스냅샷(2026-09-27) — 위 항목들은 역사 기록**: main = `4b78491`(#194). 백로그 정본 =
+- **★현행 스냅샷(2026-09-28)**: main = `f8ee799`(#197). 백로그 정본 =
   `docs/release/14-prd-reprioritization.md` 「현행 백로그 (2026-09-27 재점검)」(담당별·우선순위).
   - **완료(재착수 금지, 2026-09-20 이후)**: #175 요약 대리인 이름 치환 + `participant.preview` 감사 · #176 `/admin/audit` ·
     #177 TTS `SpeakButton`(홈 잔액·이용계획) · #178 쉬운 용어 사전+`<Term>`('이용계획') · #179 `/admin/insights` KPI A~C ·
@@ -306,14 +308,13 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
   - **라이브 반영(사용자 Manual-Ops)**: `12_audit_log`(2026-09-21)·`19_plan_feedback`(2026-09-21)·`20_evaluations`(2026-09-26, 카탈로그 32/32).
     **미확인**: 감사 파기 pg_cron 등록(`0 18 * * *` UTC = KST 03시, `docs/release/12` §4) · 활동사진 04 RLS·03 경로 트리거(`docs/release/06` §2).
   - **결정 확정**: 감사 접속기록 보존 730일(2026-09-22) · Supabase 리전 `ap-northeast-2` 서울 → 저장 국외이전 면제(2026-09-23) ·
-    계획 공유 = 가벼운 피드백(a)(→#183).
+    계획 공유 = 가벼운 피드백(a)(→#183) · 단일 계정 운영 모델·플러그인화(D-20260927-02~06, D-20260928-01/02). 결정 정본 = `docs/release/decisions.md`.
   - **머지(2026-09-27)**: #192(처리방침 사실 정정 + 쉬운말 요약 당사자 이름 가림 결함 수정 — `profiles` 오조회로 #73 이후 미마스킹) ·
-    #193(AI 생성물 공통 라벨 `AiNotice` + OCR 자동채움 표시) · #194(지출 기록 성공 안내).
+    #193(AI 생성물 공통 라벨 `AiNotice` + OCR 자동채움 표시) · #194(지출 기록 성공 안내) · #195(상태 기록 정리) · #196(Phase C 계획서 보관).
+  - **머지(2026-09-28)**: #197(하네스 코드화 — 에이전트 3종·lane-guard·`/verify-pr`, 같은 날 플러그인으로 이전).
   - **다음(결정·확인 선행)**: 기관 = AI API 국외이전 근거(OCR A안/국내/제거 · 요약·제안 B안)·처리방침 확정값·Supabase DPA 서명·Vercel
     Analytics 수집범위/DPA · 사용자 = pg_cron·활동사진 RLS 라이브 확인·실사용자 심사·기능 QA(doc16)·정산 실무자 허용·KPI D.
   - **다음(U 코드, 결정 불요)**: 쉬운말 `<Term>` 확대(`plan/page.tsx`)·지출기록 TTS·`receipt.view` 반복 기록 축소·감사 `target_participant_id` 누락.
   - **운영 모델(2026-09-27 정식화)**: 단일 계정 · W/U = 역할 컨텍스트 · 사람 자리(W) = QA·머지·결정 — 위 「병렬 하네스」 섹션과 `docs/release/18`. 홈 지시서·메모리 갱신은 머지 후 체크.
-  - **하네스 코드화(U, 2026-09-27)**: `.claude/agents/`(u-worker · w-verifier · w-contract-author) + `scripts/lane-guard.sh`(레인 가드 PreToolUse 훅)
-    + `/verify-pr` 저장 워크플로 + 역할 스킬 드리프트 정정(frontend·backend·devops·pl·qa) — `docs/release/17-harness-codification.md`.
-    구현·검증 서브에이전트는 이제 정의 파일로 spawn(즉석 브리핑 폐지). 새 세션에서 인식.
+  - **하네스 코드화(#197, 머지 2026-09-28)**: 에이전트 3종·레인 가드·`/verify-pr` 워크플로·역할 스킬 정정 — `docs/release/17`. 그 런타임은 아래 플러그인으로 이전됐다(doc18).
   - **단일 계정 전환 + 플러그인화(U, 2026-09-27)**: 하네스 런타임을 플러그인 `harness`(에이전트·훅·워크플로·스크립트)로 추출, 저장소엔 `.claude/harness.json` 만. 로컬 사본(`.claude/agents`·`workflows`·`lane-guard`·`u-wave-plan`) 삭제, `settings.json` 훅 제거, PR 템플릿·결정 로그·QA 기록 규약 신설 — `docs/release/18`. 이전 현황 이력(08-19~09-20)은 doc18 부록 A.

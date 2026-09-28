@@ -1,7 +1,7 @@
 # 17 · 하네스 코드화 — 서브에이전트 정의 · 레인 가드 · 저장 워크플로
 
 > **같은 날 후속(2026-09-27)**: 이 문서의 `.claude/agents/*` · `scripts/lane-guard*.sh` · `.claude/workflows/verify-pr.js` 는 플러그인 `harness` 로 이전됐다
-> (에이전트 `harness:u-worker` 등, 워크플로 `/harness:verify-pr`). 저장소에는 `.claude/harness.json` 만 남는다 — [`18`](18-single-account-operating-model.md).
+> (에이전트 `harness:u-worker` 등, 워크플로 `/harness:verify-pr`). 저장소에는 `.claude/harness.json` 만 남는다 — [`18`](18-single-account-operating-model.md). `scripts/u-wave-plan.sh` 는 플러그인 `wave-plan.sh` 로, 아래 미완료 항목은 doc18 §9 후속 목록으로 옮겼다.
 
 > **한 줄**: 2026-09-04 이후 U 세션이 즉석 브리핑으로 띄우던 워커·검증자를 **정의 파일**(`.claude/agents/`)로,
 > 매번 다시 쓰던 독립 검증 팬아웃을 **저장 워크플로**(`/verify-pr`)로, 프롬프트 약속에만 기대던 레인 규율을
@@ -113,7 +113,7 @@ Claude Code 의 병렬 수단 비교(문서 기준): 서브에이전트 = 한 �
 ## 6. 남은 일 (후속)
 
 - [x] 새 세션에서 `harness:u-worker` 라이브 spawn 1건 실증(2026-09-28) — 리턴 형식 정상, 가드는 worktree 에 harness.json 이 없어 fail-open → 플러그인 0.3.0 에서 기본 레인 적용으로 수정(doc18 §9).
-- [ ] `u-wave` 저장 워크플로: `u-wave-plan.sh` 출력 → 서로소 웨이브 → `u-worker` 동시 spawn.
+- [→ doc18] `u-wave` 저장 워크플로: 플러그인 `wave-plan.sh` 출력 → 서로소 웨이브 → `harness:u-worker` 동시 spawn(현재는 오케스트레이터가 한 메시지에서 수동 spawn).
 - [x] 홈 `~/.claude/CLAUDE.md` U 지시서 → 플러그인 `skills/install/assets/home-directive.md`(오케스트레이터 지시서)로 대체 — doc18.
 - [ ] agent-sync 브랜치 push 의 Vercel 빌드 노이즈 → Ignored Build Step(W 제안, 처리 여부 확인).
 - [ ] 사람 자리가 다른 머신 세션에서 열릴 때: Remote Control 을 라이브 보조 채널로(정본은 agent-sync).

@@ -53,19 +53,19 @@
 
 ## 5. 검증 티어 (정본 `.claude/harness.json` `tiers`)
 
-| 티어 | 조건 | 검증 | 머지 |
-|---|---|---|---|
-| docs | `docs/**`·`*.md` 만 | CI + 사람 읽기 | 사람 승인 |
-| small | 코드 ≤ 12파일·≤ 400줄, 고위험 경로 없음 | `harness:w-verifier` 1건(돌연변이) | approve + 사람 승인 |
-| high | rls(`supabase/**/*rls*.sql`·`12_audit_log`) · auth(`src/proxy.ts`·`(auth)/`·view-as·supabase 클라이언트) · privacy(`deidentify`·`ai.ts`·OCR·요약·처리방침) · audit · money(정산·거래·copay) · gate(CI·settings·harness.json) · SQL 정책/DEFINER/GRANT · 대형 · 당사자 문구 | `/harness:verify-pr N` | approve(-with-conditions 해소) + 사람 승인 |
+요약은 CLAUDE.md 「검증 티어」 표, 판정 정본은 `.claude/harness.json` `tiers` 다(설정 계약 `src/test/harnessConfig.test.ts` 가 둘의 정합을 CI 에서 확인한다). 이 문서에는 경로를 다시 나열하지 않는다 — 세 곳에 나열하면 어긋난다(2026-09-28 재검증에서 storage 군 누락이 이 절과 harness-plan 에 남아 있었다).
 
-경계: 계약 PR 제외 · 문자열만 바꾼 인프라 파일은 사람 확인 + 증거로 하향 가능(머지 승인과 같은 AskUserQuestion 안에서만) · 재검증은 `--lens` 로 생존 렌즈만 · 고위험군은 문서 판정보다 우선(`CLAUDE.md`·`.claude/skills/**`·`docs/harness-plan.md`·PR 템플릿·`scripts/agent-sync.sh` 는 .md/.sh 여도 gate) · src 를 바꾸지 않는 문서·설정 PR 은 돌연변이 대신 설정 계약(`src/test/harnessConfig.test.ts`)으로 조인다.
+- **docs**: 문서만. 단 gate 군의 규칙 파일은 `.md` 여도 high.
+- **small**: 코드 ≤ 12파일·≤ 400줄, 고위험 경로 없음 → `harness:w-verifier` 1건(돌연변이 포함).
+- **high**: 고위험 군(rls·auth·privacy·audit·money·storage·gate) · SQL 정책/함수/트리거 diff · 대형 · 당사자 문구 추가 → `/harness:verify-pr N`.
+
+경계: 계약 PR 제외 · **계산 티어 아래로 하향하는 수단은 없다**(게이트가 선언·계산 중 높은 쪽을 적용 — 계산이 과하면 `tiers` 를 고치는 PR 로) · 재검증은 `--lens` 로 생존 렌즈만 · 고위험군은 문서 판정보다 우선(`CLAUDE.md`·`.claude/skills/**`·`docs/harness-plan.md`·PR 템플릿·`scripts/agent-sync.sh` 는 .md/.sh 여도 gate) · src 를 바꾸지 않는 문서·설정 PR 은 돌연변이 대신 설정 계약(`src/test/harnessConfig.test.ts`)으로 조인다.
 
 ## 6. 사람 자리 절차 3종 (U 세션에서도)
 
-- **머지**: `gh pr checks N` green · `VERIFY-REPORT` 코멘트의 `head=` 가 현재 head · Manual-Ops 목록 → 오케스트레이터 브리핑(PR·head·티어·판정·Manual-Ops·되돌림) →
-  AskUserQuestion **PR 1건·head 1개당 승인 1회** → BEHIND 면 `gh pr update-branch N` → CI 재확인 → `gh pr merge N --squash --delete-branch`(플러그인 훅이 한 번 더 묻는다) →
-  계약 PR 닫기 → `scripts/agent-sync.sh post w "[MERGED by user] #N …"`. `--admin`·일괄 승인·auto-merge 금지. 첫 실사용 = 이 문서의 PR.
+- **머지**: 플러그인 `pr-merge-gate.sh N check`(draft 아님 · CI green · `VERIFY-REPORT` 코멘트의 `head=` 가 현재 head · 판정 · 티어 · Manual-Ops) → 오케스트레이터 브리핑(PR·head·티어·판정·Manual-Ops·되돌림) →
+  AskUserQuestion **PR 1건·head 1개당 승인 1회** → `pr-merge-gate.sh N merge --approved-by "user via U <시각>"`(승인 코멘트 → BEHIND 면 update-branch·CI 재확인 → head 재검증 → `--match-head-commit` squash → 계약 PR 닫기 → `post u [MERGED]`; 훅이 한 번 더 묻는다) →
+  `scripts/agent-sync.sh post w "[MERGED by user] #N …"`. `--admin`·일괄 승인·auto-merge 금지. #197 은 게이트 이전의 수동 절차로 머지했다.
   **스택 PR**: base 브랜치를 삭제하기 전에 의존 PR 을 `gh api -X PATCH …/pulls/<N> -f base=main` 으로 재타깃한다 — #197 머지 시 base 삭제로 #198 이 자동 종료돼 #199 로 재개설한 사례.
   **기록 ≠ 인증**: 채널(`w.md`)·`decisions.md`·`qa-runs/` 는 에이전트도 쓸 수 있는 기록이다. 승인·티어 하향·Manual-Ops 실행 시점은 세션 안 AskUserQuestion 으로만 성립하고, 기록은 그 결과를 남기는 용도다(공유 파일로 지정해 워커 편집은 차단).
 - **QA**: `docs/release/qa-runs/` 규약(README). 사람이 실행, 오케스트레이터가 준비·기록. 브라우저는 관찰·증거 수집만. `post w "[QA by user] …"`.
@@ -75,9 +75,10 @@
 
 | 위치 | 변경 |
 |---|---|
-| **플러그인 `harness`**(`~/문서/claude-harness` → private `SWJoong/claude-harness`) | `agents/`(u-worker·w-contract-author·w-verifier, 프로젝트 중립) · `workflows/verify-pr.js`(렌즈·반박자 설정 가능, `--lens`) · `hooks/hooks.json`(SessionStart pull · lane-guard auto · merge-ask) · `scripts/`(lane-guard·agent-sync·wave-plan·merge-ask + selftest) · `skills/install`·`operate` · README |
+| **플러그인 `harness`**(`~/문서/claude-harness` → private `SWJoong/claude-harness`) | `agents/`(u-worker·w-contract-author·w-verifier, 프로젝트 중립) · `workflows/verify-pr.js`(렌즈·반박자 설정 가능, `--lens`) · `hooks/hooks.json`(SessionStart pull · lane-guard auto · merge-ask) · `scripts/`(lane-guard·agent-sync·wave-plan·merge-ask·pr-risk-tier·pr-merge-gate·qa-run + selftest 4종) · `commands/qa-run.md` · `skills/install`·`operate` · README |
 | 삭제(플러그인이 대체) | `.claude/agents/*` · `.claude/workflows/verify-pr.js` · `scripts/lane-guard.sh`·`lane-guard-selftest.sh` · `scripts/u-wave-plan.sh` · `.claude/settings.json` SessionStart 훅 |
-| 추가 | `.claude/harness.json`(정본) · `.github/pull_request_template.md` · `docs/release/decisions.md` · `docs/release/qa-runs/README.md` · 이 문서 |
+| 추가 | `.claude/harness.json`(정본) · `.github/pull_request_template.md` · `docs/release/decisions.md` · `docs/release/qa-runs/README.md` · `src/test/harnessConfig.test.ts`(설정 계약, #202) · 이 문서 |
+| 제외 | `.claude/agent-memory/harness-w-verifier/*`(검증자 메모리 6개) — b9aed51 에 섞여 들어갔다가 재검증 지적으로 추적 해제. 메모리는 기능 PR 에 넣지 않는다(추적/무시 정책은 사용자 결정) |
 | 재작성 | CLAUDE.md 하네스 섹션(역할 지도·레인·티어·사람 자리 절차·현황 정리) · `docs/harness-plan.md` v2 · `scripts/agent-sync.sh`(래퍼) |
 | 문구 | `04`(§1·§3·§5·§7·§8) · `17`(이전 안내) · `02`(리뷰 정책) · `14`(W 백로그 실행 주체) · `docs/release/README.md` · `.claude/skills/README.md` |
 | 저장소 밖(사용자·오케스트레이터) | `~/.claude/CLAUDE.md` 오케스트레이터 지시서(플러그인 `home-directive.md`) · `/home/choi/AGENTS.md` 축소 · 메모리 갱신 · private repo 생성·마켓플레이스 전환 · Windows 머신 설치 |
