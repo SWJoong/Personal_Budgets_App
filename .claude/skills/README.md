@@ -74,7 +74,7 @@ personal-budget-team/
 | 층 | 무엇 | 어디 |
 |---|---|---|
 | 스킬 | 역할 지식·체크리스트(인라인 "모자"). `paths:` 가 있는 스킬은 관련 파일 작업 시 자동 로드 | `.claude/skills/<역할>/SKILL.md` |
-| 에이전트 | 실행 주체(격리 컨텍스트·도구 권한·레인 가드 훅). `.claude/harness.json` `roleSkills` 를 시작 시 Skill 도구로 로드 | 플러그인 `harness`: `harness:u-worker`(u: backend·frontend) · `harness:w-verifier`(w: qa·pl·easy-read-review) · `harness:w-contract-author`(w: qa) |
+| 에이전트 | 실행 주체(격리 컨텍스트·도구 권한·레인 가드 훅). `.claude/harness.json` `roleSkills` 를 시작 시 Skill 도구로 로드 | 플러그인 `harness`: `harness:u-worker`(u: backend·frontend) · `harness:w-verifier`(w: qa·pl·easy-read-review) · `harness:w-contract-author`(w: qa·pl·easy-read-review — `roleSkills.w` 공유) |
 | 워크플로 | 반복 절차의 스크립트(재현·재개·비용 가시) | 플러그인 `harness`: `/harness:verify-pr <PR번호> [--lens …]` |
 
 운영 방법·근거: `docs/release/18-single-account-operating-model.md`(현행) · `17-harness-codification.md`(이력). W·U 는 계정이 아니라 역할 컨텍스트(단일 계정).
