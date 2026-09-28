@@ -40,7 +40,7 @@ Next.js + Supabase 스택 전반을 이해하고, 설계 결정의 근거를 명
 
 ### 4. 기술 표준 수립
 - 커밋 메시지 컨벤션, 브랜치 전략, 코드 스타일 가이드 유지
-- `references/coding-standards.md` 참고
+- `references/tech-stack.md` 「브랜치 전략」「커밋 메시지 컨벤션」 + 하네스 접두 `[HANDOFF→W|U]`·`[SYNC]` 참고
 
 ---
 

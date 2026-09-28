@@ -107,8 +107,10 @@ test-first(W가 RED 계약을 먼저 박고 U가 초록화). 이 문서는 *U �
 - **핸드오프**: commit(`[HANDOFF→W]`) → push → `gh pr create --base main`.
 - **리턴**: `=== WORKER REPORT ===` 구조 블록(STATUS/BRANCH/PR/FILES/CONTRACT/GATE/LANE_NOTES/BLOCKER).
 
-실행 수단: `Agent` 툴, `isolation: "worktree"`, `run_in_background: true`, `subagent_type: general-purpose`,
-`model: sonnet`(계약이 정답을 조이므로 워커는 sonnet, 판단·조율은 오케스트레이터 모델).
+실행 수단(2026-09-27 코드화, [`17-harness-codification.md`](17-harness-codification.md)): `.claude/agents/u-worker.md` 정의로 spawn —
+`Agent(subagent_type: "u-worker", run_in_background: true)`. 정의에 model sonnet · isolation worktree · background ·
+레인 가드 훅(`scripts/lane-guard.sh u`) · backend/frontend 스킬 선적재 · 규율·게이트·리턴 형식이 내장돼 있으므로 브리핑에는
+**태스크 · 화이트리스트 · 기준 브랜치** 만 준다. 검증은 `w-verifier` 또는 `/verify-pr <N>`, 계약 선행은 `w-contract-author`.
 
 ---
 
@@ -145,7 +147,7 @@ Windows Remote Control 세션)까지 조율한다. 단, **코드=PR·CI · 상�
 
 | 역할 | 어디에 | 도달 수단 |
 |---|---|---|
-| **W**(설계·검증) | **원격**(이 머신의 로컬 세션 아님) | **오직 `agent-sync` 채널(w.md)**. `SendMessage`/`send_message` 안 됨 |
+| **W**(설계·검증) | **원격**(이 머신의 로컬 세션 아님) | 정본은 **`agent-sync` 채널(w.md)**. 양쪽이 Remote Control 에 연결돼 있으면 `SendMessage` 가 다른 머신 세션에도 도달한다(문서 기준 v2.1.225+, 라이브 보조 채널로만 — 코드·상태 정본 아님). 미연결이면 채널만 |
 | **U**(구현·배포) | 이 머신 로컬(여럿일 수 있음) | 라이브면 `SendMessage`, idle면 `send_message`. + agent-sync |
 | 무관 | cwd≠저장소 | 조율 대상 아님 |
 

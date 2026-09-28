@@ -22,9 +22,10 @@ description: |
 | 레이어 | 도구 | 담당 범위 |
 |--------|------|-----------|
 | 단위 테스트 | Vitest | 유틸 함수, 비즈니스 로직, 훅 |
-| 통합 테스트 | Vitest + MSW | API 연동, 폼 제출 흐름 |
-| E2E 테스트 | Playwright | 핵심 사용자 시나리오 |
-| 접근성 테스트 | axe-core + Playwright | WCAG 2.1 AA 자동 검증 |
+| 렌더·계약 테스트 | Vitest + Testing Library(jsdom) | 화면 렌더 계약(`*.render.test.tsx`), 정적 계약(`src/test/`), 서버 액션 |
+| DB 계약 | `verify_*.sql` + CI db-verify | RLS·트리거·스키마 계약(임시 PostgreSQL) |
+| E2E | 미도입 — 수동 QA | 경로별 기능 QA 체크리스트(`docs/release/16`) + 페르소나 QA(`docs/release/08`) |
+| 접근성 | `eslint-plugin-jsx-a11y`(CI blocking) + 계약 테스트 + 수동 KWCAG 2.2 점검(swwa 플러그인) | 자동 회귀 차단 + 대비·포커스·타깃 수동 |
 | 쉬운 언어 검수 | easy-read-review 스킬 | UI 텍스트 품질 |
 
 ### 2. 핵심 테스트 시나리오 (개인예산제 앱)
@@ -49,8 +50,8 @@ description: |
 
 릴리스 전 아래 항목이 모두 통과해야 한다:
 - [ ] 단위 테스트 커버리지 80% 이상
-- [ ] E2E 핵심 시나리오 전체 통과
-- [ ] axe-core 접근성 위반 0건
+- [ ] 기능 QA 체크리스트(`docs/release/16`) 경로 A·B 통과
+- [ ] jsx-a11y 린트 오류 0 + KWCAG 체크리스트 수동 점검
 - [ ] 쉬운 언어 검수 종합 점수 70점 이상
 - [ ] 모바일(375px) 레이아웃 깨짐 없음
 - [ ] Lighthouse 성능 점수 85점 이상
