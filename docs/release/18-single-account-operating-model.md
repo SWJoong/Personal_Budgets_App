@@ -94,7 +94,9 @@ Remote Control 이 양쪽에 연결돼 있으면 `SendMessage` 를 라이브 보
 - 이 저장소 `.claude/harness.json` 로 `lane-guard.sh auto` 실측: 메인 세션 `src/test/x.test.ts`·`Plan&Source/x_W.md` → **ask** / `CLAUDE.md`·`src/utils/x.ts` → 허용 / `harness:u-worker` `src/test/x.test.ts`·`scripts/agent-sync.sh` → **차단(2)**, `supabase/seoul/21_x.sql` → 허용 / `harness:w-contract-author` `src/utils/x.ts` → **차단(2)**, `verify_x.sql` → 허용.
 - `merge-ask.sh` 에 `gh pr merge 197 --squash` → **ask** JSON. `scripts/agent-sync.sh pull`(래퍼) → 플러그인 스크립트로 위임되어 채널 출력. `wave-plan.sh` → "대상 핸드오프 없음"(오픈 계약 PR 0건).
 - 소스 변경 없음(`src/**` 무변경) → `npm test` 는 #197 기준 155 파일·1056 테스트 통과가 유효. CI(quality-check·db-verify)는 PR 에서 재확인.
-- 라이브 spawn(`harness:u-worker` 1건)과 `/harness:verify-pr` 첫 실행은 이 PR 의 검증 단계에서 수행 — 결과는 PR 코멘트.
+- 라이브 spawn(`harness:u-worker` 1건, 2026-09-28): worktree 가 origin/main 기준이라 `harness.json` 부재 → v0.2.0 가드 fail-open, 워커는 규율대로 편집을 되돌리고 클린 종료. → 0.3.0 에서 '설정 없음 = 기본 레인' 으로 수정.
+- `/harness:verify-pr`(#198 대상, 14 에이전트·4렌즈, 11.7h): 판정 changes-requested, findings 35(높음 3 · 보통 16 · 낮음 16), 기각 2. **반영(플러그인 0.3.0 + 이 PR)**: 레인 가드 자기 worktree 밖 차단·설정 없음/파손 fail-closed·agent_type 정확 일치·`**/` 0-depth · merge-ask 변형(`bash -c`·`gh api …/merge`·refspec·force) 대응 · 고위험군이 문서 판정보다 우선(CLAUDE.md·스킬·harness-plan·PR 템플릿 = gate) · tiers.high 누락 경로군(api/**·ruleCheck·storage·privacy 유틸·SQL 함수/트리거) · participantCopyGlobs 확장 · docs-consistency 렌즈 · lanes.shared 에 decisions/qa-runs/agents/workflows/commands · 에이전트 스킬 로드 폴백(Read) · 래퍼 fail-safe 축소(post·log exit 3)·개인 경로 제거 · enabledPlugins 선언 · 결정 로그 날짜 정정 · 스택 PR 재타깃 절차 · 기록≠인증 명시 · 접근성 검증 체크 항목 · 정적 계약 `src/test/harnessConfig.test.ts`(w-contract-author) · stale 참조 2건.
+- **후속(이 PR 밖)**: `enforce_admins: true`(브랜치 보호 — 사용자 결정) · 플러그인 버전 고정(`plugin.minVersion` 은 정보용, tag 기반 pin + CI 에서 플러그인 selftest 를 이 저장소 harness.json 으로 실행) · `gate.contractSql`(verify SQL 실행기) 분리 · `.github/workflows` 에 `jq empty .claude/harness.json` 단계(정적 계약이 대신 잡음) · Vercel Ignored Build Step · Windows 머신 설치.
 
 ## 부록 A · CLAUDE.md 「현재 작업 현황」 이력 (2026-08-19 ~ 2026-09-20, 원문 이관)
 

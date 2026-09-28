@@ -112,7 +112,7 @@ Claude Code 의 병렬 수단 비교(문서 기준): 서브에이전트 = 한 �
 
 ## 6. 남은 일 (후속)
 
-- [ ] 새 세션에서 `harness:u-worker` 라이브 spawn 1건으로 훅 차단 메시지·리턴 형식 실증.
+- [x] 새 세션에서 `harness:u-worker` 라이브 spawn 1건 실증(2026-09-28) — 리턴 형식 정상, 가드는 worktree 에 harness.json 이 없어 fail-open → 플러그인 0.3.0 에서 기본 레인 적용으로 수정(doc18 §9).
 - [ ] `u-wave` 저장 워크플로: `u-wave-plan.sh` 출력 → 서로소 웨이브 → `u-worker` 동시 spawn.
 - [x] 홈 `~/.claude/CLAUDE.md` U 지시서 → 플러그인 `skills/install/assets/home-directive.md`(오케스트레이터 지시서)로 대체 — doc18.
 - [ ] agent-sync 브랜치 push 의 Vercel 빌드 노이즈 → Ignored Build Step(W 제안, 처리 여부 확인).
