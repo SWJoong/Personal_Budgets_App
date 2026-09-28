@@ -68,3 +68,13 @@ personal-budget-team/
     ├── SKILL.md
     └── references/infrastructure.md
 ```
+
+## 스킬 ↔ 에이전트 ↔ 워크플로 (2026-09-27 하네스 코드화)
+
+| 층 | 무엇 | 어디 |
+|---|---|---|
+| 스킬 | 역할 지식·체크리스트(인라인 "모자"). `paths:` 가 있는 스킬은 관련 파일 작업 시 자동 로드 | `.claude/skills/<역할>/SKILL.md` |
+| 에이전트 | 실행 주체(격리 컨텍스트·도구 권한·레인 가드 훅). 스킬을 `skills:` 로 선적재 | `.claude/agents/u-worker.md`(backend·frontend) · `w-verifier.md`(qa·pl·easy-read-review) · `w-contract-author.md`(qa) |
+| 워크플로 | 반복 절차의 스크립트(재현·재개·비용 가시) | `.claude/workflows/verify-pr.js` → `/verify-pr <PR번호>` |
+
+운영 방법·근거: `docs/release/17-harness-codification.md`.

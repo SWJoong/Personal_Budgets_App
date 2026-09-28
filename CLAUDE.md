@@ -302,3 +302,6 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
     Analytics 수집범위/DPA · 사용자 = pg_cron·활동사진 RLS 라이브 확인·실사용자 심사·기능 QA(doc16)·정산 실무자 허용·KPI D.
   - **다음(U 코드, 결정 불요)**: 쉬운말 `<Term>` 확대(`plan/page.tsx`)·지출기록 TTS·`receipt.view` 반복 기록 축소·감사 `target_participant_id` 누락.
   - **운영 모드**: 변동 없음 — U 한 세션이 양축 대행(구현≠검증은 신선 서브에이전트), main 머지는 사람.
+  - **하네스 코드화(U, 2026-09-27)**: `.claude/agents/`(u-worker · w-verifier · w-contract-author) + `scripts/lane-guard.sh`(레인 가드 PreToolUse 훅)
+    + `/verify-pr` 저장 워크플로 + 역할 스킬 드리프트 정정(frontend·backend·devops·pl·qa) — `docs/release/17-harness-codification.md`.
+    구현·검증 서브에이전트는 이제 정의 파일로 spawn(즉석 브리핑 폐지). 새 세션에서 인식.
