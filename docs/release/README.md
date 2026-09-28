@@ -35,5 +35,6 @@
 - [14-prd-reprioritization.md](14-prd-reprioritization.md) — PRD 재정합 + 3축 우선순위 백로그 (현행 백로그 2026-09-27 재점검 포함)
 - [15-overseas-transfer-decision.md](15-overseas-transfer-decision.md) — AI 개인정보 처리(국외이전·위탁·동의) 근거 결정 메모
 - [16-functional-qa-checklist.md](16-functional-qa-checklist.md) — 경로별 기능 QA 체크리스트
+- [17-harness-codification.md](17-harness-codification.md) — 하네스 코드화: 서브에이전트 정의(u-worker·w-verifier·w-contract-author)·레인 가드 훅·`/verify-pr` 저장 워크플로·역할 스킬 정정
 
 > 번호 `08`·`12` 는 각각 두 파일이 같은 번호를 쓴다(작성 시점이 겹친 기록). 링크 호환을 위해 파일명은 바꾸지 않는다. *(2026-09-27 갱신)*

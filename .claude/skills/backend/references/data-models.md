@@ -1,3 +1,6 @@
+> ⚠️ **구 스키마 메모(리빌드 이전)** — 현행 정본은 `supabase/seoul/README.md` + `src/types/database.ts`.
+> 아래 profiles/budgets/expenses 모델은 현행 DB 와 다르다. 설계 참고용으로만 읽는다. *(2026-09-27 주석)*
+
 # 데이터 모델 정의
 
 ## profiles (사용자 프로필)
