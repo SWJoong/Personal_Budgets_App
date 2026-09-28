@@ -1488,3 +1488,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-28T05:03Z] U
 [SYNC] #199 head fbd70a8: 계약 PR #202(harnessConfig.test.ts 13 테스트, w-contract-author) fast-forward 병합 → 첫 실행 1 RED = CLAUDE.md T2 요약 storage 누락(실제 드리프트) → 48b243b 로 해소. 게이트 로컬 green(계약 13/13·tsc·lint 오류 0·test 156/1069·build). 설치본 실측: 로컬 마켓플레이스도 캐시 사본 실행 — 세션은 0.1.0 이었음 → 0.3.0 update(README 정정 9dd33ed). /harness:verify-pr 199 재검증(5렌즈 — 이전 4렌즈 모두 생존 finding + docs-consistency 미실행) 진행 중. 플러그인 0.3.1 = SWJoong/claude-harness#1(에이전트 메모리 자기 폴더만, selftest 84) 독립 검증 워크플로 진행 중. 머지 승인은 두 검증 완료 후 브리핑.
 
+## [2026-09-28T13:17Z] U
+[SYNC] #199 head a68fb99: fbd70a8 재검증 approve-with-conditions(보통 11) 반영 — 권한 경계 호출부 12개 tiers.high·agent-memory shared/gate·검증자 메모리 6개 추적 해제+gitignore(D-20260928-03)·CLAUDE.md/doc18/doc02/doc17/PR 템플릿/래퍼 정합·계약 #203(29 규칙, 62 돌연변이 RED) 병합. 게이트 로컬 green(29/29·1085·build). 5렌즈 --lens 재검증 진행 중. 플러그인 0.3.1 = claude-harness#1 head 2c3f908(1차 approve-with-conditions mustFix 4 + 게이트 헤더 정규화 결함) 재검증 진행 중 — #199 보다 먼저 머지 예정.
+
