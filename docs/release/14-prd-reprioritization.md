@@ -78,7 +78,7 @@
 | P2-6 | 축C 슈퍼비전(실무자 활동 가시성) 뷰 | **done** (#181) | U | 담당자별 업무량·처리현황 뷰 부재. P1-2 와 데이터 소스 공유 |
 
 ### P3 — 인프라·테스트·문서
-`easyread 자동검증 CI`(gap) · `copay TS 패리티 테스트`(**done** (이 PR): DB `verify_06_copay` + TS `src/utils/copay.test.ts` — W 파일럿 f44316f 안착, 전 상태 `describeCopay`·`copayStatusLabel`·`copayIntent` + `CopayStatus` 전수 타입 가드 + seoul SQL CHECK·기본값·트리거 산출값·verify_06 판정값 목록 대조) ·
+`easyread 자동검증 CI`(gap) · `copay TS 패리티 테스트`(**done** (#200): DB `verify_06_copay` + TS `src/utils/copay.test.ts` — W 파일럿 f44316f 안착, 전 상태 `describeCopay`·`copayStatusLabel`·`copayIntent` + `CopayStatus` 전수 타입 가드 + seoul SQL CHECK·기본값·트리거 산출값·verify_06 판정값 목록 대조) ·
 `UI/브라우저 E2E`(gap, 현재 라이프사이클은 `verify_lifecycle.sql` DB계약만) · `문서 위생`(CLAUDE.md 현황·copay 프레이밍 stale — **2026-09-27 `docs/status-sync-2026-09-27` 에서 정리**) ·
 `is_super_admin 판정 소스 일원화`(이메일 vs DB 컬럼).
 
@@ -169,7 +169,7 @@
 - **P2** `verify_plan_feedback.sql` 저작(본인 작성·`can_access` 열람·append-only).
 - **P2** #176~#191 신규 화면 KWCAG 3차 감사(`/admin/audit`·`/admin/insights`·`/admin/supervision`·보고서 인쇄·평가 아코디언·거래장부/정산 표) — doc07.
 - **P2** 쉬운말 요약 자유서술 제3자 이름 탐지 방식 설계(P0-2 잔여, B안 확정 전제).
-- **P3** ~~copay TS 패리티 테스트~~(done, 이 PR) · UI/브라우저 E2E 범위·도구 설계 · 감사 커버리지 후속(갤러리·상세 열람·변경 감사 대상) 설계.
+- **P3** ~~copay TS 패리티 테스트~~(done, #200) · UI/브라우저 E2E 범위·도구 설계 · 감사 커버리지 후속(갤러리·상세 열람·변경 감사 대상) 설계.
 - **P3** AI 기능 후속(요약 저장 캐시·근처 기관 연계·AI점검 v2) — 보류 유지.
 
 ---
