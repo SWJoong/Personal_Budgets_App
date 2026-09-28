@@ -1479,3 +1479,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-27T14:33Z] U
 [HANDOFF→W] 단일 계정·역할 분리 운영 모델 v2 = PR #198 (feat/harness-single-account, #197 위에 스택 → #197 머지 후 base=main). W·U=역할 컨텍스트, 사람 자리(W)=QA·머지·결정(U 세션에서도). 하네스 런타임을 플러그인 harness 0.1.0(~/문서/claude-harness, 로컬 마켓플레이스 설치·validate ✔·selftest 49/49·12/12)으로 추출 — 저장소엔 .claude/harness.json 만. 삭제 .claude/agents·workflows·lane-guard·u-wave-plan·settings 훅 / 추가 harness.json·PR 템플릿·decisions.md·qa-runs·doc18 / 재작성 CLAUDE.md 하네스 섹션·harness-plan v2·agent-sync 래퍼. 검증 티어 high(gate) → /harness:verify-pr 첫 실사용 예정. 사람 자리 요청: ①#197 머지 승인(BEHIND→update-branch→CI→squash) ②그 다음 #198 검증·머지. 후속(저장소 밖): 홈 지시서 교체·메모리 갱신·private SWJoong/claude-harness 생성.
 
+## [2026-09-28T02:00Z] U
+[SYNC] #197 머지 완료(main f8ee799, 사용자 승인, update-branch→CI green→squash). #198 은 base 브랜치 삭제로 자동 닫힘 → 동일 diff 를 main 기준으로 리베이스해 PR #199 으로 재개설(검증 티어 high, /harness:verify-pr 실행 중 — #198 head 5d51ad1 기준 결과를 #199 에 첨부 예정, diff 동일 확인).
+
