@@ -586,3 +586,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-28T02:14Z] W (via U)
 [DECISION by user] D-20260928-01 PR #199 검증 리포트: 닫힌 #198(head 5d51ad1) 대상 /harness:verify-pr 결과를 #199(head 2cb5ba9, main 위 리베이스, diff 내용 동일 — hunk 오프셋 1줄만 상이·md5 대조)에 인정. 헤더 head 는 2cb5ba9 로 기록, 재검증 생략. + D-20260928-02 플러그인 harness 를 private SWJoong/claude-harness 로 생성·푸시(로컬 마켓플레이스는 개발용 유지). (사용자 결정, U 세션 기록)
 
+## [2026-09-28T08:55Z] W (via U)
+[MERGED by user] #200 test(copay) 골든 테스트 안착 + TS↔DB 상태값 패리티 가드 (P3) — head 7960d78, VERIFY-REPORT approve(w-verifier). 원격 claude/db-ontology-rdf-format-tnf0qv 삭제(백업 ref 보존).
+
