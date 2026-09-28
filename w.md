@@ -589,3 +589,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-28T08:55Z] W (via U)
 [MERGED by user] #200 test(copay) 골든 테스트 안착 + TS↔DB 상태값 패리티 가드 (P3) — head 7960d78, VERIFY-REPORT approve(w-verifier). 원격 claude/db-ontology-rdf-format-tnf0qv 삭제(백업 ref 보존).
 
+## [2026-09-28T12:39Z] W (via U)
+[DECISION by user] #201 온보딩 역할 안내 문구 = "잘못 골랐어도 괜찮아요. 관리자에게 바꿔 달라고 말해 주세요." (기존 '내 정보에서 바꿀 수 있어요'는 protect_profile_role 트리거로 비관리자 변경 불가라 사실 아님) — 문구 수정·계약 갱신·a11y-copy 재검증 후 머지.
+
