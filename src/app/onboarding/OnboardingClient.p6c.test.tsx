@@ -3,6 +3,8 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import OnboardingClient from './OnboardingClient'
 import { LiveRegionProvider } from '@/components/ui/LiveRegion'
+import MoreMenuClient from '@/components/layout/MoreMenuClient'
+import { AccessibilityProvider } from '@/hooks/useAccessibility'
 
 /**
  * P6 Phase C — 온보딩 장식 이모지 aria-hidden (f13f641 A6-content 재적용)
@@ -117,5 +119,34 @@ describe('P6-C 장식 이모지 — 온보딩 프로필 설정 (onboarding-profi
     await user.click(screen.getByRole('button', { name: /예산을 직접 관리/ }))
     expect(screen.getByRole('button', { name: '뒤로 가기' })).toBeInTheDocument()
     expect(screen.getByText('←').closest('[aria-hidden="true"]')).not.toBeNull()
+  })
+})
+
+/**
+ * #201 검증 조건(a11y-copy-2) — 역할 선택 화면의 '나중에 바꿀 수 있어요' 안내가 앱에 없는 메뉴 '계정 관리'를
+ * 가리켰다. 실제로 역할(사용자/지원자)을 바꾸는 곳은 더보기의 '내 정보'(/settings/profile) 링크다(40fdd1e).
+ * 쉬운 글 A-06(같은 것은 같은 말로): 안내문의 메뉴 이름 = 더보기 화면 링크 이름. 화살표(→)는 스크린리더가
+ * '오른쪽 화살표'로 읽으므로 쓰지 않는다.
+ */
+describe('P6-C 쉬운 글 — 역할 바꾸는 곳 안내가 실제 메뉴 이름을 쓴다 (onboarding-role-change-hint)', () => {
+  const MENU = '내 정보'
+  const HINT = `나중에 '더보기'의 '${MENU}'에서 바꿀 수 있어요.`
+
+  it(`안내문이 "${HINT}" 이고, 없는 메뉴 '계정 관리'·화살표(→)를 쓰지 않는다`, () => {
+    const { container } = renderClient()
+    expect(screen.getByText(HINT)).toBeInTheDocument()
+    expect(container).not.toHaveTextContent('계정 관리')
+    expect(container).not.toHaveTextContent('→')
+  })
+
+  it(`안내문의 '${MENU}' 는 더보기 화면에서 역할을 바꾸는 링크(/settings/profile)의 이름과 같다`, () => {
+    render(
+      <AccessibilityProvider>
+        <MoreMenuClient fileLinks={[]} />
+      </AccessibilityProvider>,
+    )
+    const profile = screen.getAllByRole('link').filter((a) => a.getAttribute('href') === '/settings/profile')
+    expect(profile).toHaveLength(1)
+    expect(profile[0]).toHaveAccessibleName(MENU)
   })
 })

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { readFileSync } from 'node:fs'
 import MoreMenuClient from './MoreMenuClient'
 
@@ -20,7 +21,11 @@ import MoreMenuClient from './MoreMenuClient'
  *   → 화면에 렌더된 모든 이모지 글자가 aria-hidden 아래(또는 aria-label 로 이름이 덮인 컨트롤 안)에 있다.
  * - 섹션 펼침 버튼의 ▲/▼ 는 aria-expanded 가 상태를 전달하므로 장식 → 접근명은 '<제목> 접기/펼치기'.
  *
- * 훅/모듈 의존: MoreMenuClient.test.tsx 와 같은 모킹(렌더 성공이 전제). useAccessibility 상태만 테스트별로 바꾼다.
+ * - (#201 검증 조건) 스위치 배선: 누르면 자기 설정 setter 만 '현재값의 반대'로 한 번 불린다(켜짐·꺼짐 둘 다).
+ *   포커스 유지: 키보드(Space)로 켜고 꺼도 같은 버튼 요소가 포커스를 가진다(재마운트 금지 — 포커스가 body 로 튐).
+ *
+ * 훅/모듈 의존: MoreMenuClient.test.tsx 와 같은 모킹(렌더 성공이 전제). useAccessibility 는 useState 기반 상태 모킹 —
+ *   초기값은 테스트별 a11y.*, setter 는 hoisted vi.fn(호출 기록) + 실제 상태 갱신(토글하면 checked 가 바뀐다).
  */
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -30,23 +35,42 @@ vi.mock('@/utils/supabase/client', () => ({
   createClient: () => ({ auth: { signOut: vi.fn() } }),
 }))
 
-// 스위치 켜짐/꺼짐을 테스트마다 바꿀 수 있게 상태를 hoisted 객체로 둔다(기본 전부 꺼짐).
-const a11y = vi.hoisted(() => ({ highContrast: false, easyTerms: false, yellowBg: false, darkMode: false }))
-vi.mock('@/hooks/useAccessibility', () => ({
-  useAccessibility: () => ({
-    fontSize: 'normal', setFontSize: vi.fn(),
-    highContrast: a11y.highContrast, setHighContrast: vi.fn(),
-    easyTerms: a11y.easyTerms, setEasyTerms: vi.fn(),
-    yellowBg: a11y.yellowBg, setYellowBg: vi.fn(),
-    darkMode: a11y.darkMode, setDarkMode: vi.fn(),
-  }),
+// 스위치 켜짐/꺼짐 초기값을 테스트마다 바꿀 수 있게 hoisted 객체로 둔다(기본 전부 꺼짐). setter 호출은 set.* 에 기록.
+const a11y = vi.hoisted(() => ({
+  highContrast: false, easyTerms: false, yellowBg: false, darkMode: false,
+  set: {
+    setFontSize: vi.fn(),
+    setHighContrast: vi.fn(),
+    setEasyTerms: vi.fn(),
+    setYellowBg: vi.fn(),
+    setDarkMode: vi.fn(),
+  },
 }))
+vi.mock('@/hooks/useAccessibility', async () => {
+  const { useState } = await import('react')
+  return {
+    useAccessibility: () => {
+      const [highContrast, setHC] = useState(a11y.highContrast)
+      const [easyTerms, setET] = useState(a11y.easyTerms)
+      const [yellowBg, setYB] = useState(a11y.yellowBg)
+      const [darkMode, setDM] = useState(a11y.darkMode)
+      return {
+        fontSize: 'normal', setFontSize: a11y.set.setFontSize,
+        highContrast, setHighContrast: (on: boolean) => { a11y.set.setHighContrast(on); setHC(on) },
+        easyTerms, setEasyTerms: (on: boolean) => { a11y.set.setEasyTerms(on); setET(on) },
+        yellowBg, setYellowBg: (on: boolean) => { a11y.set.setYellowBg(on); setYB(on) },
+        darkMode, setDarkMode: (on: boolean) => { a11y.set.setDarkMode(on); setDM(on) },
+      }
+    },
+  }
+})
 
 beforeEach(() => {
   a11y.highContrast = false
   a11y.easyTerms = false
   a11y.yellowBg = false
   a11y.darkMode = false
+  for (const fn of Object.values(a11y.set)) fn.mockClear()
 })
 
 const EMOJI = /\p{Extended_Pictographic}/u
@@ -137,6 +161,54 @@ describe('P6-C 스위치 상태 표시 — 모든 화면 모드에서 켜짐/꺼
       expect(m, mode).not.toBeNull()
       expect(m![1], mode).toContain(':not(button)')
     }
+  })
+})
+
+/** 스위치 이름 ↔ 상태 키 ↔ setter. 네 스위치를 공통 SettingSwitch 로 모으며 onClick 배선을 새로 짰다(#201). */
+const WIRING = [
+  { name: '글씨 더 잘 보이기 전환', key: 'highContrast', setter: 'setHighContrast' },
+  { name: '다크 모드 전환', key: 'darkMode', setter: 'setDarkMode' },
+  { name: '쉬운 용어 모드 전환', key: 'easyTerms', setter: 'setEasyTerms' },
+  { name: '노란 배경 모드 전환', key: 'yellowBg', setter: 'setYellowBg' },
+] as const
+
+describe('P6-C 스위치 배선 — 누르면 자기 설정만 반대로 바뀐다 (moremenu-switch-wiring)', () => {
+  const cases = WIRING.flatMap((s) => [
+    { ...s, on: true },
+    { ...s, on: false },
+  ])
+
+  it.each(cases)("$name (켜짐=$on) 을 누르면 $setter(!현재값) 이 한 번만 불리고, 다른 설정 setter 는 안 불린다", ({ name, key, setter, on }) => {
+    a11y[key] = on
+    render(<MoreMenuClient fileLinks={[]} initialOpenSection="display" />)
+    fireEvent.click(screen.getByRole('switch', { name }))
+
+    expect(a11y.set[setter]).toHaveBeenCalledTimes(1)
+    expect(a11y.set[setter]).toHaveBeenCalledWith(!on)
+    for (const [other, fn] of Object.entries(a11y.set)) {
+      if (other !== setter) expect(fn, `${name} → ${other}`).not.toHaveBeenCalled()
+    }
+  })
+})
+
+describe('P6-C 스위치 포커스 유지 — 키보드로 켜고 꺼도 포커스가 그 스위치에 남는다 (moremenu-switch-focus)', () => {
+  it.each(WIRING)('$name: Space 로 켜고 끄는 동안 같은 버튼 요소가 포커스를 유지한다(재마운트 없음)', async ({ name }) => {
+    const user = userEvent.setup()
+    render(<MoreMenuClient fileLinks={[]} initialOpenSection="display" />)
+    const sw = screen.getByRole('switch', { name })
+    sw.focus()
+    expect(document.activeElement).toBe(sw)
+
+    await user.keyboard(' ')
+    // 같은 요소가 켜짐으로 바뀌고(재마운트면 이 참조는 떨어져 나가 'false' 로 남는다), 포커스도 그대로다
+    expect(sw).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByRole('switch', { name })).toBe(sw)
+    expect(document.activeElement).toBe(sw)
+
+    await user.keyboard(' ')
+    expect(sw).toHaveAttribute('aria-checked', 'false')
+    expect(screen.getByRole('switch', { name })).toBe(sw)
+    expect(document.activeElement).toBe(sw)
   })
 })
 
