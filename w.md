@@ -592,3 +592,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-28T12:39Z] W (via U)
 [DECISION by user] #201 온보딩 역할 안내 문구 = "잘못 골랐어도 괜찮아요. 관리자에게 바꿔 달라고 말해 주세요." (기존 '내 정보에서 바꿀 수 있어요'는 protect_profile_role 트리거로 비관리자 변경 불가라 사실 아님) — 문구 수정·계약 갱신·a11y-copy 재검증 후 머지.
 
+## [2026-09-28T12:58Z] W (via U)
+[DECISION by user] D-20260928-03 서브에이전트 메모리 = 로컬 전용: PBA .claude/agent-memory*/ 를 .gitignore(검증자 project 메모리는 메인 체크아웃에만), harness:u-worker·harness:w-contract-author 는 memory: user(~/.claude/agent-memory/, 프로젝트 공통, 머신 간 공유 없음). 근거: #199 재검증 — 검증자 메모리 6개가 기능 PR(공개 저장소)에 섞임·worktree 워커 메모리 고아. (사용자 결정, U 세션 기록)
+
