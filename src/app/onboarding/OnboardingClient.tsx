@@ -130,7 +130,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
         {step === 'role' && (
           <div className="bg-card rounded-[2rem] p-8 shadow-xl ring-1 ring-border animate-fade-in-up">
             <div className="text-center mb-8">
-              <span className="text-5xl block mb-4">👋</span>
+              <span aria-hidden="true" className="text-5xl block mb-4">👋</span>
               <h1 className="text-2xl font-black text-foreground mb-2">반가워요!</h1>
               <p className="text-muted-foreground font-medium">당신은 어떤 사람인가요?</p>
             </div>
@@ -140,7 +140,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                 onClick={() => handleRoleSelect('participant')}
                 className="flex items-center gap-5 p-6 rounded-2xl ring-2 ring-border hover:ring-primary hover:bg-primary/5 transition-all active:scale-[0.98] text-left group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-info-bg flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
+                <div aria-hidden="true" className="w-16 h-16 rounded-2xl bg-info-bg flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
                   🙋
                 </div>
                 <div>
@@ -155,7 +155,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                 onClick={() => handleRoleSelect('supporter')}
                 className="flex items-center gap-5 p-6 rounded-2xl ring-2 ring-border hover:ring-primary hover:bg-primary/5 transition-all active:scale-[0.98] text-left group"
               >
-                <div className="w-16 h-16 rounded-2xl bg-success-bg flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
+                <div aria-hidden="true" className="w-16 h-16 rounded-2xl bg-success-bg flex items-center justify-center text-3xl shrink-0 group-hover:scale-110 transition-transform">
                   🤝
                 </div>
                 <div>
@@ -166,7 +166,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
             </div>
 
             <p className="text-center text-xs text-muted-foreground mt-6">
-              나중에 더보기 → 계정 관리에서 바꾸 수 있어요.
+              잘못 골랐어도 괜찮아요. 관리자에게 바꿔 달라고 말해 주세요.
             </p>
           </div>
         )}
@@ -179,12 +179,12 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 min-h-[44px]"
               aria-label="뒤로 가기"
             >
-              <span className="text-xl">←</span>
+              <span aria-hidden="true" className="text-xl">←</span>
               <span className="text-sm font-bold">뒤로</span>
             </button>
 
             <div className="text-center mb-8">
-              <span className="text-4xl block mb-3">{role === 'participant' ? '🙋' : '🤝'}</span>
+              <span aria-hidden="true" className="text-4xl block mb-3">{role === 'participant' ? '🙋' : '🤝'}</span>
               <h1 className="text-xl font-black text-foreground">
                 {role === 'participant' ? '사용자 프로필 설정' : '지원자 프로필 설정'}
               </h1>
@@ -203,7 +203,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                   {avatarPreview ? (
                     <img src={avatarPreview} alt="프로필" className="w-full h-full object-cover" />
                   ) : (
-                    <span>📷</span>
+                    <span aria-hidden="true">📷</span>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground font-bold">프로필 사진 (스킵 가능)</p>
@@ -247,7 +247,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                             : 'ring-border text-muted-foreground hover:ring-primary'
                         }`}
                       >
-                        <span className="text-2xl block mb-1">💰</span>
+                        <span aria-hidden="true" className="text-2xl block mb-1">💰</span>
                         <span className="text-sm font-bold">재원 하나</span>
                       </button>
                       <button
@@ -260,7 +260,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                             : 'ring-border text-muted-foreground hover:ring-primary'
                         }`}
                       >
-                        <span className="text-2xl block mb-1">💰💰</span>
+                        <span aria-hidden="true" className="text-2xl block mb-1">💰💰</span>
                         <span className="text-sm font-bold">둘 이상</span>
                       </button>
                     </div>
@@ -293,7 +293,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                               )}
                             </div>
                             <span className="font-bold text-foreground">{s.name || '이름 없음'}</span>
-                            {selectedSupporter === s.id && <span className="ml-auto text-primary text-xl">✓</span>}
+                            {selectedSupporter === s.id && <span aria-hidden="true" className="ml-auto text-primary text-xl">✓</span>}
                           </button>
                         ))}
                       </div>
@@ -327,7 +327,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                           )}
                         </div>
                         <span className="font-bold text-foreground">{p.name || '이름 없음'}</span>
-                        {selectedParticipants.includes(p.id) && <span className="ml-auto text-primary text-xl">✓</span>}
+                        {selectedParticipants.includes(p.id) && <span aria-hidden="true" className="ml-auto text-primary text-xl">✓</span>}
                       </button>
                     ))}
                   </div>
@@ -354,7 +354,7 @@ export default function OnboardingClient({ userId, userEmail, userName, userAvat
                 disabled={loading || !name.trim()}
                 className="w-full py-5 rounded-3xl bg-primary text-primary-foreground text-xl font-black shadow-xl active:scale-95 disabled:bg-muted transition-all mt-2"
               >
-                {loading ? '설정 중...' : '시작하기 🎉'}
+                {loading ? '설정 중...' : <>시작하기 <span aria-hidden="true">🎉</span></>}
               </button>
             </div>
           </div>

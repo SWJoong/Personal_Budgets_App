@@ -17,7 +17,7 @@
 | §5 select·라디오·버튼형 선택 | ◐ 일부 | #61·#72·#155·#157·#191 | 값만 바꿔도 이동하는 select 2곳(`PreviewBanner`·`MapParticipantFilter`)에 명시적 이동 버튼 · 신청 상세 동의 체크박스 묶음(`ApplicationDetailClient`)에 `fieldset/legend` |
 | §6 라이브 영역 배선 | ◐ 일부 | #58·#61·#194 외 | 계획이 이름 댄 `DisplaySettingsClient` 저장 상태·오류 · 제출 오류가 무음인 화면(로그인·`MyPlanClient`·`ParticipantDetailClient`·`PlanDetailClient`·`NewPlanClient`·`ParticipantPlanFeedback`) · `ReceiptUploader` 는 업로드 **전** 검증 오류(5MB·읽기 실패)만 무음(업로드 실패는 안내됨) |
 | §7 필터 명시·초기화·결과 수 | ◐ 일부 | #72·#134·#135·#150 | 기관 원장: 필터 4종 한 번에 초기화 · 결과 수 라이브 안내. 당사자 지도(`(participant)/map/MapTabsClient.tsx`): 영역 칩 `aria-pressed`·묶음 라벨 · 결과 수 · 적용 필터 표시(실무자 지도 `supporter/map/MapClient.tsx` 는 이미 됨) |
-| §8 내비 상태 | ◐ 일부 | #98·#58·#106 | `AdminSidebar` 키보드(Esc·방향키) · 하위메뉴 토글 28px→44px·이름 있는 라벨 · 모바일 드로어 Modal 화(§1 과 같은 건) |
+| §8 내비 상태 | ◐ 일부 | #98·#58·#106·#201 | `AdminSidebar` 키보드(Esc·방향키) · 모바일 드로어 Modal 화(§1 과 같은 건). (하위메뉴 토글 28px→44px·이름 있는 라벨(`<메뉴이름> 하위 메뉴 펼치기/접기`)·`aria-controls` 는 #201) |
 | §9 외부·새 창 링크 | ◐ 일부 | #155 | 더보기 파일 링크의 **보이는** 새 창 표시 · `window.open` 으로 새 탭을 여는 '열기' 버튼 2곳(`ApplicationDetailClient`·`DocumentShelfClient`) 안내 |
 | §10 당사자 하단 탭(TabBar) | ◐ 일부 | #98·#99 | 홈의 단독 ⚙ 링크 정리(더보기 탭과 중복) |
 | 마무리: jsx-a11y 4규칙 error 승격 | ✅ done | #61 (규칙 도입 #57) | — |
