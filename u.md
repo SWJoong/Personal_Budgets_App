@@ -1494,3 +1494,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-28T14:11Z] U
 [SYNC] #199 head cb7e0a8: a68fb99 재검증 approve-with-conditions(보통 6) 반영 — main(#200) 병합·vercel.json privacy·스택 PR 순서·결정 3곳·계약 #204(35+래퍼 4) 병합. 의도된 RED 1 = minVersion ≥ 0.3.1(플러그인 머지·설치 후 0.4.0 으로 올림). 플러그인 = claude-harness#1 head be28d5b(0.4.0: realpath -L·설정 영역 우선·close_decision·report_body·호환 영향), 2차 검증 approve-with-conditions(보통 3) 반영 후 3차(bypass·compat) 재검증 중. 순서: 플러그인 승인·머지·설치 → #199 minVersion 0.4.0 → 4렌즈 재검증 → #199 승인·머지.
 
+## [2026-09-29T00:51Z] U
+[SYNC] 플러그인 claude-harness#1 head e00cc90(0.4.0): 3차 조건(대소문자 무시 FS 루트·상대 경로 우회)·4차 조건(ASCII 로 접히는 유니코드 문자 ſ·K·ß·합자 우회) 반영 — 둘 다 0.3.0 부터 있던 결함, 현 PBA(ext4) 영향 없음. casefold tmpfs 로 selftest 실측(lane-guard 178·gate 48). 5차 재검증(bypass + fs-semantics 두 렌즈) 진행 중. #199 는 플러그인 머지·설치 후 minVersion 0.4.0 → 4렌즈 재검증 → 승인 순서 그대로.
+
