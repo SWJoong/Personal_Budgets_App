@@ -21,9 +21,10 @@ export default function AdminHelpModal({ page, onClose }: Props) {
       {/* 헤더 */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border">
         <h2 className="font-black text-foreground text-lg">{page.pageTitle} 도움말</h2>
+        {/* 44px 터치 영역. 음수 여백(-my-2 -mr-3)으로 헤더 높이·✕ 위치는 그대로 둔다. */}
         <button
           onClick={onClose}
-          className="text-muted-foreground hover:text-foreground text-xl font-bold transition-colors"
+          className="min-h-11 min-w-11 -my-2 -mr-3 flex items-center justify-center text-muted-foreground hover:text-foreground text-xl font-bold transition-colors"
           aria-label="닫기"
         >
           ✕
@@ -34,7 +35,7 @@ export default function AdminHelpModal({ page, onClose }: Props) {
       <div className="px-6 py-4 flex flex-col gap-4 overflow-y-auto flex-1">
         {page.items.map((item, i) => (
           <div key={i} className="flex items-start gap-3">
-            <span className="text-2xl shrink-0 mt-0.5">{item.icon}</span>
+            <span aria-hidden="true" className="text-2xl shrink-0 mt-0.5">{item.icon}</span>
             <div>
               <p className="font-bold text-foreground text-sm">{item.title}</p>
               <p className="text-sm text-muted-foreground leading-relaxed mt-0.5">{item.desc}</p>
@@ -45,7 +46,7 @@ export default function AdminHelpModal({ page, onClose }: Props) {
         {/* 저장 용량 안내 (settings 전용) */}
         {page.storageNote && (
           <div className="mt-2 p-4 rounded-xl bg-info-bg border border-border flex items-start gap-3">
-            <span className="text-xl shrink-0">💡</span>
+            <span aria-hidden="true" className="text-xl shrink-0">💡</span>
             <p className="text-xs text-info-fg leading-relaxed">
               용량이 부족해지면 Supabase 대시보드에서 유료 플랜(Pro, $25/월부터)으로 업그레이드할 수 있습니다.
               업그레이드 없이 용량 절약을 원한다면 오래된 영수증 이미지를 주기적으로 정리하세요.
@@ -58,7 +59,7 @@ export default function AdminHelpModal({ page, onClose }: Props) {
       <div className="px-6 py-4 border-t border-border">
         <button
           onClick={onClose}
-          className="w-full py-2.5 rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:bg-hero-hover transition-colors"
+          className="w-full min-h-11 py-2.5 rounded-xl bg-hero text-hero-foreground font-bold text-sm hover:bg-hero-hover transition-colors"
         >
           확인
         </button>

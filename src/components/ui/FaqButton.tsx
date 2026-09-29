@@ -28,9 +28,10 @@ function FaqModalContent({ onClose }: { onClose: () => void }) {
       <div className="overflow-y-auto flex-1 divide-y divide-border">
         {FAQ_ITEMS.map((item, i) => (
           <div key={i} className="px-5 py-4">
-            {/* 질문 */}
+            {/* 질문 — 펼침 상태는 aria-expanded 로 전달(▲/▼ 는 보이는 표시라 aria-hidden) */}
             <button
               onClick={() => setOpenIdx(openIdx === i ? null : i)}
+              aria-expanded={openIdx === i}
               className="w-full text-left flex items-start gap-3 group"
             >
               <span className="shrink-0 mt-0.5 w-5 h-5 rounded-full bg-info-bg text-info-fg text-[11px] font-black flex items-center justify-center">
@@ -39,7 +40,7 @@ function FaqModalContent({ onClose }: { onClose: () => void }) {
               <span className="text-sm font-bold text-foreground flex-1 leading-snug group-hover:text-muted-foreground transition-colors">
                 {item.question}
               </span>
-              <span className="shrink-0 text-muted-foreground text-sm mt-0.5">
+              <span aria-hidden="true" className="shrink-0 text-muted-foreground text-sm mt-0.5">
                 {openIdx === i ? '▲' : '▼'}
               </span>
             </button>
@@ -58,7 +59,7 @@ function FaqModalContent({ onClose }: { onClose: () => void }) {
                 {item.note && (
                   <div className="ml-7 px-3 py-2.5 rounded-xl bg-warning-bg border border-border">
                     <p className="text-xs text-warning-fg leading-relaxed">
-                      📌 {item.note}
+                      <span aria-hidden="true">📌</span> {item.note}
                     </p>
                   </div>
                 )}
