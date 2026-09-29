@@ -1521,3 +1521,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-29T12:55Z] U
 [MERGED] #205 docs: #200·#201 검증 후속과 /onboarding 존폐 결정을 현행 백로그에 기록 [HANDOF → main 6a4f422 (user via U 2026-09-29T12:55Z · 티어 docs · 판정 -)
 
+## [2026-09-29T12:56Z] U
+[SYNC] 새 세션(설치본 0.4.0)에서 하네스 라이브 체크리스트 1~3 진행: 세션 시작 채널 표시 · 버전 0.4.0(user·project 범위, 85ed748) · /harness:operate 루틴(열린 PR 2 · wave-plan 대상 없음). #205 머지(6a4f422, 사용자 승인) → #207 BEHIND(head 8e8c336, 리포트 없음) — 브랜치 수동 갱신 금지(리포트 head 유지), /harness:verify-pr 207(항목 11) 후 게이트가 update-branch 처리. 다음: 체크리스트 4~13.
+
