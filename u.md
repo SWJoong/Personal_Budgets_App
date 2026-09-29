@@ -1506,3 +1506,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-29T11:12Z] U
 [SYNC] #199 head 0008084: 8d5ca52 재검증(보통 5) 반영 — 정책 보유 빌드 SQL 7개 rls 군·SQL 정규식 확장·보안 검증 체크 줄·래퍼 CLAUDE_CONFIG_DIR·계약 #206(설정 40 + 래퍼 14, 42 돌연변이 RED) 병합. 게이트 green(54/54·166/1189·build). 조건 렌즈 3개(security-rls·tests-mutation·docs-consistency) 재검증 중.
 
+## [2026-09-29T11:46Z] U
+[MERGED] #199 docs(harness): 단일 계정·역할 분리 운영 모델 v2 + 플러그인 harness 로 런타임 이전  → main 4b0aa72 (user via U 2026-09-29T11:45Z (조건 수용 — 보통 5건 후속 PR) · 티어 high · 판정 approve-with-conditions)
+
