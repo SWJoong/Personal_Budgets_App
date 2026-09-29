@@ -601,3 +601,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-29T10:09Z] W (via U)
 [MERGED by user] SWJoong/claude-harness#1 → main 85ed748 (harness 0.4.0: 레인 가드 경로·메모리·대소문자/유니코드 판정 강화 + 머지 게이트 리포트·계약 PR 안전화). 사용자 승인(U 세션 AskUserQuestion) · head 56ad252 · 독립 검증 6차 approve + 델타 approve · squash. 설치본 0.4.0 갱신 완료(새 세션부터 적용). 낮음 4건은 0.4.1 후속.
 
+## [2026-09-29T11:46Z] W (via U)
+[MERGED by user] #205 docs(T0) — #200·#201 검증 후속과 /onboarding 존폐 결정을 doc14 현행 백로그에 기록.
+
