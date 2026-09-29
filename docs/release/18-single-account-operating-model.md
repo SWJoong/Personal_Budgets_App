@@ -67,7 +67,7 @@
   AskUserQuestion **PR 1건·head 1개당 승인 1회** → `pr-merge-gate.sh N merge --approved-by "user via U <시각>"`(승인 코멘트 → BEHIND 면 update-branch·CI 재확인 → head 재검증 → `--match-head-commit` squash → 계약 PR 닫기 → `post u [MERGED]`; 훅이 한 번 더 묻는다) →
   `scripts/agent-sync.sh post w "[MERGED by user] #N …"`. `--admin`·일괄 승인·auto-merge 금지. #197 은 게이트 이전의 수동 절차로 머지했다.
   **스택 PR**: 게이트 `merge` 실행 **전에** `gh pr list --base <head 브랜치>` 로 의존 PR 을 찾아 `gh api -X PATCH …/pulls/<N> -f base=main` 으로 재타깃한다(게이트가 squash 와 함께 head 브랜치를 지운다) — #197 머지 시 base 삭제로 #198 이 자동 종료돼 #199 로 재개설한 사례.
-  **기록 ≠ 인증**: 채널(`w.md`)·`decisions.md`·`qa-runs/` 는 에이전트도 쓸 수 있는 기록이다. 승인·티어 하향·Manual-Ops 실행 시점은 세션 안 AskUserQuestion 으로만 성립하고, 기록은 그 결과를 남기는 용도다(공유 파일로 지정해 워커 편집은 차단).
+  **기록 ≠ 인증**: 채널(`w.md`)·`decisions.md`·`qa-runs/` 는 에이전트도 쓸 수 있는 기록이다. 승인·Manual-Ops 실행 시점은 세션 안 AskUserQuestion 으로만 성립하고(티어 하향은 수단 자체가 없다 — §5), 기록은 그 결과를 남기는 용도다(공유 파일로 지정해 워커 편집은 차단).
 - **QA**: `docs/release/qa-runs/` 규약(README). 사람이 실행, 오케스트레이터가 준비·기록. 브라우저는 관찰·증거 수집만. `post w "[QA by user] …"`.
 - **결정**: AskUserQuestion → `docs/release/decisions.md` 행 + `post w "[DECISION by user] …"`. 수렴 프로토콜 폐기.
 
@@ -77,8 +77,8 @@
 |---|---|
 | **플러그인 `harness`**(`~/문서/claude-harness` → private `SWJoong/claude-harness`) | `agents/`(u-worker·w-contract-author·w-verifier, 프로젝트 중립) · `workflows/verify-pr.js`(렌즈·반박자 설정 가능, `--lens`) · `hooks/hooks.json`(SessionStart pull · lane-guard auto · merge-ask) · `scripts/`(lane-guard·agent-sync·wave-plan·merge-ask·pr-risk-tier·pr-merge-gate·qa-run + selftest 4종) · `commands/qa-run.md` · `skills/install`·`operate` · README |
 | 삭제(플러그인이 대체) | `.claude/agents/*` · `.claude/workflows/verify-pr.js` · `scripts/lane-guard.sh`·`lane-guard-selftest.sh` · `scripts/u-wave-plan.sh` · `.claude/settings.json` SessionStart 훅 |
-| 추가 | `.claude/harness.json`(정본) · `.github/pull_request_template.md` · `docs/release/decisions.md` · `docs/release/qa-runs/README.md` · `src/test/harnessConfig.test.ts`(설정 계약, #202·#203) · 이 문서 |
-| 제외 | `.claude/agent-memory/harness-w-verifier/*`(검증자 메모리 6개) — b9aed51 에 섞여 들어갔다가 재검증 지적으로 추적 해제. 메모리는 로컬 전용(`.gitignore`, D-20260928-03) — 워커 2종은 플러그인 0.3.1 에서 `memory: user` |
+| 추가 | `.claude/harness.json`(정본) · `.github/pull_request_template.md` · `docs/release/decisions.md` · `docs/release/qa-runs/README.md` · `src/test/harnessConfig.test.ts`(설정 계약, #202·#203·#204) · `src/test/agentSyncWrapper.test.ts`(래퍼 계약, #204) · 이 문서 |
+| 제외 | `.claude/agent-memory/harness-w-verifier/*`(검증자 메모리 6개) — b9aed51 에 섞여 들어갔다가 재검증 지적으로 추적 해제. 메모리는 로컬 전용(`.gitignore`, D-20260928-03) — 워커 2종은 플러그인 0.4.0 에서 `memory: user` |
 | 재작성 | CLAUDE.md 하네스 섹션(역할 지도·레인·티어·사람 자리 절차·현황 정리) · `docs/harness-plan.md` v2 · `scripts/agent-sync.sh`(래퍼) |
 | 문구 | `04`(§1·§3·§5·§7·§8) · `17`(이전 안내) · `02`(리뷰 정책) · `14`(W 백로그 실행 주체) · `docs/release/README.md` · `.claude/skills/README.md` |
 | 저장소 밖(사용자·오케스트레이터) | `~/.claude/CLAUDE.md` 오케스트레이터 지시서(플러그인 `home-directive.md`) · 홈 디렉터리 `AGENTS.md` 축소 · 메모리 갱신 · private repo 생성·마켓플레이스 전환 · Windows 머신 설치 |
@@ -94,7 +94,7 @@ Remote Control 이 양쪽에 연결돼 있으면 `SendMessage` 를 라이브 보
 - 새 세션 인식(2026-09-27): 에이전트 `harness:u-worker`·`harness:w-contract-author`·`harness:w-verifier`, 스킬 `/harness:install`·`/harness:operate`, 워크플로 `/harness:verify-pr` 이 모두 나열됨. SessionStart 훅이 `agent-sync.sh pull --hook` 을 실행해 채널 상태(`w.md · 사람 자리` / `u.md · 오케스트레이터 저널`)를 출력.
 - 이 저장소 `.claude/harness.json` 로 `lane-guard.sh auto` 실측: 메인 세션 `src/test/x.test.ts`·`Plan&Source/x_W.md` → **ask** / `CLAUDE.md`·`src/utils/x.ts` → 허용 / `harness:u-worker` `src/test/x.test.ts`·`scripts/agent-sync.sh` → **차단(2)**, `supabase/seoul/21_x.sql` → 허용 / `harness:w-contract-author` `src/utils/x.ts` → **차단(2)**, `verify_x.sql` → 허용.
 - `merge-ask.sh` 에 `gh pr merge 197 --squash` → **ask** JSON. `scripts/agent-sync.sh pull`(래퍼) → 플러그인 스크립트로 위임되어 채널 출력. `wave-plan.sh` → "대상 핸드오프 없음"(오픈 계약 PR 0건).
-- 소스 변경 없음(`src/**` 무변경) → `npm test` 는 #197 기준 155 파일·1056 테스트 통과가 유효. CI(quality-check·db-verify)는 PR 에서 재확인.
+- (작성 당시 기준 — 이후 #202~#204 로 `src/test` 계약이 추가됐다) 소스 변경 없음(`src/**` 무변경) → `npm test` 는 #197 기준 155 파일·1056 테스트 통과가 유효. CI(quality-check·db-verify)는 PR 에서 재확인.
 - 라이브 spawn(`harness:u-worker` 1건, 2026-09-28): worktree 가 origin/main 기준이라 `harness.json` 부재 → 설치본 0.1.0 가드 fail-open(아래 설치본 실측 참조), 워커는 규율대로 편집을 되돌리고 클린 종료. → 0.3.0 에서 '설정 없음 = 기본 레인' 으로 수정.
 - `/harness:verify-pr`(#198 대상, 14 에이전트·4렌즈, 11.7h): 판정 changes-requested, findings 35(높음 3 · 보통 16 · 낮음 16), 기각 2. **반영(플러그인 0.3.0 + 이 PR)**: 레인 가드 자기 worktree 밖 차단·설정 없음/파손 fail-closed·agent_type 정확 일치·`**/` 0-depth · merge-ask 변형(`bash -c`·`gh api …/merge`·refspec·force) 대응 · 고위험군이 문서 판정보다 우선(CLAUDE.md·스킬·harness-plan·PR 템플릿 = gate) · tiers.high 누락 경로군(api/**·ruleCheck·storage·privacy 유틸·SQL 함수/트리거) · participantCopyGlobs 확장 · docs-consistency 렌즈 · lanes.shared 에 decisions/qa-runs/agents/workflows/commands · 에이전트 스킬 로드 폴백(Read) · 래퍼 fail-safe 축소(post·log exit 3)·개인 경로 제거 · enabledPlugins 선언 · 결정 로그 날짜 정정 · 스택 PR 재타깃 절차 · 기록≠인증 명시 · 접근성 검증 체크 항목 · 정적 계약 `src/test/harnessConfig.test.ts`(w-contract-author) · stale 참조 2건.
 - 정적 설정 계약(#202, `harness:w-contract-author`, 2026-09-28): `src/test/harnessConfig.test.ts` 13 테스트 — 파싱·키 형태·lanes.w/shared 필수 항목·tiers.high 군·글롭 매처(플러그인 `hc_match` 와 4263 쌍 대조 불일치 0)·CLAUDE.md 「레인 규칙」/「검증 티어」 정합. 첫 실행 1 RED = `tiers.high.storage` 가 CLAUDE.md T2 요약에 없던 실제 드리프트 → CLAUDE.md 한 줄로 해소(계약은 약화하지 않음). 필수 돌연변이 3 + 추가 18 전부 RED. 병합 후 게이트: 계약 13/13 · tsc 0 · lint 오류 0 · `npm test` 156 파일·1069 테스트 · build ✓.

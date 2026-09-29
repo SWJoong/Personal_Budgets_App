@@ -108,7 +108,7 @@ test-first(W가 RED 계약을 먼저 박고 U가 초록화). 이 문서는 *U �
 - **태스크**: 설계 문서 경로 + RED 계약 경로 + **편집 허용 파일 화이트리스트**(그 밖은 금지).
 - **게이트**: `npx vitest run <계약파일>` → `npm test` → `npm run build`(SQL이면 verify + build).
 - **핸드오프**: commit(`[HANDOFF→W]`) → push → `gh pr create --base main`.
-- **리턴**: `=== WORKER REPORT ===` 구조 블록(STATUS/BRANCH/PR/FILES/CONTRACT/GATE/LANE_NOTES/BLOCKER).
+- **리턴**: `=== WORKER REPORT ===` 구조 블록 — 필드는 플러그인 `agents/u-worker.md` 정의를 따른다(MANUAL_OPS 포함).
 
 실행 수단(2026-09-27 플러그인화, [`18`](18-single-account-operating-model.md)): `Agent(subagent_type: "harness:u-worker", run_in_background: true)`.
 정의(플러그인 `harness`)에 model sonnet · isolation worktree · background · 규율·게이트·리턴 형식이 내장되고, 레인 가드는 플러그인 훅(`lane-guard.sh auto`)이,

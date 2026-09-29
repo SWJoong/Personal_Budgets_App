@@ -112,6 +112,8 @@ const { data } = await adminClient.storage
 
 이미지 표시: 서버 컴포넌트에서 signed URL 사전 생성 → prop으로 클라이언트에 전달.
 
+**보안 검증 체크(w-verifier·verify-pr 공통)**: RLS 스코프(당사자·담당 실무자·관리자) · `createAdminClient` 사용 전 인증·역할 확인 · Storage 경로 위조(서버가 접두를 강제) · view-as 읽기전용 우회(예외 env `TEST_PARTICIPANT_ID`·`TEST_USER_EMAIL` 만) · 감사 기록 누락 · AI 전송 전 이름 가림(가명처리) · 서비스 롤 키 노출.
+
 ---
 
 ## 서버 액션 패턴
@@ -247,7 +249,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 - **U 레인**(그 외 `src/` · `supabase/` 빌드 SQL·`migrations/` · `src/types/database.ts` · `.github/workflows/` · 빌드설정 · `docs/release/`) → `harness:u-worker` 컨텍스트.
   오케스트레이터가 직접 구현하면 그 기능의 계약·검증은 위임한다.
 - **공유·인프라**(`CLAUDE.md` · `AGENTS.md` · `.mcp.json` · `.claude/harness.json` · `.claude/settings*.json` · `.claude/agents|workflows|commands/**` · `.github/pull_request_template.md` · `scripts/agent-sync.sh` · `docs/release/decisions.md` · `docs/release/qa-runs/**` · `.claude/agent-memory/**`) → 오케스트레이터·사람만(양쪽 워커 훅 차단).
-- **에이전트 메모리**(`.claude/agent-memory/<에이전트>/`): 각 에이전트는 **자기 폴더만** 쓴다(플러그인 ≥ 0.4.0 — `harness.json` `plugin.minVersion`, 설정 계약이 강제). 메모리는 **로컬 전용**이다(D-20260928-03): `.claude/agent-memory*/` 는 `.gitignore` — 검증자(project 범위)는 메인 체크아웃에만 쌓이고, `harness:u-worker`·`harness:w-contract-author` 는 `memory: user`(`~/.claude/agent-memory/`, 프로젝트 공통이므로 프로젝트 고유 경로·비밀 대신 일반 교훈만). 커밋은 경로를 지정해 `git add` 한다(`git add -A` 금지 — #199 에서 검증자 메모리 6개가 섞였던 사례). 검증자 메모리는 검증자만 쓴다 — 오케스트레이터가 정리할 때는 사용자 확인 후.
+- **에이전트 메모리**(`.claude/agent-memory/<에이전트>/`): 각 에이전트는 **자기 폴더만** 쓴다(플러그인 ≥ 0.4.0 — `harness.json` `plugin.minVersion` 값은 설정 계약이 강제하고, 실제 설치본 버전은 「매 세션 루틴」의 호출 경로 줄처럼 `installed_plugins.json` 으로 확인한다). 메모리는 **로컬 전용**이다(D-20260928-03): `.claude/agent-memory*/` 는 `.gitignore` — 검증자(project 범위)는 메인 체크아웃에만 쌓이고, `harness:u-worker`·`harness:w-contract-author` 는 `memory: user`(`~/.claude/agent-memory/`, 프로젝트 공통이므로 프로젝트 고유 경로·비밀 대신 일반 교훈만). 커밋은 경로를 지정해 `git add` 한다(`git add -A` 금지 — #199 에서 검증자 메모리 6개가 섞였던 사례). 검증자 메모리는 검증자만 쓴다 — 오케스트레이터가 정리할 때는 사용자 확인 후.
 - 가드가 막는 것: 워커의 Edit/Write(플러그인 `lane-guard.sh` — 대상 파일이 속한 worktree 의 `harness.json` 기준, 워커는 자기 worktree 밖 편집 불가, 설정 없으면 기본 레인·설정 깨지면 차단). 못 막는 것: Bash 편집(규율로 금지). **main 직접 push 금지** — 코드는 항상 PR·CI 경유(훅이 다시 묻는다).
 - 서브에이전트의 격리 worktree 는 origin/main 기준으로 생기므로 **`harness.json` 이 main 에 머지돼 있어야** 워커가 이 레인의 보호를 받는다.
 
@@ -271,7 +273,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 |---|---|---|---|
 | **T0 docs** | 변경이 `docs/**`·`*.md` 뿐 — 단 gate 군의 규칙 파일은 `.md` 여도 high | CI + 사람 읽기 | 사람 승인 |
 | **T1 small** | 코드 ≤ 12파일·≤ 400줄, 고위험 경로 없음 | `harness:w-verifier` 1건(돌연변이 포함) | approve + 사람 승인 |
-| **T2 high** | rls(`supabase/**/*rls*.sql`·`01_core`·`03_seoul_schema`·`06_storage`·`12_audit_log`) · auth(`src/proxy.ts`·`(auth)/`·`src/app/api/**`·view-as·view-as 쓰기 차단 액션·`src/utils/supabase/**`) · privacy(`deidentify*`·`ai.ts`·OCR·요약·제안·처리방침·`vercel.json` 리전) · audit(`audit*`·감사 기록 액션·supervision) · money(정산·거래·copay·ruleCheck·내보내기) · storage(활동사진·서류·신청서 업로드·갤러리·`src/utils/supabase/storage.ts`) · gate(CI·settings·harness.json·에이전트/워크플로/명령/스킬/에이전트 메모리·CLAUDE.md·AGENTS.md·`.mcp.json`·harness-plan·PR 템플릿·agent-sync — `.md` 여도) · SQL diff 에 POLICY/DEFINER/GRANT/FUNCTION/TRIGGER · 대형(> 12파일 또는 > 400줄) · 당사자 문구(`participantCopyGlobs` 경로에 한글 문구가 추가될 때 — 접근성만 바꾼 변경은 small 이니 필요하면 선언을 high 로) | `/harness:verify-pr N` 팬아웃(에이전트 2 + 렌즈 × (1 + 반박자), 현재 설정 17) | approve(-with-conditions 해소) + 사람 승인 |
+| **T2 high** | rls(`supabase/**/*rls*.sql` + 정책·뷰·가드 트리거를 가진 빌드 SQL `01`·`03`·`05`·`06`·`09`·`11`·`12`·`17`~`20`) · auth(`src/proxy.ts`·`(auth)/`·`src/app/api/**`·view-as·view-as 쓰기 차단 액션·`src/utils/supabase/**`·데모 계정 시드 스크립트) · privacy(`deidentify*`·`ai.ts`·OCR·요약·제안·처리방침·`vercel.json` 리전) · audit(`audit*`·감사 기록 액션·supervision) · money(정산·거래·copay·ruleCheck·내보내기) · storage(활동사진·서류·신청서 업로드·갤러리·`src/utils/supabase/storage.ts`) · gate(CI·settings·harness.json·에이전트/워크플로/명령/스킬/에이전트 메모리·CLAUDE.md·AGENTS.md·`.mcp.json`·harness-plan·PR 템플릿·agent-sync — `.md` 여도) · SQL diff 에 POLICY/DEFINER/GRANT/FUNCTION/TRIGGER·`WITH CHECK`·`USING (`·`security_invoker`·`auth.uid()`·`RAISE EXCEPTION`(대소문자 무시) · 대형(> 12파일 또는 > 400줄) · 당사자 문구(`participantCopyGlobs` 경로에 한글 문구가 추가될 때 — 접근성 동작만 바꾼 변경은 계산상 small 이지만 PR 템플릿대로 선언은 high 로) | `/harness:verify-pr N` 팬아웃(에이전트 2 + 렌즈 × (1 + 반박자), 현재 설정 17) | approve(-with-conditions 해소) + 사람 승인 |
 - 판정 정본은 `.claude/harness.json` `tiers`(플러그인 `pr-risk-tier.sh <PR>` 가 계산) — 위 표는 요약이다. 티어는 PR 본문 `- 검증 티어:` 에 `docs`·`small`·`high` 중 한 단어로 선언하고 게이트가 선언·계산 중 높은 쪽을 적용한다. **계산 티어 아래로 내리는 수단은 없다** — 계산이 과하면 `.claude/harness.json` `tiers` 를 고치는 PR(gate 티어)로 조정한다(채널·결정 로그 기록으로는 내려가지 않는다). 계약 PR(`[HANDOFF→U]`)은 티어 대상이 아니다.
 - src 를 바꾸지 않는 문서·설정 PR 은 돌연변이 검증 대신 **설정 계약**(`src/test/harnessConfig.test.ts`: harness.json ↔ CLAUDE.md 레인·티어 정합)으로 조인다.
 - 재검증은 `/harness:verify-pr N --lens <렌즈>` 로 생존 finding 이 있던 렌즈만(전체 재실행 금지).
