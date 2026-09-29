@@ -1518,3 +1518,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-29T11:53Z] U
 [SYNC] 보강 마무리: 설치본 0.4.0 훅 실측(origin/main worktree, lane-guard 21·merge-ask 7 경우) 기대대로 — 알려진 빈틈 git -C push 는 enforce_admins 로 막는다. 헤드리스 라이브 spawn 은 권한 분류기 거부 → 사용자 테스트 항목으로 이관. 사용자 테스트 체크리스트 = docs/release/qa-runs/2026-09-29-harness-live.md(#207). 다음: 사용자가 enforce_admins 실행 → 새 세션에서 체크리스트 1~13(항목 11·12 가 #207 검증·머지).
 
+## [2026-09-29T12:55Z] U
+[MERGED] #205 docs: #200·#201 검증 후속과 /onboarding 존폐 결정을 현행 백로그에 기록 [HANDOF → main 6a4f422 (user via U 2026-09-29T12:55Z · 티어 docs · 판정 -)
+
