@@ -598,3 +598,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-29T10:09Z] W (via U)
 [MERGED by user] #201 fix(a11y) 터치타깃 44px·장식 이모지 aria-hidden 재반영 + 사이드바 하위메뉴 토글(44px·이름라벨·aria-controls·자동펼침 첫클릭 버그)·더보기 SettingSwitch(다크·고대비 켜짐/꺼짐 색) + 온보딩 역할 안내(사용자 결정 문구) — head c4906f9, verify-pr 4회(최종 approve). 원격 feat/kwcag-a11y-foundation 삭제(백업 ref).
 
+## [2026-09-29T10:09Z] W (via U)
+[MERGED by user] SWJoong/claude-harness#1 → main 85ed748 (harness 0.4.0: 레인 가드 경로·메모리·대소문자/유니코드 판정 강화 + 머지 게이트 리포트·계약 PR 안전화). 사용자 승인(U 세션 AskUserQuestion) · head 56ad252 · 독립 검증 6차 approve + 델타 approve · squash. 설치본 0.4.0 갱신 완료(새 세션부터 적용). 낮음 4건은 0.4.1 후속.
+
