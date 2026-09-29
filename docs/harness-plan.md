@@ -111,7 +111,8 @@ main ─────────────────────────
   09-27 #197 하네스 코드화(에이전트 정의·레인 가드·/verify-pr) → 09-27 사용자 결정 D-20260927-02~06 → 플러그인 `harness` 0.1.0 으로 추출 → 이 v2.
 - **바뀐 것**: 계정 → 역할 컨텍스트 · 검증자 = 서브에이전트 · 사람 자리(W) = QA·머지·결정(U 세션에서도) · 수렴 프로토콜 폐기 · agent-sync 의미(저널·사람 자리 기록) ·
   검증 티어 · 하네스 런타임을 플러그인으로(여러 프로젝트 재사용, 프로젝트엔 `.claude/harness.json` 만).
-- **안 바뀐 것**: 레인 패턴 · PR/CI 게이트 · 접두 · main 보호 · Manual-Ops 게이트 · 머지 = 사람 승인.
+  레인 소속: verify 글롭 확장(`supabase/**/verify_*.sql` → `**/verify_*.sql`) · settings.json(옛 U)/CLAUDE.md 하네스 섹션(옛 W 저작) → 공유 · 공유 목록 확장(옛 공유 = `CLAUDE.md` 하나 → `.claude/harness.json` `lanes.shared` 전체).
+- **안 바뀐 것**: 레인 원칙(W=계약·검증, U=구현) · PR/CI 게이트 · 접두 · main 보호 · Manual-Ops 게이트 · 머지 = 사람 승인.
 - **되돌림**: W 계정 세션이 복귀하면 "두 번째 사람 자리" 또는 사람이 w-verifier 절차를 직접 운전하는 보조 검증 세션으로 — 레인·채널·접두 변경 없음. Remote Control 은 라이브 보조 채널.
 - 상세: `docs/release/18-single-account-operating-model.md`.
 

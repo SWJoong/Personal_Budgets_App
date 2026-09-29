@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
  * 하네스 설정 정적 계약 — `.claude/harness.json` ↔ CLAUDE.md 레인·티어·채널 정합 (W 레인).
  *
  * 배경: PR #199 가 하네스 정본(레인·게이트·티어)을 `.claude/harness.json` 한 파일로 옮겼다. 플러그인 `harness`
- *   (>=0.3.0)의 lane-guard·pr-risk-tier·pr-merge-gate·agent-sync·verify-pr 가 이 파일을 그대로 읽으므로, 글롭 한 줄을
+ *   (>=0.4.0)의 lane-guard·pr-risk-tier·pr-merge-gate·agent-sync·verify-pr 가 이 파일을 그대로 읽으므로, 글롭 한 줄을
  *   빼거나 JSON 이 깨지면 곧 레인 가드·검증 티어·사람 자리 접두 가드가 무력화된다. 독립 검증(verify-pr)이 "설정을
  *   조이는 계약이 없어 레인 약화·JSON 파손 돌연변이가 게이트에서 살아남는다"고 지적 → 이 계약이 CI(quality-check
  *   `npm test`)에서 그 돌연변이를 죽인다. 출처: verify-pr #199 지적(fbd70a8·a68fb99 리포트) — 사용자 결정이 아니다.
@@ -16,23 +16,29 @@ import { join } from 'node:path'
  *
  * 원칙: 필수 목록은 "저작 시점 harness.json 값 = 최소 집합"이다(늘리는 것은 자유, 줄이면 RED). 줄여야 할 이유가
  *   생기면 설정과 이 계약을 같은 PR(gate 티어 — 팬아웃 검증 + 사람 승인)에서 함께 고친다. 설정에 글롭을 더하는
- *   커밋은 이 계약의 필수 목록 갱신 요청을 함께 올린다(3차 보강의 AGENTS.md 사례).
+ *   커밋은 이 계약의 필수 목록 갱신 요청을 함께 올린다(3차 보강의 AGENTS.md 사례). 설정의 plugin.minVersion 을 올리는
+ *   커밋에서는 이 계약의 MIN_PLUGIN_VERSION 도 함께 올린다(4차 보강 — 0.4.0 으로 올린 설정을 0.3.1 하한이 조이지 못했다).
  *
  * 규칙(it 1개 = 규칙 1개, 실패 메시지가 원인을 가리킨다):
  *   1. 파싱·형태     — 유효한 JSON + 플러그인이 읽는 최상위 키의 형태.
  *   2. W 레인        — lanes.w 가 계약·검증·설계 글롭을 문자열 그대로 모두 포함(레인 약화 차단).
  *   3. 공유 파일     — lanes.shared 가 공유·인프라 목록 전체를 포함 + U·W 레인 경로를 삼키지 않음(과확장 차단).
- *   4. 고위험 티어   — gate 목록 전체(AGENTS.md 포함) · 7군 존재 · 군별 필수 글롭(privacy 의 vercel.json 포함) ·
- *                      군별 대표 경로(권한 경계 호출부 12개 포함) · sqlPolicyRegex 샘플 매치 ·
+ *   4. 고위험 티어   — gate 목록 전체(AGENTS.md 포함) · 7군 존재 · 군별 필수 글롭(privacy 의 vercel.json·auth 의
+ *                      seed-demo-auth.mjs·rls 의 정책 보유 빌드 SQL 포함) · 군별 대표 경로(권한 경계 호출부 12개 포함) ·
+ *                      정책 보유 빌드 SQL(`supabase/seoul/*.sql` 을 읽어 판정) ⊆ rls 군 ·
+ *                      sqlPolicyRegex 샘플 매치(플러그인 모양: `+`/`-` diff 줄·소문자 비교, 음성 샘플 불일치) ·
  *                      docs 허용 목록(`docs/` 로 시작하거나 `.md` 로 끝나는 글롭만) · large 상한.
  *   5. 글롭 의미론   — lane-guard(hc_match)와 같은 매처로 대표 경로의 W 레인 소속을 판정.
  *   6. CLAUDE.md 정합 — 줄 단위 양방향: 「레인 규칙」 W 줄 ↔ lanes.w, 공유 줄 ↔ lanes.shared, U 줄 ∩ (lanes.w ∪
  *                      lanes.shared) = ∅ · 「검증 티어」 T2 조건 칸 `name(` ↔ tiers.high · T1 임계 = tiers.large.
  *   7. 문구·렌즈·스킬 — participantCopyGlobs 4 · verify.lenses 5 · roleSkills.w · CLAUDE.md 접근성 검증 체크 줄의
- *                      정성·수치 항목과 '기준+값' 쌍(방향 고정).
+ *                      정성·수치 항목과 '기준+값' 쌍(방향 고정) · CLAUDE.md 보안 검증 체크 줄의 항목 7개.
  *   8. 채널          — channel.seatPrefixes 3접두 · channel.branch · roles.seat · channel.roles ⊇ {w, u}.
  *   9. 게이트 명령   — gate.all = CLAUDE.md 게이트 줄 조각(정확히 같음) · gate.contract `vitest run {file}`.
- *  10. 플러그인 동작 값 — prefixes(toAuthor·toVerifier·sync) · baseBranch = main · plugin.minVersion ≥ 0.3.1.
+ *  10. 플러그인 동작 값 — prefixes(toAuthor·toVerifier·sync) · baseBranch = main · plugin.minVersion ≥ 0.4.0 ·
+ *                      CLAUDE.md·$comment 의 '플러그인 ≥ X.Y.Z' 주장 ≤ 계약 하한(요약이 계약보다 센 보호를 약속하지 않음).
+ *  11. 에이전트 메모리 — `.gitignore` 가 `.claude/agent-memory/`·`.claude/agent-memory-local/` 를 무시(뒤집는 `!` 줄 없음) +
+ *                      CLAUDE.md 「레인 규칙」 에이전트 메모리 줄이 `.gitignore`·로컬 전용을 적는다(D-20260928-03).
  *
  * 저작 시 돌연변이 RED 확인(#199 head b5d9109 위, 매번 `git checkout -- .claude/harness.json CLAUDE.md` 로 원복):
  *   1차 저작(2cb7922) — ① lanes.w 에서 `src/test/**` 제거 → 2·5 RED  ② tiers.high.gate 에서 `CLAUDE.md` 제거 → 4 RED
@@ -47,8 +53,16 @@ import { join } from 'node:path'
  *     gate(…) 항목 삭제·tiers.docs `+supabase/seoul/1*.sql`/`+src/types/**`·lanes.w `+src/types/database.ts`·
  *     W 줄의 `src/test/**` 를 U 줄로 옮김·prefixes.toAuthor/toVerifier/baseBranch/channel.roles 변경·
  *     gate.all 에 `-- --passWithNoTests __none__` 약화·접근성 체크 줄의 정성 항목 삭제·`jsx-a11y` 오류 0/`outline-none`
- *     단독 금지 반전 → 각각 해당 규칙 RED. 저작 시점 설정에서 의도적으로 RED 인 규칙: plugin.minVersion ≥ 0.3.1(설정
- *     0.3.0 — 플러그인 0.3.1 머지·설치 후 올린다) · privacy 군 `vercel.json`(설정 미포함 — 오케스트레이터가 추가).
+ *     단독 금지 반전 → 각각 해당 규칙 RED. (3차 저작 시점에 의도적으로 RED 였던 minVersion·privacy `vercel.json` 은
+ *     오케스트레이터가 설정을 고쳐 green — 현재 설정 0.4.0 = claude-harness#1 85ed748.)
+ *   4차 보강(verify-pr #199 재검증 8d5ca52 생존 돌연변이 전부, b980fda 위 — 워크트리 대신 scratchpad 사본에서 걸고
+ *     원본 파일로 원복) — minVersion `0.3.1`·`0.3.9`(10 RED) · sqlPolicyRegex `^` 앵커(b980fda 정규식+앵커, finding 원문
+ *     둘 다)·대안 7개 각각 삭제(WITH CHECK·USING *[(]·security_invoker·auth[.]uid[(][)]·RAISE EXCEPTION·GRANT·REVOKE)·
+ *     과확장(`|select`·`USING *[(]` → `USING`)(4 RED) · auth 에서 seed-demo-auth.mjs 제거(4 RED) · rls 에서 17·05 제거·
+ *     미등록 새 정책 파일 `supabase/seoul/21_*.sql`(4 RED, 주석에만 낱말이 있는 시드 파일은 대조군 GREEN) · .gitignore
+ *     메모리 줄 삭제·local 줄만 삭제·`!.claude/agent-memory/` 추가·CLAUDE.md 메모리 줄의 `.gitignore`·로컬 전용 삭제
+ *     (11 RED) · 보안 체크 줄 항목 7개 각각 삭제·줄 삭제(7 RED) · CLAUDE.md `플러그인 ≥ 0.5.0` 과대 주장(10 RED).
+ *     sqlPolicyRegex 샘플 48줄(`+`/`-` × 양성 21·음성 3)은 설치본 pr-risk-tier.sh 와 같은 awk 식으로도 판정이 같다(불일치 0).
  */
 
 const ROOT = process.cwd()
@@ -163,12 +177,21 @@ const REQUIRED_GATE: readonly string[] = [
  *    내려간다 — 설치본 pr-risk-tier.sh 로 확인: auth 에서 `src/utils/supabase/**` 를 빼면 server.ts 가 high → small.
  */
 const REQUIRED_HIGH: Readonly<Record<string, readonly string[]>> = {
+  // 정책·security_invoker 뷰·가드 트리거·DEFINER 를 가진 빌드 SQL 전부(b980fda 에 05·09·11·17~20 추가 — 8d5ca52 재검증
+  // security-rls-1: 17 의 `WITH CHECK (…)` → `(true)` 한 줄 약화가 small 로 판정됐다). 새 정책 파일은 4 의 fs 판정 규칙이 잡는다.
   rls: [
     'supabase/**/*rls*.sql',
     'supabase/seoul/01_core.sql',
     'supabase/seoul/03_seoul_schema.sql',
+    'supabase/seoul/05_seoul_graph.sql',
     'supabase/seoul/06_storage.sql',
+    'supabase/seoul/09_ontology_classification.sql',
+    'supabase/seoul/11_provider_domains.sql',
     'supabase/seoul/12_audit_log.sql',
+    'supabase/seoul/17_participant_feedback.sql',
+    'supabase/seoul/18_sis_assessments.sql',
+    'supabase/seoul/19_plan_feedback.sql',
+    'supabase/seoul/20_evaluations.sql',
   ],
   auth: [
     'src/proxy.ts',
@@ -186,6 +209,8 @@ const REQUIRED_HIGH: Readonly<Record<string, readonly string[]>> = {
     'src/app/actions/serviceProvider.ts',
     'src/app/actions/planReview.ts',
     'src/app/actions/feedback.ts',
+    // 서비스 롤 키로 auth.admin 을 불러 데모 관리자 계정을 만든다(security-rls-3) — 비-SQL 이라 내용 정규식이 안 본다.
+    'scripts/seed-demo-auth.mjs',
   ],
   privacy: [
     'src/utils/deidentify.ts',
@@ -250,8 +275,15 @@ const HIGH_SAMPLES: Readonly<Record<string, readonly string[]>> = {
     'supabase/seoul/04_seoul_rls.sql',
     'supabase/seoul/01_core.sql',
     'supabase/seoul/03_seoul_schema.sql',
+    'supabase/seoul/05_seoul_graph.sql',
     'supabase/seoul/06_storage.sql',
+    'supabase/seoul/09_ontology_classification.sql',
+    'supabase/seoul/11_provider_domains.sql',
     'supabase/seoul/12_audit_log.sql',
+    'supabase/seoul/17_participant_feedback.sql',
+    'supabase/seoul/18_sis_assessments.sql',
+    'supabase/seoul/19_plan_feedback.sql',
+    'supabase/seoul/20_evaluations.sql',
   ],
   auth: [
     'src/proxy.ts',
@@ -271,6 +303,7 @@ const HIGH_SAMPLES: Readonly<Record<string, readonly string[]>> = {
     'src/app/actions/serviceProvider.ts',
     'src/app/actions/planReview.ts',
     'src/app/actions/feedback.ts',
+    'scripts/seed-demo-auth.mjs',
   ],
   privacy: [
     'src/utils/deidentify.ts',
@@ -341,6 +374,9 @@ const HIGH_SAMPLES: Readonly<Record<string, readonly string[]>> = {
 /**
  * 4. sqlPolicyRegex 가 잡아야 하는 SQL diff 줄 — 정규식의 대안(alternative)마다 그것만 걸리는 줄 1개 이상.
  *    함수·트리거 본문 한 줄만 바뀌는 diff(CREATE 줄은 문맥이라 +/- 가 아님)도 잡도록 술어·경로검사 함수 호출 줄을 둔다.
+ *    판정은 플러그인이 보는 모양 그대로다: 각 줄을 `+줄`·`-줄`(diff 추가·삭제)로 만들어 `tolower(줄) ~ tolower(re)`
+ *    (pr-risk-tier.sh 의 awk) 와 같게 소문자끼리 비교한다 — 접두 없는 줄로만 보면 `^GRANT` 같은 앵커 돌연변이가 산다
+ *    (8d5ca52 재검증 tests-mutation-2: 플러그인에서는 `+GRANT …` 가 안 걸려 GRANT·POLICY diff 가 small 로 떨어진다).
  */
 const SQL_POLICY_SAMPLES: readonly string[] = [
   'CREATE POLICY seoul_tx_select ON public.seoul_transactions',
@@ -358,7 +394,50 @@ const SQL_POLICY_SAMPLES: readonly string[] = [
   '  SELECT seoul_is_admin()',
   '  OR seoul_is_self(p_participant)',
   '  EXECUTE FUNCTION seoul_check_photo_path();',
+  // b980fda 에 더한 대안 5개 — 정책 술어·뷰 옵션·가드 트리거 본문 한 줄 약화(security-rls-1 의 M1·M3·M4·M5 모양).
+  '  WITH CHECK (true);',
+  'USING (true)',
+  'WITH (security_invoker = true) AS',
+  '  AND participant_id = auth.uid()',
+  "    RAISE EXCEPTION 'x';",
+  // 소문자 SQL(대소문자 무시 비교 확인 — 소문자로 쓰인 권한 부여 diff 도 잡아야 한다).
+  'grant execute on function public.x() to anon;',
 ]
+
+/**
+ * 4. sqlPolicyRegex 가 잡으면 안 되는 SQL diff 줄(음성 샘플) — 평범한 조회·인덱스·시드 줄이 걸리면 모든 SQL PR 이 T2 로
+ *    올라 팬아웃이 소음이 된다(정규식 과확장 차단). `USING btree (col)` 은 `USING *[(]` 와 겹치지 않아야 한다.
+ */
+const SQL_NON_POLICY_SAMPLES: readonly string[] = [
+  'SELECT 1 FROM t WHERE x = 1;',
+  'CREATE INDEX IF NOT EXISTS idx_t_col ON public.t USING btree (col);',
+  "INSERT INTO public.seoul_programs (name) VALUES ('x');",
+]
+
+/** diff 줄 모양(추가·삭제) — pr-risk-tier.sh 는 `^[+-]` 줄만 본다(`+++`·`---` 머리 줄 제외). */
+const DIFF_PREFIXES: readonly string[] = ['+', '-']
+
+/**
+ * 4. 정책 보유 빌드 SQL 판정 — 이 중 하나라도 가진 `supabase/seoul/*.sql` 은 tiers.high.rls 에 들어야 한다(경로 글롭이
+ *    rls 군을 정하므로, 새 정책 파일이 생기면 설정에 넣을 때까지 이 계약이 RED). 대소문자 무시, SQL 주석(`--`·`/* *\/`)은
+ *    지우고 본다(주석에만 낱말이 있는 시드 파일을 정책 파일로 치지 않게).
+ */
+const POLICY_BEARING_SQL_RE = /CREATE POLICY|security_invoker|CREATE (OR REPLACE )?TRIGGER|SECURITY DEFINER|ENABLE ROW LEVEL SECURITY/i
+const SEOUL_BUILD_DIR = 'supabase/seoul'
+
+/** SQL 주석을 지운다 — 블록 주석 `/* … *\/`·줄 주석 `-- …`(문자열 리터럴 안의 `--` 는 이 저장소 빌드 SQL 에 없다). */
+function stripSqlComments(sql: string): string {
+  return sql.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/--[^\n]*/g, ' ')
+}
+
+/** `supabase/seoul/` 최상위 `.sql` 중 정책 보유 파일(저장소 상대경로, 정렬). */
+function policyBearingBuildSql(): string[] {
+  return readdirSync(join(ROOT, SEOUL_BUILD_DIR))
+    .filter((name) => name.endsWith('.sql'))
+    .sort()
+    .map((name) => `${SEOUL_BUILD_DIR}/${name}`)
+    .filter((rel) => POLICY_BEARING_SQL_RE.test(stripSqlComments(readFileSync(join(ROOT, rel), 'utf8'))))
+}
 
 /**
  * 4. tiers.docs 허용 목록 — 글롭마다 `docs/` 로 시작(문서 폴더)하거나 `.md` 로 끝나야(마크다운) 한다. 이 모양의 글롭은
@@ -457,6 +536,27 @@ const A11Y_CHECK_CRITERIA: readonly RegExp[] = [
   /easy-read ≥ 70/,
 ]
 
+/**
+ * 7. CLAUDE.md 「Storage 보안 규칙」 보안 검증 체크 줄 — 저장소 w-verifier 사본(④보안: RLS 스코프·service_role 노출·경로
+ *    위조·view-as 읽기전용 우회·감사로그 누락)을 지우면서 플러그인 w-verifier ④ 는 「권한 경계·인증·비밀 노출」 일반형이
+ *    됐다(8d5ca52 재검증 security-rls-4). 프로젝트 고유 보안 항목은 이 줄에만 남으므로 항목 삭제를 잡는다.
+ */
+const SECURITY_CHECK_TOKENS: readonly string[] = [
+  'RLS 스코프',
+  'createAdminClient',
+  '경로 위조',
+  'view-as 읽기전용',
+  '감사 기록 누락',
+  'AI 전송 전 이름 가림',
+  '서비스 롤 키',
+]
+const SECURITY_CHECK_LINE = '**보안 검증 체크'
+
+/** 11. 에이전트 메모리 로컬 전용(D-20260928-03) — `.gitignore` 에 있어야 하는 줄. */
+const REQUIRED_GITIGNORE_LINES: readonly string[] = ['.claude/agent-memory/', '.claude/agent-memory-local/']
+const AGENT_MEMORY_LINE = '- **에이전트 메모리**'
+const AGENT_MEMORY_LINE_TOKENS: readonly string[] = ['.gitignore', '로컬 전용']
+
 /** 8. 사람 자리 기록 접두(CLAUDE.md 「상태 동기화」) — 비면 agent-sync 가 w.md 접두 가드를 끈다(agent-sync.sh:86). */
 const REQUIRED_SEAT_PREFIXES: readonly string[] = ['[DECISION by user]', '[QA by user]', '[MERGED by user]']
 
@@ -483,12 +583,25 @@ const EXPECTED_PREFIXES: Readonly<Record<string, string>> = {
 const EXPECTED_BASE_BRANCH = 'main'
 
 /**
- * 10. 플러그인 최소 버전 — 0.3.0 의 lane-guard 는 어떤 git 저장소에도 속하지 않는 경로(~/.claude 설정·지시서, 플러그인
- *    캐시의 lane-guard.sh·hooks.json 자신)를 워커에게 허용하고(`[ -n "$troot" ] || exit 0`), 워커 에이전트가
- *    `memory: project` 라 CLAUDE.md 「레인 규칙」 의 `memory: user`·자기 폴더 규칙(D-20260928-03)과 다르다. 둘 다 0.3.1
- *    (claude-harness#1)이 고친다 — 설치본을 0.3.1 로 올린 뒤 이 값을 올려야 CLAUDE.md 가 적은 보호가 실제로 선다.
+ * 10. 플러그인 최소 버전 — 0.4.0(claude-harness#1, 85ed748)이 CLAUDE.md 「레인 규칙」 이 적은 보호를 세운다:
+ *    lane-guard 가 어떤 git 저장소에도 속하지 않는 경로(~/.claude 설정·지시서, 플러그인 캐시의 lane-guard.sh·hooks.json
+ *    자신)와 `.git` 을 워커에게 막고(0.3.0 은 `[ -n "$troot" ] || exit 0` 으로 허용), 경로를 `realpath -L -m` 으로 풀며,
+ *    워커 에이전트가 `memory: user`·자기 메모리 폴더만 쓴다(0.3.0 은 `memory: project` — D-20260928-03 과 불일치).
+ *    0.3.1 은 플러그인 PR 브랜치의 중간 버전으로 설치된 적이 없다 — 하한을 0.3.1 에 두면 0.4.0 보호가 없는 설정을
+ *    통과시킨다(8d5ca52 재검증 tests-mutation-1). 설정 minVersion 을 올리는 커밋에서 이 값도 함께 올린다(머리말 원칙).
  */
-const MIN_PLUGIN_VERSION: readonly [number, number, number] = [0, 3, 1]
+const MIN_PLUGIN_VERSION: readonly [number, number, number] = [0, 4, 0]
+
+/**
+ * 10. 문서가 적은 플러그인 버전 주장 — CLAUDE.md 의 `플러그인 ≥ X.Y.Z`, harness.json `$comment` 의 `플러그인 harness(>=X.Y.Z)`.
+ *    '플러그인' 낱말에 붙은 것만 본다(다른 도구의 버전 하한을 플러그인 주장으로 오인하지 않게).
+ */
+const VERSION_CLAIM_RE = /플러그인(?:\s*harness)?\s*\(?\s*(?:≥|>=)\s*(\d+\.\d+\.\d+)/g
+
+/** text 안의 플러그인 버전 주장들(X.Y.Z 문자열). */
+function pluginVersionClaims(text: string): string[] {
+  return Array.from(text.matchAll(VERSION_CLAIM_RE), (m) => m[1])
+}
 
 /** `X.Y.Z` 를 숫자 3개로 — 모양이 다르면 null. */
 function parseSemver(v: unknown): [number, number, number] | null {
@@ -505,7 +618,7 @@ function semverAtLeast(a: readonly [number, number, number], b: readonly [number
 }
 
 // ── 5. 글롭 매처 ─────────────────────────────────────────────────────────────────────────────
-// 플러그인 harness(>=0.3.0) scripts/harness-config.sh 의 hc_match 와 같은 의미론(bash `case "$rel" in $p)`):
+// 플러그인 harness(>=0.4.0) scripts/harness-config.sh 의 hc_match 와 같은 의미론(bash `case "$rel" in $p)`):
 //   · `*`(따라서 `**`)는 `/` 를 포함한 임의 문자열(빈 문자열 포함), `?` 는 임의의 한 글자, 나머지 문자는 그대로.
 //   · 패턴에 `**/` 가 있으면 그것을 전부 뗀 형태도 시도한다(= 0개 디렉터리: `src/**/*.test.ts` 가 `src/x.test.ts` 도,
 //     `**/verify_*.sql` 이 루트의 `verify_x.sql` 도 잡는다).
@@ -696,6 +809,29 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
       ).toEqual([])
     })
 
+    it('`supabase/seoul/*.sql` 중 정책 보유 빌드 SQL(정책·security_invoker·트리거·DEFINER·RLS 활성화)이 전부 rls 군 글롭에 걸린다', () => {
+      // 판정기 자기검증(체커 유효성) — 대소문자 무시로 잡고, 주석에만 있는 낱말은 치지 않는다.
+      const detectorWrong = (
+        [
+          ['create policy p on public.t for select using (true);', true],
+          ['CREATE OR REPLACE VIEW v WITH (security_invoker = true) AS SELECT 1;', true],
+          ['CREATE TRIGGER trg BEFORE INSERT ON t FOR EACH ROW EXECUTE FUNCTION f();', true],
+          ['-- 이 파일은 CREATE POLICY 를 쓰지 않는다\nINSERT INTO t VALUES (1);', false],
+          ["/* SECURITY DEFINER 금지 */ INSERT INTO t VALUES ('x');", false],
+        ] as const
+      )
+        .filter(([sql, expected]) => POLICY_BEARING_SQL_RE.test(stripSqlComments(sql)) !== expected)
+        .map(([sql, expected]) => `${JSON.stringify(sql)} (기대 ${expected})`)
+      expect(detectorWrong, '정책 보유 SQL 판정기(체커) 자체 버그').toEqual([])
+      const files = policyBearingBuildSql()
+      expect(files.length, `${SEOUL_BUILD_DIR}/*.sql 에서 정책 보유 파일을 하나도 못 찾음 — 빌드 폴더를 옮겼으면 이 계약도 함께 고친다`).toBeGreaterThan(0)
+      const rls = highGlobs('rls')
+      expect(
+        files.filter((rel) => !inLane(rel, rls)),
+        `tiers.high.rls 에 안 걸리는 정책 보유 빌드 SQL(찾은 파일: ${files.map((f) => f.slice(SEOUL_BUILD_DIR.length + 1)).join('·')}) — 이 파일의 정책·뷰·가드 트리거 한 줄 약화(\`WITH CHECK (true)\`·security_invoker 제거·\`IF false THEN\`)가 T1 단건 검증으로 내려간다. 설정 tiers.high.rls 에 경로를 넣는다`,
+      ).toEqual([])
+    })
+
     it('tiers.sqlPolicyRegex 가 비어 있지 않은 JS·awk 공통 ERE 이고, 정책·권한·함수·트리거·술어 샘플 줄을 모두 잡는다', () => {
       const re = pick('tiers.sqlPolicyRegex')
       // 키가 없거나 빈 문자열이면 pr-risk-tier.sh:63 이 FUNCTION·TRIGGER·seoul_* 가 빠진 기본 정규식으로 폴백한다.
@@ -707,16 +843,23 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
         [/\\/, /\(\?/, /\[\[:/, /[*+?}]\?/].filter((bad) => bad.test(source)).map(String),
         'sqlPolicyRegex 가 JS·awk ERE 공통 부분집합을 벗어남(역슬래시·(?·[[:·게으른 수량자) — 계약 매치가 플러그인 판정과 달라진다',
       ).toEqual([])
+      // 플러그인과 같은 모양: `tolower($0) ~ tolower(re)` — 정규식·줄을 모두 소문자로 바꿔 비교한다.
       const rx = (() => {
         try {
-          return new RegExp(source)
+          return new RegExp(source.toLowerCase())
         } catch (e) {
           throw new Error(`sqlPolicyRegex 가 정규식으로 컴파일되지 않음 — ${e instanceof Error ? e.message : String(e)}`)
         }
       })()
+      const asDiffLines = (line: string) => DIFF_PREFIXES.map((prefix) => `${prefix}${line}`)
+      const hits = (diffLine: string) => rx.test(diffLine.toLowerCase())
       expect(
-        SQL_POLICY_SAMPLES.filter((line) => !rx.test(line)),
-        'sqlPolicyRegex 가 안 잡는 SQL diff 줄 — 경로 글롭 밖 .sql 에서 정책·권한·RLS 술어·경로검사 트리거를 바꿔도 T2 로 오르지 않는다',
+        SQL_POLICY_SAMPLES.flatMap(asDiffLines).filter((diffLine) => !hits(diffLine)),
+        'sqlPolicyRegex 가 안 잡는 SQL diff 줄(`+`/`-` 접두·소문자 비교 = pr-risk-tier 모양) — 경로 글롭 밖 .sql 에서 정책·권한·RLS 술어·경로검사 트리거를 바꿔도 T2 로 오르지 않는다(`^` 앵커는 diff 접두 때문에 절대 안 걸린다)',
+      ).toEqual([])
+      expect(
+        SQL_NON_POLICY_SAMPLES.flatMap(asDiffLines).filter(hits),
+        'sqlPolicyRegex 가 평범한 조회·인덱스·시드 diff 줄을 잡음 — 정규식 과확장: 모든 SQL PR 이 rls-policy(T2)로 올라 팬아웃이 소음이 된다',
       ).toEqual([])
     })
 
@@ -858,7 +1001,7 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
     })
   })
 
-  describe('7. 당사자 문구 글롭·검증 렌즈·역할 스킬·접근성 기준', () => {
+  describe('7. 당사자 문구 글롭·검증 렌즈·역할 스킬·접근성·보안 기준', () => {
     it('tiers.participantCopyGlobs 가 당사자 화면·공통 컴포넌트·쉬운 용어 사전·콘텐츠 4글롭을 모두 포함한다', () => {
       expect(
         missingFrom(strings('tiers.participantCopyGlobs'), REQUIRED_PARTICIPANT_COPY),
@@ -893,6 +1036,14 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
       expect(
         A11Y_CHECK_CRITERIA.filter((criterion) => !criterion.test(line)).map(String),
         'CLAUDE.md 접근성 검증 체크 줄에서 기준+값 쌍이 사라지거나 뒤집힘(예: 오류 0 → 경고만, 단독 금지 → 허용) — w-verifier·QA 가 느슨한 기준으로 통과시킨다',
+      ).toEqual([])
+    })
+
+    it('CLAUDE.md 「Storage 보안 규칙」 보안 검증 체크 줄이 항목 7개(RLS 스코프·createAdminClient·경로 위조·view-as 읽기전용·감사 기록 누락·AI 전송 전 이름 가림·서비스 롤 키)를 모두 적는다', () => {
+      const line = sectionLine(claudeSection('## Storage 보안 규칙'), SECURITY_CHECK_LINE)
+      expect(
+        SECURITY_CHECK_TOKENS.filter((token) => !line.includes(token)),
+        'CLAUDE.md 보안 검증 체크 줄에서 빠진 항목 — 플러그인 w-verifier ④ 가 일반형이라 T1 보안 검증은 이 줄의 프로젝트 항목만 본다',
       ).toEqual([])
     })
   })
@@ -966,14 +1117,67 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
       ).toBe(EXPECTED_BASE_BRANCH)
     })
 
-    it(`plugin.minVersion 이 semver ≥ ${MIN_PLUGIN_VERSION.join('.')} 이다(0.3.0 lane-guard 는 저장소 밖 경로를 허용·워커 메모리 규칙 불일치)`, () => {
+    it(`plugin.minVersion 이 semver ≥ ${MIN_PLUGIN_VERSION.join('.')} 이다(0.4.0 미만은 메모리 자기 폴더·저장소 밖 쓰기 차단 없음)`, () => {
       const raw = pick('plugin.minVersion')
       const v = parseSemver(raw)
       expect(v, `plugin.minVersion 이 X.Y.Z 가 아님(실제: ${JSON.stringify(raw)})`).not.toBeNull()
       expect(
         v !== null && semverAtLeast(v, MIN_PLUGIN_VERSION),
-        `plugin.minVersion ${JSON.stringify(raw)} < ${MIN_PLUGIN_VERSION.join('.')} — CLAUDE.md 「레인 규칙」 이 적은 보호(worktree 밖 편집 불가·에이전트 자기 메모리 폴더만)가 이 버전에서는 서지 않는다. 플러그인 ${MIN_PLUGIN_VERSION.join('.')} 을 설치한 뒤 올린다`,
+        `plugin.minVersion ${JSON.stringify(raw)} < ${MIN_PLUGIN_VERSION.join('.')} — 0.4.0 미만은 메모리 자기 폴더·저장소 밖 쓰기 차단 없음: CLAUDE.md 「레인 규칙」 이 적은 보호(worktree·저장소 밖 편집 불가·에이전트 자기 메모리 폴더만)가 이 버전에서는 서지 않는다`,
       ).toBe(true)
+    })
+
+    it('CLAUDE.md·harness.json `$comment` 가 적은 플러그인 버전 하한(≥ X.Y.Z)이 계약 하한 이하다(요약이 계약보다 센 보호를 약속하지 않음)', () => {
+      // 추출기 자기검증(체커 유효성) — 두 문서의 표기를 모두 읽고, 플러그인 아닌 하한은 무시한다.
+      expect(
+        [
+          pluginVersionClaims('(플러그인 ≥ 0.4.0 — `harness.json`'),
+          pluginVersionClaims('플러그인 harness(>=0.4.0)의 lane-guard'),
+          pluginVersionClaims('Node ≥ 20.1.0 · line-height ≥ 1.625'),
+        ],
+        '플러그인 버전 주장 추출기(체커) 자체 버그',
+      ).toEqual([['0.4.0'], ['0.4.0'], []])
+      const comment = pick('$comment')
+      const sources: Array<[label: string, body: string]> = [
+        ['CLAUDE.md', readFileSync(join(ROOT, 'CLAUDE.md'), 'utf8')],
+        [`${HARNESS_JSON} $comment`, typeof comment === 'string' ? comment : ''],
+      ]
+      const overclaims = sources.flatMap(([label, body]) =>
+        pluginVersionClaims(body)
+          .filter((claimed) => {
+            const v = parseSemver(claimed)
+            return v === null || !semverAtLeast(MIN_PLUGIN_VERSION, v)
+          })
+          .map((claimed) => `${label}: ≥ ${claimed}`),
+      )
+      expect(
+        overclaims,
+        `계약 하한 ${MIN_PLUGIN_VERSION.join('.')} 보다 높은 플러그인 버전을 적은 문서 — "설정 계약이 강제"한다는 보호가 계약에 없다(MIN_PLUGIN_VERSION 을 함께 올린다)`,
+      ).toEqual([])
+    })
+  })
+
+  describe('11. 에이전트 메모리 로컬 전용 (D-20260928-03)', () => {
+    it('.gitignore 가 `.claude/agent-memory/`·`.claude/agent-memory-local/` 를 무시하고, 그것을 뒤집는 `!` 줄이 없다', () => {
+      const lines = readFileSync(join(ROOT, '.gitignore'), 'utf8')
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+      expect(
+        REQUIRED_GITIGNORE_LINES.filter((required) => !lines.includes(required)),
+        '.gitignore 에서 빠진 에이전트 메모리 줄 — 검증자 메모리(project 범위)가 `git add` 에 섞여 PR 에 올라간다(#199 에서 6개가 섞였던 사례)',
+      ).toEqual([])
+      expect(
+        lines.filter((l) => l.startsWith('!') && l.includes('.claude/agent-memory')),
+        '.gitignore 에 에이전트 메모리 무시를 뒤집는 `!` 줄이 있음 — 메모리가 다시 추적 대상이 된다',
+      ).toEqual([])
+    })
+
+    it('CLAUDE.md 「레인 규칙」 에이전트 메모리 줄이 `.gitignore`·로컬 전용을 적는다', () => {
+      const line = sectionLine(claudeSection('### 레인 규칙'), AGENT_MEMORY_LINE)
+      expect(
+        AGENT_MEMORY_LINE_TOKENS.filter((token) => !line.includes(token)),
+        'CLAUDE.md 에이전트 메모리 줄에서 빠진 항목 — 메모리를 커밋하지 않는 규칙(D-20260928-03)의 근거가 요약에서 사라진다',
+      ).toEqual([])
     })
   })
 })
