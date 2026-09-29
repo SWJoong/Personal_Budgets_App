@@ -12,7 +12,7 @@
    gh api -X POST repos/SWJoong/Personal_Budgets_App/branches/main/protection/enforce_admins
    gh api repos/SWJoong/Personal_Budgets_App/branches/main/protection/enforce_admins -q .enabled   # true
    ```
-   켜면 관리자도 PR·필수 CI 를 거친다. 머지 확인 훅이 놓치는 `git -C . push origin main` 같은 변형도 GitHub 이 막는다. 비상시에는 같은 경로에 `-X DELETE` 로 잠시 끈다.
+   **2026-09-29 적용 확인**(`enabled: true`, `required_status_checks` = quality-check·db-verify, strict). 켜면 관리자도 PR·필수 CI 를 거친다. 머지 확인 훅이 놓치는 `git -C . push origin main` 같은 변형도 GitHub 이 막는다. 비상시에는 같은 경로에 `-X DELETE` 로 잠시 끈다.
 2. Claude 데스크톱 Code 탭에서 이 폴더(`Personal_Budgets_App`)로 **새 세션**을 연다.
 3. 테스트용 파일은 이름을 `zz_manual` 로 시작한다. 끝나면 오케스트레이터에게 정리를 맡긴다(아래 9).
 
@@ -40,7 +40,7 @@
   - u-worker: U 레인·`supabase/seoul/21_new.sql`·자기 user 메모리 → 허용 / W 레인·CLAUDE.md·harness.json·검증자 메모리·`~/.claude/settings.json`·메인 체크아웃·ZWSP 변형·`.git` → 차단
   - w-contract-author: W 레인·자기 user 메모리 → 허용 / U 레인·CLAUDE.md → 차단
   - 메인 세션: W 레인·`.git/config` → 확인 질문 / U 레인·CLAUDE.md → 허용
-- 설치본 `merge-ask.sh`: `gh pr merge` → 확인 · `--admin` → 차단 · 워커의 머지·main push → 차단 · `git push origin main` → 확인 · 기능 브랜치 push → 통과 · **`git -C . push origin main` → 통과(알려진 빈틈, 0.4.1 후속 — 준비 1 의 enforce_admins 가 서버에서 막는다)**
+- 설치본 `merge-ask.sh`: `gh pr merge` → 확인 · `--admin` → 차단 · 워커의 머지·main push → 차단 · `git push origin main` → 확인 · 기능 브랜치 push → 통과 · **`git -C . push origin main` → 통과(알려진 빈틈, 0.4.1 후속 — enforce_admins 적용으로 서버가 막는다)**
 - selftest(0.4.0): lane-guard 209(casefold 16) · merge-ask 30 · pr-risk-tier 23 · pr-merge-gate 48. PBA 설정 계약 40 + 래퍼 계약 14.
 - 새 헤드리스 세션으로 워커를 띄우는 라이브 점검은 권한 분류기가 거부했다 → 항목 5·6 이 라이브 확인을 맡는다.
 
