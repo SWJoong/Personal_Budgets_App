@@ -1515,3 +1515,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-29T11:48Z] U
 [SYNC] #199 머지 → main 4b0aa72(조건 수용, D-20260929-01) — main 에 harness.json(minVersion 0.4.0)·설정 계약 40·래퍼 계약 14. 후속 기록 PR #207(결정 2건·doc18 §9 후속 보통 5건·현황, 티어 high — enforce_admins 반영 확인 후 검증). 다음 세션 인계: ① 사용자가 enforce_admins 명령 실행 → 확인·doc02 갱신 → #207 검증·머지 ② 새 세션에서 harness:u-worker 라이브 spawn(0.4.0 가드 + main harness.json) ③ 후속 보통 5건 PR ④ 플러그인 0.4.1(낮음 4 + merge-ask 변형).
 
+## [2026-09-29T11:53Z] U
+[SYNC] 보강 마무리: 설치본 0.4.0 훅 실측(origin/main worktree, lane-guard 21·merge-ask 7 경우) 기대대로 — 알려진 빈틈 git -C push 는 enforce_admins 로 막는다. 헤드리스 라이브 spawn 은 권한 분류기 거부 → 사용자 테스트 항목으로 이관. 사용자 테스트 체크리스트 = docs/release/qa-runs/2026-09-29-harness-live.md(#207). 다음: 사용자가 enforce_admins 실행 → 새 세션에서 체크리스트 1~13(항목 11·12 가 #207 검증·머지).
+
