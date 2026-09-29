@@ -28,7 +28,7 @@ GitHub Actions 는 **`if` 조건에서 `secrets` 컨텍스트 참조를 금지**
 `gh api -X PUT repos/{owner}/{repo}/branches/main/protection` 로 설정:
 - **required_status_checks**: `quality-check`, `db-verify`
 - **strict: true** — PR 을 최신 main 에 맞춘 뒤에만 병합 → **base 이동 회귀 자동 차단**(#30 교훈).
-- **enforce_admins: false** — 설정은 false 지만 운영 규칙상 `--admin` 은 금지다(CLAUDE.md 「사람 자리 절차」, 플러그인 merge-ask 훅이 차단). `enforce_admins: true` 전환은 사용자 결정 대기(doc18 §9 후속).
+- **enforce_admins: false** — 설정은 false 지만 운영 규칙상 `--admin` 은 금지다(CLAUDE.md 「사람 자리 절차」, 플러그인 merge-ask 훅이 차단). `enforce_admins: true` 로 전환하기로 결정(D-20260929-02, 2026-09-29) — 실행은 사용자, 반영 확인 후 이 줄을 갱신한다.
 - **required_pull_request_reviews: null** — 리뷰는 W 역할 컨텍스트(`harness:w-verifier` · `/harness:verify-pr`)의 독립검증 리포트 + 사람 승인(검증 티어, CLAUDE.md). 단일 계정에서 U 계정 PR 은 자기승인이 불가하므로 GitHub 필수 리뷰는 켜지 않는다(2026-09-27).
 
 재설정/확인:

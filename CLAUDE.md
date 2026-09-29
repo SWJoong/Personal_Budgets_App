@@ -300,7 +300,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 
 ### 현재 작업 현황
 <!-- 오케스트레이터가 갱신 · 사람 자리 기록은 agent-sync w.md · 2026-08-19~09-20 이력은 docs/release/18 부록 A 로 이관 -->
-- **★현행 스냅샷(2026-09-29)**: main = `8338ad7`(#201). 백로그 정본 =
+- **★현행 스냅샷(2026-09-29)**: main = `4b0aa72`(#199). 백로그 정본 =
   `docs/release/14-prd-reprioritization.md` 「현행 백로그 (2026-09-27 재점검)」(담당별·우선순위).
   - **완료(재착수 금지, 2026-09-20 이후)**: #175 요약 대리인 이름 치환 + `participant.preview` 감사 · #176 `/admin/audit` ·
     #177 TTS `SpeakButton`(홈 잔액·이용계획) · #178 쉬운 용어 사전+`<Term>`('이용계획') · #179 `/admin/insights` KPI A~C ·
@@ -310,7 +310,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
   - **라이브 반영(사용자 Manual-Ops)**: `12_audit_log`(2026-09-21)·`19_plan_feedback`(2026-09-21)·`20_evaluations`(2026-09-26, 카탈로그 32/32).
     **미확인**: 감사 파기 pg_cron 등록(`0 18 * * *` UTC = KST 03시, `docs/release/12` §4) · 활동사진 04 RLS·03 경로 트리거(`docs/release/06` §2).
   - **결정 확정**: 감사 접속기록 보존 730일(2026-09-22) · Supabase 리전 `ap-northeast-2` 서울 → 저장 국외이전 면제(2026-09-23) ·
-    계획 공유 = 가벼운 피드백(a)(→#183) · 단일 계정 운영 모델·플러그인화(D-20260927-02~06, D-20260928-01/02) · 에이전트 메모리 로컬 전용(D-20260928-03). 결정 정본 = `docs/release/decisions.md`.
+    계획 공유 = 가벼운 피드백(a)(→#183) · 단일 계정 운영 모델·플러그인화(D-20260927-02~06, D-20260928-01/02) · 에이전트 메모리 로컬 전용(D-20260928-03) · #199 조건 수용 머지(D-20260929-01) · main 보호 enforce_admins 켜기(D-20260929-02, 사용자 실행 대기). 결정 정본 = `docs/release/decisions.md`.
   - **머지(2026-09-27)**: #192(처리방침 사실 정정 + 쉬운말 요약 당사자 이름 가림 결함 수정 — `profiles` 오조회로 #73 이후 미마스킹) ·
     #193(AI 생성물 공통 라벨 `AiNotice` + OCR 자동채움 표시) · #194(지출 기록 성공 안내) · #195(상태 기록 정리) · #196(Phase C 계획서 보관).
   - **머지(2026-09-28)**: #197(하네스 코드화 — 에이전트 3종·lane-guard·`/verify-pr`, 같은 날 플러그인으로 이전) · #200(copay TS↔DB 상태값 패리티 골든 — P3) · #201(2026-09-29, 터치타깃 44px·장식 이모지 aria-hidden 재반영 + 사이드바 하위메뉴 토글·더보기 스위치).
@@ -319,4 +319,5 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
   - **다음(U 코드, 결정 불요)**: 쉬운말 `<Term>` 확대(`plan/page.tsx`)·지출기록 TTS·`receipt.view` 반복 기록 축소·감사 `target_participant_id` 누락.
   - **운영 모델(2026-09-27 정식화)**: 단일 계정 · W/U = 역할 컨텍스트 · 사람 자리(W) = QA·머지·결정 — 위 「병렬 하네스」 섹션과 `docs/release/18`. 홈 지시서·메모리 갱신은 머지 후 체크.
   - **하네스 코드화(#197, 머지 2026-09-28)**: 에이전트 3종·레인 가드·`/verify-pr` 워크플로·역할 스킬 정정 — `docs/release/17`. 그 런타임은 아래 플러그인으로 이전됐다(doc18).
-  - **단일 계정 전환 + 플러그인화(U, 2026-09-27)**: 하네스 런타임을 플러그인 `harness`(에이전트·훅·워크플로·스크립트)로 추출, 저장소엔 `.claude/harness.json` 만. 로컬 사본(`.claude/agents`·`workflows`·`lane-guard`·`u-wave-plan`) 삭제, `settings.json` 훅 제거, PR 템플릿·결정 로그·QA 기록 규약 신설 — `docs/release/18`. 이전 현황 이력(08-19~09-20)은 doc18 부록 A.
+  - **머지(2026-09-29)**: #199(단일 계정·역할 분리 운영 모델 v2 + 플러그인 이전, 조건 수용 — 후속 보통 5건은 doc18 §9) · 플러그인 `harness` 0.4.0(SWJoong/claude-harness#1).
+  - **단일 계정 전환 + 플러그인화(U, 2026-09-27 → 머지 2026-09-29)**: 하네스 런타임을 플러그인 `harness`(에이전트·훅·워크플로·스크립트)로 추출, 저장소엔 `.claude/harness.json` 만. 로컬 사본(`.claude/agents`·`workflows`·`lane-guard`·`u-wave-plan`) 삭제, `settings.json` 훅 제거, PR 템플릿·결정 로그·QA 기록 규약 신설 — `docs/release/18`. 이전 현황 이력(08-19~09-20)은 doc18 부록 A.
