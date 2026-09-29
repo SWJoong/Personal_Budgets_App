@@ -298,7 +298,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 
 ### 현재 작업 현황
 <!-- 오케스트레이터가 갱신 · 사람 자리 기록은 agent-sync w.md · 2026-08-19~09-20 이력은 docs/release/18 부록 A 로 이관 -->
-- **★현행 스냅샷(2026-09-28)**: main = `15d3984`(#200). 백로그 정본 =
+- **★현행 스냅샷(2026-09-29)**: main = `8338ad7`(#201). 백로그 정본 =
   `docs/release/14-prd-reprioritization.md` 「현행 백로그 (2026-09-27 재점검)」(담당별·우선순위).
   - **완료(재착수 금지, 2026-09-20 이후)**: #175 요약 대리인 이름 치환 + `participant.preview` 감사 · #176 `/admin/audit` ·
     #177 TTS `SpeakButton`(홈 잔액·이용계획) · #178 쉬운 용어 사전+`<Term>`('이용계획') · #179 `/admin/insights` KPI A~C ·
@@ -311,7 +311,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
     계획 공유 = 가벼운 피드백(a)(→#183) · 단일 계정 운영 모델·플러그인화(D-20260927-02~06, D-20260928-01/02) · 에이전트 메모리 로컬 전용(D-20260928-03). 결정 정본 = `docs/release/decisions.md`.
   - **머지(2026-09-27)**: #192(처리방침 사실 정정 + 쉬운말 요약 당사자 이름 가림 결함 수정 — `profiles` 오조회로 #73 이후 미마스킹) ·
     #193(AI 생성물 공통 라벨 `AiNotice` + OCR 자동채움 표시) · #194(지출 기록 성공 안내) · #195(상태 기록 정리) · #196(Phase C 계획서 보관).
-  - **머지(2026-09-28)**: #197(하네스 코드화 — 에이전트 3종·lane-guard·`/verify-pr`, 같은 날 플러그인으로 이전) · #200(copay TS↔DB 상태값 패리티 골든 — P3).
+  - **머지(2026-09-28)**: #197(하네스 코드화 — 에이전트 3종·lane-guard·`/verify-pr`, 같은 날 플러그인으로 이전) · #200(copay TS↔DB 상태값 패리티 골든 — P3) · #201(2026-09-29, 터치타깃 44px·장식 이모지 aria-hidden 재반영 + 사이드바 하위메뉴 토글·더보기 스위치).
   - **다음(결정·확인 선행)**: 기관 = AI API 국외이전 근거(OCR A안/국내/제거 · 요약·제안 B안)·처리방침 확정값·Supabase DPA 서명·Vercel
     Analytics 수집범위/DPA · 사용자 = pg_cron·활동사진 RLS 라이브 확인·실사용자 심사·기능 QA(doc16)·정산 실무자 허용·KPI D.
   - **다음(U 코드, 결정 불요)**: 쉬운말 `<Term>` 확대(`plan/page.tsx`)·지출기록 TTS·`receipt.view` 반복 기록 축소·감사 `target_participant_id` 누락.
