@@ -610,3 +610,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-29T12:25Z] W (via U)
 [DECISION by user] D-20260929-02 실행 — main 브랜치 보호 enforce_admins=true 적용(사용자 실행 2026-09-29, 오케스트레이터 확인: enabled=true · required checks quality-check·db-verify · strict). 기록은 #207(doc02·결정 로그·현황).
 
+## [2026-09-29T12:55Z] W (via U)
+[MERGED by user] #205 docs(T0) — #200·#201 검증 후속(낮음 U 8·W 4)과 /onboarding 존폐 결정(P2 사용자 결정 항목)을 doc14 현행 백로그에 기록 → main 6a4f422. 사용자 승인(U 세션 AskUserQuestion) · head cc918c3 · 티어 docs · 게이트 통과. 11:46Z 의 같은 PR 머지 기록은 오기(실제 머지 실패) — 이번이 실제 머지.
+
