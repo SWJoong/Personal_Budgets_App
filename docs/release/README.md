@@ -1,7 +1,7 @@
-# docs/release/ — 릴리스·백엔드 노트 (U 소유)
+# docs/release/ — 릴리스·백엔드 노트 (오케스트레이터 · U 역할 저작)
 
-병렬 하네스에서 **U(구현·배포 축)** 가 소유하는 릴리스/백엔드 실행 기록 디렉터리다.
-(설계·계획·온톨로지 문서는 W 소유인 `Plan&Source/`, 하네스 계획서는 W 소유인 `docs/harness-plan.md`에 있다.)
+하네스에서 **U 역할(구현·배포)** 이 저작하는 릴리스/백엔드 실행 기록 디렉터리다.
+(설계·온톨로지 문서는 W 레인 `Plan&Source/`(`harness:w-contract-author` 저작), 하네스 계획서는 `docs/harness-plan.md` v2. 결정 로그 `decisions.md`, QA 실행 기록 `qa-runs/`.)
 
 ## 무엇을 여기 적나
 - 마이그레이션 실행 순서·결과 (`supabase/migrations/`, `supabase/seoul/` 빌드 SQL 적용 로그)
@@ -13,7 +13,7 @@
 `NN-주제.md` (예: `01-seoul-schema-cutover.md`, `02-multitenancy-migration.md`)
 
 ## 상태 공유 규칙
-- 진행 상태(대화)는 여기가 아니라 `scripts/agent-sync.sh post u "..."` (agent-sync 채널)로.
+- 진행 상태(저널)는 `scripts/agent-sync.sh post u "..."`, 사람 자리 기록(머지·QA·결정)은 `post w "[… by user] …"` (agent-sync 채널)로.
 - 코드 핸드오프는 PR·CI로. 이 디렉터리는 **결정·실행 기록**만 남긴다.
 
 ## 노트
@@ -35,6 +35,8 @@
 - [14-prd-reprioritization.md](14-prd-reprioritization.md) — PRD 재정합 + 3축 우선순위 백로그 (현행 백로그 2026-09-27 재점검 포함)
 - [15-overseas-transfer-decision.md](15-overseas-transfer-decision.md) — AI 개인정보 처리(국외이전·위탁·동의) 근거 결정 메모
 - [16-functional-qa-checklist.md](16-functional-qa-checklist.md) — 경로별 기능 QA 체크리스트
-- [17-harness-codification.md](17-harness-codification.md) — 하네스 코드화: 서브에이전트 정의(u-worker·w-verifier·w-contract-author)·레인 가드 훅·`/verify-pr` 저장 워크플로·역할 스킬 정정
+- [17-harness-codification.md](17-harness-codification.md) — 하네스 코드화: 서브에이전트 정의·레인 가드 훅·`/verify-pr`·역할 스킬 정정 (부품은 이후 플러그인으로 이전)
+- [18-single-account-operating-model.md](18-single-account-operating-model.md) — 단일 계정 운영 모델: W·U=역할, 사람 자리, 검증 티어, 플러그인 `harness` 추출, 전환 기록
+- [decisions.md](decisions.md) — 결정 로그(append-only) · [qa-runs/](qa-runs/README.md) — 사람 QA 실행 기록
 
 > 번호 `08`·`12` 는 각각 두 파일이 같은 번호를 쓴다(작성 시점이 겹친 기록). 링크 호환을 위해 파일명은 바꾸지 않는다. *(2026-09-27 갱신)*
