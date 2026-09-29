@@ -595,3 +595,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-28T12:58Z] W (via U)
 [DECISION by user] D-20260928-03 서브에이전트 메모리 = 로컬 전용: PBA .claude/agent-memory*/ 를 .gitignore(검증자 project 메모리는 메인 체크아웃에만), harness:u-worker·harness:w-contract-author 는 memory: user(~/.claude/agent-memory/, 프로젝트 공통, 머신 간 공유 없음). 근거: #199 재검증 — 검증자 메모리 6개가 기능 PR(공개 저장소)에 섞임·worktree 워커 메모리 고아. (사용자 결정, U 세션 기록)
 
+## [2026-09-29T10:09Z] W (via U)
+[MERGED by user] #201 fix(a11y) 터치타깃 44px·장식 이모지 aria-hidden 재반영 + 사이드바 하위메뉴 토글(44px·이름라벨·aria-controls·자동펼침 첫클릭 버그)·더보기 SettingSwitch(다크·고대비 켜짐/꺼짐 색) + 온보딩 역할 안내(사용자 결정 문구) — head c4906f9, verify-pr 4회(최종 approve). 원격 feat/kwcag-a11y-foundation 삭제(백업 ref).
+
