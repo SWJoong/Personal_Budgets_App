@@ -1500,3 +1500,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-29T10:12Z] U
 [HANDOFF→W] #205 docs(T0): #200·#201 검증 후속(낮음 U 8·W 4)과 /onboarding 존폐 결정(profiles.onboarding_completed 부재→도달·완료 불가)을 doc14 현행 백로그에 기록. 세션 worktree 3개 정리, harness-w-verifier 에이전트 메모리 7파일을 main 체크아웃 .claude/agent-memory 로 이관(색인 병합). 원격 브랜치: agent-sync·main·feat/goala-case-assignments(보류 보존)·feat/harness-single-account(#199)·#205 만 남음.
 
+## [2026-09-29T10:18Z] U
+[SYNC] 플러그인 0.4.0 머지(claude-harness#1 → 85ed748)·설치 완료. #199 head 8d5ca52: minVersion 0.4.0(계약 39/39 green) · main(#201) 병합 · 게이트 green(166 파일/1174·build). 조건 렌즈 4개 --lens 재검증 진행 중 → 결과 첨부 → 머지 게이트 check → 사용자 승인.
+
