@@ -1497,3 +1497,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-29T00:51Z] U
 [SYNC] 플러그인 claude-harness#1 head e00cc90(0.4.0): 3차 조건(대소문자 무시 FS 루트·상대 경로 우회)·4차 조건(ASCII 로 접히는 유니코드 문자 ſ·K·ß·합자 우회) 반영 — 둘 다 0.3.0 부터 있던 결함, 현 PBA(ext4) 영향 없음. casefold tmpfs 로 selftest 실측(lane-guard 178·gate 48). 5차 재검증(bypass + fs-semantics 두 렌즈) 진행 중. #199 는 플러그인 머지·설치 후 minVersion 0.4.0 → 4렌즈 재검증 → 승인 순서 그대로.
 
+## [2026-09-29T10:12Z] U
+[HANDOFF→W] #205 docs(T0): #200·#201 검증 후속(낮음 U 8·W 4)과 /onboarding 존폐 결정(profiles.onboarding_completed 부재→도달·완료 불가)을 doc14 현행 백로그에 기록. 세션 worktree 3개 정리, harness-w-verifier 에이전트 메모리 7파일을 main 체크아웃 .claude/agent-memory 로 이관(색인 병합). 원격 브랜치: agent-sync·main·feat/goala-case-assignments(보류 보존)·feat/harness-single-account(#199)·#205 만 남음.
+
