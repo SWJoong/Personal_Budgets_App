@@ -1,8 +1,8 @@
 {
-  "$comment": "Personal_Budgets_App 하네스 정본 — 플러그인 harness(>=0.3.0)의 lane-guard·agent-sync·wave-plan·pr-risk-tier·pr-merge-gate·verify-pr 이 읽는다. 글롭은 셸 case 의미론(*·** 가 / 를 가로지르고, '**/' 는 0개 이상 디렉터리) — CLAUDE.md 「레인 규칙」·「검증 티어」는 이 파일의 요약이며 판정은 여기가 정본. 정적 계약: src/test/harnessConfig.test.ts(W 레인).",
+  "$comment": "Personal_Budgets_App 하네스 정본 — 플러그인 harness(>=0.4.0)의 lane-guard·agent-sync·wave-plan·pr-risk-tier·pr-merge-gate·verify-pr 이 읽는다. 글롭은 셸 case 의미론(*·** 가 / 를 가로지르고, '**/' 는 0개 이상 디렉터리) — CLAUDE.md 「레인 규칙」·「검증 티어」는 이 파일의 요약이며 판정은 여기가 정본. 정적 계약: src/test/harnessConfig.test.ts(W 레인).",
   "project": "Personal_Budgets_App",
   "baseBranch": "main",
-  "plugin": { "name": "harness", "minVersion": "0.3.0", "source": "SWJoong/claude-harness" },
+  "plugin": { "name": "harness", "minVersion": "0.4.0", "source": "SWJoong/claude-harness" },
   "roles": { "author": "u", "verifier": "w", "seat": "w" },
   "roleSkills": { "u": ["backend", "frontend"], "w": ["qa", "pl", "easy-read-review"] },
   "lanes": {
