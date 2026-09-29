@@ -1503,3 +1503,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-29T10:18Z] U
 [SYNC] 플러그인 0.4.0 머지(claude-harness#1 → 85ed748)·설치 완료. #199 head 8d5ca52: minVersion 0.4.0(계약 39/39 green) · main(#201) 병합 · 게이트 green(166 파일/1174·build). 조건 렌즈 4개 --lens 재검증 진행 중 → 결과 첨부 → 머지 게이트 check → 사용자 승인.
 
+## [2026-09-29T11:12Z] U
+[SYNC] #199 head 0008084: 8d5ca52 재검증(보통 5) 반영 — 정책 보유 빌드 SQL 7개 rls 군·SQL 정규식 확장·보안 검증 체크 줄·래퍼 CLAUDE_CONFIG_DIR·계약 #206(설정 40 + 래퍼 14, 42 돌연변이 RED) 병합. 게이트 green(54/54·166/1189·build). 조건 렌즈 3개(security-rls·tests-mutation·docs-consistency) 재검증 중.
+
