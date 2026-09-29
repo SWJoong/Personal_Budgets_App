@@ -607,3 +607,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-29T11:47Z] W (via U)
 [MERGED by user] #199 → main 4b0aa72 (단일 계정·역할 분리 운영 모델 v2 + 플러그인 harness 이전). 사용자 승인(U 세션 AskUserQuestion) · head 0008084 · 티어 high · 판정 approve-with-conditions 를 조건 수용(--accept-conditions) · 계약 PR #202·#203·#204·#206 은 이미 병합. + [DECISION by user] D-20260929-01 #199 는 재검증 반복을 멈추고 조건 수용 머지 — 0008084 재검증 보통 5건(package.json 스크립트 gate·보호 없는 새 SQL·merge-ask git -C 변형·SQL 정규식 좁히기 계약·머지 절차 플래그)은 후속 PR, doc18 §9 기록. D-20260929-02 main 브랜치 보호 enforce_admins=true 로 켠다(사용자가 명령 실행, 오케스트레이터가 확인·기록). (사용자 결정, U 세션 기록)
 
+## [2026-09-29T12:25Z] W (via U)
+[DECISION by user] D-20260929-02 실행 — main 브랜치 보호 enforce_admins=true 적용(사용자 실행 2026-09-29, 오케스트레이터 확인: enabled=true · required checks quality-check·db-verify · strict). 기록은 #207(doc02·결정 로그·현황).
+
