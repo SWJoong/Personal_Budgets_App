@@ -1,14 +1,6 @@
 {
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash scripts/agent-sync.sh pull"
-          }
-        ]
-      }
-    ]
+  "$comment": "하네스 훅(SessionStart agent-sync pull · PreToolUse lane-guard · merge-ask)은 플러그인 harness 의 hooks.json 이 제공한다(정본: .claude/harness.json). 설치: claude plugin marketplace add SWJoong/claude-harness && claude plugin install harness@harness (이 머신은 개발용 로컬 마켓플레이스). 프로젝트 훅을 여기 다시 두면 pull 이 두 번 돈다.",
+  "enabledPlugins": {
+    "harness@harness": true
   }
 }

@@ -1,5 +1,8 @@
 # 04 · U 병렬 오케스트레이션 운영 모델
 
+> **2026-09-27 이후**: W 는 역할 컨텍스트(`harness:w-contract-author`·`harness:w-verifier`) + **사람 자리**(QA·머지·결정)이고 하네스 런타임은 플러그인 `harness` 다.
+> 아래 "W 세션·원격·별도 세션" 표현은 당시(2계정) 기준 — 현행은 [`18-single-account-operating-model.md`](18-single-account-operating-model.md).
+
 > **한 줄**: U(구현·배포) 축을 **단일 직렬 세션 → U-오케스트레이터 + 병렬 워커(worktree 격리)** 로
 > 승격한다. W(설계·검증) 축과의 **저자↔검증자 분리는 그대로 보존**한다. 병렬화는 *저자(U) 내부*에서만
 > 팬아웃하며, 검증 경계는 건드리지 않는다.
@@ -7,7 +10,7 @@
 > 계기: U 측 계정 한도 상향 → 준비된 W→U 핸드오프(RED 계약)가 여러 건 대기 중인데 직렬 U 세션이
 > 병목. 남는 용량을 **동시 실행**으로 productively 소진한다.
 
-관련: [`docs/harness-plan.md`](../harness-plan.md)(W 소유·하네스 정본) · 프로젝트 `CLAUDE.md` 「병렬 하네스」 ·
+관련: [`docs/harness-plan.md`](../harness-plan.md)(하네스 정본 v2 — W = 역할) · 프로젝트 `CLAUDE.md` 「병렬 하네스」 ·
 스킬 `parallel-agent-harness`(operating-model·adaptation-guide).
 
 ---
@@ -19,7 +22,7 @@
 | U 실행 | 사람이 Ubuntu 세션 1개를 직렬로 운전 | **U-오케스트레이터 세션 1** 이 **U-워커 N** 을 병렬 spawn·관리 |
 | 처리량 | W→U 핸드오프를 1건씩 순차 소진 | 독립 핸드오프를 **동시** 소진(파일 겹치지 않는 만큼) |
 | 충돌 방지 | 단일 트리라 자기 자신과 충돌 없음 | 각 워커가 **격리 worktree + 전용 브랜치 + 전용 파일셋** |
-| W와의 관계 | W = 별도 세션(검증자) | **동일** — W는 그대로 독립 검증자, PR·CI로만 핸드오프 |
+| W와의 관계 | W = 별도 세션(검증자) | **W = 별도 컨텍스트**(`harness:w-verifier` / `/harness:verify-pr`), 사람 자리는 어느 세션에서든 — PR·CI로만 핸드오프 |
 | 상태 채널 | `agent-sync`(w/u) | **동일** — 단, U측은 오케스트레이터가 **1건으로 취합** 후 post |
 
 **바뀌지 않는 것(불변식)**: 레인 규칙, `agent-sync` 채널, `[HANDOFF→W]` 커밋 접두, main 브랜치 보호,
@@ -32,7 +35,7 @@ test-first(W가 RED 계약을 먼저 박고 U가 초록화). 이 문서는 *U �
 하네스의 존재 이유는 속도가 아니라 **자기 결과를 자기가 채점하지 않는 것**이다. 병렬화가 이 원리를
 깨지 않는 이유:
 
-- **모든 워커는 "저자(U)"** 다. 검증자(W)는 여전히 다른 세션이다. 워커를 늘려도 저자 쪽만 넓어진다.
+- **모든 워커는 "저자(U)"** 다. 검증자(W 역할)는 여전히 이 코드를 쓰지 않은 **다른 컨텍스트**다. 워커를 늘려도 저자 쪽만 넓어진다.
 - **워커는 테스트/검증을 작성하지 않는다.** W가 이미 박아 둔 RED 계약(`src/test/**`, `*.test.ts`,
   `Plan&Source/**/verify_*.sql`)을 **초록으로만** 만든다. 워커는 이 파일들을 **열어 읽되 수정 금지** —
   약화(weaken)는 곧 자기채점이므로 금지.
@@ -60,9 +63,9 @@ test-first(W가 RED 계약을 먼저 박고 U가 초록화). 이 문서는 *U �
 - **금지**: 자기 파일셋 밖 편집, W-레인(테스트/verify/`Plan&Source`) 수정, main push, 계약 약화,
   `agent-sync` 직접 post(취합은 오케스트레이터). 막히면 **해킹 대신 BLOCKER 보고**.
 
-### W (변경 없음)
-- 별도 세션. 독립 검증(요구→타입→성능→보안→접근성→테스트)·easy-read·a11y → main merge.
-- U 레인 파일 직접 수정 금지(기존 규칙 그대로).
+### W 역할 (컨텍스트로 실행 — 2026-09-27)
+- 계약 = `harness:w-contract-author` · 검증 = `harness:w-verifier` / `/harness:verify-pr`(요구→타입→성능→보안→접근성·쉬운말→테스트, 돌연변이 확인) · 머지·QA·결정 = **사람 자리**(사용자, U 세션에서도).
+- U 레인 파일 직접 수정 금지(훅이 차단, 기존 규칙 그대로).
 
 ---
 
@@ -80,7 +83,7 @@ test-first(W가 RED 계약을 먼저 박고 U가 초록화). 이 문서는 *U �
 3. 각 워커는 **격리 worktree**(별도 디렉터리)에서 돌아 파일시스템상 서로 안 보인다. 브랜치도 전용.
    → 웨이브 내 충돌은 구조적으로 0. 잔여 충돌은 **병합 시점(W)** 에서만, 레인 우선순위로 해소.
 
-> **자동화**: 위 1~2 + 계약 상태 분류는 [`scripts/u-wave-plan.sh`](../../scripts/u-wave-plan.sh)가 한다.
+> **자동화**: 위 1~2 + 계약 상태 분류는 플러그인 `harness` 의 `scripts/wave-plan.sh`(구 `u-wave-plan.sh`)가 한다.
 > `[HANDOFF→U]` 오픈 PR을 수집해 파일 교집합·서로소 웨이브를 제안하고, 각 핸드오프를
 > **RED(구현대기) / U구현있음(검증대기) / 스펙(코드0)** 으로 분류한다. ★핵심: 겹침만이 아니라
 > **이미 끝난 일에 워커를 붙이는 실수**(첫 웨이브에서 실제 발생 — 부록 참조)를 STATE 분류로 막는다.
@@ -105,19 +108,19 @@ test-first(W가 RED 계약을 먼저 박고 U가 초록화). 이 문서는 *U �
 - **태스크**: 설계 문서 경로 + RED 계약 경로 + **편집 허용 파일 화이트리스트**(그 밖은 금지).
 - **게이트**: `npx vitest run <계약파일>` → `npm test` → `npm run build`(SQL이면 verify + build).
 - **핸드오프**: commit(`[HANDOFF→W]`) → push → `gh pr create --base main`.
-- **리턴**: `=== WORKER REPORT ===` 구조 블록(STATUS/BRANCH/PR/FILES/CONTRACT/GATE/LANE_NOTES/BLOCKER).
+- **리턴**: `=== WORKER REPORT ===` 구조 블록 — 필드는 플러그인 `agents/u-worker.md` 정의를 따른다(MANUAL_OPS 포함).
 
-실행 수단(2026-09-27 코드화, [`17-harness-codification.md`](17-harness-codification.md)): `.claude/agents/u-worker.md` 정의로 spawn —
-`Agent(subagent_type: "u-worker", run_in_background: true)`. 정의에 model sonnet · isolation worktree · background ·
-레인 가드 훅(`scripts/lane-guard.sh u`) · backend/frontend 스킬 선적재 · 규율·게이트·리턴 형식이 내장돼 있으므로 브리핑에는
-**태스크 · 화이트리스트 · 기준 브랜치** 만 준다. 검증은 `w-verifier` 또는 `/verify-pr <N>`, 계약 선행은 `w-contract-author`.
+실행 수단(2026-09-27 플러그인화, [`18`](18-single-account-operating-model.md)): `Agent(subagent_type: "harness:u-worker", run_in_background: true)`.
+정의(플러그인 `harness`)에 model sonnet · isolation worktree · background · 규율·게이트·리턴 형식이 내장되고, 레인 가드는 플러그인 훅(`lane-guard.sh auto`)이,
+역할 스킬은 `.claude/harness.json` `roleSkills` 로 로드되므로 브리핑에는 **태스크 · 화이트리스트 · 기준 브랜치** 만 준다.
+검증은 `harness:w-verifier`(small) 또는 `/harness:verify-pr <N>`(high), 계약 선행은 `harness:w-contract-author`.
 
 ---
 
 ## 6. 충돌·안전 우선순위
 
 1. 워커 파일셋은 서로소로 편성(§4) → 웨이브 내 충돌 없음이 정상.
-2. 병합 시점 충돌: **U 레인 → U 우선 / W 레인 → W 우선 / 공유 → 담당(U) 우선 / 판단 불가 → 사람**.
+2. 병합 시점 충돌: **U 레인 → u-worker/오케스트레이터 우선 / W 레인 → 계약 저자 컨텍스트 우선 / 공유 → 오케스트레이터 / 판단 불가 → 사람**.
 3. 안전장치(불변): main 직접 push 금지(브랜치 보호) · 워커의 테스트/verify 수정 금지 · 비가역·클라우드
    수동작업(대시보드 SQL·Auth·Storage)은 **자동화 금지**(수동 작업 게이트 — `CLAUDE.md` 참조).
 
@@ -125,13 +128,13 @@ test-first(W가 RED 계약을 먼저 박고 U가 초록화). 이 문서는 *U �
 
 ## 7. 매 웨이브 루틴 (오케스트레이터)
 
-1. `agent-sync.sh pull` — W 최신 상태.
-2. `scripts/u-wave-plan.sh` 실행 → RED(구현대기)만 **서로소 웨이브**로 편성(§4). 스펙·이미구현은 자동 스킵.
+1. `agent-sync.sh pull` — `w.md`(사람 자리)·`u.md`(직전 세션 인계) 로드.
+2. 플러그인 `wave-plan.sh` 실행 → RED(구현대기)만 **서로소 웨이브**로 편성(§4). 스펙·이미구현은 자동 스킵.
 3. 게이트 베이스라인 확인(main green 전제 — CI 보호).
 4. 워커 N spawn(§5) — 한 메시지에서 동시 실행.
 5. 완료 알림 수집 → 리포트 취합 → BLOCKER/레인노트 있으면 개입.
 6. `agent-sync.sh post u "웨이브 결과 1건 취합 + 다음 요청"`.
-7. 다음 웨이브 or W 검증 대기.
+7. 티어별 검증(`harness:w-verifier` / `/harness:verify-pr`) → 머지 브리핑(사람 승인) → 다음 웨이브.
 
 ---
 
@@ -147,14 +150,14 @@ Windows Remote Control 세션)까지 조율한다. 단, **코드=PR·CI · 상�
 
 | 역할 | 어디에 | 도달 수단 |
 |---|---|---|
-| **W**(설계·검증) | **원격**(이 머신의 로컬 세션 아님) | 정본은 **`agent-sync` 채널(w.md)**. 양쪽이 Remote Control 에 연결돼 있으면 `SendMessage` 가 다른 머신 세션에도 도달한다(문서 기준 v2.1.225+, 라이브 보조 채널로만 — 코드·상태 정본 아님). 미연결이면 채널만 |
+| **사람 자리(W)** | 사용자(어느 세션·머신, Remote Control 포함) | 브리핑·AskUserQuestion. 기록은 agent-sync `w.md`(U 세션이 대신 올릴 땐 `[DECISION by user]` 등 접두). W 역할 작업(계약·검증)은 서브에이전트로 spawn |
 | **U**(구현·배포) | 이 머신 로컬(여럿일 수 있음) | 라이브면 `SendMessage`, idle면 `send_message`. + agent-sync |
 | 무관 | cwd≠저장소 | 조율 대상 아님 |
 
 > ★**함정(실제 겪음)**: 로컬 세션 제목이 "W측 작업 진행"이어도 **실제 역할은 U**일 수 있다(제목 stale).
 > 나는 그 세션을 W로 오인해 'U→W 핸드오프'를 보냈고, 상대가 "나는 U다"라고 정정했다. → **제목 신뢰
-> 금지, 핸드셰이크로 역할 확인.** W는 로컬에 없다 — W 관련 요청(검증·병합·신규 RED 계약·우선순위)은
-> 전부 agent-sync w.md로만 간다.
+> 금지, 핸드셰이크로 역할 확인.** W 역할 작업(검증·계약)은 서브에이전트로 spawn 하고,
+> 사람 자리 요청(머지·결정)은 사용자에게 브리핑한다.
 
 > ★**두 U 세션 병존**: 같은 머신에 U 세션이 여럿이면 구현큐가 겹친다(#84~87은 다른 U 세션 저자).
 > 해소: **하나가 오케스트레이터, 나머지는 홀드 또는 disjoint 서브레인만**. 오케스트레이터가 겹침을
@@ -167,18 +170,18 @@ Windows Remote Control 세션)까지 조율한다. 단, **코드=PR·CI · 상�
 |---|---|---|---|
 | **상태 정본** | `agent-sync.sh`(git) | durable·async | 항상. "누가 뭘 했고 다음에 뭘" |
 | **라이브 메시** | `SendMessage` | 실시간·양방향 | 상대가 `ListAgents`에 **live**일 때(동료 U 워커·온라인 W). 오프라인엔 안 감 |
-| **세션 핸드오프** | `mcp__…__send_message` | 상대 세션에 **user turn**으로 도착 | **idle 로컬 U 피어 깨워 서브레인 인계**. 실행 안 중인 대화형 세션도 다음 열람 때 봄. (W엔 안 씀 — W는 원격) |
+| **세션 핸드오프** | `mcp__…__send_message` | 상대 세션에 **user turn**으로 도착 | **idle 로컬 U 피어 깨워 서브레인 인계**. 실행 안 중인 대화형 세션도 다음 열람 때 봄. (사람 자리엔 안 씀 — 브리핑으로) |
 
 ### 8-3. 절차
 1. **발견**: `list_sessions`(레지스트리) + `ListAgents`(라이브 여부) + 핸드셰이크로 역할 확인.
-2. **W로**: 검증·병합·신규 RED 계약·우선순위 요청은 **agent-sync w.md로만**(W는 원격). 절대 로컬 세션을 W로 취급 말 것.
+2. **W 역할로**: 검증은 `harness:w-verifier` / `/harness:verify-pr`, 계약은 `harness:w-contract-author` 를 spawn. 머지·결정은 사람 자리(사용자)에게 브리핑.
 3. **U 피어로**: 겹치는 구현큐는 소유권 명시(`SendMessage`/`send_message`). 코드는 언제나 PR, 정본 상태는 언제나 agent-sync.
 4. **워커 조율**: 서브에이전트는 완료 알림으로 취합(§7). 필요 시 `SendMessage`로 후속 지시.
 
 ### 8-4. 가드레일 (반드시)
 - **권한 우회 금지(permission laundering)**: 내 세션에서 막히는/승인 필요한 일을 상대 세션에 시켜
-  대신하게 하지 않는다. 특히 **main 병합·비가역 작업은 "명령"이 아니라 "정보 전달"** 로 — 상대 세션의
-  사람 확인하에 이뤄지게 한다(예: W에게 "병합 큐 준비됨"만, "병합해"는 금지).
+  대신하게 하지 않는다. 특히 **main 병합·비가역 작업은 사용자 승인 없이 하지 않는다** — 다른 세션·서브에이전트·워크플로에
+  머지를 '시키지' 않는다(예: 워커는 "병합 큐 준비됨" 보고만, "병합해"는 금지).
 - **분리 불변**: 교차 세션으로도 저자↔검증자 경계를 흐리지 않는다(§2).
 
 ---

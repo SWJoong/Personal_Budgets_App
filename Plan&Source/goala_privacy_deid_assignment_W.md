@@ -2,7 +2,7 @@
 
 > PRD(`서울형_리빌딩_PRD_20260828.md`) 정합성 리뷰([docs/release/03](../docs/release/03-prd-alignment-review.md))가
 > W에 넘긴 3결정을 사용자가 확정(2026-08-31)했다. 이 문서가 결정 기록 + 설계 정본.
-> 로드맵 반영: [harness-plan.md](../docs/harness-plan.md) §8.3 B3·B4·B5. 레인: 설계·골든·`verify_*.sql`=**W**, 구현=**U**.
+> 로드맵 반영: [harness-plan.md](../docs/harness-plan.md) v2 §9(로드맵 요약, 구 v1 §8.3) B3·B4·B5. 레인: 설계·골든·`verify_*.sql`=**W 역할**(`harness:w-contract-author`), 구현=**U 역할**(`harness:u-worker`).
 
 ## 결정 로그 (2026-08-31 확정)
 

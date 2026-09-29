@@ -1,0 +1,63 @@
+{
+  "$comment": "Personal_Budgets_App 하네스 정본 — 플러그인 harness(>=0.4.0)의 lane-guard·agent-sync·wave-plan·pr-risk-tier·pr-merge-gate·verify-pr 이 읽는다. 글롭은 셸 case 의미론(*·** 가 / 를 가로지르고, '**/' 는 0개 이상 디렉터리) — CLAUDE.md 「레인 규칙」·「검증 티어」는 이 파일의 요약이며 판정은 여기가 정본. 정적 계약: src/test/harnessConfig.test.ts(W 레인).",
+  "project": "Personal_Budgets_App",
+  "baseBranch": "main",
+  "plugin": { "name": "harness", "minVersion": "0.4.0", "source": "SWJoong/claude-harness" },
+  "roles": { "author": "u", "verifier": "w", "seat": "w" },
+  "roleSkills": { "u": ["backend", "frontend"], "w": ["qa", "pl", "easy-read-review"] },
+  "lanes": {
+    "w": [
+      "Plan&Source/**",
+      "**/verify_*.sql",
+      "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.spec.ts", "src/**/*.spec.tsx",
+      "src/test/**",
+      "vitest.config.ts",
+      ".claude/skills/**",
+      "docs/harness-plan.md"
+    ],
+    "shared": [
+      "CLAUDE.md", "AGENTS.md", ".mcp.json",
+      ".claude/harness.json", ".claude/settings.json", ".claude/settings.local.json",
+      ".claude/agents/**", ".claude/workflows/**", ".claude/commands/**", ".claude/agent-memory/**",
+      ".github/pull_request_template.md",
+      "scripts/agent-sync.sh",
+      "docs/release/decisions.md", "docs/release/qa-runs/**"
+    ]
+  },
+  "gate": {
+    "contract": "npx vitest run {file}",
+    "all": "npx tsc --noEmit && npm run lint && npm test && npm run build"
+  },
+  "featureBranch": "feat/*",
+  "contractBranch": "test/w-*",
+  "prefixes": { "toVerifier": "[HANDOFF→W]", "toAuthor": "[HANDOFF→U]", "sync": "[SYNC]" },
+  "tiers": {
+    "docs": ["docs/**", "**/*.md"],
+    "high": {
+      "rls": ["supabase/**/*rls*.sql", "supabase/seoul/01_core.sql", "supabase/seoul/03_seoul_schema.sql", "supabase/seoul/05_seoul_graph.sql", "supabase/seoul/06_storage.sql", "supabase/seoul/09_ontology_classification.sql", "supabase/seoul/11_provider_domains.sql", "supabase/seoul/12_audit_log.sql", "supabase/seoul/17_participant_feedback.sql", "supabase/seoul/18_sis_assessments.sql", "supabase/seoul/19_plan_feedback.sql", "supabase/seoul/20_evaluations.sql"],
+      "auth": ["src/proxy.ts", "src/app/(auth)/**", "src/app/api/**", "src/app/actions/demoAuth.ts", "src/app/actions/viewAs.ts", "src/app/actions/admin.ts", "src/utils/supabase/**", "src/utils/viewAsCookies.ts", "src/utils/superAdmin.ts", "src/app/actions/preferences.ts", "src/app/actions/profile.ts", "src/app/actions/appeal.ts", "src/app/actions/serviceProvider.ts", "src/app/actions/planReview.ts", "src/app/actions/feedback.ts", "scripts/seed-demo-auth.mjs"],
+      "privacy": ["src/utils/deidentify.ts", "src/utils/aiDeidentify.ts", "src/utils/ai.ts", "src/utils/easyReadSummary.ts", "src/utils/activitySuggestion.ts", "src/utils/staffReviewSuggestion.ts", "src/app/actions/ocr.ts", "src/app/actions/easyReadSummary.ts", "src/app/actions/activitySuggestion.ts", "src/app/actions/staffReviewSuggestion.ts", "src/content/privacyPolicy.ts", "src/app/privacy/**", "vercel.json"],
+      "audit": ["src/utils/audit*.ts", "src/utils/supervision.ts", "src/app/(supporter)/admin/audit/**", "src/app/(supporter)/admin/participants/*/preview/**", "src/app/actions/evaluation.ts", "src/app/actions/planReview.ts"],
+      "money": ["src/app/actions/settlement.ts", "src/app/actions/serviceUsage.ts", "src/app/actions/ruleCheck.ts", "src/app/api/export/**", "src/utils/settlement*.ts", "src/utils/orgLedger.ts", "src/utils/ledgerCsv.ts", "src/utils/copay.ts", "src/utils/budgetByDomain.ts", "src/app/(supporter)/supporter/settlements/**", "src/app/(supporter)/supporter/transactions/**"],
+      "storage": ["src/app/actions/activityPhoto.ts", "src/app/actions/document.ts", "src/app/actions/application.ts", "src/utils/supabase/storage.ts", "src/app/(participant)/gallery/**", "src/app/(supporter)/supporter/*/gallery/**"],
+      "gate": [".github/workflows/**", ".github/pull_request_template.md", ".claude/settings.json", ".claude/harness.json", ".claude/agents/**", ".claude/workflows/**", ".claude/commands/**", ".claude/skills/**", ".claude/agent-memory/**", ".mcp.json", "CLAUDE.md", "AGENTS.md", "docs/harness-plan.md", "scripts/agent-sync.sh"]
+    },
+    "sqlPolicyRegex": "(CREATE|ALTER|DROP) POLICY|SECURITY DEFINER|GRANT|REVOKE|ROW LEVEL SECURITY|CREATE (OR REPLACE )?FUNCTION|CREATE (OR REPLACE )?TRIGGER|seoul_(can_access|is_staff_for|is_admin|is_self)|seoul_check_[a-z_]+_path|WITH CHECK|USING *[(]|security_invoker|auth[.]uid[(][)]|RAISE EXCEPTION",
+    "large": { "files": 12, "lines": 400 },
+    "participantCopyGlobs": ["src/app/(participant)/**", "src/components/**", "src/utils/easyTerms.ts", "src/content/**"]
+  },
+  "verify": {
+    "lenses": ["requirements-types", "security-rls", "a11y-copy", "tests-mutation", "docs-consistency"],
+    "refuters": 2,
+    "refuterModel": "sonnet"
+  },
+  "channel": {
+    "branch": "agent-sync",
+    "roles": "w u",
+    "seatPrefixes": ["[DECISION by user]", "[QA by user]", "[MERGED by user]"]
+  },
+  "qa": {
+    "dir": "docs/release/qa-runs",
+    "checklists": ["docs/release/16-functional-qa-checklist.md", "docs/release/08-persona-qa-findings.md", "docs/release/07-a11y-kwcag-1st-eval.md"]
+  }
+}
