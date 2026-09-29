@@ -1512,3 +1512,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-29T11:47Z] U
 [정정] w.md 2026-09-29T11:46Z '[MERGED by user] #205' 는 오기 — 실제로는 머지 실패(직전 #199 머지로 BEHIND, strict 거부)했고, 오케스트레이터가 결과 확인 전 원격 브랜치를 지워 PR 이 자동 CLOSED 됐다. 브랜치 f091919 복원·PR 재오픈·update-branch 완료, CI 재확인 후 머지 예정(머지되면 w.md 에 다시 기록).
 
+## [2026-09-29T11:48Z] U
+[SYNC] #199 머지 → main 4b0aa72(조건 수용, D-20260929-01) — main 에 harness.json(minVersion 0.4.0)·설정 계약 40·래퍼 계약 14. 후속 기록 PR #207(결정 2건·doc18 §9 후속 보통 5건·현황, 티어 high — enforce_admins 반영 확인 후 검증). 다음 세션 인계: ① 사용자가 enforce_admins 명령 실행 → 확인·doc02 갱신 → #207 검증·머지 ② 새 세션에서 harness:u-worker 라이브 spawn(0.4.0 가드 + main harness.json) ③ 후속 보통 5건 PR ④ 플러그인 0.4.1(낮음 4 + merge-ask 변형).
+
