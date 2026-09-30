@@ -1539,3 +1539,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-30T13:24Z] U
 [MERGED] #208 docs(harness): 하네스 라이브 QA 결과(PASS 11 / FAIL 2) + #207 조건 정정  → main 5e26314 (user via U 2026-09-30T13:24Z · 티어 docs · 판정 -)
 
+## [2026-09-30T13:26Z] U
+[SYNC] #208 머지 → main 5e26314(사람 읽기·승인, 기본 모드) — 하네스 라이브 QA 기록(PASS 11 / FAIL 2)·#207 조건 정정 완료, 작업 worktree·브랜치 정리. 다음 세션 인계: ① 사용자 결정 대기 — doc18 §9 ⑥ auto 모드에서 훅 ask 가 사람에게 안 닿음(운영 규칙: 머지·W 레인 예외 전 기본 모드 / 플러그인: permission_mode=auto 면 ask→차단 / 버그 보고) · ⑪ 서버 PR 필수 여부 ② #199 후속 보통 5건(doc18 §9 ①~⑤) ③ 플러그인 0.4.1(낮음 4 + merge-ask 변형·보호 설정 변경 + ⑨: qa-run close 칸 탐지·post 재시도 출력·게이트가 worktree 에서 돌 때 gh 로컬 정리 실패로 원격 head 브랜치가 안 지워짐) ④ CLAUDE.md 현황 갱신(main 5e26314 · #205·#207·#208 · D-20260930-01) — 다음 CLAUDE.md PR 때 ⑤ U 코드 백로그.
+
