@@ -1536,3 +1536,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-30T12:54Z] U
 [HANDOFF→W] #208 docs(T0, 계산 docs): 하네스 라이브 QA 결과 기록(PASS 11 / FAIL 2 — #1 SessionStart 화면 표시 없음 · #4 auto 모드 ask 미표시) + #207 조건 정정(enforce_admins 문구 doc02·doc18·QA · decisions D-20260930-01 · D-20260929-02 정정 행 · doc18 §9 후속 ⑥~⑪). 로컬 설정·래퍼 계약 54/54, CI 진행 중 → 사람 읽기·승인 대기. 작업 worktree .claude/worktrees/docs-qa-0930(머지 후 정리). 결정 대기(사용자): ⑥ auto 모드에서 ask 가 사람에게 안 닿는 문제의 대응(운영 규칙·플러그인 차단 전환·버그 보고) · ⑪ 서버 PR 필수 여부.
 
+## [2026-09-30T13:24Z] U
+[MERGED] #208 docs(harness): 하네스 라이브 QA 결과(PASS 11 / FAIL 2) + #207 조건 정정  → main 5e26314 (user via U 2026-09-30T13:24Z · 티어 docs · 판정 -)
+
