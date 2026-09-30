@@ -613,3 +613,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-29T12:55Z] W (via U)
 [MERGED by user] #205 docs(T0) — #200·#201 검증 후속(낮음 U 8·W 4)과 /onboarding 존폐 결정(P2 사용자 결정 항목)을 doc14 현행 백로그에 기록 → main 6a4f422. 사용자 승인(U 세션 AskUserQuestion) · head cc918c3 · 티어 docs · 게이트 통과. 11:46Z 의 같은 PR 머지 기록은 오기(실제 머지 실패) — 이번이 실제 머지.
 
+## [2026-09-30T10:55Z] W (via U)
+[DECISION by user] D-20260930-01 #207(티어 high, verify-pr approve-with-conditions, head 8e8c336)은 조건 수용 머지 — 보통 3건(enforce_admins 효과 과장: doc02·doc18·QA·D-20260929-02 행 / QA 표 결과 칸 ↔ qa-run close 파서 / 변경 줄 계약 부재)과 낮음 8건은 문서 후속 PR 에서 정정(decisions.md 는 정정 행 추가). Manual-Ops(enforce_admins)는 적용 완료·재확인이라 --manual-ops-ack. (사용자 결정, U 세션 AskUserQuestion 2026-09-30T10:55Z)
+
