@@ -619,3 +619,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-30T10:58Z] W (via U)
 [MERGED by user] #207 docs(harness) #199 머지 후속 기록(결정 D-20260929-01·02 · doc18 §9 후속 · 현황 · 하네스 라이브 QA 체크리스트) → main dfee489. 사용자 승인(U 세션 AskUserQuestion) · head 8e8c336(+main 갱신 병합) · 티어 high · verify-pr approve-with-conditions 를 조건 수용(D-20260930-01) · Manual-Ops ack(enforce_admins 적용 완료).
 
+## [2026-09-30T12:46Z] W (via U)
+[QA by user] harness-live PASS 11 / FAIL 2 — docs/release/qa-runs/2026-09-29-harness-live.md(결과 기록은 후속 docs PR). FAIL: #1 데스크톱 화면에 SessionStart 출력 표시 없음(훅·채널 주입은 동작 — 새 세션이 채널 내용을 반영) · #4 auto 모드에서 lane-guard ask 가 창으로 안 뜨고 Write 실행(2회 재현, 훅 기록 ask 확인, 기본 모드 재시험은 PASS). 참고: 5·6 agent_type 전달 확인 · 7·12 기본 모드 merge-ask 창 문구 확인 · 11 verify-pr 57분·에이전트 17 · 12 #207 조건 수용 머지(D-20260930-01).
+
