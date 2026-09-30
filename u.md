@@ -1527,3 +1527,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-30T10:58Z] U
 [MERGED] #207 docs(harness): #199 머지 후속 기록 — 결정 2건·후속 5건·현황 → main dfee489 (user via U 2026-09-30T10:55Z (조건 수용 D-20260930-01 — 보통 3건 후속 PR) · 티어 high · 판정 approve-with-conditions)
 
+## [2026-09-30T12:43Z] U
+[SYNC] 하네스 라이브 QA(docs/release/qa-runs/2026-09-29-harness-live.md) 1~13 실행 완료, 재점검 중: 2·3·5~13 PASS(5·6 = agent_type 전달 확인, 12 = 기본 모드 merge-ask 창·조건 수용 머지) · 4 = auto 모드 FAIL(훅 ask 를 냈으나 창이 안 뜨고 도구가 실행됨 — hooks.md 와 다름, 데스크톱 v2.1.280) / 기본 모드 재시험 PASS, auto 재시험 대기 · 1 = 훅은 동작(새 세션이 채널 내용 반영)하나 데스크톱 화면에 SessionStart 출력 표시 없음. #207 → main dfee489(D-20260930-01 조건 수용). 다음: ① 4번 auto 재시험 ② 결과 기록 + #207 조건 정정 docs 후속 PR(사용자 선택: docs 티어, CLAUDE.md 현황은 다음 CLAUDE.md PR 때) ③ 0.4.1 후보: permission_mode=auto 에서 ask 가 사람에게 안 닿는 문제.
+
