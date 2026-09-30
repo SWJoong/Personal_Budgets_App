@@ -1530,3 +1530,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-30T12:43Z] U
 [SYNC] 하네스 라이브 QA(docs/release/qa-runs/2026-09-29-harness-live.md) 1~13 실행 완료, 재점검 중: 2·3·5~13 PASS(5·6 = agent_type 전달 확인, 12 = 기본 모드 merge-ask 창·조건 수용 머지) · 4 = auto 모드 FAIL(훅 ask 를 냈으나 창이 안 뜨고 도구가 실행됨 — hooks.md 와 다름, 데스크톱 v2.1.280) / 기본 모드 재시험 PASS, auto 재시험 대기 · 1 = 훅은 동작(새 세션이 채널 내용 반영)하나 데스크톱 화면에 SessionStart 출력 표시 없음. #207 → main dfee489(D-20260930-01 조건 수용). 다음: ① 4번 auto 재시험 ② 결과 기록 + #207 조건 정정 docs 후속 PR(사용자 선택: docs 티어, CLAUDE.md 현황은 다음 CLAUDE.md PR 때) ③ 0.4.1 후보: permission_mode=auto 에서 ask 가 사람에게 안 닿는 문제.
 
+## [2026-09-30T12:43Z] U
+[정정] u.md 2026-09-29T11:53Z '알려진 빈틈 git -C push 는 enforce_admins 로 막는다' 는 과장 — main 보호는 필수 체크(strict)만 강제하고 PR·승인은 강제하지 않는다(required_pull_request_reviews=null). green PR 의 graphql 머지·green SHA 직접 push 는 서버가 못 막는다(#207 verify-pr requirements-types-1). 승인 게이트는 0.4.1 전까지 절차 규율로만 지켜진다.
+
