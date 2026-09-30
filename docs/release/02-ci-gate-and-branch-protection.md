@@ -28,7 +28,7 @@ GitHub Actions 는 **`if` 조건에서 `secrets` 컨텍스트 참조를 금지**
 `gh api -X PUT repos/{owner}/{repo}/branches/main/protection` 로 설정:
 - **required_status_checks**: `quality-check`, `db-verify`
 - **strict: true** — PR 을 최신 main 에 맞춘 뒤에만 병합 → **base 이동 회귀 자동 차단**(#30 교훈).
-- **enforce_admins: true**(2026-09-29 적용, D-20260929-02 — 사용자 실행·오케스트레이터 확인) — 관리자도 PR·필수 체크를 거친다. `--admin` 은 운영 규칙상으로도 금지(CLAUDE.md 「사람 자리 절차」, 플러그인 merge-ask 훅이 차단). 머지 훅이 놓치는 `git -C … push` 같은 변형도 서버가 막는다. 비상시 `gh api -X DELETE repos/{owner}/{repo}/branches/main/protection/enforce_admins` 로 잠시 끄고 되돌린다.
+- **enforce_admins: true**(2026-09-29 적용, D-20260929-02 — 사용자 실행·오케스트레이터 확인) — 관리자의 push·머지에도 **필수 체크(strict)** 가 강제된다. PR·사람 승인은 서버가 강제하지 않는다(아래 `required_pull_request_reviews: null`). 체크를 통과한 PR 의 GraphQL 머지(`gh pr merge` 가 쓰는 경로)와 체크를 통과한 SHA 의 직접 push 는 서버가 막지 못한다. 그래서 머지 확인 훅(merge-ask)이 놓치는 변형(`git -C … push`·`gh api graphql mergePullRequest`)은 플러그인 0.4.1 전까지 절차 규율로만 막는다(2026-09-30 정정 — decisions.md 「D-20260929-02 정정」). `--admin` 은 운영 규칙상으로도 금지(CLAUDE.md 「사람 자리 절차」, 플러그인 merge-ask 훅이 차단). 비상 해제·재적용은 **사용자만** 실행한다: Manual-Ops 브리핑 → 사용자가 `gh api -X DELETE repos/{owner}/{repo}/branches/main/protection/enforce_admins` → 결정 로그 기록 → 재적용 뒤 `enabled: true` 확인. 에이전트는 실행하지 않는다.
 - **required_pull_request_reviews: null** — 리뷰는 W 역할 컨텍스트(`harness:w-verifier` · `/harness:verify-pr`)의 독립검증 리포트 + 사람 승인(검증 티어, CLAUDE.md). 단일 계정에서 U 계정 PR 은 자기승인이 불가하므로 GitHub 필수 리뷰는 켜지 않는다(2026-09-27).
 
 재설정/확인:
