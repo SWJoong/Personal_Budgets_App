@@ -1533,3 +1533,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-30T12:43Z] U
 [정정] u.md 2026-09-29T11:53Z '알려진 빈틈 git -C push 는 enforce_admins 로 막는다' 는 과장 — main 보호는 필수 체크(strict)만 강제하고 PR·승인은 강제하지 않는다(required_pull_request_reviews=null). green PR 의 graphql 머지·green SHA 직접 push 는 서버가 못 막는다(#207 verify-pr requirements-types-1). 승인 게이트는 0.4.1 전까지 절차 규율로만 지켜진다.
 
+## [2026-09-30T12:54Z] U
+[HANDOFF→W] #208 docs(T0, 계산 docs): 하네스 라이브 QA 결과 기록(PASS 11 / FAIL 2 — #1 SessionStart 화면 표시 없음 · #4 auto 모드 ask 미표시) + #207 조건 정정(enforce_admins 문구 doc02·doc18·QA · decisions D-20260930-01 · D-20260929-02 정정 행 · doc18 §9 후속 ⑥~⑪). 로컬 설정·래퍼 계약 54/54, CI 진행 중 → 사람 읽기·승인 대기. 작업 worktree .claude/worktrees/docs-qa-0930(머지 후 정리). 결정 대기(사용자): ⑥ auto 모드에서 ask 가 사람에게 안 닿는 문제의 대응(운영 규칙·플러그인 차단 전환·버그 보고) · ⑪ 서버 PR 필수 여부.
+
