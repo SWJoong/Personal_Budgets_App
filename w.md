@@ -616,3 +616,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-30T10:55Z] W (via U)
 [DECISION by user] D-20260930-01 #207(티어 high, verify-pr approve-with-conditions, head 8e8c336)은 조건 수용 머지 — 보통 3건(enforce_admins 효과 과장: doc02·doc18·QA·D-20260929-02 행 / QA 표 결과 칸 ↔ qa-run close 파서 / 변경 줄 계약 부재)과 낮음 8건은 문서 후속 PR 에서 정정(decisions.md 는 정정 행 추가). Manual-Ops(enforce_admins)는 적용 완료·재확인이라 --manual-ops-ack. (사용자 결정, U 세션 AskUserQuestion 2026-09-30T10:55Z)
 
+## [2026-09-30T10:58Z] W (via U)
+[MERGED by user] #207 docs(harness) #199 머지 후속 기록(결정 D-20260929-01·02 · doc18 §9 후속 · 현황 · 하네스 라이브 QA 체크리스트) → main dfee489. 사용자 승인(U 세션 AskUserQuestion) · head 8e8c336(+main 갱신 병합) · 티어 high · verify-pr approve-with-conditions 를 조건 수용(D-20260930-01) · Manual-Ops ack(enforce_admins 적용 완료).
+
