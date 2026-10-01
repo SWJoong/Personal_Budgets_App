@@ -1545,3 +1545,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-01T10:08Z] U
 [SYNC] /harness:install 차이 점검(설치본 0.4.0): harness.json 은 예시 대비 빠진 키 0 — 차이는 전부 프로젝트 맞춤(레인·티어 high 6군·sqlPolicyRegex·participantCopyGlobs·렌즈 docs-consistency·plugin·qa). PR 템플릿·.gitignore(agent-memory)·harness-plan·origin/agent-sync 모두 있음. ★발견: 이 Windows 머신 bash 에 jq 없음 → lane-guard.sh 44행이 fail-open(exit 0) — W 레인 파일(src/test/harnessConfig.test.ts)에 u 가드가 2 대신 0, selftest 는 'jq 필요'로 중단. merge-ask·pr-merge-gate 도 jq 의존. 조치: 사용자 jq 설치(winget install jqlang.jq) 후 재검증 · 0.4.1 후보: jq 부재 시 Edit 레인 가드 fail-closed 또는 SessionStart 경고.
 
+## [2026-10-01T10:20Z] U
+[SYNC] Windows 머신 jq 1.8.2 설치(사용자, 사용자 PATH 등록) 후 lane-guard 0.4.0 재검증 — ★Windows 경로 미지원: 훅 입력의 드라이브 경로(D:\… · D:/… 모두)를 절대경로로 인식 못 해 cwd 에 이중 결합(/D:/…/D:/…) → 워커(u·w)는 레인 무관 전부 '저장소 밖' 차단(fail-closed, 워커 사용 불가) · 메인 세션은 W 레인(src/test/x.test.ts)에 ask 없이 허용(exit 0). lane-guard-selftest pass=142 fail=66(Windows). 따라서 이 머신에서는 워커 spawn 불가·W 레인 예외 확인은 규율로만. 0.4.1 최우선 후보: 드라이브 문자 경로 정규화(cygpath -u 또는 ^[A-Za-z]:[\/] → /x/…)·selftest Windows 실행. 결정 D-20261001-01·02 post w 완료, ⑪ PR 필수 적용은 사용자 명령 대기(본문 scratchpad main-protection.json).
+
