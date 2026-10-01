@@ -1542,3 +1542,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-09-30T13:26Z] U
 [SYNC] #208 머지 → main 5e26314(사람 읽기·승인, 기본 모드) — 하네스 라이브 QA 기록(PASS 11 / FAIL 2)·#207 조건 정정 완료, 작업 worktree·브랜치 정리. 다음 세션 인계: ① 사용자 결정 대기 — doc18 §9 ⑥ auto 모드에서 훅 ask 가 사람에게 안 닿음(운영 규칙: 머지·W 레인 예외 전 기본 모드 / 플러그인: permission_mode=auto 면 ask→차단 / 버그 보고) · ⑪ 서버 PR 필수 여부 ② #199 후속 보통 5건(doc18 §9 ①~⑤) ③ 플러그인 0.4.1(낮음 4 + merge-ask 변형·보호 설정 변경 + ⑨: qa-run close 칸 탐지·post 재시도 출력·게이트가 worktree 에서 돌 때 gh 로컬 정리 실패로 원격 head 브랜치가 안 지워짐) ④ CLAUDE.md 현황 갱신(main 5e26314 · #205·#207·#208 · D-20260930-01) — 다음 CLAUDE.md PR 때 ⑤ U 코드 백로그.
 
+## [2026-10-01T10:08Z] U
+[SYNC] /harness:install 차이 점검(설치본 0.4.0): harness.json 은 예시 대비 빠진 키 0 — 차이는 전부 프로젝트 맞춤(레인·티어 high 6군·sqlPolicyRegex·participantCopyGlobs·렌즈 docs-consistency·plugin·qa). PR 템플릿·.gitignore(agent-memory)·harness-plan·origin/agent-sync 모두 있음. ★발견: 이 Windows 머신 bash 에 jq 없음 → lane-guard.sh 44행이 fail-open(exit 0) — W 레인 파일(src/test/harnessConfig.test.ts)에 u 가드가 2 대신 0, selftest 는 'jq 필요'로 중단. merge-ask·pr-merge-gate 도 jq 의존. 조치: 사용자 jq 설치(winget install jqlang.jq) 후 재검증 · 0.4.1 후보: jq 부재 시 Edit 레인 가드 fail-closed 또는 SessionStart 경고.
+
