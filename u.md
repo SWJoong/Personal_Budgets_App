@@ -1548,3 +1548,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-01T10:20Z] U
 [SYNC] Windows 머신 jq 1.8.2 설치(사용자, 사용자 PATH 등록) 후 lane-guard 0.4.0 재검증 — ★Windows 경로 미지원: 훅 입력의 드라이브 경로(D:\… · D:/… 모두)를 절대경로로 인식 못 해 cwd 에 이중 결합(/D:/…/D:/…) → 워커(u·w)는 레인 무관 전부 '저장소 밖' 차단(fail-closed, 워커 사용 불가) · 메인 세션은 W 레인(src/test/x.test.ts)에 ask 없이 허용(exit 0). lane-guard-selftest pass=142 fail=66(Windows). 따라서 이 머신에서는 워커 spawn 불가·W 레인 예외 확인은 규율로만. 0.4.1 최우선 후보: 드라이브 문자 경로 정규화(cygpath -u 또는 ^[A-Za-z]:[\/] → /x/…)·selftest Windows 실행. 결정 D-20261001-01·02 post w 완료, ⑪ PR 필수 적용은 사용자 명령 대기(본문 scratchpad main-protection.json).
 
+## [2026-10-01T10:33Z] U
+[MERGED] SWJoong/claude-harness#2 harness 0.4.1(permission_mode=auto 면 lane-guard·merge-ask 의 ask → 차단, D-20261001-01) → ca35af6 (사용자 지시 '로컬 확인 후 머지' 2026-10-01). 로컬(Windows) 확인: 필드명·값은 공식 hooks 문서 + 세션 트랜스크립트(permissionMode=auto)로 확인, 훅 입력 원문 캡처는 auto 분류기가 임시 훅 설정을 막아 미실시 → 설치 후 auto 모드 main 머지 차단으로 라이브 확인. merge-ask selftest 35/35·수동 auto→2/default→ask. lane-guard 는 Windows 에서 144/212 — 메인 세션 ask 판정 자체가 안 남 + 드라이브 경로 이중 결합(기존 문제) → 0.4.2 후보. 다음(사용자): claude plugin marketplace update harness && claude plugin update harness@harness → 새 세션. ⑪ PR 필수 적용 명령 대기.
+
