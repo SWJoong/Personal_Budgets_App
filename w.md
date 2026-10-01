@@ -625,3 +625,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-09-30T13:24Z] W (via U)
 [MERGED by user] #208 docs(T0) 하네스 라이브 QA 결과 기록(PASS 11 / FAIL 2) + #207 조건 정정(enforce_admins 문구 · D-20260930-01 · D-20260929-02 정정 행 · doc18 §9 ⑥~⑪) → main 5e26314. 사용자 승인(U 세션 AskUserQuestion, 기본 모드) · head df5185b · 티어 docs · 게이트 통과.
 
+## [2026-10-01T10:17Z] W (via U)
+[DECISION by user] D-20261001-01 doc18 §9 ⑥ auto 모드 ask 미도달 대응 = 플러그인 차단 + 운영 규칙 — 0.4.1 에서 훅 입력 permission_mode=auto 면 ask 대신 차단(사유: 기본 모드에서 다시), 그때까지 머지·W 레인 예외 직전 기본 모드로 전환하는 규칙을 CLAUDE.md·doc18 에 명시. D-20261001-02 ⑪ main 보호에 PR 필수(required_pull_request_reviews, 승인 0) 켠다 — 명령 실행은 사용자, 확인·기록은 오케스트레이터. decisions.md 행·CLAUDE.md 결정 줄은 다음 docs PR. (사용자 결정, U 세션 AskUserQuestion 2026-10-01)
+
