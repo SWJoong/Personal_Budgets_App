@@ -1551,3 +1551,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-01T10:33Z] U
 [MERGED] SWJoong/claude-harness#2 harness 0.4.1(permission_mode=auto 면 lane-guard·merge-ask 의 ask → 차단, D-20261001-01) → ca35af6 (사용자 지시 '로컬 확인 후 머지' 2026-10-01). 로컬(Windows) 확인: 필드명·값은 공식 hooks 문서 + 세션 트랜스크립트(permissionMode=auto)로 확인, 훅 입력 원문 캡처는 auto 분류기가 임시 훅 설정을 막아 미실시 → 설치 후 auto 모드 main 머지 차단으로 라이브 확인. merge-ask selftest 35/35·수동 auto→2/default→ask. lane-guard 는 Windows 에서 144/212 — 메인 세션 ask 판정 자체가 안 남 + 드라이브 경로 이중 결합(기존 문제) → 0.4.2 후보. 다음(사용자): claude plugin marketplace update harness && claude plugin update harness@harness → 새 세션. ⑪ PR 필수 적용 명령 대기.
 
+## [2026-10-01T12:11Z] U
+[SYNC] harness 0.4.1 설치 확인(user·project 범위 모두 0.4.1 enabled, 커밋 ca35af6, jq 1.8.2) + /harness:operate 점검: 열린 PR 0 · main 5e26314 = origin. main 보호 = 필수 체크(quality-check·db-verify, strict)+enforce_admins, required_pull_request_reviews=null → ⑪ PR 필수(D-20261001-02) 아직 미적용(사용자 명령 대기). 미확인: 0.4.1 auto 모드 ask→차단 라이브(이 세션은 auto 아님) · 0.4.2 후보 = Windows 드라이브 경로 정규화(워커 spawn 이 이 머신에서 막힐 수 있음). 다음 세션 인계: ① docs 후속 PR(D-20261001-01·02 → decisions.md·CLAUDE.md 결정 줄·현황 main 5e26314) ② #199 후속 보통 5건(doc18 §9 ①~⑤) ③ U 코드 백로그. 사용자 선택: 오늘은 점검만, 착수 없음.
+
