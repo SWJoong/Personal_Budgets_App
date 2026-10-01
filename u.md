@@ -1554,3 +1554,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-01T12:11Z] U
 [SYNC] harness 0.4.1 설치 확인(user·project 범위 모두 0.4.1 enabled, 커밋 ca35af6, jq 1.8.2) + /harness:operate 점검: 열린 PR 0 · main 5e26314 = origin. main 보호 = 필수 체크(quality-check·db-verify, strict)+enforce_admins, required_pull_request_reviews=null → ⑪ PR 필수(D-20261001-02) 아직 미적용(사용자 명령 대기). 미확인: 0.4.1 auto 모드 ask→차단 라이브(이 세션은 auto 아님) · 0.4.2 후보 = Windows 드라이브 경로 정규화(워커 spawn 이 이 머신에서 막힐 수 있음). 다음 세션 인계: ① docs 후속 PR(D-20261001-01·02 → decisions.md·CLAUDE.md 결정 줄·현황 main 5e26314) ② #199 후속 보통 5건(doc18 §9 ①~⑤) ③ U 코드 백로그. 사용자 선택: 오늘은 점검만, 착수 없음.
 
+## [2026-10-01T12:13Z] U
+[HANDOFF→W] #209 docs(티어 high — gate:CLAUDE.md, 계산 일치): D-20261001-01·02 결정 기록(decisions.md) + doc18 §4 권한 모드·§9 ⑥⑩⑪ + CLAUDE.md 현황(main 5e26314)·권한 모드 줄. 로컬 설정 계약 54/54, CI 진행 중. 사용자 몫: /harness:verify-pr 209 실행 후 머지 승인 · 플러그인 0.4.1 갱신(이 Linux 머신 설치본 0.4.0, 개발 폴더 ~/문서/claude-harness 1커밋 뒤) · main 보호 PR 필수 적용(D-20261001-02, 2026-10-01 미적용 확인). plugin.minVersion 은 0.4.0 유지(올리면 W 계약 MIN_PLUGIN_VERSION 동반). 점검 결과: 열린 PR 0건 → #209 1건 · main 5e26314 CI green. 다음 후보: #199 후속 ①~⑤ 계약 선행 · U 코드 웨이브(결정 불요). 작업 worktree .claude/worktrees/docs-1001(머지 후 정리).
+
