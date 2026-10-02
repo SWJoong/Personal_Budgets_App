@@ -1566,3 +1566,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-02T05:13Z] U
 [MERGED] #209 docs(harness): D-20261001-01·02 결정 기록 + auto 모드 → main db11b83 (user via U 2026-10-02T05:13Z · 티어 high · 판정 approve-with-conditions)
 
+## [2026-10-02T05:19Z] U
+[HANDOFF→W] #210 docs(티어 high — gate:CLAUDE.md, 계산 일치): #209 조건 수용 후속 정정(dc-1 doc18 §9 ③·doc02 옛 '0.4.1 변형 수정' · dc-2·dc-3 「권한 모드」 줄 시한 없이 2종 · ⑧(d) tm-1·tm-2 줄 토큰 계약 등록 · jq CRLF 0.4.2 최우선 추가 · 현황 db11b83) + decisions.md D-20261002-01·02. 로컬 harnessConfig 40/40, CI 진행 중. 사용자 몫: 검증(변경이 작아 docs-consistency·requirements-types 렌즈만 재검증 권장 — /harness:verify-pr 미등록 세션이면 수동 팬아웃) 후 머지 승인(머지는 기본 모드에서). 작업 worktree .claude/worktrees/docs-1002(머지 후 정리). 미해결: tm-1·tm-2 계약은 W 레인 — Windows 머신 워커 spawn 불가(드라이브 경로)라 0.4.2 이후.
+
