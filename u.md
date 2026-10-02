@@ -1557,3 +1557,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-01T12:13Z] U
 [HANDOFF→W] #209 docs(티어 high — gate:CLAUDE.md, 계산 일치): D-20261001-01·02 결정 기록(decisions.md) + doc18 §4 권한 모드·§9 ⑥⑩⑪ + CLAUDE.md 현황(main 5e26314)·권한 모드 줄. 로컬 설정 계약 54/54, CI 진행 중. 사용자 몫: /harness:verify-pr 209 실행 후 머지 승인 · 플러그인 0.4.1 갱신(이 Linux 머신 설치본 0.4.0, 개발 폴더 ~/문서/claude-harness 1커밋 뒤) · main 보호 PR 필수 적용(D-20261001-02, 2026-10-01 미적용 확인). plugin.minVersion 은 0.4.0 유지(올리면 W 계약 MIN_PLUGIN_VERSION 동반). 점검 결과: 열린 PR 0건 → #209 1건 · main 5e26314 CI green. 다음 후보: #199 후속 ①~⑤ 계약 선행 · U 코드 웨이브(결정 불요). 작업 worktree .claude/worktrees/docs-1001(머지 후 정리).
 
+## [2026-10-02T04:27Z] U
+[SYNC] W 점검(Windows 머신, 플러그인 0.4.1): ★발견 — 이 머신의 jq.exe 는 줄 끝에 CRLF 를 붙여 harness.json 글롭 목록이 'CLAUDE.md\r' 로 읽혀 어떤 경로도 매칭되지 않는다. pr-risk-tier selftest 16/23(7 실패), #207·#209 계산 티어가 docs(실제 high:gate)로 오판(선언 high 가 있어 게이트는 high 적용). 임시 jq -b 래퍼(PATH 앞, 설치본 무수정)로 selftest 23/23 · #207/#209 high(gate:CLAUDE.md). lane-guard·merge-ask·pr-merge-gate 도 같은 jq 경로라 영향 가능(selftest 래퍼 실행 중, 미확인) — u.md 10:20Z 의 'W 레인 ask 없이 허용'은 드라이브 경로 외에 이 CRLF 가 원인일 수 있다. 0.4.2 후보: harness-config.sh 에서 jq 출력 CR 제거(jq -b 또는 tr -d '\r'). 열린 PR #209(docs, 선언 high): verify-pr 대기·머지 대기.
+
