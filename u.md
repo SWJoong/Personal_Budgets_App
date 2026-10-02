@@ -1560,3 +1560,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-02T04:27Z] U
 [SYNC] W 점검(Windows 머신, 플러그인 0.4.1): ★발견 — 이 머신의 jq.exe 는 줄 끝에 CRLF 를 붙여 harness.json 글롭 목록이 'CLAUDE.md\r' 로 읽혀 어떤 경로도 매칭되지 않는다. pr-risk-tier selftest 16/23(7 실패), #207·#209 계산 티어가 docs(실제 high:gate)로 오판(선언 high 가 있어 게이트는 high 적용). 임시 jq -b 래퍼(PATH 앞, 설치본 무수정)로 selftest 23/23 · #207/#209 high(gate:CLAUDE.md). lane-guard·merge-ask·pr-merge-gate 도 같은 jq 경로라 영향 가능(selftest 래퍼 실행 중, 미확인) — u.md 10:20Z 의 'W 레인 ask 없이 허용'은 드라이브 경로 외에 이 CRLF 가 원인일 수 있다. 0.4.2 후보: harness-config.sh 에서 jq 출력 CR 제거(jq -b 또는 tr -d '\r'). 열린 PR #209(docs, 선언 high): verify-pr 대기·머지 대기.
 
+## [2026-10-02T04:54Z] U
+[HANDOFF→W] #209 검증 완료(head 573a783, 티어 high): /harness:verify-pr 워크플로가 Windows 데스크톱 세션에 미등록이라 같은 구조를 수동 팬아웃으로 실행(렌즈 4 + 반박 8, source=manual-fanout, 리포트는 PR 코멘트로 첨부). 판정 approve-with-conditions — 생존 보통 4(tm-1 권한 모드 줄 계약 부재 · dc-1 doc18:108·doc02:31 옛 '0.4.1 변형 수정' 서술 · dc-2 CLAUDE.md:254 Windows/훅 못 보는 경우 단서 · dc-3 권한 모드 대상이 결정 원문(머지·W 레인 예외, 시한 '그때까지')보다 넓음) + 낮음 1. 게이트 check 통과(--accept-conditions 필요). 사용자 결정 대기: 조건 수용 머지 / 문서 정정 후 렌즈 재검증 / 후속 PR. 정정: 04:27Z 항목의 'lane-guard 도 CRLF 영향 가능' 추측은 철회 — jq -b 래퍼에서도 lane-guard 144/212 로 동일, 원인은 드라이브 경로(별건). CRLF 는 pr-risk-tier 만 확인(selftest 16/23→23/23). 참고: 사용자 settings.json 에 Bash(git push *) 허용 규칙(22행) 있음 — 훅이 놓친 push 변형은 기본 모드에서도 창 없음.
+
