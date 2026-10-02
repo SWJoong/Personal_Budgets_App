@@ -631,3 +631,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-10-02T05:13Z] W (via U)
 [MERGED by user] #209 docs(harness) D-20261001-01·02 결정 기록 + 권한 모드 규칙·현황 → main db11b83. 사용자 승인(U 세션 AskUserQuestion) · head 573a783 · 티어 high · 검증 = /harness:verify-pr 미등록 세션이라 수동 팬아웃(렌즈 4 + 반박 8, source=manual-fanout) approve-with-conditions 를 조건 수용(--accept-conditions) · Manual-Ops 없음. 첫 머지 시도는 auto 모드에서 플러그인 0.4.1 merge-ask 가 차단했고(사용자가 기본 모드로 전환한 뒤 재실행) — 0.4.1 의 auto 모드 main 머지 차단을 라이브로 확인(doc18 §4·⑥ 미확인 항목 해소). + [DECISION by user] D-20261002-01 #209 는 조건 수용 머지 — 보통 4건(tm-1 권한 모드 줄 계약 부재 · dc-1 doc18:108·doc02:31 옛 '0.4.1 변형 수정' 서술 · dc-2 CLAUDE.md:254 Windows/훅 못 보는 경우 단서 · dc-3 권한 모드 대상이 결정 원문보다 넓음)과 낮음 1건(tm-2)은 후속 docs PR 에서 정정(decisions.md 행 추가, dc-3 은 결정 범위 확인 선행). (사용자 결정, U 세션 AskUserQuestion 2026-10-02)
 
+## [2026-10-02T05:20Z] W (via U)
+[DECISION by user] D-20261002-02 「권한 모드」 규칙(작업 직전 기본 모드로 전환·끝나면 되돌림)의 범위 = 시한 없이 머지·메인 세션 W 레인 소규모 예외 2종. D-20261001-01 의 시한 '그때까지'를 없애 상시 규칙으로 하고 대상은 원문 2종 유지, main 직접 push 는 모드와 무관하게 금지 유지, 보호 설정 변경은 사용자만 실행(doc02) — #209 가 쓴 4종 목록은 이 결정으로 정정. (사용자 결정, U 세션 AskUserQuestion 2026-10-02; decisions.md 행은 #210)
+
