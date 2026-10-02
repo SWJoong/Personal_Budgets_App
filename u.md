@@ -1563,3 +1563,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-02T04:54Z] U
 [HANDOFF→W] #209 검증 완료(head 573a783, 티어 high): /harness:verify-pr 워크플로가 Windows 데스크톱 세션에 미등록이라 같은 구조를 수동 팬아웃으로 실행(렌즈 4 + 반박 8, source=manual-fanout, 리포트는 PR 코멘트로 첨부). 판정 approve-with-conditions — 생존 보통 4(tm-1 권한 모드 줄 계약 부재 · dc-1 doc18:108·doc02:31 옛 '0.4.1 변형 수정' 서술 · dc-2 CLAUDE.md:254 Windows/훅 못 보는 경우 단서 · dc-3 권한 모드 대상이 결정 원문(머지·W 레인 예외, 시한 '그때까지')보다 넓음) + 낮음 1. 게이트 check 통과(--accept-conditions 필요). 사용자 결정 대기: 조건 수용 머지 / 문서 정정 후 렌즈 재검증 / 후속 PR. 정정: 04:27Z 항목의 'lane-guard 도 CRLF 영향 가능' 추측은 철회 — jq -b 래퍼에서도 lane-guard 144/212 로 동일, 원인은 드라이브 경로(별건). CRLF 는 pr-risk-tier 만 확인(selftest 16/23→23/23). 참고: 사용자 settings.json 에 Bash(git push *) 허용 규칙(22행) 있음 — 훅이 놓친 push 변형은 기본 모드에서도 창 없음.
 
+## [2026-10-02T05:13Z] U
+[MERGED] #209 docs(harness): D-20261001-01·02 결정 기록 + auto 모드 → main db11b83 (user via U 2026-10-02T05:13Z · 티어 high · 판정 approve-with-conditions)
+
