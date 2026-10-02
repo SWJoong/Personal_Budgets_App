@@ -1569,3 +1569,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-02T05:19Z] U
 [HANDOFF→W] #210 docs(티어 high — gate:CLAUDE.md, 계산 일치): #209 조건 수용 후속 정정(dc-1 doc18 §9 ③·doc02 옛 '0.4.1 변형 수정' · dc-2·dc-3 「권한 모드」 줄 시한 없이 2종 · ⑧(d) tm-1·tm-2 줄 토큰 계약 등록 · jq CRLF 0.4.2 최우선 추가 · 현황 db11b83) + decisions.md D-20261002-01·02. 로컬 harnessConfig 40/40, CI 진행 중. 사용자 몫: 검증(변경이 작아 docs-consistency·requirements-types 렌즈만 재검증 권장 — /harness:verify-pr 미등록 세션이면 수동 팬아웃) 후 머지 승인(머지는 기본 모드에서). 작업 worktree .claude/worktrees/docs-1002(머지 후 정리). 미해결: tm-1·tm-2 계약은 W 레인 — Windows 머신 워커 spawn 불가(드라이브 경로)라 0.4.2 이후.
 
+## [2026-10-02T05:28Z] U
+[HANDOFF→W] /goal 설정(사용자, 2026-10-02): 마감 2026-10-28. 마감 계획 PR #211(docs 티어, 계산 일치): doc19 마감 로드맵 제안(임계 경로 = 기관 결정 4건·라이브 확인·QA/실사용자 심사·하네스 0.4.2, 일정 10/13 결정 마감·10/21 기능 동결·10/27 Go/No-Go·10/28 배포, 스코프 컷·폴백·하드닝 체크리스트) + doc20 기관 결정 요청서 초안(발송 전 사용자 검토 필요). CI 진행 중 → 사람 읽기·승인 대기. #210 검증 진행 중(렌즈 2 docs-consistency·requirements-types, 반박 대기). 사용자 몫 대기: 스코프 컷·일정 확정 · 기관 요청서 검토·발송(10/06 제안) · 라이브 확인 2건(pg_cron·활동사진 RLS — 읽기 전용 쿼리 doc12 §4·doc06 §2) · 사용자 결정 3건(정산 실무자 허용·KPI D·/onboarding 존폐). 작업 worktree .claude/worktrees/docs-roadmap(머지 후 정리).
+
