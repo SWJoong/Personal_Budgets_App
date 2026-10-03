@@ -39,6 +39,7 @@
 - [18-single-account-operating-model.md](18-single-account-operating-model.md) — 단일 계정 운영 모델: W·U=역할, 사람 자리, 검증 티어, 플러그인 `harness` 추출, 전환 기록
 - [19-go-live-roadmap-1028.md](19-go-live-roadmap-1028.md) — 10/28 마감 로드맵(제안): 임계 경로·일정·스코프 컷·폴백·Go/No-Go·운영 전환 하드닝 체크리스트
 - [20-institution-decision-request-draft.md](20-institution-decision-request-draft.md) — 기관 결정 요청서(초안): 국외이전 근거·처리방침 확정값·DPA·Vercel Analytics, 회신 기한 10/13
+- [21-harness-token-efficiency.md](21-harness-token-efficiency.md) — 하네스 토큰 효율 평가(실측 277만 토큰·고정 부팅비 55%)와 개선안 8건, 진행 보고(쉬운 말) 요구사항
 - [decisions.md](decisions.md) — 결정 로그(append-only) · [qa-runs/](qa-runs/README.md) — 사람 QA 실행 기록
 
 > 번호 `08`·`12` 는 각각 두 파일이 같은 번호를 쓴다(작성 시점이 겹친 기록). 링크 호환을 위해 파일명은 바꾸지 않는다. *(2026-09-27 갱신)*
