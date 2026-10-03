@@ -637,3 +637,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-10-03T04:38Z] W (via U)
 [MERGED by user] #210 docs(harness) #209 조건 수용 후속 정정 + 「권한 모드」 범위 확정(D-20261002-01·02) → main d047b4a. 사용자 승인(U 세션 AskUserQuestion, 기본 모드) · head 0e062f4 · 티어 high · verify approve(수동 팬아웃, 렌즈 2) · 생존 낮음 2건(dc2-1 git push origin HEAD 변형 → 플러그인 0.4.2 merge-ask 작업에 포함 · dc2-4 번호 없는 지시어 → 정정 행)은 머지 후 처리. #211 docs(T0) 10/28 마감 로드맵 초안(doc19) + 기관 결정 요청서 초안(doc20) → main af100bf. 사용자 승인(U 세션 AskUserQuestion, 기본 모드) · head 896c637(BEHIND 라 게이트가 update-branch 후 머지) · 티어 docs · 게이트 통과.
 
+## [2026-10-03T06:49Z] W (via U)
+[DECISION by user] 2026-10-03 마감(10/28) 관련 4건 — D-20261003-01 doc19 마감 로드맵의 일정(기관 결정 마감 10/13·기능 동결 10/21·Go/No-Go 10/27·배포 10/28)과 스코프 컷을 그대로 확정. D-20261003-02 실사용자 심사(NIA 인증의 사람 관문)는 출시 필수에서 빼고 출시 후 인증 단계로 이월. D-20261003-03 정산 기록(recordSettlement·정산 원장 인라인 편집)은 관리자 전용 유지(doc14 P2-4 닫음). D-20261003-04 /onboarding 은 제거가 아니라 서울형 스키마에 맞게 재배선(권고안 '화면·proxy 분기 제거' 와 다름 — 범위가 커져 설계 선행·auth 군 high 티어, 규모 확인 후 필수/가능하면 구분 재결정). (사용자 결정, U 세션 AskUserQuestion 2026-10-03; decisions.md 행·doc19·doc14 정리는 docs PR, CLAUDE.md 현황 줄은 #213 머지 후 다음 CLAUDE.md PR)
+
