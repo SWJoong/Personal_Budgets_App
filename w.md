@@ -634,3 +634,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-10-02T05:20Z] W (via U)
 [DECISION by user] D-20261002-02 「권한 모드」 규칙(작업 직전 기본 모드로 전환·끝나면 되돌림)의 범위 = 시한 없이 머지·메인 세션 W 레인 소규모 예외 2종. D-20261001-01 의 시한 '그때까지'를 없애 상시 규칙으로 하고 대상은 원문 2종 유지, main 직접 push 는 모드와 무관하게 금지 유지, 보호 설정 변경은 사용자만 실행(doc02) — #209 가 쓴 4종 목록은 이 결정으로 정정. (사용자 결정, U 세션 AskUserQuestion 2026-10-02; decisions.md 행은 #210)
 
+## [2026-10-03T04:38Z] W (via U)
+[MERGED by user] #210 docs(harness) #209 조건 수용 후속 정정 + 「권한 모드」 범위 확정(D-20261002-01·02) → main d047b4a. 사용자 승인(U 세션 AskUserQuestion, 기본 모드) · head 0e062f4 · 티어 high · verify approve(수동 팬아웃, 렌즈 2) · 생존 낮음 2건(dc2-1 git push origin HEAD 변형 → 플러그인 0.4.2 merge-ask 작업에 포함 · dc2-4 번호 없는 지시어 → 정정 행)은 머지 후 처리. #211 docs(T0) 10/28 마감 로드맵 초안(doc19) + 기관 결정 요청서 초안(doc20) → main af100bf. 사용자 승인(U 세션 AskUserQuestion, 기본 모드) · head 896c637(BEHIND 라 게이트가 update-branch 후 머지) · 티어 docs · 게이트 통과.
+
