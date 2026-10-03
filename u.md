@@ -1575,3 +1575,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-03T03:39Z] U
 [MERGED] #210 docs(harness): #209 조건 수용 후속 정정 + 「권한 모드」 범위 확정(D-20261002-0 → main d047b4a (user via U 2026-10-03T03:38Z · 티어 high · 판정 approve)
 
+## [2026-10-03T03:42Z] U
+[MERGED] #211 docs(release): 10/28 마감 로드맵 초안(doc19) + 기관 결정 요청서 초안(doc20)  → main af100bf (user via U 2026-10-03T03:39Z · 티어 docs · 판정 -)
+
