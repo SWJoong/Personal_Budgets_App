@@ -1601,3 +1601,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-03T09:05Z] U
 [MERGED] #215 docs(release): 하네스 토큰 효율 평가·개선안(doc → main 8aeb031 (user via U 2026-10-03T09:01Z · 티어 docs · 판정 -)
 
+## [2026-10-03T09:13Z] U
+[MERGED] #216 docs(release): /onboarding 재연결 설계 메모(doc22) � → main 3d54c5a (user via U 2026-10-03T09:09Z · 티어 docs · 판정 -)
+
