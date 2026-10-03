@@ -274,7 +274,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 |---|---|---|---|
 | **T0 docs** | 변경이 `docs/**`·`*.md` 뿐 — 단 gate 군의 규칙 파일은 `.md` 여도 high | CI + 사람 읽기 | 사람 승인 |
 | **T1 small** | 코드 ≤ 12파일·≤ 400줄, 고위험 경로 없음 | `harness:w-verifier` 1건(돌연변이 포함) | approve + 사람 승인 |
-| **T2 high** | rls(`supabase/**/*rls*.sql` + 정책·뷰·가드 트리거를 가진 빌드 SQL `01`·`03`·`05`·`06`·`09`·`11`·`12`·`17`~`20`) · auth(`src/proxy.ts`·`(auth)/`·`src/app/api/**`·view-as·view-as 쓰기 차단 액션·`src/utils/supabase/**`·데모 계정 시드 스크립트) · privacy(`deidentify*`·`ai.ts`·OCR·요약·제안·처리방침·`vercel.json` 리전) · audit(`audit*`·감사 기록 액션·supervision) · money(정산·거래·copay·ruleCheck·내보내기) · storage(활동사진·서류·신청서 업로드·갤러리·`src/utils/supabase/storage.ts`) · gate(CI·settings·harness.json·에이전트/워크플로/명령/스킬/에이전트 메모리·CLAUDE.md·AGENTS.md·`.mcp.json`·harness-plan·PR 템플릿·agent-sync — `.md` 여도) · SQL diff 에 POLICY/DEFINER/GRANT/FUNCTION/TRIGGER·`WITH CHECK`·`USING (`·`security_invoker`·`auth.uid()`·`RAISE EXCEPTION`(대소문자 무시) · 대형(> 12파일 또는 > 400줄) · 당사자 문구(`participantCopyGlobs` 경로에 한글 문구가 추가될 때 — 접근성 동작만 바꾼 변경은 계산상 small 이지만 PR 템플릿대로 선언은 high 로) | `/harness:verify-pr N` 팬아웃(에이전트 2 + 렌즈 × (1 + 반박자), 현재 설정 17) | approve(-with-conditions 해소) + 사람 승인 |
+| **T2 high** | rls(`supabase/**/*rls*.sql` + 정책·뷰·가드 트리거를 가진 빌드 SQL `01`·`03`·`05`·`06`·`09`·`11`·`12`·`17`~`20`) · auth(`src/proxy.ts`·`(auth)/`·`src/app/api/**`·view-as·view-as 쓰기 차단 액션·`src/utils/supabase/**`·데모 계정 시드 스크립트) · privacy(`deidentify*`·`ai.ts`·OCR·요약·제안·처리방침·`vercel.json` 리전) · audit(`audit*`·감사 기록 액션·supervision) · money(정산·거래·copay·ruleCheck·내보내기) · storage(활동사진·서류·신청서 업로드·갤러리·`src/utils/supabase/storage.ts`) · gate(CI·CI 호환 설정(`package.json`·`tsconfig.json`·`eslint.config.mjs`·`next.config.ts`)·settings·harness.json·에이전트/워크플로/명령/스킬/에이전트 메모리·CLAUDE.md·AGENTS.md·`.agents/`·`.codex/`·`.mcp.json`·harness-plan·PR 템플릿·agent-sync — `.md` 여도) · SQL diff 에 POLICY/DEFINER/GRANT/FUNCTION/TRIGGER(생성·`DROP`·`DISABLE`)·VIEW/TABLE 생성·`WITH CHECK`·`USING (`·`security_invoker`·`auth.uid()`·`RAISE EXCEPTION`(대소문자 무시) · 대형(> 12파일 또는 > 400줄) · 당사자 문구(`participantCopyGlobs` 경로에 한글 문구가 추가될 때 — 접근성 동작만 바꾼 변경은 계산상 small 이지만 PR 템플릿대로 선언은 high 로) | `/harness:verify-pr N` 팬아웃(에이전트 2 + 렌즈 × (1 + 반박자), 현재 설정 17) | approve(-with-conditions 해소) + 사람 승인 |
 - 판정 정본은 `.claude/harness.json` `tiers`(플러그인 `pr-risk-tier.sh <PR>` 가 계산) — 위 표는 요약이다. 티어는 PR 본문 `- 검증 티어:` 에 `docs`·`small`·`high` 중 한 단어로 선언하고 게이트가 선언·계산 중 높은 쪽을 적용한다. **계산 티어 아래로 내리는 수단은 없다** — 계산이 과하면 `.claude/harness.json` `tiers` 를 고치는 PR(gate 티어)로 조정한다(채널·결정 로그 기록으로는 내려가지 않는다). 계약 PR(`[HANDOFF→U]`)은 티어 대상이 아니다.
 - src 를 바꾸지 않는 문서·설정 PR 은 돌연변이 검증 대신 **설정 계약**(`src/test/harnessConfig.test.ts`: harness.json ↔ CLAUDE.md 레인·티어 정합)으로 조인다.
 - 재검증은 `/harness:verify-pr N --lens <렌즈>` 로 생존 finding 이 있던 렌즈만(전체 재실행 금지).
@@ -301,7 +301,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 
 ### 현재 작업 현황
 <!-- 오케스트레이터가 갱신 · 사람 자리 기록은 agent-sync w.md · 2026-08-19~09-20 이력은 docs/release/18 부록 A 로 이관 -->
-- **★현행 스냅샷(2026-10-02)**: main = `db11b83`(#209). 백로그 정본 =
+- **★현행 스냅샷(2026-10-03)**: main = `af100bf`(#211). **마감 2026-10-28**(사용자 /goal 2026-10-02) — 로드맵 `docs/release/19`(제안·일정과 스코프 확정 전)·기관 결정 요청서 `docs/release/20`(초안). 백로그 정본 =
   `docs/release/14-prd-reprioritization.md` 「현행 백로그 (2026-09-27 재점검)」(담당별·우선순위).
   - **완료(재착수 금지, 2026-09-20 이후)**: #175 요약 대리인 이름 치환 + `participant.preview` 감사 · #176 `/admin/audit` ·
     #177 TTS `SpeakButton`(홈 잔액·이용계획) · #178 쉬운 용어 사전+`<Term>`('이용계획') · #179 `/admin/insights` KPI A~C ·
@@ -318,11 +318,12 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
   - **다음(결정·확인 선행)**: 기관 = AI API 국외이전 근거(OCR A안/국내/제거 · 요약·제안 B안)·처리방침 확정값·Supabase DPA 서명·Vercel
     Analytics 수집범위/DPA · 사용자 = pg_cron·활동사진 RLS 라이브 확인·실사용자 심사·기능 QA(doc16)·정산 실무자 허용·KPI D·`/onboarding` 존폐 ·
     하네스 = Linux 머신 플러그인 0.4.1 갱신(`claude plugin marketplace update harness && claude plugin update harness@harness` 후 새 세션 — Windows 머신은 0.4.1 설치 확인 2026-10-01, auto 모드 main 머지 차단 라이브 확인 2026-10-02) · main 보호 PR 필수 적용 명령.
-  - **다음(하네스, 계약 선행·high)**: #199 후속 ①②④⑤ · #207 후속 ⑧(a)~(d)(doc18 §9 — ⑧(d)는 #209 검증 tm-1·tm-2) · 플러그인 0.4.2 후보(Windows 드라이브 경로 정규화·jq CRLF 제거 최우선 · `qa-run close` 칸 탐지 · merge-ask 변형·보호 설정 명령).
+  - **다음(하네스, 계약 선행·high)**: #199 후속 ②⑤(doc18 §9 — ①④ 와 #207 후속 ⑧(a)~(d) 는 설정 계약 #212 와 그 구현으로 반영, §9 ⑬) · 플러그인 0.4.2 후보(Windows 드라이브 경로 정규화·jq CRLF 제거 최우선 · `qa-run close` 칸 탐지 · merge-ask 변형·보호 설정 명령).
   - **다음(U 코드, 결정 불요)**: 쉬운말 `<Term>` 확대(`plan/page.tsx`)·지출기록 TTS·`receipt.view` 반복 기록 축소·감사 `target_participant_id` 누락.
   - **운영 모델(2026-09-27 정식화)**: 단일 계정 · W/U = 역할 컨텍스트 · 사람 자리(W) = QA·머지·결정 — 위 「병렬 하네스」 섹션과 `docs/release/18`. 홈 지시서·메모리 갱신은 머지 후 체크.
   - **하네스 코드화(#197, 머지 2026-09-28)**: 에이전트 3종·레인 가드·`/verify-pr` 워크플로·역할 스킬 정정 — `docs/release/17`. 그 런타임은 아래 플러그인으로 이전됐다(doc18).
   - **머지(2026-09-29)**: #199(단일 계정·역할 분리 운영 모델 v2 + 플러그인 이전, 조건 수용 — 후속 보통 5건은 doc18 §9) · 플러그인 `harness` 0.4.0(SWJoong/claude-harness#1).
-  - **머지(2026-10-02)**: #209(D-20261001-01·02 기록·「권한 모드」 규칙·현황, 수동 팬아웃 검증 approve-with-conditions 를 조건 수용 — D-20261002-01, 후속은 이 현황의 다음 PR 과 doc18 §9 ⑧(d)) · 플러그인 0.4.1(SWJoong/claude-harness#2) auto 모드 main 머지 차단 라이브 확인.
+  - **머지(2026-10-02)**: #209(D-20261001-01·02 기록·「권한 모드」 규칙·현황, 수동 팬아웃 검증 approve-with-conditions 를 조건 수용 — D-20261002-01, 후속은 #210 과 doc18 §9 ⑧(d)) · 플러그인 0.4.1(SWJoong/claude-harness#2) auto 모드 main 머지 차단 라이브 확인.
+  - **머지(2026-10-03)**: #210(#209 조건 수용 후속 정정 + 「권한 모드」 범위 확정 D-20261002-02, `d047b4a`) · #211(10/28 마감 로드맵 초안 doc19 + 기관 결정 요청서 초안 doc20, `af100bf`).
   - **머지(2026-09-29~10-01)**: #205(#200·#201 검증 후속 + `/onboarding` 존폐 결정 항목 기록) · #207(#199 머지 후속 기록 — 조건 수용) · #208(하네스 라이브 QA 결과 PASS 11 / FAIL 2 + #207 조건 정정) · 플러그인 `harness` 0.4.1(SWJoong/claude-harness#2, 2026-10-01 — auto 모드 ask→차단).
   - **단일 계정 전환 + 플러그인화(U, 2026-09-27 → 머지 2026-09-29)**: 하네스 런타임을 플러그인 `harness`(에이전트·훅·워크플로·스크립트)로 추출, 저장소엔 `.claude/harness.json` 만. 로컬 사본(`.claude/agents`·`workflows`·`lane-guard`·`u-wave-plan`) 삭제, `settings.json` 훅 제거, PR 템플릿·결정 로그·QA 기록 규약 신설 — `docs/release/18`. 이전 현황 이력(08-19~09-20)은 doc18 부록 A.
