@@ -649,3 +649,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-10-03T08:29Z] W (via U)
 [MERGED by user] #213 feat(harness) 설정 계약 후속 구현(doc18 §9 ①④⑧ + #210 정정) → main 294fa9d. 사용자 승인(W 세션 AskUserQuestion, 기본 모드로 바꾼 뒤 재실행) · head d21ff88 · 티어 high · 수동 팬아웃 검증(검토 3 + 묶음 재확인 2) approve-with-conditions 를 조건 수용(--accept-conditions, D-20261003-06) · 계약 PR #212 는 게이트가 닫음 · Manual-Ops 없음. 조건 = CLAUDE.md T2 SQL 요약 문장을 조이는 계약(W 레인 후속, doc18 §9 ⑧). 다음: #214 가 decisions.md 끝 충돌을 양쪽 행 유지로 정리.
 
+## [2026-10-03T09:20Z] W (via U)
+[MERGED by user] #214 docs 마감 관련 사용자 결정 기록(D-20261003-01~06)+doc19 확정+doc14 닫기 → main 1aa03d3 (head 3b687c1, 티어 docs, #213 과의 decisions.md 끝 충돌은 양쪽 행 유지로 정리·계약 50/50 확인) · #215 docs 하네스 토큰 효율 평가·개선안(doc21)+진행 보고 요구사항 → main 8aeb031 (티어 docs, BEHIND 라 게이트가 update-branch 후 머지) · #216 docs /onboarding 재연결 설계 메모(doc22) → main 3d54c5a (티어 docs, 같은 방식). 모두 사용자 승인(W 세션 AskUserQuestion, 기본 모드) · 게이트 통과 · Manual-Ops 없음. 같은 날 #213 → 294fa9d(조건 수용, D-20261003-06).
+
