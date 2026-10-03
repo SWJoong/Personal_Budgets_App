@@ -646,3 +646,6 @@ strategy: 앵커 1개로 패턴 증명 → P3 프리미티브(StatusPill)로 승
 ## [2026-10-03T07:41Z] W (via U)
 [DECISION by user] D-20261003-06 #213(head d21ff88, 티어 high, 수동 팬아웃 검증 approve-with-conditions)은 조건 수용 머지로 승인 — 보통 1건(CLAUDE.md T2 SQL 요약 문장이 계약 밖 → W 레인 후속 계약, doc18 §9 ⑧ 에 등록)과 낮음 5건(번호 없는 지시어·처리 표시·판단 후보 2건 현황 누락·계약 포인터 1파일·SQL 검사 규칙 기존 빈틈)은 후속. 순서 = #213 먼저, 그다음 #214 가 decisions.md 끝 충돌을 양쪽 행 유지로 정리. 아직 머지되지 않음 — 이 W 세션은 auto 모드라 머지 확인 훅이 시작 전에 차단했고, 기본 모드 세션에서 머지 게이트 스크립트의 머지 단계를 조건 수용 옵션과 함께 실행하면 된다. (사용자 결정, W 세션 AskUserQuestion 2026-10-03)
 
+## [2026-10-03T08:29Z] W (via U)
+[MERGED by user] #213 feat(harness) 설정 계약 후속 구현(doc18 §9 ①④⑧ + #210 정정) → main 294fa9d. 사용자 승인(W 세션 AskUserQuestion, 기본 모드로 바꾼 뒤 재실행) · head d21ff88 · 티어 high · 수동 팬아웃 검증(검토 3 + 묶음 재확인 2) approve-with-conditions 를 조건 수용(--accept-conditions, D-20261003-06) · 계약 PR #212 는 게이트가 닫음 · Manual-Ops 없음. 조건 = CLAUDE.md T2 SQL 요약 문장을 조이는 계약(W 레인 후속, doc18 §9 ⑧). 다음: #214 가 decisions.md 끝 충돌을 양쪽 행 유지로 정리.
+
