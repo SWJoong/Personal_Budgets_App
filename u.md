@@ -1595,3 +1595,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-03T08:29Z] U
 [MERGED] #213 feat(harness): 설정 계약 후속 구현 — doc18 §9 ① → main 294fa9d (user via U 2026-10-03T08:28Z · 티어 high · 판정 approve-with-conditions)
 
+## [2026-10-03T08:40Z] U
+[MERGED] #214 docs(release): 마감 관련 사용자 결정 5건 기록(D- → main 1aa03d3 (user via U 2026-10-03T08:40Z · 티어 docs · 판정 -)
+
