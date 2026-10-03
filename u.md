@@ -1578,3 +1578,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-03T03:42Z] U
 [MERGED] #211 docs(release): 10/28 마감 로드맵 초안(doc19) + 기관 결정 요청서 초안(doc20)  → main af100bf (user via U 2026-10-03T03:39Z · 티어 docs · 판정 -)
 
+## [2026-10-03T05:17Z] U
+[HANDOFF→W] #213 harness(티어 high — gate:harness.json·CLAUDE.md + 대형, 계산 일치): 설정 계약 후속 구현 — 계약 #212(harness:w-contract-author, RED 5건)를 오케스트레이터가 공유 레인에서 구현해 50/50 GREEN. harness.json gate 군 +6글롭(package.json·tsconfig.json·eslint.config.mjs·next.config.ts·.agents/**·.codex/**)·sqlPolicyRegex +3(DROP/DISABLE TRIGGER·VIEW·CREATE TABLE) · CLAUDE.md T2 요약·현황 · decisions.md D-20261002-01 정정(번호 = #210) · doc18 §9 ③·⑫·⑬ · qa-runs README 표 형식. 게이트: contract 50/50 · tsc 0 · lint 오류 0 · test 169/1199 · build ✓, CI 진행 중. 게이트 check = verify 리포트만 남음. 사용자 몫: W 세션(플러그인 설치됨)에서 /harness:verify-pr 213 (코드·SQL 동작 변경 0줄 → docs-consistency·requirements-types·tests-mutation 위주) 후 머지 승인(기본 모드에서; 게이트가 계약 PR #212 를 내용 병합 후 닫음). 후보 2건 사용자 판단 대기(doc18 §9 ⑬): vitest.config.ts gate 승격 · .agents/.codex lanes.shared 편입. 병행 진행: 플러그인 0.4.2 워크플로(worktree ~/문서/claude-harness-wt-0.4.2, 4갈래 구현·검증 중). 이 머신 설치본은 아직 0.4.0. 작업 worktree .claude/worktrees/impl-followup(머지 후 정리).
+
