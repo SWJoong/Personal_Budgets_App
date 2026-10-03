@@ -251,7 +251,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 - **공유·인프라**(`CLAUDE.md` · `AGENTS.md` · `.mcp.json` · `.claude/harness.json` · `.claude/settings*.json` · `.claude/agents|workflows|commands/**` · `.github/pull_request_template.md` · `scripts/agent-sync.sh` · `docs/release/decisions.md` · `docs/release/qa-runs/**` · `.claude/agent-memory/**`) → 오케스트레이터·사람만(양쪽 워커 훅 차단).
 - **에이전트 메모리**(`.claude/agent-memory/<에이전트>/`): 각 에이전트는 **자기 폴더만** 쓴다(플러그인 ≥ 0.4.0 — `harness.json` `plugin.minVersion` 값은 설정 계약이 강제하고, 실제 설치본 버전은 「매 세션 루틴」의 호출 경로 줄처럼 `installed_plugins.json` 으로 확인한다). 메모리는 **로컬 전용**이다(D-20260928-03): `.claude/agent-memory*/` 는 `.gitignore` — 검증자(project 범위)는 메인 체크아웃에만 쌓이고, `harness:u-worker`·`harness:w-contract-author` 는 `memory: user`(`~/.claude/agent-memory/`, 프로젝트 공통이므로 프로젝트 고유 경로·비밀 대신 일반 교훈만). 커밋은 경로를 지정해 `git add` 한다(`git add -A` 금지 — #199 에서 검증자 메모리 6개가 섞였던 사례). 검증자 메모리는 검증자만 쓴다 — 오케스트레이터가 정리할 때는 사용자 확인 후.
 - 가드가 막는 것: 워커의 Edit/Write(플러그인 `lane-guard.sh` — 대상 파일이 속한 worktree 의 `harness.json` 기준, 워커는 자기 worktree 밖 편집 불가, 설정 없으면 기본 레인·설정 깨지면 차단). 못 막는 것: Bash 편집(규율로 금지). **main 직접 push 금지** — 코드는 항상 PR·CI 경유(훅이 다시 묻는다). 훅이 놓치는 변형(`git -C . push`·`git -c … push`·`gh api graphql` 머지)은 규율로 막는다 — 서버 보호(enforce_admins)는 필수 체크만 강제하고 PR·승인은 강제하지 않는다(D-20260929-02 정정). PR 필수는 켜기로 결정했고(D-20261001-02) 사용자 적용 대기다.
-- **권한 모드**(D-20261001-01): 데스크톱 auto 모드에서는 훅의 확인 질문(ask)이 사람에게 닿지 않는다(v2.1.280 실측, `docs/release/18` §9 ⑥). 플러그인 0.4.1 부터 훅이 `permission_mode=auto` 에서 ask 대신 차단하지만, 설치본이 그보다 낮으면 이 규칙이 유일한 방어다 — 머지(`pr-merge-gate.sh … merge`)·main push·보호 설정 변경·메인 세션의 W 레인 소규모 예외 **직전에 기본 모드로 전환**하고 끝나면 되돌린다.
+- **권한 모드**(D-20261001-01 · 범위 D-20261002-02): 데스크톱 auto 모드에서는 훅의 확인 질문(ask)이 사람에게 닿지 않는다(v2.1.280 실측, `docs/release/18` §9 ⑥). 플러그인 0.4.1 부터 훅이 `permission_mode=auto` 에서 ask 대신 차단한다(2026-10-02 auto 모드의 main 머지 시도가 차단되는 것으로 라이브 확인). 그래도 훅이 못 보는 경우(설치본이 0.4.1 미만 · Windows 드라이브 경로에서 메인 세션 W 레인 판정이 서지 않음 — 플러그인 0.4.2 후보 · 보호 설정 변경 API 와 `git push origin HEAD` 같은 변형)가 남으므로 이 규칙은 시한 없이 상시 적용한다 — 머지(`pr-merge-gate.sh … merge`)·메인 세션의 W 레인 소규모 예외 **직전에 기본 모드로 전환**하고 끝나면 되돌린다. 모드 전환 대상은 이 둘뿐이다: main 직접 push 는 모드와 무관하게 금지, 보호 설정 변경(`gh api -X PUT·DELETE …/protection`)은 사용자만 실행한다(`docs/release/02`).
 - 서브에이전트의 격리 worktree 는 origin/main 기준으로 생기므로 **`harness.json` 이 main 에 머지돼 있어야** 워커가 이 레인의 보호를 받는다.
 
 ### 상태 동기화 (agent-sync = 저널 + 사람 자리 기록)
@@ -301,7 +301,7 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
 
 ### 현재 작업 현황
 <!-- 오케스트레이터가 갱신 · 사람 자리 기록은 agent-sync w.md · 2026-08-19~09-20 이력은 docs/release/18 부록 A 로 이관 -->
-- **★현행 스냅샷(2026-10-01)**: main = `5e26314`(#208). 백로그 정본 =
+- **★현행 스냅샷(2026-10-02)**: main = `db11b83`(#209). 백로그 정본 =
   `docs/release/14-prd-reprioritization.md` 「현행 백로그 (2026-09-27 재점검)」(담당별·우선순위).
   - **완료(재착수 금지, 2026-09-20 이후)**: #175 요약 대리인 이름 치환 + `participant.preview` 감사 · #176 `/admin/audit` ·
     #177 TTS `SpeakButton`(홈 잔액·이용계획) · #178 쉬운 용어 사전+`<Term>`('이용계획') · #179 `/admin/insights` KPI A~C ·
@@ -311,17 +311,18 @@ npm run generate-types # Supabase 타입 재생성 → src/types/database.ts
   - **라이브 반영(사용자 Manual-Ops)**: `12_audit_log`(2026-09-21)·`19_plan_feedback`(2026-09-21)·`20_evaluations`(2026-09-26, 카탈로그 32/32).
     **미확인**: 감사 파기 pg_cron 등록(`0 18 * * *` UTC = KST 03시, `docs/release/12` §4) · 활동사진 04 RLS·03 경로 트리거(`docs/release/06` §2).
   - **결정 확정**: 감사 접속기록 보존 730일(2026-09-22) · Supabase 리전 `ap-northeast-2` 서울 → 저장 국외이전 면제(2026-09-23) ·
-    계획 공유 = 가벼운 피드백(a)(→#183) · 단일 계정 운영 모델·플러그인화(D-20260927-02~06, D-20260928-01/02) · 에이전트 메모리 로컬 전용(D-20260928-03) · #199 조건 수용 머지(D-20260929-01) · main 보호 enforce_admins 켜기(D-20260929-02, 2026-09-29 적용; 효과는 필수 체크 강제뿐 — 2026-09-30 정정) · #207 조건 수용 머지(D-20260930-01) · auto 모드에서 훅 ask 미도달 = 플러그인 0.4.1 차단 + 기본 모드 전환 규칙(D-20261001-01) · main 보호에 PR 필수 켜기(D-20261001-02, 사용자 적용 대기). 결정 정본 = `docs/release/decisions.md`.
+    계획 공유 = 가벼운 피드백(a)(→#183) · 단일 계정 운영 모델·플러그인화(D-20260927-02~06, D-20260928-01/02) · 에이전트 메모리 로컬 전용(D-20260928-03) · #199 조건 수용 머지(D-20260929-01) · main 보호 enforce_admins 켜기(D-20260929-02, 2026-09-29 적용; 효과는 필수 체크 강제뿐 — 2026-09-30 정정) · #207 조건 수용 머지(D-20260930-01) · auto 모드에서 훅 ask 미도달 = 플러그인 0.4.1 차단 + 기본 모드 전환 규칙(D-20261001-01) · main 보호에 PR 필수 켜기(D-20261001-02, 사용자 적용 대기) · #209 조건 수용 머지(D-20261002-01) · 「권한 모드」 범위 = 시한 없이 머지·W 레인 예외 2종(D-20261002-02). 결정 정본 = `docs/release/decisions.md`.
   - **머지(2026-09-27)**: #192(처리방침 사실 정정 + 쉬운말 요약 당사자 이름 가림 결함 수정 — `profiles` 오조회로 #73 이후 미마스킹) ·
     #193(AI 생성물 공통 라벨 `AiNotice` + OCR 자동채움 표시) · #194(지출 기록 성공 안내) · #195(상태 기록 정리) · #196(Phase C 계획서 보관).
   - **머지(2026-09-28)**: #197(하네스 코드화 — 에이전트 3종·lane-guard·`/verify-pr`, 같은 날 플러그인으로 이전) · #200(copay TS↔DB 상태값 패리티 골든 — P3) · #201(2026-09-29, 터치타깃 44px·장식 이모지 aria-hidden 재반영 + 사이드바 하위메뉴 토글·더보기 스위치).
   - **다음(결정·확인 선행)**: 기관 = AI API 국외이전 근거(OCR A안/국내/제거 · 요약·제안 B안)·처리방침 확정값·Supabase DPA 서명·Vercel
     Analytics 수집범위/DPA · 사용자 = pg_cron·활동사진 RLS 라이브 확인·실사용자 심사·기능 QA(doc16)·정산 실무자 허용·KPI D·`/onboarding` 존폐 ·
-    하네스 = 플러그인 0.4.1 갱신(`claude plugin marketplace update harness && claude plugin update harness@harness` 후 새 세션)과 auto 모드 머지 차단 라이브 확인 · main 보호 PR 필수 적용 명령.
-  - **다음(하네스, 계약 선행·high)**: #199 후속 ①~⑤·⑧(doc18 §9) · 플러그인 0.4.2 후보(Windows 드라이브 경로 정규화 최우선 · `qa-run close` 칸 탐지 · merge-ask 변형).
+    하네스 = Linux 머신 플러그인 0.4.1 갱신(`claude plugin marketplace update harness && claude plugin update harness@harness` 후 새 세션 — Windows 머신은 0.4.1 설치 확인 2026-10-01, auto 모드 main 머지 차단 라이브 확인 2026-10-02) · main 보호 PR 필수 적용 명령.
+  - **다음(하네스, 계약 선행·high)**: #199 후속 ①②④⑤ · #207 후속 ⑧(a)~(d)(doc18 §9 — ⑧(d)는 #209 검증 tm-1·tm-2) · 플러그인 0.4.2 후보(Windows 드라이브 경로 정규화·jq CRLF 제거 최우선 · `qa-run close` 칸 탐지 · merge-ask 변형·보호 설정 명령).
   - **다음(U 코드, 결정 불요)**: 쉬운말 `<Term>` 확대(`plan/page.tsx`)·지출기록 TTS·`receipt.view` 반복 기록 축소·감사 `target_participant_id` 누락.
   - **운영 모델(2026-09-27 정식화)**: 단일 계정 · W/U = 역할 컨텍스트 · 사람 자리(W) = QA·머지·결정 — 위 「병렬 하네스」 섹션과 `docs/release/18`. 홈 지시서·메모리 갱신은 머지 후 체크.
   - **하네스 코드화(#197, 머지 2026-09-28)**: 에이전트 3종·레인 가드·`/verify-pr` 워크플로·역할 스킬 정정 — `docs/release/17`. 그 런타임은 아래 플러그인으로 이전됐다(doc18).
   - **머지(2026-09-29)**: #199(단일 계정·역할 분리 운영 모델 v2 + 플러그인 이전, 조건 수용 — 후속 보통 5건은 doc18 §9) · 플러그인 `harness` 0.4.0(SWJoong/claude-harness#1).
+  - **머지(2026-10-02)**: #209(D-20261001-01·02 기록·「권한 모드」 규칙·현황, 수동 팬아웃 검증 approve-with-conditions 를 조건 수용 — D-20261002-01, 후속은 이 현황의 다음 PR 과 doc18 §9 ⑧(d)) · 플러그인 0.4.1(SWJoong/claude-harness#2) auto 모드 main 머지 차단 라이브 확인.
   - **머지(2026-09-29~10-01)**: #205(#200·#201 검증 후속 + `/onboarding` 존폐 결정 항목 기록) · #207(#199 머지 후속 기록 — 조건 수용) · #208(하네스 라이브 QA 결과 PASS 11 / FAIL 2 + #207 조건 정정) · 플러그인 `harness` 0.4.1(SWJoong/claude-harness#2, 2026-10-01 — auto 모드 ask→차단).
   - **단일 계정 전환 + 플러그인화(U, 2026-09-27 → 머지 2026-09-29)**: 하네스 런타임을 플러그인 `harness`(에이전트·훅·워크플로·스크립트)로 추출, 저장소엔 `.claude/harness.json` 만. 로컬 사본(`.claude/agents`·`workflows`·`lane-guard`·`u-wave-plan`) 삭제, `settings.json` 훅 제거, PR 템플릿·결정 로그·QA 기록 규약 신설 — `docs/release/18`. 이전 현황 이력(08-19~09-20)은 doc18 부록 A.
