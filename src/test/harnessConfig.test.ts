@@ -23,22 +23,30 @@ import { join } from 'node:path'
  *   1. 파싱·형태     — 유효한 JSON + 플러그인이 읽는 최상위 키의 형태.
  *   2. W 레인        — lanes.w 가 계약·검증·설계 글롭을 문자열 그대로 모두 포함(레인 약화 차단).
  *   3. 공유 파일     — lanes.shared 가 공유·인프라 목록 전체를 포함 + U·W 레인 경로를 삼키지 않음(과확장 차단).
- *   4. 고위험 티어   — gate 목록 전체(AGENTS.md 포함) · 7군 존재 · 군별 필수 글롭(privacy 의 vercel.json·auth 의
- *                      seed-demo-auth.mjs·rls 의 정책 보유 빌드 SQL 포함) · 군별 대표 경로(권한 경계 호출부 12개 포함) ·
- *                      정책 보유 빌드 SQL(`supabase/seoul/*.sql` 을 읽어 판정) ⊆ rls 군 ·
- *                      sqlPolicyRegex 샘플 매치(플러그인 모양: `+`/`-` diff 줄·소문자 비교, 음성 샘플 불일치) ·
- *                      docs 허용 목록(`docs/` 로 시작하거나 `.md` 로 끝나는 글롭만) · large 상한.
+ *   4. 고위험 티어   — gate 목록 전체(AGENTS.md·CI 호환 설정 4파일·`.agents/**`·`.codex/**` 포함) · 7군 존재 ·
+ *                      군별 필수 글롭(privacy 의 vercel.json·auth 의 seed-demo-auth.mjs·rls 의 정책 보유 빌드 SQL 포함) ·
+ *                      군별 대표 경로(권한 경계 호출부 12개 포함) · 정책 보유 빌드 SQL(`supabase/seoul/*.sql` 을 읽어 판정) ⊆ rls 군 ·
+ *                      sqlPolicyRegex 샘플 매치(플러그인 모양: `+`/`-` diff 줄·소문자 비교, 음성 샘플 불일치 — 대안·내부
+ *                      선택지마다 그것만 걸리는 줄) · docs 허용 목록(`docs/` 로 시작하거나 `.md` 로 끝나는 글롭만) · large 상한.
  *   5. 글롭 의미론   — lane-guard(hc_match)와 같은 매처로 대표 경로의 W 레인 소속을 판정.
  *   6. CLAUDE.md 정합 — 줄 단위 양방향: 「레인 규칙」 W 줄 ↔ lanes.w, 공유 줄 ↔ lanes.shared, U 줄 ∩ (lanes.w ∪
- *                      lanes.shared) = ∅ · 「검증 티어」 T2 조건 칸 `name(` ↔ tiers.high · T1 임계 = tiers.large.
+ *                      lanes.shared) = ∅ · 「검증 티어」 T2 조건 칸 `name(` ↔ tiers.high · T1 임계 = tiers.large ·
+ *                      T2 의 gate(…) 항목이 CI 호환 설정·외부 에이전트 설정 폴더를 적는다.
  *   7. 문구·렌즈·스킬 — participantCopyGlobs 4 · verify.lenses 5 · roleSkills.w · CLAUDE.md 접근성 검증 체크 줄의
  *                      정성·수치 항목과 '기준+값' 쌍(방향 고정) · CLAUDE.md 보안 검증 체크 줄의 항목 7개.
  *   8. 채널          — channel.seatPrefixes 3접두 · channel.branch · roles.seat · channel.roles ⊇ {w, u}.
- *   9. 게이트 명령   — gate.all = CLAUDE.md 게이트 줄 조각(정확히 같음) · gate.contract `vitest run {file}`.
+ *   9. 게이트 명령   — gate.all = CLAUDE.md 게이트 줄 조각(정확히 같음) · gate.contract = `npx vitest run {file}`(정확히 같음) ·
+ *                      package.json scripts.test/lint/build = CI 가 부르는 명령(정확히 같음) · CI quality-check 가 그 스크립트를 부른다.
  *  10. 플러그인 동작 값 — prefixes(toAuthor·toVerifier·sync) · baseBranch = main · plugin.minVersion ≥ 0.4.0 ·
- *                      CLAUDE.md·$comment 의 '플러그인 ≥ X.Y.Z' 주장 ≤ 계약 하한(요약이 계약보다 센 보호를 약속하지 않음).
+ *                      CLAUDE.md·$comment 의 '플러그인 ≥ X.Y.Z' 주장 ≤ 계약 하한(요약이 계약보다 센 보호를 약속하지 않음 —
+ *                      백틱·굵게 꾸밈 표기도 읽는다).
  *  11. 에이전트 메모리 — `.gitignore` 가 `.claude/agent-memory/`·`.claude/agent-memory-local/` 를 무시(뒤집는 `!` 줄 없음) +
  *                      CLAUDE.md 「레인 규칙」 에이전트 메모리 줄이 `.gitignore`·로컬 전용을 적는다(D-20260928-03).
+ *  12. 권한 모드·서버 보호 한계 — CLAUDE.md 「레인 규칙」 `- **권한 모드**` 줄과 「가드가 막는 것」 줄의 의미 토큰
+ *                      (D-20261001-01·D-20261002-02 · auto 모드 ask 미도달 · 직전에 기본 모드로 전환 · 대상 2종 · push 금지 ·
+ *                      enforce_admins 는 필수 체크만, PR·승인은 강제하지 않음).
+ *  기록 파일 계약은 별도 파일: 결정 ID 인용 `harnessConfig.decisions.test.ts` · QA 실행 표 `harnessConfig.qaRuns.test.ts` ·
+ *  PR 템플릿 필드 ↔ 머지 게이트 `harnessConfig.prTemplate.test.ts`.
  *
  * 저작 시 돌연변이 RED 확인(#199 head b5d9109 위, 매번 `git checkout -- .claude/harness.json CLAUDE.md` 로 원복):
  *   1차 저작(2cb7922) — ① lanes.w 에서 `src/test/**` 제거 → 2·5 RED  ② tiers.high.gate 에서 `CLAUDE.md` 제거 → 4 RED
@@ -63,6 +71,15 @@ import { join } from 'node:path'
  *     메모리 줄 삭제·local 줄만 삭제·`!.claude/agent-memory/` 추가·CLAUDE.md 메모리 줄의 `.gitignore`·로컬 전용 삭제
  *     (11 RED) · 보안 체크 줄 항목 7개 각각 삭제·줄 삭제(7 RED) · CLAUDE.md `플러그인 ≥ 0.5.0` 과대 주장(10 RED).
  *     sqlPolicyRegex 샘플 48줄(`+`/`-` × 양성 21·음성 3)은 설치본 pr-risk-tier.sh 와 같은 awk 식으로도 판정이 같다(불일치 0).
+ *   5차 보강(doc18 §9 ①④⑧(c)(d)·낮음, af100bf 위 — scratchpad 사본에 구현(gate 군 6글롭·정규식 3대안·CLAUDE.md T2 요약)을
+ *     적용해 GREEN 확인 후 돌연변이): 저작 시점 의도된 RED 5 = gate 필수 글롭·군별 필수 글롭·gate 대표 경로·sqlPolicyRegex
+ *     양성(뷰·테이블 생성·트리거 해제 7줄)·T2 gate(…) 요약 — 이유는 모두 구현 부재. 돌연변이: gate 에서 package.json·
+ *     .agents/**·.codex/** 제거·next.config 이름 변경(4 RED) · scripts.test/lint/build 약화·ci.yml run 교체·gate.contract
+ *     `--passWithNoTests`/`true #`(9 RED) · T2 gate(…) 에서 `.codex/` 삭제·CI 호환 설정을 대형 항목으로 이동(6 RED) ·
+ *     정규식을 좁히는 변이 66종(대안 삭제 17·대안별 `^` 17·전체 앵커 3·내부 선택지/선택적 묶음/문자 집합 좁힘 29) — 4차 샘플
+ *     21줄로는 24종 생존(기존 대안 좁힘 11), 5차 41줄로는 0 · 과확장(`VIEW`·`TABLE` 낱말)(4 RED) · 꾸밈 버전 주장 3종·
+ *     추출기 되돌림(10 RED, origin/main 계약은 같은 과대 주장에 GREEN = 구멍 재현) · 권한 모드 줄·「가드가 막는 것」 줄의
+ *     절 삭제 12종(12 RED, 표현 수정 2종은 GREEN 유지). 샘플 94줄(양성 41·음성 6 × `+`/`-`)은 awk 판정과 불일치 0.
  */
 
 const ROOT = process.cwd()
@@ -151,10 +168,16 @@ const REQUIRED_SHARED: readonly string[] = [
 ]
 
 /**
- * 4. gate 경로군(저작 시점 tiers.high.gate 전체 14개) — CI·하네스 설정·규칙 문서를 바꾸는 PR 은 T2 팬아웃 검증.
+ * 4. gate 경로군(#204 저작 시점 14개 + doc18 §9 ①·낮음 6개) — CI·하네스 설정·규칙 문서를 바꾸는 PR 은 T2 팬아웃 검증.
  *    AGENTS.md(a68fb99 추가)가 빠지면 AGENTS.md 만 바꾼 PR 이 tiers.docs 의 `.md` 글롭에 걸려 T0(docs, VERIFY REPORT
  *    불요)까지 내려간다(설치본 pr-risk-tier.sh 로 확인: high → docs).
+ *    CI 호환 설정 4파일(doc18 §9 ①, #199 4차 재검증): U 레인 1줄로 CI 계약 실행을 끄거나(`scripts.test` 에 필터 인자,
+ *    eslint 무시 목록, `tsconfig` 의 `exclude`/`strict`) 빌드 동작을 바꿀 수 있다 — 지금은 T1(단건 검증)로 판정된다.
+ *    `.agents/**`·`.codex/**`(doc18 §9 낮음): 다른 에이전트 도구의 지시서·훅 설정 — AGENTS.md 와 같은 규칙 파일 등급.
+ *    `.agents/skills/*.md` 는 지금 `.md` 글롭에 걸려 T0(docs)로까지 내려간다.
  */
+const CI_COMPAT_GATE: readonly string[] = ['package.json', 'tsconfig.json', 'eslint.config.mjs', 'next.config.ts']
+const AGENT_TOOL_GATE: readonly string[] = ['.agents/**', '.codex/**']
 const REQUIRED_GATE: readonly string[] = [
   '.github/workflows/**',
   '.github/pull_request_template.md',
@@ -170,6 +193,8 @@ const REQUIRED_GATE: readonly string[] = [
   'AGENTS.md',
   'docs/harness-plan.md',
   'scripts/agent-sync.sh',
+  ...CI_COMPAT_GATE,
+  ...AGENT_TOOL_GATE,
 ]
 
 /**
@@ -368,6 +393,13 @@ const HIGH_SAMPLES: Readonly<Record<string, readonly string[]>> = {
     'AGENTS.md',
     'docs/harness-plan.md',
     'scripts/agent-sync.sh',
+    'package.json',
+    'tsconfig.json',
+    'eslint.config.mjs',
+    'next.config.ts',
+    '.agents/skills/qa/SKILL.md',
+    '.codex/config.toml',
+    '.codex/hooks.json',
   ],
 }
 
@@ -402,6 +434,33 @@ const SQL_POLICY_SAMPLES: readonly string[] = [
   "    RAISE EXCEPTION 'x';",
   // 소문자 SQL(대소문자 무시 비교 확인 — 소문자로 쓰인 권한 부여 diff 도 잡아야 한다).
   'grant execute on function public.x() to anon;',
+  // 5차 보강(doc18 §9 ④ — #199 4차 재검증에서 정규식을 좁히는 돌연변이 12/19 생존): 대안과 내부 선택지마다 그것만 걸리는
+  // 줄을 둔다. 위 샘플은 여러 대안에 겹쳐 걸려서(`USING (seoul_is_staff_for(…))` 는 `USING *[(]` 로도, `CREATE OR REPLACE
+  // FUNCTION seoul_can_access` 는 CREATE FUNCTION 으로도) 헬퍼 이름·`OR REPLACE`·경로검사 이름을 지워도 살아남았다.
+  'ALTER TABLE public.seoul_transactions DISABLE ROW LEVEL SECURITY;',
+  'ALTER TABLE public.seoul_transactions NO FORCE ROW LEVEL SECURITY;',
+  'ALTER TABLE public.seoul_transactions FORCE ROW LEVEL SECURITY;',
+  'GRANT SELECT ON public.seoul_transactions TO anon;',
+  'GRANT ALL ON TABLE public.seoul_transactions TO PUBLIC;',
+  'REVOKE ALL ON public.seoul_transactions FROM authenticated;',
+  '    seoul_can_access(p.participant_id)', // 헬퍼 호출만 있는 줄(정책 술어 본문 한 줄 교체)
+  '  AND seoul_is_staff_for(t.participant_id)',
+  'CREATE OR REPLACE FUNCTION public.seoul_touch_updated_at() RETURNS trigger', // `(OR REPLACE )?` 삭제 돌연변이
+  '  EXECUTE FUNCTION public.seoul_check_activity_photo_path();', // 실제 경로검사 함수 이름(03_seoul_schema)
+  '  PERFORM seoul_check_receipt_path(NEW.receipt_url);', // `[a-z_]+` 를 특정 이름으로 좁히는 돌연변이
+  'USING(true)', // `USING *[(]` 의 ` *` 를 ` ` 로 좁히는 돌연변이
+  '  OR auth.uid() = p.user_id', // `auth[.]uid[(][)]` 를 `= auth.uid()` 모양으로 좁히는 돌연변이
+  // 보호가 처음부터 없는 객체 생성·가드 트리거 해제(doc18 §9 ④·② — #199 4차 security-rls-2): security_invoker 없는 뷰는
+  // 소유자 권한으로 RLS 를 건너뛰고(머티리얼라이즈드 뷰는 RLS 가 아예 없다), RLS 를 켜지 않은 새 테이블은 anon·authenticated
+  // 에 열린다. 경로 검사·역할 보호 트리거를 떼는 줄(DROP·DISABLE TRIGGER)은 경로 위조·역할 승격 방어를 끈다. 이 7줄은
+  // 저작 시점(af100bf) 정규식이 못 잡는다 — 설정 tiers.sqlPolicyRegex 가 넓혀져야 GREEN(의도된 RED).
+  'CREATE VIEW public.v_seoul_x AS SELECT * FROM public.seoul_transactions;',
+  'CREATE OR REPLACE VIEW public.v_seoul_budget_balance AS',
+  'CREATE MATERIALIZED VIEW public.mv_seoul_x AS SELECT 1;',
+  'CREATE TABLE IF NOT EXISTS public.seoul_new_table (',
+  'create table public.t (id uuid primary key);',
+  'DROP TRIGGER IF EXISTS trg_activity_photo_path ON public.seoul_activity_photos;',
+  'ALTER TABLE public.seoul_activity_photos DISABLE TRIGGER trg_activity_photo_path;',
 ]
 
 /**
@@ -412,6 +471,10 @@ const SQL_NON_POLICY_SAMPLES: readonly string[] = [
   'SELECT 1 FROM t WHERE x = 1;',
   'CREATE INDEX IF NOT EXISTS idx_t_col ON public.t USING btree (col);',
   "INSERT INTO public.seoul_programs (name) VALUES ('x');",
+  // 5차 — 뷰·테이블 대안을 낱말 하나(`VIEW`·`TABLE`·`CREATE`)로 넓히면 걸리는 평범한 줄(주석·열 정의).
+  "COMMENT ON VIEW public.v_seoul_budget_balance IS '잔액';",
+  "COMMENT ON TABLE public.seoul_transactions IS '거래';",
+  '  created_at timestamptz NOT NULL DEFAULT now(),',
 ]
 
 /** diff 줄 모양(추가·삭제) — pr-risk-tier.sh 는 `^[+-]` 줄만 본다(`+++`·`---` 머리 줄 제외). */
@@ -557,6 +620,42 @@ const REQUIRED_GITIGNORE_LINES: readonly string[] = ['.claude/agent-memory/', '.
 const AGENT_MEMORY_LINE = '- **에이전트 메모리**'
 const AGENT_MEMORY_LINE_TOKENS: readonly string[] = ['.gitignore', '로컬 전용']
 
+/**
+ * 12. CLAUDE.md 「레인 규칙」 권한 모드 줄(D-20261001-01 · 범위 D-20261002-02) — doc18 §9 ⑧(d), #209 검증 tm-1·tm-2:
+ *    줄 삭제·「직전에 기본 모드로 전환」 절 삭제 돌연변이가 40/40 GREEN 으로 살아남았다. auto 모드에서는 훅의 확인 질문이
+ *    사람에게 닿지 않으므로(v2.1.280 실측) 머지·W 레인 예외의 사람 확인은 이 줄의 규칙에만 기댄다.
+ *    의미 토큰(정규식) — 문구 전체 일치가 아니라 절마다 핵심 낱말 조합을 본다(어순·조사·굵게 표기 수정에는 깨지지 않게).
+ */
+const PERMISSION_MODE_LINE = '- **권한 모드**'
+const PERMISSION_MODE_CRITERIA: ReadonlyArray<readonly [label: string, re: RegExp]> = [
+  ['결정 ID D-20261001-01', /D-20261001-01/],
+  ['범위 결정 ID D-20261002-02', /D-20261002-02/],
+  ['auto 모드에서 확인 질문(ask)이 사람에게 닿지 않음', /auto 모드[^.]*(?:ask|확인 질문)[^.]*닿지 않/],
+  ['시한 없이 상시 적용(D-20261002-02)', /시한 없이|상시 적용/],
+  ['작업 직전에 기본 모드로 전환', /직전에?[\s*]*기본 모드로 (?:전환|바꾸|바꾼)/],
+  ['끝나면 되돌림', /되돌/],
+  ['대상 ① 머지(pr-merge-gate.sh … merge)', /pr-merge-gate\.sh/],
+  ['대상 ② 메인 세션의 W 레인 (소규모) 예외', /W 레인[^.]*예외/],
+  ['모드 전환 대상은 그 2종뿐', /둘뿐|2종뿐|두 가지뿐/],
+  ['main 직접 push 는 모드와 무관하게 금지', /push[^.]*모드와 무관하게[^.]*금지/],
+  ['보호 설정 변경은 사용자만 실행', /보호 설정 변경[^.]*사용자만/],
+]
+
+/**
+ * 12. CLAUDE.md 「레인 규칙」 「가드가 막는 것」 줄의 서버 보호 한계(D-20260929-02 정정 — #207 verify-pr requirements-types-1):
+ *    enforce_admins 의 효과를 「PR·승인까지 강제」로 과장한 문장이 실제로 기록에 들어갔다가 정정됐다. 이 한계 문장이 빠지면
+ *    「서버가 막는다」고 읽혀 훅이 놓치는 변형(`git -C . push`·GraphQL 머지)의 규율이 느슨해진다.
+ *    PR 필수(D-20261001-02)가 적용되면 「PR 은 강제하지 않음」 이 사실이 아니게 되므로 그때 이 토큰을 함께 고친다.
+ */
+const GUARD_LINE = '- 가드가 막는 것'
+const SERVER_LIMIT_CRITERIA: ReadonlyArray<readonly [label: string, re: RegExp]> = [
+  ['main 직접 push 금지', /main 직접 push 금지/],
+  ['훅이 놓치는 변형은 규율로 막음', /놓치는 변형.*?규율로/],
+  ['enforce_admins 는 필수 체크만 강제', /enforce_admins.*?필수 체크만/],
+  ['PR·승인은 강제하지 않음', /PR\s*[·,]?\s*(?:과|와|및)?\s*승인[은는]?\s*강제하지 않/],
+  ['정정 근거 D-20260929-02', /D-20260929-02/],
+]
+
 /** 8. 사람 자리 기록 접두(CLAUDE.md 「상태 동기화」) — 비면 agent-sync 가 w.md 접두 가드를 끈다(agent-sync.sh:86). */
 const REQUIRED_SEAT_PREFIXES: readonly string[] = ['[DECISION by user]', '[QA by user]', '[MERGED by user]']
 
@@ -568,7 +667,26 @@ const REQUIRED_CHANNEL_ROLES: readonly string[] = ['w', 'u']
  *    부분문자열 검사는 `npm test -- --passWithNoTests __none__`(테스트 0건 rc=0) 같은 약화를 통과시켰다 — 정확 일치로 잠근다.
  */
 const GATE_ALL = 'npx tsc --noEmit && npm run lint && npm test && npm run build'
-const REQUIRED_GATE_CONTRACT_PARTS: readonly string[] = ['vitest run', '{file}']
+/**
+ * 9. 계약 단건 게이트(doc18 §9 낮음) — 부분 조각 검사는 `npx vitest run {file} --passWithNoTests`(파일 오타 = 0건 rc=0)·
+ *    `true # vitest run {file}` 같은 약화를 통과시켰다. 계약 저자의 RED 확인·구현 워커의 GREEN 확인이 이 명령이다.
+ */
+const GATE_CONTRACT = 'npx vitest run {file}'
+
+/**
+ * 9. CI 가 부르는 npm 스크립트(doc18 §9 ①) — `.github/workflows/ci.yml` quality-check 가 `npm run lint`·`npm test`·
+ *    `npm run build` 로 부른다. package.json 은 U 레인이라 `"test": "vitest run src/none"`·`"lint": "true"` 한 줄이 CI 계약
+ *    실행(이 파일 포함)을 끈다 — 값을 정확히 고정한다(4 의 gate 군 승격과 짝).
+ */
+const CI_NPM_SCRIPTS: Readonly<Record<string, string>> = { test: 'vitest run', lint: 'eslint', build: 'next build' }
+const CI_WORKFLOW = '.github/workflows/ci.yml'
+/** CI quality-check 의 `run:` 줄 — 위 스크립트를 npm 으로 부른다(`npm test` 와 `npm run test` 는 같다). */
+const CI_RUN_LINES: ReadonlyArray<readonly [label: string, re: RegExp]> = [
+  ['npx tsc --noEmit', /^\s*run:\s*npx tsc --noEmit\s*$/m],
+  ['npm run lint', /^\s*run:\s*npm run lint\s*$/m],
+  ['npm test', /^\s*run:\s*npm (?:run )?test\s*$/m],
+  ['npm run build', /^\s*run:\s*npm run build\s*$/m],
+]
 
 /**
  * 10. 플러그인이 동작에 쓰는 값 — 모양이 아니라 값을 고정한다.
@@ -595,8 +713,11 @@ const MIN_PLUGIN_VERSION: readonly [number, number, number] = [0, 4, 0]
 /**
  * 10. 문서가 적은 플러그인 버전 주장 — CLAUDE.md 의 `플러그인 ≥ X.Y.Z`, harness.json `$comment` 의 `플러그인 harness(>=X.Y.Z)`.
  *    '플러그인' 낱말에 붙은 것만 본다(다른 도구의 버전 하한을 플러그인 주장으로 오인하지 않게).
+ *    낱말 사이의 마크다운 꾸밈(백틱·굵게·기울임 `` ` ``·`*`·`_`)과 `v` 접두를 건너뛴다(doc18 §9 ⑧(c)·낮음 — 4차까지의
+ *    `\s*` 만으로는 「플러그인 `≥ 0.5.0`」「플러그인 ≥ `0.5.0`」「플러그인 **≥ 0.5.0**」 과대 주장이 추출기를 비껴 GREEN 이었다).
+ *    부등호 없는 버전 언급(「플러그인 0.4.1 부터」·「0.4.1 미만」)은 하한 주장이 아니다 — CLAUDE.md 「권한 모드」 줄의 사실 서술.
  */
-const VERSION_CLAIM_RE = /플러그인(?:\s*harness)?\s*\(?\s*(?:≥|>=)\s*(\d+\.\d+\.\d+)/g
+const VERSION_CLAIM_RE = /플러그인(?:[\s`*_]*harness)?[\s`*_]*\(?[\s`*_]*(?:≥|>=)[\s`*_]*v?(\d+\.\d+\.\d+)/g
 
 /** text 안의 플러그인 버전 주장들(X.Y.Z 문자열). */
 function pluginVersionClaims(text: string): string[] {
@@ -705,6 +826,35 @@ function groupNamesInCell(cell: string): string[] {
 function t2GroupNames(): string[] {
   return groupNamesInCell(conditionCell(sectionLine(claudeSection('### 검증 티어'), '| **T2')))
 }
+
+/**
+ * 표 행에서 군 항목 `name(…)` 의 괄호 안 — 괄호 짝을 세고 백틱 조각 안의 괄호는 건너뛴다(`USING (` 같은 조각).
+ * 백틱 조각은 지우지 않는다(`package.json` 같은 파일 이름이 조각 안에 있다). 없거나 짝이 안 맞으면 null.
+ */
+function groupItemInRow(row: string, name: string): string | null {
+  const head = new RegExp(`(?:^|[|·])\\s*${name}\\(`).exec(row)
+  if (!head) return null
+  const start = head.index + head[0].length
+  let depth = 1
+  let inCode = false
+  for (let i = start; i < row.length; i++) {
+    const ch = row[i]
+    if (ch === '`') inCode = !inCode
+    else if (!inCode && ch === '(') depth++
+    else if (!inCode && ch === ')' && --depth === 0) return row.slice(start, i)
+  }
+  return null
+}
+
+/**
+ * 6. 「검증 티어」 T2 행 gate(…) 항목이 적어야 하는 낱말 — 4 의 CI 호환 설정 4파일·외부 에이전트 설정 폴더 2개(doc18 §9 ①·낮음).
+ *    6 의 군 이름 양방향 규칙은 `gate(` 표기만 보므로, gate 군에 글롭이 늘어도 요약이 그대로면 GREEN 이었다 — 요약을 읽는
+ *    사람은 package.json 변경을 T1 로 안다. 파일 이름 낱말만 본다(백틱·괄호 묶음·순서는 자유).
+ */
+const GATE_SUMMARY_TOKENS: readonly string[] = [
+  ...CI_COMPAT_GATE,
+  ...AGENT_TOOL_GATE.map((glob) => glob.replace(/\*+$/, '')), // `.agents/**` → `.agents/`
+]
 
 /** 「레인 규칙」 절에서 `prefix` 로 시작하는 한 줄의 백틱 글롭(에이전트 이름 `harness:…` 제외, 약식 표기는 펼침). */
 function laneLineGlobs(prefix: string): string[] {
@@ -855,7 +1005,7 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
       const hits = (diffLine: string) => rx.test(diffLine.toLowerCase())
       expect(
         SQL_POLICY_SAMPLES.flatMap(asDiffLines).filter((diffLine) => !hits(diffLine)),
-        'sqlPolicyRegex 가 안 잡는 SQL diff 줄(`+`/`-` 접두·소문자 비교 = pr-risk-tier 모양) — 경로 글롭 밖 .sql 에서 정책·권한·RLS 술어·경로검사 트리거를 바꿔도 T2 로 오르지 않는다(`^` 앵커는 diff 접두 때문에 절대 안 걸린다)',
+        'sqlPolicyRegex 가 안 잡는 SQL diff 줄(`+`/`-` 접두·소문자 비교 = pr-risk-tier 모양) — 경로 글롭 밖 .sql 에서 정책·권한·RLS 술어·경로검사 트리거를 바꾸거나 보호 없는 뷰·테이블을 만들거나 가드 트리거를 떼어도 T2 로 오르지 않는다(`^` 앵커는 diff 접두 때문에 절대 안 걸린다)',
       ).toEqual([])
       expect(
         SQL_NON_POLICY_SAMPLES.flatMap(asDiffLines).filter(hits),
@@ -990,6 +1140,25 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
       ).toEqual([])
     })
 
+    it(`「검증 티어」 T2 행의 gate(…) 항목이 CI 호환 설정·외부 에이전트 설정(${GATE_SUMMARY_TOKENS.join('·')})을 적는다`, () => {
+      // 괄호 짝 추출기 자기검증(체커 유효성) — 중첩 괄호를 세고, 백틱 조각 안의 괄호(`USING (`)는 세지 않는다.
+      expect(
+        [
+          groupItemInRow('| **T2** | rls(a) · gate(CI·빌드 설정(`package.json`)·x) · SQL `USING (` 끝 |', 'gate'),
+          groupItemInRow('| **T2** | gate(`f(`·b) · y(c) |', 'gate'),
+          groupItemInRow('| **T2** | rls(a) |', 'gate'),
+        ],
+        'gate(…) 항목 추출기(체커) 자체 버그',
+      ).toEqual(['CI·빌드 설정(`package.json`)·x', '`f(`·b', null])
+      const row = sectionLine(claudeSection('### 검증 티어'), '| **T2')
+      const item = groupItemInRow(row, 'gate')
+      expect(item, 'CLAUDE.md 「검증 티어」 T2 행에서 gate(…) 항목을 못 읽음 — 괄호 짝이 깨졌거나 항목 이름이 바뀌었다').not.toBeNull()
+      expect(
+        GATE_SUMMARY_TOKENS.filter((token) => !(item ?? '').includes(token)),
+        `CLAUDE.md 「검증 티어」 T2 행 gate(…) 항목에 없는 gate 경로(항목: ${item ?? '(없음)'}) — 정본(harness.json tiers.high.gate)은 T2 로 올리는데 요약을 읽는 사람은 이 파일 변경을 T1 로 안다`,
+      ).toEqual([])
+    })
+
     it('「검증 티어」 T1 행의 임계(≤ N파일·≤ M줄)가 tiers.large 와 같다', () => {
       const cell = conditionCell(sectionLine(claudeSection('### 검증 티어'), '| **T1'))
       const files = pick('tiers.large.files')
@@ -1087,11 +1256,29 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
       ).toBe(GATE_ALL)
     })
 
-    it('gate.contract 가 `vitest run` 과 `{file}` 자리표시를 포함한다', () => {
+    it(`gate.contract 가 \`${GATE_CONTRACT}\` 와 정확히 같다`, () => {
       const contract = text('gate.contract')
       expect(
-        REQUIRED_GATE_CONTRACT_PARTS.filter((part) => !contract.includes(part)),
-        `gate.contract 에서 빠진 조각(실제: ${JSON.stringify(contract)}) — 계약 저자·구현 워커가 계약 단건 RED/GREEN 을 확인하지 못한다`,
+        contract,
+        `gate.contract 가 계약 단건 게이트와 다름(실제: ${JSON.stringify(contract)}) — 필터 인자(\`--passWithNoTests\`)·\`true #\` 접두·\`||\` 로 계약 저자·구현 워커가 계약 단건 RED/GREEN 을 확인하지 못한다`,
+      ).toBe(GATE_CONTRACT)
+    })
+
+    it('package.json scripts.test·lint·build 가 CI 가 부르는 명령(vitest run·eslint·next build)과 정확히 같다', () => {
+      const parsed = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as unknown
+      const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
+      const actual = Object.fromEntries(Object.keys(CI_NPM_SCRIPTS).map((name) => [name, scripts[name]]))
+      expect(
+        actual,
+        'package.json CI 스크립트가 바뀜 — CI quality-check 의 `npm test`·`npm run lint`·`npm run build` 가 다른 명령(필터 인자·`true`·빈 테스트 집합)을 돌려 이 계약을 포함한 정적 계약이 실행되지 않은 채 초록이 된다',
+      ).toEqual(CI_NPM_SCRIPTS)
+    })
+
+    it('CI quality-check 가 tsc·lint·test·build 를 npm 스크립트로 부른다(package.json 고정이 CI 실행과 이어진다)', () => {
+      const workflow = readFileSync(join(ROOT, CI_WORKFLOW), 'utf8')
+      expect(
+        CI_RUN_LINES.filter(([, re]) => !re.test(workflow)).map(([label]) => label),
+        `${CI_WORKFLOW} 에서 빠진 \`run:\` 줄 — package.json 스크립트 고정이 CI 실행으로 이어지지 않는다(CI 가 다른 명령을 부르면 스크립트 값 고정은 의미가 없다)`,
       ).toEqual([])
     })
   })
@@ -1128,15 +1315,25 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
     })
 
     it('CLAUDE.md·harness.json `$comment` 가 적은 플러그인 버전 하한(≥ X.Y.Z)이 계약 하한 이하다(요약이 계약보다 센 보호를 약속하지 않음)', () => {
-      // 추출기 자기검증(체커 유효성) — 두 문서의 표기를 모두 읽고, 플러그인 아닌 하한은 무시한다.
+      // 추출기 자기검증(체커 유효성) — 두 문서의 표기를 모두 읽고, 마크다운 꾸밈 표기도 읽고, 플러그인 아닌 하한과
+      // 부등호 없는 버전 언급은 무시한다. [표기, 기대 추출] 쌍 — 4차 추출기는 꾸밈 표기 5종을 모두 [] 로 비껴갔다.
+      const extractorCases: ReadonlyArray<readonly [text: string, expected: readonly string[]]> = [
+        ['(플러그인 ≥ 0.4.0 — `harness.json`', ['0.4.0']],
+        ['플러그인 harness(>=0.4.0)의 lane-guard', ['0.4.0']],
+        ['Node ≥ 20.1.0 · line-height ≥ 1.625', []],
+        ['플러그인 `≥ 0.4.1`', ['0.4.1']],
+        ['플러그인 ≥ `0.4.1`', ['0.4.1']],
+        ['플러그인 **≥ 0.4.1**', ['0.4.1']],
+        ['플러그인 `harness` ≥ 0.4.1', ['0.4.1']],
+        ['플러그인 **harness**(>= v0.4.1)', ['0.4.1']],
+        ['플러그인 0.4.1 부터 훅이 ask 대신 차단한다 · 설치본이 0.4.1 미만', []],
+      ]
       expect(
-        [
-          pluginVersionClaims('(플러그인 ≥ 0.4.0 — `harness.json`'),
-          pluginVersionClaims('플러그인 harness(>=0.4.0)의 lane-guard'),
-          pluginVersionClaims('Node ≥ 20.1.0 · line-height ≥ 1.625'),
-        ],
-        '플러그인 버전 주장 추출기(체커) 자체 버그',
-      ).toEqual([['0.4.0'], ['0.4.0'], []])
+        extractorCases
+          .filter(([sample, expected]) => JSON.stringify(pluginVersionClaims(sample)) !== JSON.stringify(expected))
+          .map(([sample, expected]) => `${JSON.stringify(sample)} → ${JSON.stringify(pluginVersionClaims(sample))} (기대 ${JSON.stringify(expected)})`),
+        '플러그인 버전 주장 추출기(체커) 자체 버그 — 꾸밈 표기를 비껴가면 과대 주장이 GREEN, 부등호 없는 언급을 잡으면 사실 서술이 RED',
+      ).toEqual([])
       const comment = pick('$comment')
       const sources: Array<[label: string, body: string]> = [
         ['CLAUDE.md', readFileSync(join(ROOT, 'CLAUDE.md'), 'utf8')],
@@ -1177,6 +1374,24 @@ describe('하네스 설정 정적 계약 — .claude/harness.json ↔ CLAUDE.md'
       expect(
         AGENT_MEMORY_LINE_TOKENS.filter((token) => !line.includes(token)),
         'CLAUDE.md 에이전트 메모리 줄에서 빠진 항목 — 메모리를 커밋하지 않는 규칙(D-20260928-03)의 근거가 요약에서 사라진다',
+      ).toEqual([])
+    })
+  })
+
+  describe('12. 권한 모드·서버 보호 한계 (D-20261001-01 · D-20261002-02 · D-20260929-02 정정)', () => {
+    it('CLAUDE.md 「레인 규칙」 권한 모드 줄이 결정 ID 2개·auto 모드 ask 미도달·시한 없음·직전에 기본 모드로 전환·대상 2종(머지·W 레인 예외)·push 금지·보호 설정 변경은 사용자만을 적는다', () => {
+      const line = sectionLine(claudeSection('### 레인 규칙'), PERMISSION_MODE_LINE)
+      expect(
+        PERMISSION_MODE_CRITERIA.filter(([, re]) => !re.test(line)).map(([label]) => label),
+        `CLAUDE.md 「레인 규칙」 「${PERMISSION_MODE_LINE}」 줄에서 빠진 절 — auto 모드에서는 훅 확인 질문이 사람에게 닿지 않아(doc18 §9 ⑥) 머지·W 레인 예외의 사람 확인이 이 규칙에만 기댄다`,
+      ).toEqual([])
+    })
+
+    it('CLAUDE.md 「레인 규칙」 「가드가 막는 것」 줄이 main 직접 push 금지와 서버 보호 한계(훅이 놓치는 변형은 규율 · enforce_admins 는 필수 체크만 · PR·승인은 강제하지 않음)를 적는다', () => {
+      const line = sectionLine(claudeSection('### 레인 규칙'), GUARD_LINE)
+      expect(
+        SERVER_LIMIT_CRITERIA.filter(([, re]) => !re.test(line)).map(([label]) => label),
+        `CLAUDE.md 「레인 규칙」 「${GUARD_LINE}」 줄에서 빠진 서버 보호 한계 — 「서버(enforce_admins)가 막는다」로 읽혀 훅이 놓치는 push·GraphQL 머지 변형의 규율이 느슨해진다(D-20260929-02 정정)`,
       ).toEqual([])
     })
   })
