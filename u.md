@@ -1572,3 +1572,6 @@ PR #170 개설(사용자 지시) = partialfail flake 안정화 [HANDOFF→W]. �
 ## [2026-10-02T05:28Z] U
 [HANDOFF→W] /goal 설정(사용자, 2026-10-02): 마감 2026-10-28. 마감 계획 PR #211(docs 티어, 계산 일치): doc19 마감 로드맵 제안(임계 경로 = 기관 결정 4건·라이브 확인·QA/실사용자 심사·하네스 0.4.2, 일정 10/13 결정 마감·10/21 기능 동결·10/27 Go/No-Go·10/28 배포, 스코프 컷·폴백·하드닝 체크리스트) + doc20 기관 결정 요청서 초안(발송 전 사용자 검토 필요). CI 진행 중 → 사람 읽기·승인 대기. #210 검증 진행 중(렌즈 2 docs-consistency·requirements-types, 반박 대기). 사용자 몫 대기: 스코프 컷·일정 확정 · 기관 요청서 검토·발송(10/06 제안) · 라이브 확인 2건(pg_cron·활동사진 RLS — 읽기 전용 쿼리 doc12 §4·doc06 §2) · 사용자 결정 3건(정산 실무자 허용·KPI D·/onboarding 존폐). 작업 worktree .claude/worktrees/docs-roadmap(머지 후 정리).
 
+## [2026-10-03T03:39Z] U
+[MERGED] #210 docs(harness): #209 조건 수용 후속 정정 + 「권한 모드」 범위 확정(D-20261002-0 → main d047b4a (user via U 2026-10-03T03:38Z · 티어 high · 판정 approve)
+
