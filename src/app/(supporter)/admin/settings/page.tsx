@@ -10,7 +10,7 @@ export default async function AdminSettingsPage() {
 
   if (!user) redirect('/login')
 
-  // 관리자 계정 자동 설정 (cheese0318@nowondaycare.org → admin)
+  // 관리자 계정 자동 설정 (cheese0318@gmail.com → admin)
   await ensureAdminAccount()
 
   // 관리자 권한 확인

@@ -426,10 +426,4 @@ GRANT EXECUTE ON FUNCTION public.assign_first_admin(UUID) TO authenticated;
 -- 아래 이메일 계정으로 로그인 시 자동으로 admin 역할 부여됨
 -- (앱 코드: src/app/actions/admin.ts → ensureAdminAccount)
 --
--- cheese0318@nowondaycare.org
--- ahreum217@nowondaycare.org
--- valuesh@nowondaycare.org
--- tpdnr9870@nowondaycare.org
--- 0305ysy@nowondaycare.org
--- soujin1020@nowondaycare.org
--- green4869@nowondaycare.org
+-- cheese0318@gmail.com

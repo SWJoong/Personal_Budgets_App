@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     if (!error && user) {
       // 도메인 제한 로직
       const email = user.email ?? ''
-      const allowedDomains = (process.env.ALLOWED_EMAIL_DOMAINS ?? process.env.ALLOWED_EMAIL_DOMAIN ?? 'nowondaycare.org').split(',')
+      const allowedDomains = (process.env.ALLOWED_EMAIL_DOMAINS ?? process.env.ALLOWED_EMAIL_DOMAIN ?? '').split(',')
       const adminEmails = (process.env.ADMIN_EMAILS ?? 'cheese0318@gmail.com').split(',').map(e => e.trim()).filter(Boolean)
       
       if (!allowedDomains.some(d => email.endsWith('@' + d.trim())) && !adminEmails.includes(email)) {  

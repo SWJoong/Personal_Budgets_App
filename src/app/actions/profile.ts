@@ -14,7 +14,7 @@ export async function updateProfile(formData: FormData) {
   const role = formData.get('role') as string
 
   // Prevent changing to admin via form
-  const ADMIN_EMAILS = ['swjoong@nowondaycare.org']
+  const ADMIN_EMAILS = ['cheese0318@gmail.com']
   const allowedRole = ADMIN_EMAILS.includes(user.email || '')
     ? role
     : (role === 'admin' ? 'participant' : role)

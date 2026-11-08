@@ -394,11 +394,5 @@ INSERT INTO public.file_links (participant_id, title, url, file_type) VALUES
 UPDATE public.profiles
 SET role = 'admin'
 WHERE email IN (
-  'cheese0318@nowondaycare.org',
-  'ahreum217@nowondaycare.org',
-  'valuesh@nowondaycare.org',
-  'tpdnr9870@nowondaycare.org',
-  '0305ysy@nowondaycare.org',
-  'soujin1020@nowondaycare.org',
-  'green4869@nowondaycare.org'
+  'cheese0318@gmail.com'
 );

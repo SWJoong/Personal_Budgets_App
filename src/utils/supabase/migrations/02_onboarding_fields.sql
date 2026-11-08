@@ -11,7 +11,7 @@ ALTER TABLE public.profiles
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 DECLARE
-  admin_emails TEXT[] := ARRAY['swjoong@nowondaycare.org'];
+  admin_emails TEXT[] := ARRAY['cheese0318@gmail.com'];
   user_role TEXT := 'participant';
 BEGIN
   -- Auto-assign admin role for app owner emails

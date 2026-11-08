@@ -18,7 +18,7 @@ export default async function ProfileSettingsPage() {
 
   if (!profile) redirect('/')
 
-  const ADMIN_EMAILS = ['swjoong@nowondaycare.org']
+  const ADMIN_EMAILS = ['cheese0318@gmail.com']
   const isAdminEmail = ADMIN_EMAILS.includes(user.email || '')
 
   return (

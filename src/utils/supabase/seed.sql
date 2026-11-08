@@ -395,10 +395,5 @@ UPDATE public.profiles
 SET role = 'admin'
 WHERE email IN (
   'kim.cs@example.com',
-  'ahreum217@nowondaycare.org',
-  'valuesh@nowondaycare.org',
-  'tpdnr9870@nowondaycare.org',
-  '0305ysy@nowondaycare.org',
-  'soujin1020@nowondaycare.org',
-  'green4869@nowondaycare.org'
+  'cheese0318@gmail.com'
 );
