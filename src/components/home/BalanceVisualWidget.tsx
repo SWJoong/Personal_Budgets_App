@@ -12,6 +12,8 @@ import {
   type PaymentMethod,
   type ReceiptCategory,
 } from '@/utils/receiptOcr/types'
+import ReceiptPlaceBox from '@/components/map/ReceiptPlaceBox'
+import { useReceiptPlace } from '@/components/map/useReceiptPlace'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import { speak } from '@/utils/tts'
 import {
@@ -681,6 +683,8 @@ export default function BalanceVisualWidget({
   // 두 번째 파일 (영수증+활동사진 동시)
   const [secondFile, setSecondFile] = useState<File | null>(null)
   const [secondPreview, setSecondPreview] = useState<string | null>(null)
+  // 영수증에서 찾은 장소 (자동 감지 → 못 찾으면 직접 검색)
+  const placeFinder = useReceiptPlace()
 
   useEffect(() => {
     setMounted(true)
@@ -711,6 +715,8 @@ export default function BalanceVisualWidget({
     setUploadOcrProgress(0)
     setUploadAutoFilled(false)
     setUploadOcrFailed(false)
+    // 장소는 영수증마다 다르니 새 영수증을 읽기 전에 이전 장소를 비운다
+    placeFinder.reset()
     try {
       const result = await analyzeReceiptFile(file, (percent) => setUploadOcrProgress(percent))
       if (result.success && result.data) {
@@ -721,6 +727,8 @@ export default function BalanceVisualWidget({
         if (d.paymentMethod) setUploadPaymentMethod(d.paymentMethod)
         if (d.category) setUploadCategory(d.category)
         setUploadAutoFilled(true)
+        // 상호로 먼저 찾고, 영수증 주소와 가장 가까운 곳을 고른다 (못 찾으면 직접 검색 칸이 뜬다)
+        void placeFinder.detect({ store: d.store, address: d.address })
       } else {
         setUploadOcrFailed(true)
       }
@@ -749,6 +757,7 @@ export default function BalanceVisualWidget({
     setUploadCategory('기타')
     setUploadAutoFilled(false)
     setUploadOcrFailed(false)
+    placeFinder.reset()
 
     const reader = new FileReader()
     reader.onloadend = () => setUploadPreview(reader.result as string)
@@ -774,6 +783,7 @@ export default function BalanceVisualWidget({
     setUploadOcrFailed(false)
     setSecondFile(null)
     setSecondPreview(null)
+    placeFinder.reset()
   }
 
   const handleSecondFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -843,6 +853,11 @@ export default function BalanceVisualWidget({
       formData.set('amount', uploadAmount)
       formData.set('payment_method', uploadPaymentMethod)
       formData.set('category', uploadCategory)
+      if (placeFinder.place) {
+        formData.set('place_name', placeFinder.place.place_name)
+        formData.set('place_lat', String(placeFinder.place.lat))
+        formData.set('place_lng', String(placeFinder.place.lng))
+      }
       if (fundingSources.length > 0) {
         formData.set('funding_source_id', fundingSources[0].id)
       }
@@ -1121,7 +1136,12 @@ export default function BalanceVisualWidget({
                         <div className="relative aspect-square rounded-2xl overflow-hidden ring-1 ring-zinc-200">
                           <img src={secondPreview} alt="추가 사진" className="w-full h-full object-cover" />
                           <button
-                            onClick={() => { setSecondFile(null); setSecondPreview(null) }}
+                            onClick={() => {
+                              setSecondFile(null)
+                              setSecondPreview(null)
+                              // 활동 기록 중에는 두 번째 사진이 영수증이라, 지우면 거기서 찾은 장소도 비운다
+                              if (uploadMode === 'activity') placeFinder.reset()
+                            }}
                             className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white text-xs flex items-center justify-center"
                           >✕</button>
                           <span className="absolute bottom-2 left-2 text-[10px] font-black text-white bg-black/40 px-2 py-0.5 rounded-full">
@@ -1162,6 +1182,15 @@ export default function BalanceVisualWidget({
                         placeholder={uploadAnalyzing ? '사진 읽는 중...' : '무엇을 했나요? 편의점 간식처럼 적어 주세요'}
                         className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold transition-all"
                         required
+                      />
+                      {/* 영수증에서 찾은 장소 (자동 감지 · 못 찾으면 직접 검색) */}
+                      <ReceiptPlaceBox
+                        status={placeFinder.status}
+                        place={placeFinder.place}
+                        source={placeFinder.source}
+                        hintName={placeFinder.hintName}
+                        onChoose={placeFinder.choose}
+                        onClear={placeFinder.clear}
                       />
                       <div className="relative">
                         <input

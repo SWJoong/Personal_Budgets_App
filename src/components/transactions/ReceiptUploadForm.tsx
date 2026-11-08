@@ -11,8 +11,8 @@ import {
   type PaymentMethod,
   type ReceiptCategory,
 } from '@/utils/receiptOcr/types'
-import { searchPlaces } from '@/app/actions/geocode'
-import type { PlaceResult } from '@/app/actions/geocode'
+import ReceiptPlaceBox from '@/components/map/ReceiptPlaceBox'
+import { useReceiptPlace } from '@/components/map/useReceiptPlace'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import SelfCheckFeedback from '@/components/ui/SelfCheckFeedback'
 import { speak } from '@/utils/tts'
@@ -47,8 +47,8 @@ export default function ReceiptUploadForm({
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
-  // 자동 감지된 장소
-  const [autoPlace, setAutoPlace] = useState<PlaceResult | null>(null)
+  // 영수증에서 찾은 장소 (자동 감지 → 못 찾으면 직접 검색)
+  const placeFinder = useReceiptPlace()
   // 결제 방법 · 종류 (영수증에서 읽은 값이 있으면 미리 채우고, 없으면 기본값)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('체크카드')
   const [category, setCategory] = useState<ReceiptCategory>('기타')
@@ -63,6 +63,8 @@ export default function ReceiptUploadForm({
     if (!file) return
     setReceiptFile(file)
     setOcrFailed(false)
+    // 장소는 영수증마다 다르니 새 사진을 고르면 이전 장소를 비운다
+    placeFinder.reset()
 
     // 이전 영수증에서 자동으로 채운 값이 새 영수증에 남지 않게 비운다
     if (autoFilled) {
@@ -71,7 +73,6 @@ export default function ReceiptUploadForm({
       setDate(new Date().toISOString().split('T')[0])
       setPaymentMethod('체크카드')
       setCategory('기타')
-      setAutoPlace(null)
       setAutoFilled(false)
     }
 
@@ -98,13 +99,8 @@ export default function ReceiptUploadForm({
         if (d.category) setCategory(d.category)
         setAutoFilled(true)
 
-        // 주소(우선) 또는 상호명으로 카카오 장소 자동 검색
-        const searchQuery = d.address || d.store
-        if (searchQuery) {
-          searchPlaces(searchQuery).then(places => {
-            if (places.length > 0) setAutoPlace(places[0])
-          }).catch(() => {})
-        }
+        // 상호로 먼저 찾고, 영수증 주소와 가장 가까운 곳을 고른다 (못 찾으면 직접 검색 칸이 뜬다)
+        void placeFinder.detect({ store: d.store, address: d.address })
       } else {
         setOcrFailed(true)
       }
@@ -145,10 +141,10 @@ export default function ReceiptUploadForm({
       formData.set('amount', amount)
       if (receiptFile) formData.set('receipt', receiptFile)
       if (activityFile) formData.set('activity_image', activityFile)
-      if (autoPlace) {
-        formData.set('place_name', autoPlace.place_name)
-        formData.set('place_lat', String(autoPlace.lat))
-        formData.set('place_lng', String(autoPlace.lng))
+      if (placeFinder.place) {
+        formData.set('place_name', placeFinder.place.place_name)
+        formData.set('place_lat', String(placeFinder.place.lat))
+        formData.set('place_lng', String(placeFinder.place.lng))
       }
 
       const result = await createTransaction(formData)
@@ -179,7 +175,7 @@ export default function ReceiptUploadForm({
         <div className="flex items-center justify-between">
           <label className="text-sm font-bold text-zinc-500 ml-1">🧾 <EasyTerm formal="영수증 사진" easy="물건 산 종이 사진" /> <span className="text-zinc-300 font-medium">(선택)</span></label>
           {receiptPreview && (
-            <button type="button" onClick={() => { setReceiptPreview(null); setReceiptFile(null); setOcrFailed(false) }}
+            <button type="button" onClick={() => { setReceiptPreview(null); setReceiptFile(null); setOcrFailed(false); placeFinder.reset() }}
               className="text-xs text-red-400 font-bold">삭제</button>
           )}
         </div>
@@ -262,24 +258,15 @@ export default function ReceiptUploadForm({
         />
       </div>
 
-      {/* 자동 감지된 장소 (OCR 결과) */}
-      {autoPlace && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-blue-50 ring-1 ring-blue-200">
-          <span className="text-base shrink-0">📍</span>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-black text-blue-700">장소 자동 감지</p>
-            <p className="text-sm font-bold text-blue-900 truncate">{autoPlace.place_name}</p>
-            <p className="text-xs text-blue-400 truncate">{autoPlace.road_address_name || autoPlace.address_name}</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setAutoPlace(null)}
-            className="text-xs text-blue-400 hover:text-blue-600 font-bold shrink-0 px-2 py-1 rounded-lg hover:bg-blue-100 transition-colors"
-          >
-            지우기
-          </button>
-        </div>
-      )}
+      {/* 영수증에서 찾은 장소 (자동 감지 · 못 찾으면 직접 검색) */}
+      <ReceiptPlaceBox
+        status={placeFinder.status}
+        place={placeFinder.place}
+        source={placeFinder.source}
+        hintName={placeFinder.hintName}
+        onChoose={placeFinder.choose}
+        onClear={placeFinder.clear}
+      />
 
       {/* 금액 */}
       <div className="flex flex-col gap-2">
