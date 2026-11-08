@@ -1,4 +1,4 @@
-# 아름드리꿈터 자기주도 개인예산 관리 앱
+# 자기주도 개인예산 관리 앱
 ## 목업 v3 ↔ GitHub 실제 코드 비교 보강계획서
 
 **Gap Analysis & Reinforcement Plan — v5.1**

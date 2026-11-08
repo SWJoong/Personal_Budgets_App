@@ -2,7 +2,7 @@
 
 > **작성일**: 2026-03-26  
 > **기준 브랜치**: `main` (`14bf173`)  
-> **대상 앱**: [아름드리꿈터 개인예산 관리 앱](https://personal-budgets-app-gp8t.vercel.app/)  
+> **대상 앱**: [개인예산 관리 앱](https://personal-budgets-app-gp8t.vercel.app/)  
 > **스택**: Next.js 15 / React 19 / TypeScript / Tailwind CSS / Supabase / OpenAI GPT-4o
 
 ---

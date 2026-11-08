@@ -361,7 +361,7 @@ export default function HomeDashboard({
     <div className="flex flex-col min-h-dvh easy-read-bg text-foreground participant-view pb-10">
       <HelpAutoTrigger sectionKey="home" />
       <header className="flex h-14 items-center justify-between px-4 z-10 sticky top-0 bg-background/90 backdrop-blur-md border-b border-border">
-        <Link href="/" className="text-lg font-bold tracking-tight text-foreground hover:opacity-70 transition-opacity">아름드리꿈터</Link>
+        <Link href="/" className="text-lg font-bold tracking-tight text-foreground hover:opacity-70 transition-opacity">개인예산</Link>
         <div className="flex items-center gap-1">
           {/* 도움말, 궁금한 점, 꾸미기 — 같은 색, 아이콘으로 구분 */}
           <div className="flex items-center bg-zinc-100 rounded-full p-1 gap-0.5">

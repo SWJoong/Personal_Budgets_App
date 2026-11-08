@@ -29,7 +29,7 @@ export default async function ReceiptPage() {
          <header className="flex h-14 items-center gap-3 mb-6">
           <Link href="/" className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-800 transition-colors">
             <span className="text-xl">←</span>
-            <span className="text-sm font-bold">아름드리꿈터</span>
+            <span className="text-sm font-bold">개인예산</span>
           </Link>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
@@ -47,7 +47,7 @@ export default async function ReceiptPage() {
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-800 transition-colors">
             <span className="text-xl">←</span>
-            <span className="text-sm font-bold">아름드리꿈터</span>
+            <span className="text-sm font-bold">개인예산</span>
           </Link>
           <span className="text-zinc-300">·</span>
           <h1 className="text-sm font-black text-zinc-800">🧾 활동 기록하기</h1>

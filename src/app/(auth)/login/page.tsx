@@ -50,7 +50,7 @@ export default function RoleSelectionPage() {
             💰
           </button>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-            아름드리꿈터
+            개인예산
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed max-w-md">
             자기주도 개인예산 관리 앱

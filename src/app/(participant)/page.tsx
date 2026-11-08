@@ -52,7 +52,7 @@ export default async function Home() {
     return (
       <div className="flex flex-col min-h-screen bg-background text-foreground pb-20">
         <header className="flex h-16 items-center justify-between px-4 z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-zinc-200">
-          <h1 className="text-xl font-bold tracking-tight">아름드리꿈터</h1>
+          <h1 className="text-xl font-bold tracking-tight">개인예산</h1>
         </header>
         <main className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-6 max-w-sm mx-auto">
           <span className="text-8xl">👋</span>

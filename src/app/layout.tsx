@@ -5,8 +5,8 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
-  title: "아름드리꿈터 개인예산 관리",
-  description: "아름드리꿈터 자기주도 개인예산 관리 앱",
+  title: "개인예산 관리",
+  description: "자기주도 개인예산 관리 앱",
 };
 
 export default function RootLayout({

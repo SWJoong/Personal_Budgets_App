@@ -1,6 +1,6 @@
 # 계획·평가·예산 데이터 구조 설계 제안서 (v2 — SKILL 리뷰 반영)
 
-> **대상 시스템**: 아름드리꿈터 개인예산 관리 앱 (Personal Budgets App)
+> **대상 시스템**: 개인예산 관리 앱 (Personal Budgets App)
 > **근거 문서**: [000 개별지원계획서.md](file:///root/workspace/my-project/Personal_Budgets_App/Plan&Source/000%20개별지원계획서.md)
 > **작성일**: 2026-04-21 / **개정**: v2 (SKILL 기반 에이전트 팀 리뷰 반영)
 > **최종 점검**: 2026-04-21 (Critical 이슈 수정 완료)
