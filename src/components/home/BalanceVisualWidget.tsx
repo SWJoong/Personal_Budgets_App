@@ -5,7 +5,13 @@ import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/utils/budget-visuals'
 import { createTransaction } from '@/app/actions/transaction'
-import { analyzeReceipt } from '@/app/actions/ocr'
+import { analyzeReceiptFile } from '@/utils/receiptOcr/analyzeReceiptFile'
+import {
+  PAYMENT_METHODS,
+  RECEIPT_CATEGORIES,
+  type PaymentMethod,
+  type ReceiptCategory,
+} from '@/utils/receiptOcr/types'
 import { EasyTerm } from '@/components/ui/EasyTerm'
 import { speak } from '@/utils/tts'
 import {
@@ -664,6 +670,12 @@ export default function BalanceVisualWidget({
   const [uploadDescription, setUploadDescription] = useState('')
   const [uploadAmount, setUploadAmount] = useState('')
   const [uploadDate, setUploadDate] = useState(new Date().toISOString().split('T')[0])
+  // 결제 방법 · 종류 (영수증에서 읽은 값이 있으면 미리 채우고, 없으면 기본값)
+  const [uploadPaymentMethod, setUploadPaymentMethod] = useState<PaymentMethod>('체크카드')
+  const [uploadCategory, setUploadCategory] = useState<ReceiptCategory>('기타')
+  const [uploadOcrProgress, setUploadOcrProgress] = useState(0)
+  const [uploadAutoFilled, setUploadAutoFilled] = useState(false)
+  const [uploadOcrFailed, setUploadOcrFailed] = useState(false)
   const [uploadSubmitting, setUploadSubmitting] = useState(false)
   const [uploadToast, setUploadToast] = useState<string | null>(null)
   // 두 번째 파일 (영수증+활동사진 동시)
@@ -692,6 +704,34 @@ export default function BalanceVisualWidget({
     setShowEmojiPicker(false)
   }
 
+  // 영수증 사진에서 글자를 읽어 입력칸을 채운다. 이 기기(브라우저)에서 처리하고,
+  // 서버에 AI 키가 있을 때만 서버 AI 를 먼저 쓴다.
+  const runReceiptOcr = async (file: File) => {
+    setUploadAnalyzing(true)
+    setUploadOcrProgress(0)
+    setUploadAutoFilled(false)
+    setUploadOcrFailed(false)
+    try {
+      const result = await analyzeReceiptFile(file, (percent) => setUploadOcrProgress(percent))
+      if (result.success && result.data) {
+        const d = result.data
+        if (d.store) setUploadDescription(d.store)
+        if (d.amount) setUploadAmount(String(d.amount))
+        if (d.date) setUploadDate(d.date)
+        if (d.paymentMethod) setUploadPaymentMethod(d.paymentMethod)
+        if (d.category) setUploadCategory(d.category)
+        setUploadAutoFilled(true)
+      } else {
+        setUploadOcrFailed(true)
+      }
+    } catch (err) {
+      console.error('OCR 분석 실패:', err)
+      setUploadOcrFailed(true)
+    } finally {
+      setUploadAnalyzing(false)
+    }
+  }
+
   // ── 인라인 업로드 핸들러 ──────────────────────────────────────
   const handleInlineUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -705,30 +745,17 @@ export default function BalanceVisualWidget({
     setUploadAmount('')
     setUploadDate(new Date().toISOString().split('T')[0])
     setUploadToast(null)
+    setUploadPaymentMethod('체크카드')
+    setUploadCategory('기타')
+    setUploadAutoFilled(false)
+    setUploadOcrFailed(false)
 
     const reader = new FileReader()
-    reader.onloadend = async () => {
-      const base64 = (reader.result as string).split(',')[1]
-      setUploadPreview(reader.result as string)
-
-      // 영수증 모드일 때만 OCR 분석
-      if (mode === 'receipt') {
-        setUploadAnalyzing(true)
-        try {
-          const result = await analyzeReceipt(base64)
-          if (result.success && result.data) {
-            setUploadDescription(result.data.store || '')
-            setUploadAmount(String(result.data.amount || ''))
-            if (result.data.date) setUploadDate(result.data.date)
-          }
-        } catch (err) {
-          console.error('OCR 분석 실패:', err)
-        } finally {
-          setUploadAnalyzing(false)
-        }
-      }
-    }
+    reader.onloadend = () => setUploadPreview(reader.result as string)
     reader.readAsDataURL(file)
+
+    // 영수증 모드일 때만 글자 읽기
+    if (mode === 'receipt') void runReceiptOcr(file)
     // input 리셋 (같은 파일 재선택 가능)
     e.target.value = ''
   }
@@ -741,6 +768,10 @@ export default function BalanceVisualWidget({
     setUploadAmount('')
     setUploadAnalyzing(false)
     setUploadToast(null)
+    setUploadPaymentMethod('체크카드')
+    setUploadCategory('기타')
+    setUploadAutoFilled(false)
+    setUploadOcrFailed(false)
     setSecondFile(null)
     setSecondPreview(null)
   }
@@ -750,27 +781,10 @@ export default function BalanceVisualWidget({
     if (!file) return
     setSecondFile(file)
     const reader = new FileReader()
-    reader.onloadend = async () => {
-      setSecondPreview(reader.result as string)
-      // 활동사진이 첫 번째 파일일 때 두 번째 파일(영수증)에 OCR 실행
-      if (uploadMode === 'activity') {
-        const base64 = (reader.result as string).split(',')[1]
-        setUploadAnalyzing(true)
-        try {
-          const result = await analyzeReceipt(base64)
-          if (result.success && result.data) {
-            if (result.data.store) setUploadDescription(result.data.store)
-            if (result.data.amount) setUploadAmount(String(result.data.amount))
-            if (result.data.date) setUploadDate(result.data.date)
-          }
-        } catch (err) {
-          console.error('OCR 분석 실패:', err)
-        } finally {
-          setUploadAnalyzing(false)
-        }
-      }
-    }
+    reader.onloadend = () => setSecondPreview(reader.result as string)
     reader.readAsDataURL(file)
+    // 활동사진이 첫 번째 파일일 때 두 번째 파일(영수증)에서 글자를 읽는다
+    if (uploadMode === 'activity') void runReceiptOcr(file)
     e.target.value = ''
   }
 
@@ -827,6 +841,8 @@ export default function BalanceVisualWidget({
       formData.set('date', uploadDate)
       formData.set('description', uploadDescription)
       formData.set('amount', uploadAmount)
+      formData.set('payment_method', uploadPaymentMethod)
+      formData.set('category', uploadCategory)
       if (fundingSources.length > 0) {
         formData.set('funding_source_id', fundingSources[0].id)
       }
@@ -1093,7 +1109,7 @@ export default function BalanceVisualWidget({
                         {uploadAnalyzing && (
                           <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-sm">
                             <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin mb-2" />
-                            <p className="font-black text-sm animate-pulse-gentle">영수증 읽는 중...</p>
+                            <p className="font-black text-sm animate-pulse-gentle">영수증 읽는 중... {uploadOcrProgress}%</p>
                           </div>
                         )}
                       </div>
@@ -1125,6 +1141,18 @@ export default function BalanceVisualWidget({
                       <input ref={secondFileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleSecondFile} />
                     </div>
 
+                    {/* 영수증 글자 읽기 결과 안내 */}
+                    {!uploadAnalyzing && uploadAutoFilled && (
+                      <div role="status" className="mb-3 px-4 py-3 rounded-2xl bg-amber-50 ring-1 ring-amber-200 text-sm font-bold text-amber-900">
+                        📋 사진에서 읽은 내용이에요. 틀린 곳은 고쳐 주세요.
+                      </div>
+                    )}
+                    {!uploadAnalyzing && uploadOcrFailed && (
+                      <div role="status" className="mb-3 px-4 py-3 rounded-2xl bg-zinc-100 ring-1 ring-zinc-200 text-sm font-bold text-zinc-700">
+                        😢 사진에서 글자를 못 읽었어요. 밝은 곳에서 영수증이 크게 보이게 다시 찍거나, 직접 적어 주세요.
+                      </div>
+                    )}
+
                     {/* 활동 내용 */}
                     <div className="flex flex-col gap-3">
                       <input
@@ -1154,6 +1182,34 @@ export default function BalanceVisualWidget({
                         onChange={(e) => setUploadDate(e.target.value)}
                         className="w-full p-4 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold transition-all"
                       />
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label htmlFor="upload-payment-method" className="text-xs font-bold text-zinc-500 ml-1">💳 어떻게 냈나요?</label>
+                          <select
+                            id="upload-payment-method"
+                            value={uploadPaymentMethod}
+                            onChange={(e) => setUploadPaymentMethod(e.target.value as PaymentMethod)}
+                            className="w-full p-3 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold appearance-none"
+                          >
+                            {PAYMENT_METHODS.map(m => (
+                              <option key={m} value={m}>{m}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label htmlFor="upload-category" className="text-xs font-bold text-zinc-500 ml-1">🏷️ 어떤 종류인가요?</label>
+                          <select
+                            id="upload-category"
+                            value={uploadCategory}
+                            onChange={(e) => setUploadCategory(e.target.value as ReceiptCategory)}
+                            className="w-full p-3 rounded-2xl bg-zinc-50 ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold appearance-none"
+                          >
+                            {RECEIPT_CATEGORIES.map(c => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
                     </div>
 
                     {uploadToast && (

@@ -2,6 +2,14 @@
 
 import { withTiming } from '@/utils/api-logger'
 
+/**
+ * 영수증 읽기 방식을 알려 준다. 서버에 AI 키(OPENAI_API_KEY)가 있으면 'ai', 없으면 'local'
+ * (브라우저 OCR — 사진이 서버로 가지 않는다). 키 값은 돌려주지 않는다.
+ */
+export async function getOcrMode(): Promise<'ai' | 'local'> {
+  return process.env.OPENAI_API_KEY ? 'ai' : 'local'
+}
+
 export async function analyzeReceipt(base64Image: string) {
   const apiKey = process.env.OPENAI_API_KEY;
 

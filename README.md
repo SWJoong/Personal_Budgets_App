@@ -41,7 +41,7 @@
 |------|------|
 | 홈 대시보드 | SVG 주머니·지폐 일러스트로 잔액 시각화, 신호등 컬러 테마 |
 | 달력 뷰 | 날짜별 지출 확인 및 사진 첨부 |
-| 영수증 입력 | 사진 촬영 → GPT-4o OCR 자동 인식 |
+| 영수증 입력 | 사진 촬영 → 브라우저 OCR(Tesseract.js)로 날짜·금액·상호·주소·결제수단·종류 자동 인식 (AI 키 없이 동작) |
 | 이번 달 계획 | 월별 지출 계획 조회 (읽기 전용) |
 | 내 목표 | 지원목표 및 AI 쉬운 요약 확인 |
 | 활동 갤러리 | 활동 사진 모아보기 |
@@ -95,7 +95,8 @@
 ### AI & 외부 서비스
 | 항목 | 용도 |
 |------|------|
-| OpenAI GPT-4o | 영수증 OCR, 지출 계획 생성, 쉬운 요약 |
+| Tesseract.js (OCR) | 영수증 글자 읽기 — 브라우저에서 처리, 서버·API 키 불필요 |
+| OpenAI GPT-4o (선택) | 지출 계획 생성, 쉬운 요약 (키가 있으면 영수증도 AI 로 먼저 읽음) |
 | Kakao Maps SDK | 거래 위치 지도 표시 |
 | Kakao REST API | 장소 검색 |
 
@@ -307,7 +308,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key  # 서버 전용, 절대 노출 
 # 데모 모드 (true = 로그인 없이 체험 가능)
 NEXT_PUBLIC_DEMO_MODE=true
 
-# OpenAI (영수증 OCR 및 AI 계획 생성 — 선택사항)
+# OpenAI (AI 계획 생성·쉬운 요약 — 선택사항. 영수증 글자 읽기는 키 없이도 브라우저에서 동작)
 OPENAI_API_KEY=your_openai_api_key
 
 # 카카오맵
@@ -352,10 +353,19 @@ npm run generate-types  # Supabase 타입 재생성
 
 ## 📸 영수증 OCR 흐름
 
-1. `ReceiptUploadForm.tsx`에서 이미지 업로드
-2. Supabase Storage `receipts` 버킷에 저장 → `pending` 상태
-3. `actions/ocr.ts`에서 GPT-4o Vision API 호출
-4. 인식 결과로 `transactions` 테이블에 저장 → `confirmed` 상태
+1. `ReceiptUploadForm.tsx`(또는 홈 `BalanceVisualWidget.tsx`)에서 영수증 사진을 고릅니다.
+2. `utils/receiptOcr/analyzeReceiptFile.ts`가 읽는 방식을 정합니다.
+   - 기본: **이 기기(브라우저)에서** 읽습니다. 사진이 서버로 나가지 않고 API 키가 필요 없습니다.
+   - 서버에 `OPENAI_API_KEY`가 있으면 `actions/ocr.ts`(GPT-4o Vision)를 먼저 시도하고, 실패하면 브라우저 OCR 로 이어서 처리합니다.
+3. 브라우저 OCR (`utils/receiptOcr/`)
+   - `imagePreprocess.ts`: 크기 맞추기 → 흑백 → 대비 보정(필요하면 이진화)
+   - `ocrClient.ts`: Tesseract.js(한국어+영어)로 글자 읽기. 처음 한 번만 OCR 엔진(약 4MB)과 글자 데이터(한국어 1.6MB, 영어 3MB)를 jsDelivr CDN 에서 내려받고 이후엔 브라우저 캐시를 씁니다.
+   - `parseReceiptText.ts`: 규칙으로 날짜·**합계 금액**·상호명·주소·결제수단·카테고리(키워드 추천)를 뽑습니다. 금액은 `합계`·`결제금액`·`승인금액` 같은 확실한 이름표가 있을 때만 채우고, 없으면 추측하지 않고 비워 둡니다.
+   - `analyzeReceiptLocal.ts`: 1차 `흑백 + PSM 6` → 부족하면 `PSM 11` → 그래도 금액이 없으면 `이진화 + PSM 11` 순으로 읽어 비어 있는 항목만 채웁니다.
+4. 읽은 값은 입력칸에 **미리 채워 줄 뿐**이며 사용자가 고칠 수 있습니다(결제수단·종류 선택칸 포함).
+5. 저장하면 Supabase Storage `receipts` 버킷에 사진이 올라가고 `pending` 상태로 거래가 만들어집니다. 지원자가 확인하면 반영됩니다.
+
+**알려진 한계**: 흐리거나 해상도가 낮은 사진, 심하게 기울거나 구겨진 영수증은 잘 못 읽습니다(이때는 금액을 비워 두고 안내 문구를 보여 줍니다). `CU`·`CGV` 같은 굵은 영문 로고 상호는 `0`·`GV` 처럼 깨질 수 있습니다.
 
 > 잔액은 `01_balance_trigger.sql` 트리거가 자동으로 재계산합니다.
 
@@ -365,7 +375,7 @@ npm run generate-types  # Supabase 타입 재생성
 
 | 기능 | 파일 | 모델 |
 |------|------|------|
-| 영수증 OCR | `actions/ocr.ts` | GPT-4o Vision |
+| 영수증 OCR (키가 있을 때만 AI 사용) | `actions/ocr.ts` | GPT-4o Vision (선택) — 기본은 브라우저 Tesseract.js, AI 아님 |
 | 월별 지출 계획 생성 | `actions/plan.ts` | GPT-4o |
 | AI 계획 비교 (A/B/C) | `components/plans/PlanComparison.tsx` | — |
 | 쉬운 요약 (Easy Read) | `actions/easyReadSummary.ts` | GPT-4o |
@@ -394,7 +404,7 @@ npm run generate-types  # Supabase 타입 재생성
 | **카카오 개발자** | 지도 기능 | developers.kakao.com |
 | **GitHub** | 코드 저장소 | github.com |
 
-> OpenAI API는 AI 자동 요약·OCR 기능에만 필요합니다. 없어도 앱을 사용할 수 있습니다.
+> OpenAI API는 AI 자동 요약·계획 생성 기능에만 필요합니다. 없어도 앱을 사용할 수 있고, 영수증 OCR 도 키 없이 동작합니다.
 
 ---
 
@@ -525,14 +535,14 @@ git push -u origin main
 
 ## AI 기능 설정
 
-**영수증 OCR** 및 **AI 지출 계획 생성**, **쉬운 요약** 기능은 OpenAI API를 사용합니다.
-API 키 없이도 앱을 정상적으로 사용할 수 있으며, 해당 기능은 수동 입력으로 대체됩니다.
+**AI 지출 계획 생성**과 **쉬운 요약** 기능은 OpenAI API를 사용합니다. (**영수증 OCR 은 키 없이 브라우저에서 동작**하고, 키가 있으면 AI 가 먼저 읽습니다.)
+API 키 없이도 앱을 정상적으로 사용할 수 있으며, AI 기능은 수동 입력으로 대체됩니다.
 
 | 비교 | 방식 A (직접 입력) | 방식 B (AI 자동) |
 |------|------------------|----------------|
 | API 키 | 불필요 | 필요 |
 | 비용 | 없음 | 소량 발생 |
-| 영수증 처리 | 직접 입력 | 자동 인식 |
+| 영수증 처리 | 브라우저 OCR 자동 인식 (키 불필요) | AI 인식 (실패 시 브라우저 OCR) |
 | 지출 계획 | 직접 작성 | AI 자동 제안 |
 | 쉬운 요약 | 미제공 | AI 자동 생성 |
 
@@ -559,9 +569,10 @@ API 키 없이도 앱을 정상적으로 사용할 수 있으며, 해당 기능�
 | 증상 | 확인 사항 |
 |------|-----------|
 | 로그인 안 됨 | Supabase → Authentication → Users에 계정 존재 여부 확인. 이메일 인증 옵션 비활성화 |
-| 지도 안 나옴 | `NEXT_PUBLIC_KAKAO_MAP_API_KEY` 값 확인. 카카오 콘솔 → 플랫폼 → Web에 도메인 등록 여부 확인 |
+| 지도 안 나옴 | `NEXT_PUBLIC_KAKAO_MAP_API_KEY`(JavaScript 키) 값 확인. 카카오 디벨로퍼스 → 앱 → 플랫폼 키 → JavaScript 키 → **JavaScript SDK 도메인**에 접속 주소(`https://…`, 끝의 `/` 없이)가 등록돼 있는지, 카카오맵 사용 설정이 켜져 있는지 확인 |
+| 장소 자동 검색 안 됨 | `KAKAO_REST_API_KEY`(REST API 키) 확인. 허용 IP는 비워 둘 것(Vercel 서버 IP는 고정이 아님). 검색에 실패하면 오류 없이 빈 결과로 처리됨 |
 | CSV 가져오기 오류 | 엑셀 파일 암호 제거 후 재시도 |
-| 영수증 OCR 오류 | `OPENAI_API_KEY` 설정 및 OpenAI 사용 한도 확인 |
+| 영수증이 안 읽힘 | 첫 사용 시 OCR 엔진·한국어 데이터(약 9MB)를 내려받으므로 인터넷 연결 확인(광고 차단기가 `cdn.jsdelivr.net`을 막지 않는지도 확인). 사진은 밝은 곳에서 영수증이 크게 보이게 다시 촬영. AI 를 쓰는 경우에만 `OPENAI_API_KEY`·사용 한도 확인 |
 | 데이터 없음 | `NEXT_PUBLIC_DEMO_MODE=false` 설정 확인 |
 | 파일 업로드 안 됨 | Migration 19번(`19_storage_buckets.sql`) 실행 여부 확인 |
 

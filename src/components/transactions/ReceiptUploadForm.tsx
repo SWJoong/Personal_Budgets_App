@@ -4,7 +4,13 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { createTransaction } from '@/app/actions/transaction'
-import { analyzeReceipt } from '@/app/actions/ocr'
+import { analyzeReceiptFile } from '@/utils/receiptOcr/analyzeReceiptFile'
+import {
+  PAYMENT_METHODS,
+  RECEIPT_CATEGORIES,
+  type PaymentMethod,
+  type ReceiptCategory,
+} from '@/utils/receiptOcr/types'
 import { searchPlaces } from '@/app/actions/geocode'
 import type { PlaceResult } from '@/app/actions/geocode'
 import { EasyTerm } from '@/components/ui/EasyTerm'
@@ -43,40 +49,71 @@ export default function ReceiptUploadForm({
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   // 자동 감지된 장소
   const [autoPlace, setAutoPlace] = useState<PlaceResult | null>(null)
+  // 결제 방법 · 종류 (영수증에서 읽은 값이 있으면 미리 채우고, 없으면 기본값)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('체크카드')
+  const [category, setCategory] = useState<ReceiptCategory>('기타')
+  // 영수증 글자 읽기 상태
+  const [ocrProgress, setOcrProgress] = useState(0)
+  const [ocrMessage, setOcrMessage] = useState('')
+  const [autoFilled, setAutoFilled] = useState(false)
+  const [ocrFailed, setOcrFailed] = useState(false)
 
   const handleReceiptChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     setReceiptFile(file)
-    const reader = new FileReader()
-    reader.onloadend = async () => {
-      const base64 = (reader.result as string).split(',')[1]
-      setReceiptPreview(reader.result as string)
+    setOcrFailed(false)
 
-      setAnalyzing(true)
-      try {
-        const result = await analyzeReceipt(base64)
-        if (result.success && result.data) {
-          const storeName = result.data.store || ''
-          setDescription(storeName)
-          setAmount(String(result.data.amount || ''))
-          if (result.data.date) setDate(result.data.date)
-
-          // 주소(우선) 또는 상호명으로 카카오 장소 자동 검색
-          const searchQuery = result.data.address || storeName
-          if (searchQuery) {
-            searchPlaces(searchQuery).then(places => {
-              if (places.length > 0) setAutoPlace(places[0])
-            }).catch(() => {})
-          }
-        }
-      } catch (error) {
-        console.error('분석 실패:', error)
-      } finally {
-        setAnalyzing(false)
-      }
+    // 이전 영수증에서 자동으로 채운 값이 새 영수증에 남지 않게 비운다
+    if (autoFilled) {
+      setDescription('')
+      setAmount('')
+      setDate(new Date().toISOString().split('T')[0])
+      setPaymentMethod('체크카드')
+      setCategory('기타')
+      setAutoPlace(null)
+      setAutoFilled(false)
     }
+
+    // 미리보기는 글자를 읽는 동안에도 바로 보여 준다
+    const reader = new FileReader()
+    reader.onloadend = () => setReceiptPreview(reader.result as string)
     reader.readAsDataURL(file)
+
+    // 글자 읽기는 이 기기(브라우저)에서 한다. 서버에 AI 키가 있을 때만 서버 AI 를 먼저 쓴다.
+    setAnalyzing(true)
+    setOcrProgress(0)
+    setOcrMessage('읽을 준비를 하고 있어요')
+    try {
+      const result = await analyzeReceiptFile(file, (percent, message) => {
+        setOcrProgress(percent)
+        setOcrMessage(message)
+      })
+      if (result.success && result.data) {
+        const d = result.data
+        if (d.store) setDescription(d.store)
+        if (d.amount) setAmount(String(d.amount))
+        if (d.date) setDate(d.date)
+        if (d.paymentMethod) setPaymentMethod(d.paymentMethod)
+        if (d.category) setCategory(d.category)
+        setAutoFilled(true)
+
+        // 주소(우선) 또는 상호명으로 카카오 장소 자동 검색
+        const searchQuery = d.address || d.store
+        if (searchQuery) {
+          searchPlaces(searchQuery).then(places => {
+            if (places.length > 0) setAutoPlace(places[0])
+          }).catch(() => {})
+        }
+      } else {
+        setOcrFailed(true)
+      }
+    } catch (error) {
+      console.error('분석 실패:', error)
+      setOcrFailed(true)
+    } finally {
+      setAnalyzing(false)
+    }
   }
 
   const handleActivityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,7 +179,7 @@ export default function ReceiptUploadForm({
         <div className="flex items-center justify-between">
           <label className="text-sm font-bold text-zinc-500 ml-1">🧾 <EasyTerm formal="영수증 사진" easy="물건 산 종이 사진" /> <span className="text-zinc-300 font-medium">(선택)</span></label>
           {receiptPreview && (
-            <button type="button" onClick={() => { setReceiptPreview(null); setReceiptFile(null) }}
+            <button type="button" onClick={() => { setReceiptPreview(null); setReceiptFile(null); setOcrFailed(false) }}
               className="text-xs text-red-400 font-bold">삭제</button>
           )}
         </div>
@@ -156,7 +193,8 @@ export default function ReceiptUploadForm({
               {analyzing && (
                 <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-sm">
                   <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin mb-3" />
-                  <p className="font-black animate-pulse">영수증 읽는 중...</p>
+                  <p className="font-black animate-pulse">영수증 읽는 중... {ocrProgress}%</p>
+                  <p className="text-xs mt-1 font-medium px-6 text-center">{ocrMessage}</p>
                 </div>
               )}
             </>
@@ -164,13 +202,25 @@ export default function ReceiptUploadForm({
             <div className="flex flex-col items-center gap-2 text-zinc-400">
               <span className="text-5xl">🧾</span>
               <p className="font-bold"><EasyTerm formal="영수증 사진 선택" easy="물건 산 종이 사진 찍기" /> (선택)</p>
-              <p className="text-xs">사진을 찍으면 AI가 자동으로 내용을 읽어줘요</p>
+              <p className="text-xs text-center">사진을 찍으면 글자를 읽어서 채워줘요<br />밝은 곳에서 영수증이 크게 보이게 찍어요</p>
             </div>
           )}
         </div>
         <input id="receipt-input" type="file" accept="image/*" capture="environment"
           className="hidden" onChange={handleReceiptChange} />
       </div>
+
+      {/* 영수증 글자 읽기 결과 안내 */}
+      {!analyzing && autoFilled && (
+        <div role="status" className="px-4 py-3 rounded-2xl bg-amber-50 ring-1 ring-amber-200 text-sm font-bold text-amber-900">
+          📋 사진에서 읽은 내용이에요. 틀린 곳은 고쳐 주세요.
+        </div>
+      )}
+      {!analyzing && ocrFailed && (
+        <div role="status" className="px-4 py-3 rounded-2xl bg-zinc-100 ring-1 ring-zinc-200 text-sm font-bold text-zinc-700">
+          😢 사진에서 글자를 못 읽었어요. 밝은 곳에서 영수증이 크게 보이게 다시 찍거나, 직접 적어 주세요.
+        </div>
+      )}
 
       {/* 활동 사진 */}
       <div className="flex flex-col gap-2">
@@ -206,7 +256,7 @@ export default function ReceiptUploadForm({
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder={analyzing ? "AI가 분석하고 있어요..." : "예: 편의점 간식, 영화 티켓"}
+          placeholder={analyzing ? "사진을 읽고 있어요..." : "예: 편의점 간식, 영화 티켓"}
           className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-lg font-bold transition-all"
           required
         />
@@ -248,6 +298,38 @@ export default function ReceiptUploadForm({
         </div>
       </div>
 
+      {/* 결제 방법 · 종류 (영수증에서 읽은 값이 미리 채워져요. 바꿀 수 있어요) */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="payment-method" className="text-sm font-bold text-zinc-500 ml-1">💳 어떻게 냈나요?</label>
+          <select
+            id="payment-method"
+            name="payment_method"
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold appearance-none"
+          >
+            {PAYMENT_METHODS.map(m => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="receipt-category" className="text-sm font-bold text-zinc-500 ml-1">🏷️ 어떤 종류인가요?</label>
+          <select
+            id="receipt-category"
+            name="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as ReceiptCategory)}
+            className="w-full p-4 rounded-2xl bg-white ring-1 ring-zinc-200 focus:ring-2 focus:ring-primary outline-none text-base font-bold appearance-none"
+          >
+            {RECEIPT_CATEGORIES.map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* 재원 선택 (1개이면 자동선택 숨김) */}
       {fundingSources.length <= 1 ? (
         <input type="hidden" name="funding_source_id" value={fundingSources[0]?.id ?? ''} />
@@ -283,7 +365,7 @@ export default function ReceiptUploadForm({
         disabled={loading || analyzing}
         className="w-full py-5 rounded-3xl bg-green-600 text-white text-xl font-black shadow-xl active:scale-95 disabled:bg-zinc-300 transition-all mt-4"
       >
-        {loading ? '등록 중...' : analyzing ? 'AI 분석 중...' : '활동 기록하기'}
+        {loading ? '등록 중...' : analyzing ? '영수증 읽는 중...' : '활동 기록하기'}
       </button>
 
       <p className="text-center text-zinc-400 text-sm font-medium">
